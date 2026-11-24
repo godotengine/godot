@@ -42,6 +42,10 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/xegtao.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/xegtao_denoise.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/xegtao_prefilter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/xegtao_upsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
@@ -54,6 +58,11 @@
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
 #define RB_SCOPE_SSCS SNAME("rb_sscs")
+#define RB_SCOPE_XEGTAO SNAME("rb_xegtao")
+#define RB_XEGTAO_DEPTH SNAME("xegtao_depth")
+#define RB_XEGTAO_WORKING SNAME("xegtao_working")
+#define RB_XEGTAO_DENOISE_A SNAME("xegtao_denoise_a")
+#define RB_XEGTAO_DENOISE_B SNAME("xegtao_denoise_b")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
@@ -143,6 +152,7 @@ public:
 
 	void ssao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings);
 	void generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
+	void generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings, bool p_temporal_noise);
 
 	/* Screen Space Reflection */
 	void ssr_set_half_size(bool p_half_size);
@@ -431,6 +441,72 @@ private:
 
 		PipelineDeferredRD pipelines[SSAO_MAX];
 	} ssao;
+
+	/* XeGTAO */
+
+	enum XeGTAOPrefilterMode {
+		XEGTAO_LINEARIZE_DEPTH,
+		XEGTAO_DOWNSAMPLE_DEPTH,
+		XEGTAO_PREFILTER_MAX
+	};
+
+	struct XeGTAOPrefilterPushConstant {
+		int32_t screen_size[2];
+		float depth_unpack[2];
+		float near_far[2];
+		uint32_t orthogonal;
+		float effect_radius;
+		float falloff_range;
+		float pad;
+	};
+
+	struct XeGTAOPushConstant {
+		int32_t screen_size[2];
+		float pixel_size[2];
+		float ndc_to_view_mul[2];
+		float ndc_to_view_add[2];
+		float ao_params[4];
+		float ao_params2[4];
+		float ao_params3[4];
+		float fadeout_params[4];
+		uint32_t noise_index;
+	};
+
+	struct XeGTAODenoisePushConstant {
+		int32_t screen_size[2];
+		float blur_beta;
+		float output_scale;
+	};
+
+	struct XeGTAOUpsamplePushConstant {
+		int32_t screen_size[2];
+		int32_t source_size[2];
+	};
+
+	struct XeGTAO {
+		XeGTAOPrefilterPushConstant prefilter_push_constant;
+		XegtaoPrefilterShaderRD prefilter_shader;
+		RID prefilter_shader_version;
+		PipelineDeferredRD prefilter_pipelines[XEGTAO_PREFILTER_MAX];
+
+		XeGTAOPushConstant push_constant;
+		XegtaoShaderRD shader;
+		RID shader_version;
+		PipelineDeferredRD pipeline;
+
+		XeGTAODenoisePushConstant denoise_push_constant;
+		XegtaoDenoiseShaderRD denoise_shader;
+		RID denoise_shader_version;
+		PipelineDeferredRD denoise_pipeline;
+
+		XeGTAOUpsamplePushConstant upsample_push_constant;
+		XegtaoUpsampleShaderRD upsample_shader;
+		RID upsample_shader_version;
+		PipelineDeferredRD upsample_pipeline;
+
+		uint32_t noise_index = 0;
+		RID depth_sampler;
+	} xegtao;
 
 	void gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
 

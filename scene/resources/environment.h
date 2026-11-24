@@ -89,6 +89,11 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
+	enum SSAOAlgorithm {
+		SSAO_ALGORITHM_SSAO,
+		SSAO_ALGORITHM_XEGTAO,
+	};
+
 private:
 	RID environment;
 
@@ -130,6 +135,7 @@ private:
 
 	// SSAO
 	bool ssao_enabled = false;
+	SSAOAlgorithm ssao_algorithm = SSAO_ALGORITHM_SSAO;
 	float ssao_radius = 1.0;
 	float ssao_intensity = 2.0;
 	float ssao_power = 1.5;
@@ -294,6 +300,8 @@ public:
 	// SSAO
 	void set_ssao_enabled(bool p_enabled);
 	bool is_ssao_enabled() const;
+	void set_ssao_algorithm(SSAOAlgorithm p_algorithm);
+	SSAOAlgorithm get_ssao_algorithm() const;
 	void set_ssao_radius(float p_radius);
 	float get_ssao_radius() const;
 	void set_ssao_intensity(float p_intensity);
@@ -460,3 +468,4 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::FogMode)
+VARIANT_ENUM_CAST(Environment::SSAOAlgorithm)

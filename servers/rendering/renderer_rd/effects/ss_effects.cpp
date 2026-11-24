@@ -277,6 +277,46 @@ SSEffects::SSEffects() {
 		ss_effects.mirror_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
+	// Initialize XeGTAO. This path is selectable through Environment's SSAO Algorithm property.
+	{
+		Vector<String> prefilter_modes;
+		prefilter_modes.push_back("\n#define LINEARIZE\n");
+		prefilter_modes.push_back("\n#define DOWNSAMPLE\n");
+		xegtao.prefilter_shader.initialize(prefilter_modes);
+		xegtao.prefilter_shader_version = xegtao.prefilter_shader.version_create();
+		for (int i = 0; i < XEGTAO_PREFILTER_MAX; i++) {
+			xegtao.prefilter_pipelines[i].create_compute_pipeline(xegtao.prefilter_shader.version_get_shader(xegtao.prefilter_shader_version, i));
+		}
+
+		Vector<String> modes;
+		modes.push_back("\n");
+		xegtao.shader.initialize(modes);
+		xegtao.shader_version = xegtao.shader.version_create();
+		xegtao.pipeline.create_compute_pipeline(xegtao.shader.version_get_shader(xegtao.shader_version, 0));
+
+		Vector<String> denoise_modes;
+		denoise_modes.push_back("\n");
+		xegtao.denoise_shader.initialize(denoise_modes);
+		xegtao.denoise_shader_version = xegtao.denoise_shader.version_create();
+		xegtao.denoise_pipeline.create_compute_pipeline(xegtao.denoise_shader.version_get_shader(xegtao.denoise_shader_version, 0));
+
+		Vector<String> upsample_modes;
+		upsample_modes.push_back("\n");
+		xegtao.upsample_shader.initialize(upsample_modes);
+		xegtao.upsample_shader_version = xegtao.upsample_shader.version_create();
+		xegtao.upsample_pipeline.create_compute_pipeline(xegtao.upsample_shader.version_get_shader(xegtao.upsample_shader_version, 0));
+
+		RD::SamplerState sampler;
+		sampler.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.min_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.max_lod = 4;
+		xegtao.depth_sampler = RD::get_singleton()->sampler_create(sampler);
+	}
+
 	// Screen Space Reflections
 	ssr_half_size = GLOBAL_GET("rendering/environment/screen_space_reflection/half_size");
 
@@ -518,6 +558,21 @@ SSEffects::~SSEffects() {
 		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
 
 		RD::get_singleton()->free_rid(ssao.importance_map_load_counter);
+	}
+
+	{
+		// Cleanup XeGTAO.
+		for (int i = 0; i < XEGTAO_PREFILTER_MAX; i++) {
+			xegtao.prefilter_pipelines[i].free();
+		}
+		xegtao.pipeline.free();
+		xegtao.denoise_pipeline.free();
+		xegtao.prefilter_shader.version_free(xegtao.prefilter_shader_version);
+		xegtao.shader.version_free(xegtao.shader_version);
+		xegtao.denoise_shader.version_free(xegtao.denoise_shader_version);
+		xegtao.upsample_pipeline.free();
+		xegtao.upsample_shader.version_free(xegtao.upsample_shader_version);
+		RD::get_singleton()->free_rid(xegtao.depth_sampler);
 	}
 
 	{
@@ -1452,6 +1507,240 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 
 	int zero[1] = { 0 };
 	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
+}
+
+void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings, bool p_temporal_noise) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	Size2i full_size = p_render_buffers->get_internal_size();
+	Size2i screen_size = ssao_half_size ? Size2i((full_size.x + 1) / 2, (full_size.y + 1) / 2) : full_size;
+	uint32_t view_count = p_render_buffers->get_view_count();
+	int mip_count = 1;
+	int max_dimension = MAX(screen_size.x, screen_size.y);
+	while (max_dimension > 1 && mip_count < 5) {
+		max_dimension = MAX(max_dimension / 2, 1);
+		mip_count++;
+	}
+
+	// Keep the XeGTAO working textures independent from the legacy SSAO buffers.
+	if (p_render_buffers->has_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH)) {
+		RD::TextureFormat format = RD::get_singleton()->texture_get_format(p_render_buffers->get_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH));
+		if (format.width != (uint32_t)screen_size.x || format.height != (uint32_t)screen_size.y || format.mipmaps != (uint32_t)mip_count || format.array_layers != view_count) {
+			p_render_buffers->clear_context(RB_SCOPE_XEGTAO);
+		}
+	}
+
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, RD::DATA_FORMAT_R16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count, mip_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_WORKING, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_A, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_B, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_FINAL, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, view_count);
+
+	Projection correction;
+	correction.set_depth_correction(false);
+	Projection temp = correction * p_projection;
+	xegtao.prefilter_push_constant.depth_unpack[0] = -temp.columns[3][2];
+	xegtao.prefilter_push_constant.depth_unpack[1] = temp.columns[2][2];
+	if (xegtao.prefilter_push_constant.depth_unpack[0] * xegtao.prefilter_push_constant.depth_unpack[1] < 0.0f) {
+		xegtao.prefilter_push_constant.depth_unpack[1] = -xegtao.prefilter_push_constant.depth_unpack[1];
+	}
+	xegtao.prefilter_push_constant.near_far[0] = p_projection.get_z_near();
+	xegtao.prefilter_push_constant.near_far[1] = p_projection.get_z_far();
+	xegtao.prefilter_push_constant.orthogonal = p_projection.is_orthogonal() ? 1 : 0;
+	xegtao.prefilter_push_constant.effect_radius = MAX(p_settings.radius, 0.0001f);
+	// Reuse Godot's horizon control as the GTAO far-sample falloff control. The default maps to XeGTAO's tuned value.
+	float falloff_range = CLAMP(0.615f + (p_settings.horizon - 0.06f), 0.01f, 1.0f);
+	xegtao.prefilter_push_constant.falloff_range = falloff_range;
+
+	float tan_half_fov_x = 1.0f / p_projection.columns[0][0];
+	float tan_half_fov_y = 1.0f / p_projection.columns[1][1];
+	int quality = CLAMP((int)ssao_quality, 0, 4);
+	xegtao.push_constant.screen_size[0] = screen_size.x;
+	xegtao.push_constant.screen_size[1] = screen_size.y;
+	xegtao.push_constant.pixel_size[0] = 1.0f / screen_size.x;
+	xegtao.push_constant.pixel_size[1] = 1.0f / screen_size.y;
+	xegtao.push_constant.ndc_to_view_mul[0] = tan_half_fov_x * 2.0f;
+	xegtao.push_constant.ndc_to_view_mul[1] = tan_half_fov_y * -2.0f;
+	xegtao.push_constant.ndc_to_view_add[0] = tan_half_fov_x * -1.0f;
+	xegtao.push_constant.ndc_to_view_add[1] = tan_half_fov_y;
+	xegtao.push_constant.ao_params[0] = MAX(p_settings.radius, 0.0001f);
+	xegtao.push_constant.ao_params[1] = falloff_range;
+	xegtao.push_constant.ao_params[2] = 1.457f;
+	xegtao.push_constant.ao_params[3] = 2.0f;
+	xegtao.push_constant.ao_params2[0] = CLAMP(p_settings.detail * 0.2f, 0.0f, 0.7f);
+	xegtao.push_constant.ao_params2[1] = MAX(p_settings.power, 0.01f);
+	xegtao.push_constant.ao_params2[2] = 3.3f;
+	// XeGTAO visibility is already a normalized AO term, while Godot's SSAO intensity
+	// scales a differently normalized obscurance. 0.25 maps the default SSAO
+	// intensity (2.0) to the XeGTAO reference intensity (0.5).
+	xegtao.push_constant.ao_params2[3] = MAX(p_settings.intensity * 0.25f, 0.0f);
+	xegtao.push_constant.ao_params3[0] = p_settings.detail;
+	xegtao.push_constant.ao_params3[1] = p_settings.horizon;
+	xegtao.push_constant.ao_params3[2] = (float)quality;
+	xegtao.push_constant.ao_params3[3] = CLAMP(ssao_adaptive_target, 0.0f, 1.0f);
+	float fadeout_range = ssao_fadeout_to - ssao_fadeout_from;
+	if (fadeout_range > 0.0001f) {
+		xegtao.push_constant.fadeout_params[0] = -1.0f / fadeout_range;
+		xegtao.push_constant.fadeout_params[1] = ssao_fadeout_from / fadeout_range + 1.0f;
+	} else {
+		// A non-increasing range disables fadeout instead of producing invalid shader parameters.
+		xegtao.push_constant.fadeout_params[0] = 0.0f;
+		xegtao.push_constant.fadeout_params[1] = 1.0f;
+	}
+	xegtao.push_constant.fadeout_params[2] = 0.0f;
+	xegtao.push_constant.fadeout_params[3] = 0.0f;
+
+	// XeGTAO's spatio-temporal noise relies on TAA to average different sample
+	// rotations over frames. Without TAA (or in the debug SSAO buffer, which is
+	// drawn without TAA) keep the pattern static.
+	if (p_temporal_noise) {
+		if (p_view == 0) {
+			xegtao.noise_index = (xegtao.noise_index + 1) & 63;
+		}
+		xegtao.push_constant.noise_index = xegtao.noise_index;
+	} else {
+		xegtao.push_constant.noise_index = 0;
+	}
+
+	xegtao.denoise_push_constant.screen_size[0] = screen_size.x;
+	xegtao.denoise_push_constant.screen_size[1] = screen_size.y;
+	// XeGTAO's 3x3 edge-aware denoiser has a much smaller footprint than Godot's
+	// deinterleaved wide/smart SSAO blur. Spend a few extra passes so the result
+	// matches SSAO's spatial smoothness without needing a different kernel.
+	int denoise_passes = 1;
+	if (ssao_quality > RSE::ENV_SSAO_QUALITY_VERY_LOW && ssao_blur_passes > 0) {
+		denoise_passes = MAX(ssao_blur_passes + 2, 3);
+	}
+	xegtao.denoise_push_constant.blur_beta = ssao_blur_passes <= 0 ? 10000.0f : MAX(0.1f, 1.2f * p_settings.sharpness);
+	xegtao.denoise_push_constant.output_scale = 1.0f;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->draw_command_begin_label("Process XeGTAO");
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	// Prefilter raw depth to view-space depth and build the GTAO mip chain.
+	{
+		RID shader = xegtao.prefilter_shader.version_get_shader(xegtao.prefilter_shader_version, XEGTAO_LINEARIZE_DEPTH);
+		RID source_depth = p_render_buffers->get_depth_texture(p_view);
+		RID dest_depth = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, p_view, 0);
+		RD::Uniform u_source_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, source_depth }));
+		RD::Uniform u_dest_depth(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ dest_depth }));
+		RID source_set = uniform_set_cache->get_cache(shader, 0, u_source_depth);
+		RID dest_set = uniform_set_cache->get_cache(shader, 1, u_dest_depth);
+
+		xegtao.prefilter_push_constant.screen_size[0] = screen_size.x;
+		xegtao.prefilter_push_constant.screen_size[1] = screen_size.y;
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.prefilter_pipelines[XEGTAO_LINEARIZE_DEPTH].get_rid());
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dest_set, 1);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &xegtao.prefilter_push_constant, sizeof(XeGTAOPrefilterPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, screen_size.x, screen_size.y, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		Size2i mip_size = screen_size;
+		for (int mip = 1; mip < mip_count; mip++) {
+			mip_size.x = MAX(1, mip_size.x / 2);
+			mip_size.y = MAX(1, mip_size.y / 2);
+			xegtao.prefilter_push_constant.screen_size[0] = mip_size.x;
+			xegtao.prefilter_push_constant.screen_size[1] = mip_size.y;
+
+			shader = xegtao.prefilter_shader.version_get_shader(xegtao.prefilter_shader_version, XEGTAO_DOWNSAMPLE_DEPTH);
+			RID source_mip = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, p_view, mip - 1);
+			dest_depth = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, p_view, mip);
+			RD::Uniform u_source_mip(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, source_mip }));
+			RD::Uniform u_dest_mip(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ dest_depth }));
+			source_set = uniform_set_cache->get_cache(shader, 0, u_source_mip);
+			dest_set = uniform_set_cache->get_cache(shader, 1, u_dest_mip);
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.prefilter_pipelines[XEGTAO_DOWNSAMPLE_DEPTH].get_rid());
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dest_set, 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &xegtao.prefilter_push_constant, sizeof(XeGTAOPrefilterPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, mip_size.x, mip_size.y, 1);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+	}
+
+	// Evaluate GTAO at the selected resolution using normals sampled from the matching full-resolution pixels.
+	{
+		RID shader = xegtao.shader.version_get_shader(xegtao.shader_version, 0);
+		RID depth_view = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, p_view, 0, 1, mip_count);
+		RID working = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_WORKING, p_view, 0);
+		RD::Uniform u_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ xegtao.depth_sampler, depth_view }));
+		RD::Uniform u_normal(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_normal_buffer }));
+		RD::Uniform u_working(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ working }));
+		RID source_set = uniform_set_cache->get_cache(shader, 0, u_depth, u_normal);
+		RID dest_set = uniform_set_cache->get_cache(shader, 1, u_working);
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.pipeline.get_rid());
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dest_set, 1);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &xegtao.push_constant, sizeof(XeGTAOPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, screen_size.x, screen_size.y, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+
+	// Apply the configured number of edge-aware denoise passes.
+	{
+		RID shader = xegtao.denoise_shader.version_get_shader(xegtao.denoise_shader_version, 0);
+		RID working = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_WORKING, p_view, 0);
+		RID final = p_render_buffers->get_texture_slice(RB_SCOPE_SSAO, RB_FINAL, p_view, 0);
+		RID denoise_a = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_A, p_view, 0);
+		RID denoise_b = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_B, p_view, 0);
+		RID ao_source = working;
+		RID low_resolution_result = working;
+
+		for (int pass = 0; pass < denoise_passes; pass++) {
+			bool last_pass = pass == denoise_passes - 1;
+			RID destination = (last_pass && !ssao_half_size) ? final : ((pass % 2 == 0) ? denoise_a : denoise_b);
+			float final_blur_beta = ssao_blur_passes <= 0 ? 10000.0f : MAX(0.1f, 1.2f * p_settings.sharpness);
+			xegtao.denoise_push_constant.blur_beta = last_pass ? final_blur_beta : final_blur_beta / 5.0f;
+			xegtao.denoise_push_constant.output_scale = (last_pass && !ssao_half_size) ? 1.5f : 1.0f;
+			RD::Uniform u_working(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ xegtao.depth_sampler, working }));
+			RD::Uniform u_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ xegtao.depth_sampler, ao_source }));
+			RD::Uniform u_destination(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ destination }));
+			RID source_set = uniform_set_cache->get_cache(shader, 0, u_working, u_ao);
+			RID dest_set = uniform_set_cache->get_cache(shader, 1, u_destination);
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.denoise_pipeline.get_rid());
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dest_set, 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &xegtao.denoise_push_constant, sizeof(XeGTAODenoisePushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, screen_size.x, screen_size.y, 1);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			ao_source = destination;
+			if (ssao_half_size && last_pass) {
+				low_resolution_result = destination;
+			}
+		}
+
+		if (ssao_half_size) {
+			RID upsample_shader = xegtao.upsample_shader.version_get_shader(xegtao.upsample_shader_version, 0);
+			RID full_normal = p_normal_buffer;
+			RD::Uniform u_low_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, low_resolution_result }));
+			RD::Uniform u_normal(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ full_normal }));
+			RD::Uniform u_final(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ final }));
+			RID source_set = uniform_set_cache->get_cache(upsample_shader, 0, u_low_ao, u_normal);
+			RID dest_set = uniform_set_cache->get_cache(upsample_shader, 1, u_final);
+
+			xegtao.upsample_push_constant.screen_size[0] = full_size.x;
+			xegtao.upsample_push_constant.screen_size[1] = full_size.y;
+			xegtao.upsample_push_constant.source_size[0] = screen_size.x;
+			xegtao.upsample_push_constant.source_size[1] = screen_size.y;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.upsample_pipeline.get_rid());
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dest_set, 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &xegtao.upsample_push_constant, sizeof(XeGTAOUpsamplePushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, full_size.x, full_size.y, 1);
+		}
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+	RD::get_singleton()->compute_list_end();
 }
 
 /* Screen Space Reflection */

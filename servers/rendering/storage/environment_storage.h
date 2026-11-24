@@ -144,6 +144,7 @@ private:
 
 		// SSAO
 		bool ssao_enabled = false;
+		bool ssao_use_xegtao = false;
 		float ssao_radius = 1.0;
 		float ssao_intensity = 2.0;
 		float ssao_power = 1.5;
@@ -293,6 +294,7 @@ public:
 
 	// SSAO
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
+	void environment_set_ssao_use_xegtao(RID p_env, bool p_enable);
 	bool environment_get_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_radius(RID p_env) const;
 	float environment_get_ssao_intensity(RID p_env) const;
@@ -302,6 +304,7 @@ public:
 	float environment_get_ssao_sharpness(RID p_env) const;
 	float environment_get_ssao_direct_light_affect(RID p_env) const;
 	float environment_get_ssao_ao_channel_affect(RID p_env) const;
+	bool environment_get_ssao_use_xegtao(RID p_env) const;
 
 	// SSIL
 	void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection);

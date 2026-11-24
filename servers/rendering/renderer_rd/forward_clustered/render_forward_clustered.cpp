@@ -1466,10 +1466,20 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.sharpness = environment_get_ssao_sharpness(p_environment);
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
-	ss_effects->ssao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
+	if (environment_get_ssao_use_xegtao(p_environment)) {
+		// Godot's TAA clips the history against the current 3x3 neighborhood, which
+		// prevents XeGTAO's per-frame noise rotation from averaging out. Rotating the
+		// pattern in that situation only adds visible shimmer, so keep it static.
+		const bool temporal_noise = false;
+		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+			ss_effects->generate_xegtao(p_render_buffers, v, p_normal_buffers[v], p_projections[v], settings, temporal_noise);
+		}
+	} else {
+		ss_effects->ssao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
 
-	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
-		ss_effects->generate_ssao(p_render_buffers, rb_data->ss_effects_data.ssao, v, p_normal_buffers[v], p_projections[v], settings);
+		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+			ss_effects->generate_ssao(p_render_buffers, rb_data->ss_effects_data.ssao, v, p_normal_buffers[v], p_projections[v], settings);
+		}
 	}
 }
 
@@ -1694,20 +1704,21 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			ss_effects->allocate_last_frame_buffer(rb, p_use_ssil, p_use_ssr);
 		}
 
-		if (p_use_ssao || p_use_ssil) {
+		bool use_legacy_ssao = p_use_ssao && !environment_get_ssao_use_xegtao(p_render_data->environment);
+		if (use_legacy_ssao || p_use_ssil) {
 			RENDER_TIMESTAMP("Prepare Depth for SSAO/SSIL");
 			// Convert our depth buffer data to linear data in
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 				ss_effects->downsample_depth(rb, v, p_render_data->scene_data->view_projection[v]);
 			}
+		}
 
-			if (p_use_ssao) {
-				_process_ssao(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection);
-			}
+		if (p_use_ssao) {
+			_process_ssao(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection);
+		}
 
-			if (p_use_ssil) {
-				_process_ssil(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform);
-			}
+		if (p_use_ssil) {
+			_process_ssil(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform);
 		}
 
 		if (p_use_sscs) {

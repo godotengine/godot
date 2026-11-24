@@ -326,6 +326,15 @@ bool Environment::is_ssao_enabled() const {
 	return ssao_enabled;
 }
 
+void Environment::set_ssao_algorithm(SSAOAlgorithm p_algorithm) {
+	ssao_algorithm = p_algorithm;
+	RS::get_singleton()->environment_set_ssao_use_xegtao(environment, ssao_algorithm == SSAO_ALGORITHM_XEGTAO);
+}
+
+Environment::SSAOAlgorithm Environment::get_ssao_algorithm() const {
+	return ssao_algorithm;
+}
+
 void Environment::set_ssao_radius(float p_radius) {
 	ssao_radius = p_radius;
 	_update_ssao();
@@ -1340,6 +1349,8 @@ void Environment::_bind_methods() {
 	// SSAO
 	ClassDB::bind_method(D_METHOD("set_ssao_enabled", "enabled"), &Environment::set_ssao_enabled);
 	ClassDB::bind_method(D_METHOD("is_ssao_enabled"), &Environment::is_ssao_enabled);
+	ClassDB::bind_method(D_METHOD("set_ssao_algorithm", "algorithm"), &Environment::set_ssao_algorithm);
+	ClassDB::bind_method(D_METHOD("get_ssao_algorithm"), &Environment::get_ssao_algorithm);
 	ClassDB::bind_method(D_METHOD("set_ssao_radius", "radius"), &Environment::set_ssao_radius);
 	ClassDB::bind_method(D_METHOD("get_ssao_radius"), &Environment::get_ssao_radius);
 	ClassDB::bind_method(D_METHOD("set_ssao_intensity", "intensity"), &Environment::set_ssao_intensity);
@@ -1359,6 +1370,7 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SSAO", "ssao_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssao_enabled", "is_ssao_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_algorithm", PROPERTY_HINT_ENUM, "SSAO,XeGTAO"), "set_ssao_algorithm", "get_ssao_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_radius", PROPERTY_HINT_RANGE, "0.01,16,0.01,or_greater"), "set_ssao_radius", "get_ssao_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssao_intensity", "get_ssao_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_power", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssao_power", "get_ssao_power");
@@ -1628,6 +1640,9 @@ void Environment::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FOG_MODE_EXPONENTIAL);
 	BIND_ENUM_CONSTANT(FOG_MODE_DEPTH);
+
+	BIND_ENUM_CONSTANT(SSAO_ALGORITHM_SSAO);
+	BIND_ENUM_CONSTANT(SSAO_ALGORITHM_XEGTAO);
 
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);

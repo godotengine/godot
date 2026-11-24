@@ -711,6 +711,12 @@ void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, 
 	env->ssao_ao_channel_affect = p_ao_channel_affect;
 }
 
+void RendererEnvironmentStorage::environment_set_ssao_use_xegtao(RID p_env, bool p_enable) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->ssao_use_xegtao = p_enable;
+}
+
 bool RendererEnvironmentStorage::environment_get_ssao_enabled(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
@@ -763,6 +769,12 @@ float RendererEnvironmentStorage::environment_get_ssao_ao_channel_affect(RID p_e
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0.0);
 	return env->ssao_ao_channel_affect;
+}
+
+bool RendererEnvironmentStorage::environment_get_ssao_use_xegtao(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->ssao_use_xegtao;
 }
 
 // SSIL

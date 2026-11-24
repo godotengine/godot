@@ -1325,6 +1325,7 @@ public:
 
 	// SSAO
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	PASS2(environment_set_ssao_use_xegtao, RID, bool)
 
 	PASS1RC(bool, environment_get_ssao_enabled, RID)
 	PASS1RC(float, environment_get_ssao_radius, RID)
@@ -1335,6 +1336,7 @@ public:
 	PASS1RC(float, environment_get_ssao_sharpness, RID)
 	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
 	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
+	PASS1RC(bool, environment_get_ssao_use_xegtao, RID)
 
 	PASS6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
 
