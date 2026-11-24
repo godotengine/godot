@@ -2777,15 +2777,12 @@ void DisplayServerX11::window_set_size(const Size2i p_size, DisplayServerEnums::
 	// Resize the window
 	XResizeWindow(x11_display, wd.x11_window, size.x, size.y);
 
-	for (int timeout = 0; timeout < 50; ++timeout) {
-		XSync(x11_display, False);
-		XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
-		if (old_w != xwa.width || old_h != xwa.height) {
-			break;
-		}
-
-		OS::get_singleton()->delay_usec(10'000);
+	wd.size = Vector2i(xwa.width, xwa.height);
+	if (old_w == xwa.width && old_h == xwa.height) {
+		return;
 	}
 
 	// Keep rendering context window size in sync
