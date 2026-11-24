@@ -45,6 +45,7 @@
 
 class ParticleProcessMaterial : public Material {
 	GDCLASS(ParticleProcessMaterial, Material);
+	friend class TestParticleProcessMaterialInternalsAccessor;
 
 public:
 	enum Parameter {
@@ -111,44 +112,47 @@ public:
 	};
 
 private:
-	struct MaterialKey {
+	union MaterialKey {
 		// The bit size of the struct must be kept below or equal to 64 bits.
 		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
-		uint64_t texture_mask : PARAM_MAX;
-		uint64_t texture_color : 1;
-		uint64_t particle_flags : PARTICLE_FLAG_MAX;
-		uint64_t emission_shape : 3;
-		uint64_t invalid_key : 1;
-		uint64_t has_emission_color : 1;
-		uint64_t sub_emitter : 3;
-		uint64_t attractor_enabled : 1;
-		uint64_t collision_mode : 2;
-		uint64_t collision_scale : 1;
-		uint64_t turbulence_enabled : 1;
-		uint64_t limiter_curve : 1;
-		uint64_t alpha_curve : 1;
-		uint64_t emission_curve : 1;
-		uint64_t has_initial_ramp : 1;
-		uint64_t orbit_uses_curve_xyz : 1;
-		uint64_t use_scale_3d : 1;
-		uint64_t use_rotation_3d : 1;
-		uint64_t use_rotation_velocity_3d : 1;
-		uint64_t use_rotation_velocity_3d_curve : 1;
-
-		MaterialKey() {
-			memset(this, 0, sizeof(MaterialKey));
-		}
+		struct {
+			uint64_t texture_mask : PARAM_MAX;
+			uint64_t texture_color : 1;
+			uint64_t particle_flags : PARTICLE_FLAG_MAX;
+			uint64_t emission_shape : 3;
+			uint64_t invalid_key : 1;
+			uint64_t has_emission_color : 1;
+			uint64_t sub_emitter : 3;
+			uint64_t attractor_enabled : 1;
+			uint64_t collision_mode : 2;
+			uint64_t collision_scale : 1;
+			uint64_t turbulence_enabled : 1;
+			uint64_t limiter_curve : 1;
+			uint64_t alpha_curve : 1;
+			uint64_t emission_curve : 1;
+			uint64_t has_initial_ramp : 1;
+			uint64_t orbit_uses_curve_xyz : 1;
+			uint64_t use_scale_3d : 1;
+			uint64_t use_rotation_3d : 1;
+			uint64_t use_rotation_velocity_3d : 1;
+			uint64_t use_rotation_velocity_3d_curve : 1;
+		};
+		// Hashed and compared as one word: a union's copy carries all of its
+		// bytes, so the bits no field uses stay zero (a struct of bitfields
+		// may copy only the bytes its fields occupy).
+		uint64_t key = 0;
 
 		static uint32_t hash(const MaterialKey &p_key) {
-			return hash_djb2_buffer((const uint8_t *)&p_key, sizeof(MaterialKey));
+			return hash_murmur3_one_64(p_key.key);
 		}
 		bool operator==(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
+			return key == p_key.key;
 		}
 		bool operator<(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
+			return key < p_key.key;
 		}
 	};
+	static_assert(sizeof(MaterialKey) == sizeof(uint64_t), "ParticleProcessMaterial::MaterialKey must stay one word.");
 
 	struct ShaderData {
 		RID shader;

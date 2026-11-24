@@ -139,6 +139,7 @@ class StandardMaterial3D;
 
 class BaseMaterial3D : public Material {
 	GDCLASS(BaseMaterial3D, Material);
+	friend class TestBaseMaterial3DInternalsAccessor;
 
 private:
 	mutable Mutex material_rid_mutex;
@@ -356,55 +357,56 @@ public:
 	};
 
 private:
-	struct MaterialKey {
-		// enum values
-		uint64_t texture_filter : Math::get_num_bits(TEXTURE_FILTER_MAX - 1);
-		uint64_t detail_uv : Math::get_num_bits(DETAIL_UV_MAX - 1);
-		uint64_t transparency : Math::get_num_bits(TRANSPARENCY_MAX - 1);
-		uint64_t alpha_antialiasing_mode : Math::get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
-		uint64_t shading_mode : Math::get_num_bits(SHADING_MODE_MAX - 1);
-		uint64_t blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t depth_draw_mode : Math::get_num_bits(DEPTH_DRAW_MAX - 1);
-		uint64_t depth_test : Math::get_num_bits(DEPTH_TEST_MAX - 1);
-		uint64_t cull_mode : Math::get_num_bits(CULL_MAX - 1);
-		uint64_t diffuse_mode : Math::get_num_bits(DIFFUSE_MAX - 1);
-		uint64_t specular_mode : Math::get_num_bits(SPECULAR_MAX - 1);
-		uint64_t billboard_mode : Math::get_num_bits(BILLBOARD_MAX - 1);
-		uint64_t detail_blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t roughness_channel : Math::get_num_bits(TEXTURE_CHANNEL_MAX - 1);
-		uint64_t emission_op : Math::get_num_bits(EMISSION_OP_MAX - 1);
-		uint64_t distance_fade : Math::get_num_bits(DISTANCE_FADE_MAX - 1);
+	union MaterialKey {
+		struct {
+			// enum values
+			uint64_t texture_filter : Math::get_num_bits(TEXTURE_FILTER_MAX - 1);
+			uint64_t detail_uv : Math::get_num_bits(DETAIL_UV_MAX - 1);
+			uint64_t transparency : Math::get_num_bits(TRANSPARENCY_MAX - 1);
+			uint64_t alpha_antialiasing_mode : Math::get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
+			uint64_t shading_mode : Math::get_num_bits(SHADING_MODE_MAX - 1);
+			uint64_t blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+			uint64_t depth_draw_mode : Math::get_num_bits(DEPTH_DRAW_MAX - 1);
+			uint64_t depth_test : Math::get_num_bits(DEPTH_TEST_MAX - 1);
+			uint64_t cull_mode : Math::get_num_bits(CULL_MAX - 1);
+			uint64_t diffuse_mode : Math::get_num_bits(DIFFUSE_MAX - 1);
+			uint64_t specular_mode : Math::get_num_bits(SPECULAR_MAX - 1);
+			uint64_t billboard_mode : Math::get_num_bits(BILLBOARD_MAX - 1);
+			uint64_t detail_blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+			uint64_t roughness_channel : Math::get_num_bits(TEXTURE_CHANNEL_MAX - 1);
+			uint64_t emission_op : Math::get_num_bits(EMISSION_OP_MAX - 1);
+			uint64_t distance_fade : Math::get_num_bits(DISTANCE_FADE_MAX - 1);
 
-		// stencil
-		uint64_t stencil_mode : Math::get_num_bits(STENCIL_MODE_MAX - 1);
-		uint64_t stencil_flags : STENCIL_FLAG_NUM_BITS;
-		uint64_t stencil_compare : Math::get_num_bits(STENCIL_COMPARE_MAX - 1);
-		uint64_t stencil_reference : 8;
+			// stencil
+			uint64_t stencil_mode : Math::get_num_bits(STENCIL_MODE_MAX - 1);
+			uint64_t stencil_flags : STENCIL_FLAG_NUM_BITS;
+			uint64_t stencil_compare : Math::get_num_bits(STENCIL_COMPARE_MAX - 1);
+			uint64_t stencil_reference : 8;
 
-		// booleans
-		uint64_t invalid_key : 1;
-		uint64_t deep_parallax : 1;
-		uint64_t grow : 1;
-		uint64_t proximity_fade : 1;
-		uint64_t orm : 1;
+			// booleans
+			uint64_t invalid_key : 1;
+			uint64_t deep_parallax : 1;
+			uint64_t grow : 1;
+			uint64_t proximity_fade : 1;
+			uint64_t orm : 1;
 
-		// flag bitfield
-		uint32_t feature_mask;
-		uint32_t flags;
-
-		MaterialKey() {
-			memset(this, 0, sizeof(MaterialKey));
-		}
+			// flag bitfield
+			uint32_t feature_mask;
+			uint32_t flags;
+		};
+		// Hashed and compared as two words: a union's copy carries all of its
+		// bytes, so the bits no field uses stay zero (a struct of bitfields
+		// may copy only the bytes its fields occupy).
+		uint64_t key[2] = {};
 
 		static uint32_t hash(const MaterialKey &p_key) {
-			return hash_djb2_buffer((const uint8_t *)&p_key, sizeof(MaterialKey));
+			return hash_murmur3_one_64(p_key.key[1], hash_murmur3_one_64(p_key.key[0]));
 		}
 		bool operator==(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
+			return key[0] == p_key.key[0] && key[1] == p_key.key[1];
 		}
-
 		bool operator<(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
+			return key[0] == p_key.key[0] ? key[1] < p_key.key[1] : key[0] < p_key.key[0];
 		}
 	};
 
