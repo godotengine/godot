@@ -32,7 +32,7 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "modules/gdscript/gdscript_parser.h"
+#include "gdscript_parser.h"
 
 /**
  * The `GDScriptLinter` emits warnings based on a completely analyzed AST.
@@ -44,7 +44,7 @@
  * Especially expensive warnings should be implemented through this pass.
  */
 class GDScriptLinter final {
-	using CallbackWithValidation = void(const GDScriptParser::Node *, GDScriptParser &);
+	using CallbackWithValidation = void(const GDScriptAST::Node *, GDScriptParser &);
 
 	GDScriptParser *const tree;
 	static CallbackWithValidation *const checks[];

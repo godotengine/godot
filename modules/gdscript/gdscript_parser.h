@@ -148,22 +148,22 @@ public:
 	};
 
 	struct CompletionCall {
-		Node *call = nullptr;
+		GDScriptAST::Node *call = nullptr;
 		int argument = -1;
 	};
 
 	struct CompletionContext {
 		CompletionType type = COMPLETION_NONE;
-		ClassNode *current_class = nullptr;
-		FunctionNode *current_function = nullptr;
-		SuiteNode *current_suite = nullptr;
+		GDScriptAST::ClassNode *current_class = nullptr;
+		GDScriptAST::FunctionNode *current_function = nullptr;
+		GDScriptAST::SuiteNode *current_suite = nullptr;
 		int current_line = -1;
 		union {
 			int current_argument = -1;
 			int type_chain_index;
 		};
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
-		Node *node = nullptr;
+		GDScriptAST::Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
 		CompletionCall call;
@@ -184,8 +184,8 @@ private:
 	List<bool> multiline_stack;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
-	ClassNode *head = nullptr;
-	Node *list = nullptr;
+	GDScriptAST::ClassNode *head = nullptr;
+	GDScriptAST::Node *list = nullptr;
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
@@ -231,20 +231,20 @@ private:
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
-	ClassNode *current_class = nullptr;
-	FunctionNode *current_function = nullptr;
-	LambdaNode *current_lambda = nullptr;
-	SuiteNode *current_suite = nullptr;
+	GDScriptAST::ClassNode *current_class = nullptr;
+	GDScriptAST::FunctionNode *current_function = nullptr;
+	GDScriptAST::LambdaNode *current_lambda = nullptr;
+	GDScriptAST::SuiteNode *current_suite = nullptr;
 
 	CompletionContext completion_context;
 	List<CompletionCall> completion_call_stack;
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
-	static HashMap<StringName, AnnotationInfo> valid_annotations;
-	List<AnnotationNode *> annotation_stack;
+	static HashMap<StringName, GDScriptAST::AnnotationInfo> valid_annotations;
+	List<GDScriptAST::AnnotationNode *> annotation_stack;
 
-	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
+	typedef GDScriptAST::ExpressionNode *(GDScriptParser::*ParseFunction)(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
 	enum Precedence {
 		PREC_NONE,
@@ -279,12 +279,12 @@ private:
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
-	List<Node *> nodes_in_progress;
-	void complete_extents(Node *p_node);
-	void update_extents(Node *p_node);
-	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
-	void reset_extents(Node *p_node, Node *p_from);
-	void set_synthetic_extents(Node *p_node) {
+	List<GDScriptAST::Node *> nodes_in_progress;
+	void complete_extents(GDScriptAST::Node *p_node);
+	void update_extents(GDScriptAST::Node *p_node);
+	void reset_extents(GDScriptAST::Node *p_node, GDScriptTokenizer::Token p_token);
+	void reset_extents(GDScriptAST::Node *p_node, GDScriptAST::Node *p_from);
+	void set_synthetic_extents(GDScriptAST::Node *p_node) {
 		p_node->start_line = p_node->end_line = p_node->start_column = p_node->end_column = -1;
 	}
 
@@ -312,8 +312,8 @@ private:
 		return node;
 	}
 
-	SuiteNode *alloc_recovery_suite() {
-		SuiteNode *suite = alloc_recovery_node<SuiteNode>();
+	GDScriptAST::SuiteNode *alloc_recovery_suite() {
+		GDScriptAST::SuiteNode *suite = alloc_recovery_node<GDScriptAST::SuiteNode>();
 		suite->parent_block = current_suite;
 		suite->parent_function = current_function;
 		suite->is_in_loop = current_suite->is_in_loop;
@@ -322,15 +322,15 @@ private:
 
 	void clear();
 
-	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, const GDScriptAST::Node *p_origin = nullptr);
 	void push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column);
 	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
 
 #ifdef DEBUG_ENABLED
 public:
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	void push_warning(const GDScriptAST::Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
+	void push_warning(const GDScriptAST::Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
 	void push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
@@ -347,12 +347,12 @@ private:
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
-	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = true);
+	void make_completion_context(CompletionType p_type, GDScriptAST::Node *p_node, int p_argument = -1, bool p_force = true);
 	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = true);
 	// In some cases it might become necessary to alter the completion context after parsing a subexpression.
 	// For example to not override COMPLETE_CALL_ARGUMENTS with COMPLETION_NONE from string literals.
-	void override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument = -1);
-	void push_completion_call(Node *p_call);
+	void override_completion_context(const GDScriptAST::Node *p_for_node, CompletionType p_type, GDScriptAST::Node *p_node, int p_argument = -1);
+	void push_completion_call(GDScriptAST::Node *p_call);
 	void pop_completion_call();
 	void set_last_completion_call_arg(int p_argument);
 
@@ -370,85 +370,85 @@ private:
 
 	// Main blocks.
 	void parse_program();
-	ClassNode *parse_class(bool p_is_static);
+	GDScriptAST::ClassNode *parse_class(bool p_is_static);
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
 	template <typename T>
-	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
-	SignalNode *parse_signal(bool p_is_static);
-	EnumNode *parse_enum(bool p_is_static);
-	ParameterNode *parse_parameter();
-	FunctionNode *parse_function(bool p_is_static);
-	bool parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start);
-	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
+	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), GDScriptAST::AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
+	GDScriptAST::SignalNode *parse_signal(bool p_is_static);
+	GDScriptAST::EnumNode *parse_enum(bool p_is_static);
+	GDScriptAST::ParameterNode *parse_parameter();
+	GDScriptAST::FunctionNode *parse_function(bool p_is_static);
+	bool parse_function_signature(GDScriptAST::FunctionNode *p_function, GDScriptAST::SuiteNode *p_body, const String &p_type, int p_signature_start);
+	GDScriptAST::SuiteNode *parse_suite(const String &p_context, GDScriptAST::SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
-	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
-	static bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
-	bool validate_annotation_arguments(AnnotationNode *p_annotation);
+	GDScriptAST::AnnotationNode *parse_annotation(uint32_t p_valid_targets);
+	static bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, GDScriptAST::AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
+	bool validate_annotation_arguments(GDScriptAST::AnnotationNode *p_annotation);
 	void clear_unused_annotations();
-	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool tool_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool icon_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool static_unload_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool abstract_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool onready_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
-	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool _export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class, PropertyHint p_hint, Variant::Type p_type);
-	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_annotations(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool _export_annotations(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class, PropertyHint p_hint, Variant::Type p_type);
+	bool export_storage_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool export_custom_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool export_tool_button_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
-	bool export_group_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_group_annotations(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool warning_ignore_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool warning_ignore_region_annotations(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
+	bool rpc_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 	// Statements.
-	Node *parse_statement();
-	VariableNode *parse_variable(bool p_is_static);
-	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
-	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
-	void parse_property_getter(VariableNode *p_variable);
-	void parse_property_setter(VariableNode *p_variable);
-	ConstantNode *parse_constant(bool p_is_static);
-	AssertNode *parse_assert();
-	BreakNode *parse_break();
-	ContinueNode *parse_continue();
-	ForNode *parse_for();
-	IfNode *parse_if(const String &p_token = "if");
-	MatchNode *parse_match();
-	MatchBranchNode *parse_match_branch();
-	PatternNode *parse_match_pattern(PatternNode *p_root_pattern = nullptr);
-	WhileNode *parse_while();
+	GDScriptAST::Node *parse_statement();
+	GDScriptAST::VariableNode *parse_variable(bool p_is_static);
+	GDScriptAST::VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
+	GDScriptAST::VariableNode *parse_property(GDScriptAST::VariableNode *p_variable, bool p_need_indent);
+	void parse_property_getter(GDScriptAST::VariableNode *p_variable);
+	void parse_property_setter(GDScriptAST::VariableNode *p_variable);
+	GDScriptAST::ConstantNode *parse_constant(bool p_is_static);
+	GDScriptAST::AssertNode *parse_assert();
+	GDScriptAST::BreakNode *parse_break();
+	GDScriptAST::ContinueNode *parse_continue();
+	GDScriptAST::ForNode *parse_for();
+	GDScriptAST::IfNode *parse_if(const String &p_token = "if");
+	GDScriptAST::MatchNode *parse_match();
+	GDScriptAST::MatchBranchNode *parse_match_branch();
+	GDScriptAST::PatternNode *parse_match_pattern(GDScriptAST::PatternNode *p_root_pattern = nullptr);
+	GDScriptAST::WhileNode *parse_while();
 	// Expressions.
-	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
-	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false);
-	ExpressionNode *parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign);
-	LiteralNode *parse_literal();
-	ExpressionNode *parse_self(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign);
-	IdentifierNode *parse_identifier();
-	ExpressionNode *parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_await(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
-	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
-	TypeNode *parse_type(bool p_allow_void = false);
+	GDScriptAST::ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
+	GDScriptAST::ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false);
+	GDScriptAST::ExpressionNode *parse_literal(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::LiteralNode *parse_literal();
+	GDScriptAST::ExpressionNode *parse_self(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_identifier(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::IdentifierNode *parse_identifier();
+	GDScriptAST::ExpressionNode *parse_builtin_constant(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_unary_operator(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_binary_operator(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_binary_not_in_operator(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_ternary_operator(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_assignment(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_array(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_dictionary(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_call(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_get_node(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_preload(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_grouping(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_cast(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_await(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_attribute(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_subscript(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_lambda(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_type_test(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_yield(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::ExpressionNode *parse_invalid_token(GDScriptAST::ExpressionNode *p_previous_operand, bool p_can_assign);
+	GDScriptAST::TypeNode *parse_type(bool p_allow_void = false);
 	// TODO: Remove in 5.x.
 	bool parse_standalone_string();
 
@@ -456,25 +456,25 @@ private:
 	int max_script_doc_line = INT_MAX;
 	int min_member_doc_line = 1;
 	bool has_comment(int p_line, bool p_must_be_doc = false);
-	MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);
-	ClassDocData parse_class_doc_comment(int p_line, bool p_single_line = false);
+	GDScriptAST::MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);
+	GDScriptAST::ClassDocData parse_class_doc_comment(int p_line, bool p_single_line = false);
 #endif // TOOLS_ENABLED
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body = true);
 	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
-	ClassNode *get_tree() const { return head; }
+	GDScriptAST::ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	Ref<GDScriptParserRef> get_depended_parser_for(const String &p_path);
 	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
-	ClassNode *find_class(const String &p_qualified_name) const;
-	bool has_class(const GDScriptParser::ClassNode *p_class) const;
+	GDScriptAST::ClassNode *find_class(const String &p_qualified_name) const;
+	bool has_class(const GDScriptAST::ClassNode *p_class) const;
 	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
-	bool apply_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool apply_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<String> get_dependencies() const {
@@ -511,43 +511,43 @@ public:
 		void push_line(const String &p_line = String());
 		void push_text(const String &p_text);
 
-		void print_annotation(const AnnotationNode *p_annotation);
-		void print_array(const ArrayNode *p_array);
-		void print_assert(const AssertNode *p_assert);
-		void print_assignment(const AssignmentNode *p_assignment);
-		void print_await(const AwaitNode *p_await);
-		void print_binary_op(const BinaryOpNode *p_binary_op);
-		void print_call(const CallNode *p_call);
-		void print_cast(const CastNode *p_cast);
-		void print_class(const ClassNode *p_class);
-		void print_constant(const ConstantNode *p_constant);
-		void print_dictionary(const DictionaryNode *p_dictionary);
-		void print_expression(const ExpressionNode *p_expression);
-		void print_enum(const EnumNode *p_enum);
-		void print_for(const ForNode *p_for);
-		void print_function(const FunctionNode *p_function, const String &p_context = "Function");
-		void print_get_node(const GetNodeNode *p_get_node);
-		void print_if(const IfNode *p_if, bool p_is_elif = false);
-		void print_identifier(const IdentifierNode *p_identifier);
-		void print_lambda(const LambdaNode *p_lambda);
-		void print_literal(const LiteralNode *p_literal);
-		void print_match(const MatchNode *p_match);
-		void print_match_branch(const MatchBranchNode *p_match_branch);
-		void print_match_pattern(const PatternNode *p_match_pattern);
-		void print_parameter(const ParameterNode *p_parameter);
-		void print_preload(const PreloadNode *p_preload);
-		void print_return(const ReturnNode *p_return);
-		void print_self(const SelfNode *p_self);
-		void print_signal(const SignalNode *p_signal);
-		void print_statement(const Node *p_statement);
-		void print_subscript(const SubscriptNode *p_subscript);
-		void print_suite(const SuiteNode *p_suite);
-		void print_ternary_op(const TernaryOpNode *p_ternary_op);
-		void print_type(const TypeNode *p_type);
-		void print_type_test(const TypeTestNode *p_type_test);
-		void print_unary_op(const UnaryOpNode *p_unary_op);
-		void print_variable(const VariableNode *p_variable);
-		void print_while(const WhileNode *p_while);
+		void print_annotation(const GDScriptAST::AnnotationNode *p_annotation);
+		void print_array(const GDScriptAST::ArrayNode *p_array);
+		void print_assert(const GDScriptAST::AssertNode *p_assert);
+		void print_assignment(const GDScriptAST::AssignmentNode *p_assignment);
+		void print_await(const GDScriptAST::AwaitNode *p_await);
+		void print_binary_op(const GDScriptAST::BinaryOpNode *p_binary_op);
+		void print_call(const GDScriptAST::CallNode *p_call);
+		void print_cast(const GDScriptAST::CastNode *p_cast);
+		void print_class(const GDScriptAST::ClassNode *p_class);
+		void print_constant(const GDScriptAST::ConstantNode *p_constant);
+		void print_dictionary(const GDScriptAST::DictionaryNode *p_dictionary);
+		void print_expression(const GDScriptAST::ExpressionNode *p_expression);
+		void print_enum(const GDScriptAST::EnumNode *p_enum);
+		void print_for(const GDScriptAST::ForNode *p_for);
+		void print_function(const GDScriptAST::FunctionNode *p_function, const String &p_context = "Function");
+		void print_get_node(const GDScriptAST::GetNodeNode *p_get_node);
+		void print_if(const GDScriptAST::IfNode *p_if, bool p_is_elif = false);
+		void print_identifier(const GDScriptAST::IdentifierNode *p_identifier);
+		void print_lambda(const GDScriptAST::LambdaNode *p_lambda);
+		void print_literal(const GDScriptAST::LiteralNode *p_literal);
+		void print_match(const GDScriptAST::MatchNode *p_match);
+		void print_match_branch(const GDScriptAST::MatchBranchNode *p_match_branch);
+		void print_match_pattern(const GDScriptAST::PatternNode *p_match_pattern);
+		void print_parameter(const GDScriptAST::ParameterNode *p_parameter);
+		void print_preload(const GDScriptAST::PreloadNode *p_preload);
+		void print_return(const GDScriptAST::ReturnNode *p_return);
+		void print_self(const GDScriptAST::SelfNode *p_self);
+		void print_signal(const GDScriptAST::SignalNode *p_signal);
+		void print_statement(const GDScriptAST::Node *p_statement);
+		void print_subscript(const GDScriptAST::SubscriptNode *p_subscript);
+		void print_suite(const GDScriptAST::SuiteNode *p_suite);
+		void print_ternary_op(const GDScriptAST::TernaryOpNode *p_ternary_op);
+		void print_type(const GDScriptAST::TypeNode *p_type);
+		void print_type_test(const GDScriptAST::TypeTestNode *p_type_test);
+		void print_unary_op(const GDScriptAST::UnaryOpNode *p_unary_op);
+		void print_variable(const GDScriptAST::VariableNode *p_variable);
+		void print_while(const GDScriptAST::WhileNode *p_while);
 
 	public:
 		void print_tree(const GDScriptParser &p_parser);
