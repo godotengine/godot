@@ -59,6 +59,7 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="format" type="String" setter="set_format" getter="get_format" default="&quot;&quot;">
 			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"&lt;Invalid&gt;"[/code], with the error message available as a configuration warning.
 			The following format strings can be used as examples:
