@@ -51,7 +51,7 @@ struct PtrToArg<char32_t> {
 };
 
 template <typename T, typename... P, size_t... Is>
-void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -63,7 +63,7 @@ void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), con
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -75,82 +75,82 @@ void call_with_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) con
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_ptr_args_helper(T *p_instance, void (T::*p_method)(P...), const void **p_args, IndexSequence<Is...>) {
+void call_with_ptr_args_helper(T *p_instance, void (T::*p_method)(P...), const void **p_args, std::index_sequence<Is...>) {
 	(p_instance->*p_method)(PtrToArg<P>::convert(p_args[Is])...);
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_ptr_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const void **p_args, IndexSequence<Is...>) {
+void call_with_ptr_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const void **p_args, std::index_sequence<Is...>) {
 	(p_instance->*p_method)(PtrToArg<P>::convert(p_args[Is])...);
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_ptr_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const void **p_args, void *r_ret, IndexSequence<Is...>) {
+void call_with_ptr_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const void **p_args, void *r_ret, std::index_sequence<Is...>) {
 	PtrToArg<R>::encode((p_instance->*p_method)(PtrToArg<P>::convert(p_args[Is])...), r_ret);
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_ptr_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const void **p_args, void *r_ret, IndexSequence<Is...>) {
+void call_with_ptr_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const void **p_args, void *r_ret, std::index_sequence<Is...>) {
 	PtrToArg<R>::encode((p_instance->*p_method)(PtrToArg<P>::convert(p_args[Is])...), r_ret);
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_ptr_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const void **p_args, IndexSequence<Is...>) {
+void call_with_ptr_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const void **p_args, std::index_sequence<Is...>) {
 	p_method(p_instance, PtrToArg<P>::convert(p_args[Is])...);
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_ptr_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const void **p_args, void *r_ret, IndexSequence<Is...>) {
+void call_with_ptr_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const void **p_args, void *r_ret, std::index_sequence<Is...>) {
 	PtrToArg<R>::encode(p_method(p_instance, PtrToArg<P>::convert(p_args[Is])...), r_ret);
 }
 
 template <typename R, typename... P, size_t... Is>
-void call_with_ptr_args_static_method_ret_helper(R (*p_method)(P...), const void **p_args, void *r_ret, IndexSequence<Is...>) {
+void call_with_ptr_args_static_method_ret_helper(R (*p_method)(P...), const void **p_args, void *r_ret, std::index_sequence<Is...>) {
 	PtrToArg<R>::encode(p_method(PtrToArg<P>::convert(p_args[Is])...), r_ret);
 }
 
 template <typename... P, size_t... Is>
-void call_with_ptr_args_static_method_helper(void (*p_method)(P...), const void **p_args, IndexSequence<Is...>) {
+void call_with_ptr_args_static_method_helper(void (*p_method)(P...), const void **p_args, std::index_sequence<Is...>) {
 	p_method(PtrToArg<P>::convert(p_args[Is])...);
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_validated_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
+void call_with_validated_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, std::index_sequence<Is...>) {
 	(p_instance->*p_method)((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...);
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_validated_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const Variant **p_args, IndexSequence<Is...>) {
+void call_with_validated_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const Variant **p_args, std::index_sequence<Is...>) {
 	(p_instance->*p_method)((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...);
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_validated_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
+void call_with_validated_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret, std::index_sequence<Is...>) {
 	VariantInternalAccessor<std::decay_t<R>>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_validated_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
+void call_with_validated_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret, std::index_sequence<Is...>) {
 	VariantInternalAccessor<std::decay_t<R>>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_validated_variant_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
+void call_with_validated_variant_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret, std::index_sequence<Is...>) {
 	VariantInternalAccessor<std::decay_t<R>>::set(r_ret, p_method(p_instance, (VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_validated_variant_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const Variant **p_args, IndexSequence<Is...>) {
+void call_with_validated_variant_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const Variant **p_args, std::index_sequence<Is...>) {
 	p_method(p_instance, (VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...);
 }
 
 template <typename R, typename... P, size_t... Is>
-void call_with_validated_variant_args_static_method_ret_helper(R (*p_method)(P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
+void call_with_validated_variant_args_static_method_ret_helper(R (*p_method)(P...), const Variant **p_args, Variant *r_ret, std::index_sequence<Is...>) {
 	VariantInternalAccessor<std::decay_t<R>>::set(r_ret, p_method((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...));
 }
 
 template <typename... P, size_t... Is>
-void call_with_validated_variant_args_static_method_helper(void (*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
+void call_with_validated_variant_args_static_method_helper(void (*p_method)(P...), const Variant **p_args, std::index_sequence<Is...>) {
 	p_method((VariantInternalAccessor<std::decay_t<P>>::get(p_args[Is]))...);
 }
 
@@ -169,7 +169,7 @@ void call_with_variant_args(T *p_instance, void (T::*p_method)(P...), const Vari
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_args_helper<T, P...>(p_instance, p_method, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_helper<T, P...>(p_instance, p_method, p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
@@ -202,7 +202,7 @@ void call_with_variant_args_dv(T *p_instance, void (T::*p_method)(P...), const V
 		}
 	}
 
-	call_with_variant_args_helper(p_instance, p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_helper(p_instance, p_method, args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
@@ -220,7 +220,7 @@ void call_with_variant_argsc(T *p_instance, void (T::*p_method)(P...) const, con
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_argsc_helper<T, P...>(p_instance, p_method, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_argsc_helper<T, P...>(p_instance, p_method, p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
@@ -253,7 +253,7 @@ void call_with_variant_argsc_dv(T *p_instance, void (T::*p_method)(P...) const, 
 		}
 	}
 
-	call_with_variant_argsc_helper(p_instance, p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_argsc_helper(p_instance, p_method, args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
@@ -286,7 +286,7 @@ void call_with_variant_args_ret_dv(T *p_instance, R (T::*p_method)(P...), const 
 		}
 	}
 
-	call_with_variant_args_ret_helper(p_instance, p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_ret_helper(p_instance, p_method, args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
@@ -319,116 +319,116 @@ void call_with_variant_args_retc_dv(T *p_instance, R (T::*p_method)(P...) const,
 		}
 	}
 
-	call_with_variant_args_retc_helper(p_instance, p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_retc_helper(p_instance, p_method, args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_ptr_args(T *p_instance, void (T::*p_method)(P...), const void **p_args) {
-	call_with_ptr_args_helper<T, P...>(p_instance, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_helper<T, P...>(p_instance, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_ptr_argsc(T *p_instance, void (T::*p_method)(P...) const, const void **p_args) {
-	call_with_ptr_argsc_helper<T, P...>(p_instance, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_argsc_helper<T, P...>(p_instance, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_ptr_args_ret(T *p_instance, R (T::*p_method)(P...), const void **p_args, void *r_ret) {
-	call_with_ptr_args_ret_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_ret_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_ptr_args_retc(T *p_instance, R (T::*p_method)(P...) const, const void **p_args, void *r_ret) {
-	call_with_ptr_args_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_ptr_args_static(T *p_instance, void (*p_method)(T *, P...), const void **p_args) {
-	call_with_ptr_args_static_helper<T, P...>(p_instance, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_static_helper<T, P...>(p_instance, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_ptr_args_static_retc(T *p_instance, R (*p_method)(T *, P...), const void **p_args, void *r_ret) {
-	call_with_ptr_args_static_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_static_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
 void call_with_ptr_args_static_method_ret(R (*p_method)(P...), const void **p_args, void *r_ret) {
-	call_with_ptr_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
 void call_with_ptr_args_static_method(void (*p_method)(P...), const void **p_args) {
-	call_with_ptr_args_static_method_helper<P...>(p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_ptr_args_static_method_helper<P...>(p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 // Validated
 
 template <typename T, typename... P>
 void call_with_validated_variant_args(Variant *p_base, void (T::*p_method)(P...), const Variant **p_args) {
-	call_with_validated_variant_args_helper<T, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_helper<T, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_ret(Variant *p_base, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_ret_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_ret_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_retc(Variant *p_base, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_validated_variant_args_static(Variant *p_base, void (*p_method)(T *, P...), const Variant **p_args) {
-	call_with_validated_variant_args_static_helper<T, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_helper<T, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_static_retc(Variant *p_base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
 void call_with_validated_variant_args_static_method(void (*p_method)(P...), const Variant **p_args) {
-	call_with_validated_variant_args_static_method_helper<P...>(p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_method_helper<P...>(p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
 void call_with_validated_variant_args_static_method_ret(R (*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 // Validated Object
 
 template <typename T, typename... P>
 void call_with_validated_object_instance_args(T *p_base, void (T::*p_method)(P...), const Variant **p_args) {
-	call_with_validated_variant_args_helper<T, P...>(p_base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_helper<T, P...>(p_base, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_validated_object_instance_argsc(T *p_base, void (T::*p_method)(P...) const, const Variant **p_args) {
-	call_with_validated_variant_argsc_helper<T, P...>(p_base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_argsc_helper<T, P...>(p_base, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_object_instance_args_ret(T *p_base, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_ret_helper<T, R, P...>(p_base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_ret_helper<T, R, P...>(p_base, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_object_instance_args_retc(T *p_base, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_retc_helper<T, R, P...>(p_base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_retc_helper<T, R, P...>(p_base, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_validated_object_instance_args_static(T *p_base, void (*p_method)(T *, P...), const Variant **p_args) {
-	call_with_validated_variant_args_static_helper<T, P...>(p_base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_helper<T, P...>(p_base, p_method, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_object_instance_args_static_retc(T *p_base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_retc_helper<T, R, P...>(p_base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_retc_helper<T, R, P...>(p_base, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 // GCC raises "parameter 'p_args' set but not used" when P = {},
@@ -500,7 +500,7 @@ GodotTypeInfo::Metadata call_get_argument_metadata(int p_arg) {
 //////////////////////
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -511,7 +511,7 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 }
 
 template <typename R, typename... P, size_t... Is>
-void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -522,7 +522,7 @@ void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_ar
 }
 
 template <typename... P, size_t... Is>
-void call_with_variant_args_static(void (*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_static(void (*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -547,11 +547,11 @@ void call_with_variant_args_ret(T *p_instance, R (T::*p_method)(P...), const Var
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_args_ret_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_ret_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -577,7 +577,7 @@ void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_ar
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_args_static_ret<R, P...>(p_method, p_args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_static_ret<R, P...>(p_method, p_args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
@@ -595,7 +595,7 @@ void call_with_variant_args_static(void (*p_method)(P...), const Variant **p_arg
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_args_static<P...>(p_method, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_static<P...>(p_method, p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
@@ -613,11 +613,11 @@ void call_with_variant_args_retc(T *p_instance, R (T::*p_method)(P...) const, co
 		return;
 	}
 #endif // DEBUG_ENABLED
-	call_with_variant_args_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_retc_helper<T, R, P...>(p_instance, p_method, p_args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
-void call_with_variant_args_retc_static_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_retc_static_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -659,11 +659,11 @@ void call_with_variant_args_retc_static_helper_dv(T *p_instance, R (*p_method)(T
 		}
 	}
 
-	call_with_variant_args_retc_static_helper(p_instance, p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_retc_static_helper(p_instance, p_method, args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P, size_t... Is>
-void call_with_variant_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+void call_with_variant_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -705,7 +705,7 @@ void call_with_variant_args_static_helper_dv(T *p_instance, void (*p_method)(T *
 		}
 	}
 
-	call_with_variant_args_static_helper(p_instance, p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_static_helper(p_instance, p_method, args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
@@ -738,7 +738,7 @@ void call_with_variant_args_static_ret_dv(R (*p_method)(P...), const Variant **p
 		}
 	}
 
-	call_with_variant_args_static_ret(p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_static_ret(p_method, args, r_ret, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
@@ -771,7 +771,7 @@ void call_with_variant_args_static_dv(void (*p_method)(P...), const Variant **p_
 		}
 	}
 
-	call_with_variant_args_static(p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_with_variant_args_static(p_method, args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 GODOT_GCC_WARNING_POP

@@ -130,24 +130,24 @@ static _FORCE_INLINE_ void vc_validated_call(void (T::*p_method)(P...) const, Va
 template <typename From, typename R, typename T, typename... P>
 static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
 	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_ret_helper<T, R, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_ret_helper<T, R, P...>(&converted, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename From, typename R, typename T, typename... P>
 static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
 	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_retc_helper<T, R, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_retc_helper<T, R, P...>(&converted, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 template <typename From, typename T, typename... P>
 static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
 	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_helper<T, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_helper<T, P...>(&converted, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename From, typename T, typename... P>
 static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
 	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_argsc_helper<T, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_argsc_helper<T, P...>(&converted, p_method, p_args, r_ret, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename T, typename... P>

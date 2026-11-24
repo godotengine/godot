@@ -1168,7 +1168,7 @@ String VariantUtilityFunctions::join_string(const Variant **p_args, int p_arg_co
 #endif // DEBUG_ENABLED
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALLR;
 	(void)p_args; // avoid gcc warning
@@ -1176,30 +1176,30 @@ static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *r_ret, cons
 }
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void validated_call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void validated_call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, std::index_sequence<Is...>) {
 	*r_ret = p_func(VariantCaster<P>::cast(*p_args[Is])...);
 	(void)p_args;
 }
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void ptr_call_helperpr(R (*p_func)(P...), void *r_ret, const void **p_args, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void ptr_call_helperpr(R (*p_func)(P...), void *r_ret, const void **p_args, std::index_sequence<Is...>) {
 	PtrToArg<R>::encode(p_func(PtrToArg<P>::convert(p_args[Is])...), r_ret);
 	(void)p_args;
 }
 
 template <typename R, typename... P>
 static _FORCE_INLINE_ void call_helperr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, Callable::CallError &r_error) {
-	call_helperpr(p_func, r_ret, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_helperpr(p_func, r_ret, p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
 static _FORCE_INLINE_ void validated_call_helperr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args) {
-	validated_call_helperpr(p_func, r_ret, p_args, BuildIndexSequence<sizeof...(P)>{});
+	validated_call_helperpr(p_func, r_ret, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
 static _FORCE_INLINE_ void ptr_call_helperr(R (*p_func)(P...), void *r_ret, const void **p_args) {
-	ptr_call_helperpr(p_func, r_ret, p_args, BuildIndexSequence<sizeof...(P)>{});
+	ptr_call_helperpr(p_func, r_ret, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
@@ -1220,7 +1220,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helperr(R (*p_func)(P...)) {
 // WITHOUT RET
 
 template <typename... P, size_t... Is>
-static _FORCE_INLINE_ void call_helperp(void (*p_func)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void call_helperp(void (*p_func)(P...), const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALL;
 	(void)p_args;
@@ -1228,30 +1228,30 @@ static _FORCE_INLINE_ void call_helperp(void (*p_func)(P...), const Variant **p_
 }
 
 template <typename... P, size_t... Is>
-static _FORCE_INLINE_ void validated_call_helperp(void (*p_func)(P...), const Variant **p_args, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void validated_call_helperp(void (*p_func)(P...), const Variant **p_args, std::index_sequence<Is...>) {
 	p_func(VariantCaster<P>::cast(*p_args[Is])...);
 	(void)p_args;
 }
 
 template <typename... P, size_t... Is>
-static _FORCE_INLINE_ void ptr_call_helperp(void (*p_func)(P...), const void **p_args, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void ptr_call_helperp(void (*p_func)(P...), const void **p_args, std::index_sequence<Is...>) {
 	p_func(PtrToArg<P>::convert(p_args[Is])...);
 	(void)p_args;
 }
 
 template <typename... P>
 static _FORCE_INLINE_ void call_helper(void (*p_func)(P...), const Variant **p_args, Callable::CallError &r_error) {
-	call_helperp(p_func, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+	call_helperp(p_func, p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
 static _FORCE_INLINE_ void validated_call_helper(void (*p_func)(P...), const Variant **p_args) {
-	validated_call_helperp(p_func, p_args, BuildIndexSequence<sizeof...(P)>{});
+	validated_call_helperp(p_func, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>
 static _FORCE_INLINE_ void ptr_call_helper(void (*p_func)(P...), const void **p_args) {
-	ptr_call_helperp(p_func, p_args, BuildIndexSequence<sizeof...(P)>{});
+	ptr_call_helperp(p_func, p_args, std::make_index_sequence<sizeof...(P)>{});
 }
 
 template <typename... P>

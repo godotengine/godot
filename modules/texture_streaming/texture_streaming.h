@@ -87,12 +87,12 @@ private:
 			}
 
 			void call() override {
-				call_impl(BuildIndexSequence<sizeof...(Args)>{});
+				call_impl(std::make_index_sequence<sizeof...(Args)>{});
 			}
 
 		private:
 			template <size_t... I>
-			_FORCE_INLINE_ void call_impl(IndexSequence<I...>) {
+			_FORCE_INLINE_ void call_impl(std::index_sequence<I...>) {
 				(instance->*method)(std::move(get<I>())...);
 			}
 

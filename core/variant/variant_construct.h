@@ -96,7 +96,7 @@ MAKE_PTRCONSTRUCT(Variant);
 template <typename T, typename... P>
 class VariantConstructor {
 	template <size_t... Is>
-	static _FORCE_INLINE_ void construct_helper(T &r_base, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+	static _FORCE_INLINE_ void construct_helper(T &r_base, const Variant **p_args, Callable::CallError &r_error, std::index_sequence<Is...>) {
 		r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
@@ -107,12 +107,12 @@ class VariantConstructor {
 	}
 
 	template <size_t... Is>
-	static _FORCE_INLINE_ void validated_construct_helper(T &r_base, const Variant **p_args, IndexSequence<Is...>) {
+	static _FORCE_INLINE_ void validated_construct_helper(T &r_base, const Variant **p_args, std::index_sequence<Is...>) {
 		r_base = T((VariantInternalAccessor<P>::get(p_args[Is]))...);
 	}
 
 	template <size_t... Is>
-	static _FORCE_INLINE_ void ptr_construct_helper(void *p_base, const void **p_args, IndexSequence<Is...>) {
+	static _FORCE_INLINE_ void ptr_construct_helper(void *p_base, const void **p_args, std::index_sequence<Is...>) {
 		PtrConstruct<T>::construct(T(PtrToArg<P>::convert(p_args[Is])...), p_base);
 	}
 
@@ -120,15 +120,15 @@ public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		r_error.error = Callable::CallError::CALL_OK;
 		VariantTypeChanger<T>::change(&r_ret);
-		construct_helper(VariantInternalAccessor<T>::get(&r_ret), p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+		construct_helper(VariantInternalAccessor<T>::get(&r_ret), p_args, r_error, std::make_index_sequence<sizeof...(P)>{});
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<T>::change(r_ret);
-		validated_construct_helper(VariantInternalAccessor<T>::get(r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
+		validated_construct_helper(VariantInternalAccessor<T>::get(r_ret), p_args, std::make_index_sequence<sizeof...(P)>{});
 	}
 	static void ptr_construct(void *p_base, const void **p_args) {
-		ptr_construct_helper(p_base, p_args, BuildIndexSequence<sizeof...(P)>{});
+		ptr_construct_helper(p_base, p_args, std::make_index_sequence<sizeof...(P)>{});
 	}
 
 	static int get_argument_count() {

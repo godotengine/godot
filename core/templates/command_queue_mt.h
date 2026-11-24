@@ -60,12 +60,12 @@ class CommandQueueMT {
 				CommandBase(NeedsSync), instance(p_instance), method(p_method), args(std::forward<FwdArgs>(p_args)...) {}
 
 		void call() override {
-			call_impl(BuildIndexSequence<sizeof...(Args)>{});
+			call_impl(std::make_index_sequence<sizeof...(Args)>{});
 		}
 
 	private:
 		template <size_t... I>
-		_FORCE_INLINE_ void call_impl(IndexSequence<I...>) {
+		_FORCE_INLINE_ void call_impl(std::index_sequence<I...>) {
 			// Move out of the Tuple, this will be destroyed as soon as the call is complete.
 			(instance->*method)(std::move(get<I>())...);
 		}
@@ -87,12 +87,12 @@ class CommandQueueMT {
 				CommandBase(true), instance(p_instance), method(p_method), ret(p_ret), args{ p_args... } {}
 
 		void call() override {
-			*ret = call_impl(BuildIndexSequence<sizeof...(Args)>{});
+			*ret = call_impl(std::make_index_sequence<sizeof...(Args)>{});
 		}
 
 	private:
 		template <size_t... I>
-		_FORCE_INLINE_ R call_impl(IndexSequence<I...>) {
+		_FORCE_INLINE_ R call_impl(std::index_sequence<I...>) {
 			// Move out of the Tuple, this will be destroyed as soon as the call is complete.
 			return (instance->*method)(std::move(get<I>())...);
 		}

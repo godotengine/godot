@@ -245,17 +245,6 @@ struct _GlobalLock {
 // type for an argument that is actually an offset.
 #define CAST_INT_TO_UCHAR_PTR(ptr) ((uint8_t *)(uintptr_t)(ptr))
 
-// Home-made index sequence trick, so it can be used everywhere without the costly include of std::tuple.
-// https://stackoverflow.com/questions/15014096/c-index-of-type-during-variadic-template-expansion
-template <size_t... Is>
-struct IndexSequence {};
-
-template <size_t N, size_t... Is>
-struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
-
-template <size_t... Is>
-struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
-
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
 
