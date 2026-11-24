@@ -4,7 +4,7 @@
 		A control used for visual representation of a percentage.
 	</brief_description>
 	<description>
-		A control used for visual representation of a percentage. Can show a progress label. Can also be used to show indeterminate progress. For more fill modes, use [TextureProgressBar] instead.
+		A control used for visual representation of a percentage. Can show a progress label, defaulting to display fill percentage. Can also be used to show indeterminate progress. For more fill modes, use [TextureProgressBar] instead.
 	</description>
 	<tutorials>
 	</tutorials>
