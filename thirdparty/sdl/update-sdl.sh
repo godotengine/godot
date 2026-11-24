@@ -46,8 +46,11 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 
 # Platform specific
 
+mkdir $target/android-files/org/godotengine/godot/input
+cp -rv ../android-project/app/src/main/java/org/libsdl/app/{HID*.java,SDLControllerManager.java,SDLSensorManager.java} $target/android-files/org/godotengine/godot/input
+
 mkdir $target/core
-cp -rv core/{linux,unix,windows} $target/core
+cp -rv core/{android,linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
 rm -f $target/core/linux/SDL_{fcitx,ibus,ime,progressbar,system_theme}.*
 rm -f $target/core/unix/SDL_{fribidi,gtk,libthai}.*
@@ -56,10 +59,10 @@ mkdir $target/filesystem
 cp -rv filesystem/{*.{c,h},windows} $target/filesystem
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,dummy,hidapi,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},android,darwin,dummy,hidapi,linux,windows} $target/haptic
 
 mkdir $target/joystick
-cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
+cp -rv joystick/{*.{c,h},android,apple,darwin,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
 cp -rv loadso/{dlopen,dummy} $target/loadso
@@ -90,7 +93,7 @@ mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
 # Upstream file lacks a final newline.
 [ -n "$(tail -c1 $target/hidapi/VERSION)" ] && echo >> $target/hidapi/VERSION
-for dir in hidapi linux mac windows; do
+for dir in android hidapi linux mac windows; do
   mkdir $target/hidapi/$dir
   cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir 2>/dev/null || :
 done

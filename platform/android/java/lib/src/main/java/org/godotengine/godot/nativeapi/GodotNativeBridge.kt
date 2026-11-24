@@ -299,14 +299,6 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun setWindowColor(color: String) = godot.setWindowColor(color)
 
-	/**
-	 * Used by the native code (java_godot_wrapper.h) to access the input fallback mapping.
-	 * @return The input fallback mapping for the current XR mode.
-	 */
-	private fun getInputFallbackMapping(): String? {
-		return godot.xrMode.inputFallbackMapping
-	}
-
 	private fun initInputDevices() {
 		godot.godotInputHandler.initInputDevices()
 	}

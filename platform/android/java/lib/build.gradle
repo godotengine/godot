@@ -72,6 +72,9 @@ android {
     }
 
     sourceSets {
+        // SDL Java files
+        main.java.srcDirs += ['../../../../thirdparty/sdl/android-files']
+
         debug.jniLibs.srcDirs = ['libs/debug']
         release.jniLibs.srcDirs = ['libs/release']
 

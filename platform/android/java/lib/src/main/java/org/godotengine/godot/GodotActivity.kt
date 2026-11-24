@@ -177,6 +177,8 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 				gameView.getGlobalVisibleRect(gameViewSourceRectHint)
 			}
 		}
+
+		getGodot()?.onCreate()
 	}
 
 	override fun onNewGodotInstanceRequested(args: Array<String>): Int {

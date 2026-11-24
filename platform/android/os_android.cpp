@@ -48,6 +48,9 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -142,8 +145,14 @@ void OS_Android::initialize() {
 }
 
 void OS_Android::initialize_joypads() {
-	Input::get_singleton()->set_fallback_mapping(godot_java->get_input_fallback_mapping());
-
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 	// This queries/updates the currently connected devices/joypads.
 	godot_java->init_input_devices();
 }
@@ -160,6 +169,11 @@ void OS_Android::delete_main_loop() {
 }
 
 void OS_Android::finalize() {
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
 }
 
 OS_Android *OS_Android::get_singleton() {
@@ -389,6 +403,11 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	ERR_FAIL_NULL_V(dsa, true);
 	dsa->reset_swap_buffers_flag();
 	dsa->process_events();
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 
 	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();

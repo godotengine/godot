@@ -200,6 +200,24 @@ if env["builtin_sdl"]:
             "timer/windows/SDL_systimer.c",
         ]
 
+    elif env["platform"] == "android":
+        thirdparty_sources += [
+            "core/android/SDL_android.c",
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/android/SDL_syshaptic.c",
+            "hidapi/android/hid.cpp",
+            "joystick/android/SDL_sysjoystick.c",
+            "loadso/dlopen/SDL_sysloadso.c",
+            "thread/pthread/SDL_syscond.c",
+            "thread/pthread/SDL_sysmutex.c",
+            "thread/pthread/SDL_sysrwlock.c",
+            "thread/pthread/SDL_syssem.c",
+            "thread/pthread/SDL_systhread.c",
+            "thread/pthread/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
+        ]
+
     elif env["platform"] in ["ios", "visionos"]:
         thirdparty_sources += [
             "core/unix/SDL_appid.c",
