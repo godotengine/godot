@@ -1567,7 +1567,11 @@ void fragment_shader(in SceneData scene_data) {
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
 
-		for (uint i = item_from; i < item_to; i++) {
+		// Walk the mask words in reverse so decals are blended from the highest sorted index (farthest)
+		// to the lowest (nearest), matching the MSB-first bit order below. Walking the words forward put a
+		// farther decal from a later word on top of nearer ones once more than 32 decals were visible.
+		for (uint j = item_to; j > item_from; j--) {
+			uint i = j - 1;
 			uint mask = cluster_buffer.data[cluster_decal_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
 
