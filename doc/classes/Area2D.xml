@@ -4,7 +4,7 @@
 		A region of 2D space that detects other [CollisionObject2D]s entering or exiting it.
 	</brief_description>
 	<description>
-		[Area2D] is a region of 2D space defined by one or multiple [CollisionShape2D] or [CollisionPolygon2D] child nodes. It detects when other [CollisionObject2D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
+		[Area2D] is a region of 2D space defined by one or multiple [CollisionShape2D] or [CollisionPolygon2D] child nodes. It detects when other [CollisionObject2D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which ones are overlapping it).
 		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
 		[b]Note:[/b] Areas and bodies created with [PhysicsServer2D] might not interact as expected with [Area2D]s, and might not emit signals or track objects correctly.
 	</description>
@@ -56,7 +56,7 @@
 			<param index="0" name="body" type="Node" />
 			<description>
 				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area2D], [code]false[/code] otherwise.
-				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				[b]Note:[/b] The result of this test is not immediate after moving objects.For performance, the list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 				The [param body] argument can either be a [PhysicsBody2D] or a [TileMap] instance. While TileMaps are not physics bodies themselves, they register their tiles with collision shapes as a virtual physics body.
 			</description>
 		</method>
