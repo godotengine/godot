@@ -60,6 +60,7 @@
 #include "main/main.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_bar.h"
@@ -873,8 +874,35 @@ void ProjectManager::_erase_project() {
 	}
 
 	erase_ask_label->set_text(confirm_message);
-	//delete_project_contents->set_pressed(false);
+
+	const String delete_confirm_message = TTRN("This will delete the following folder and its children:", "This will delete the following folders and their children:", selected_list.size());
+
+	delete_project_contents_list_lb->set_text(delete_confirm_message);
+	delete_project_contents_list->set_accessibility_name(delete_confirm_message);
+
+	delete_project_contents_list->clear();
+	for (const String &project_path : selected_list) {
+		delete_project_contents_list->add_item(project_path, Ref<Texture2D>(), false);
+	}
+
+	const String delete_contents_label_message = TTRN("Delete project from system (Cannot be undone)", "Delete projects from system (Cannot be undone)", selected_list.size());
+
+	delete_project_contents->set_text(delete_contents_label_message);
+	delete_project_contents->set_pressed(false);
+
 	erase_ask->popup_centered();
+}
+
+void ProjectManager::_show_project_contents_list(const bool p_visible) {
+	if (delete_project_contents_list_vb->is_visible() == p_visible) {
+		return;
+	}
+
+	delete_project_contents_list_vb->set_visible(p_visible);
+
+	if (p_visible == false) {
+		erase_ask->reset_size();
+	}
 }
 
 void ProjectManager::_erase_missing_projects() {
@@ -883,7 +911,7 @@ void ProjectManager::_erase_missing_projects() {
 }
 
 void ProjectManager::_erase_project_confirm() {
-	project_list->erase_selected_projects(false);
+	project_list->erase_selected_projects(delete_project_contents->is_pressed());
 	_update_project_buttons();
 	_update_list_placeholder();
 }
@@ -1925,11 +1953,30 @@ ProjectManager::ProjectManager() {
 		erase_ask_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		erase_ask_vb->add_child(erase_ask_label);
 
-		// Comment out for now until we have a better warning system to
-		// ensure users delete their project only.
-		//delete_project_contents = memnew(CheckBox);
-		//delete_project_contents->set_text(TTRC("Also delete project contents (no undo!)"));
-		//erase_ask_vb->add_child(delete_project_contents);
+		delete_project_contents_list_vb = memnew(VBoxContainer);
+		delete_project_contents_list_vb->hide();
+		erase_ask_vb->add_child(delete_project_contents_list_vb);
+
+		delete_project_contents_list_lb = memnew(Label);
+		delete_project_contents_list_lb->set_theme_type_variation("HeaderSmall");
+		delete_project_contents_list_lb->set_focus_mode(FOCUS_ACCESSIBILITY);
+		delete_project_contents_list_vb->add_child(delete_project_contents_list_lb);
+
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
+		mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		delete_project_contents_list_vb->add_child(mc);
+
+		delete_project_contents_list = memnew(ItemList);
+		delete_project_contents_list->set_auto_width(true);
+		delete_project_contents_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+		delete_project_contents_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		delete_project_contents_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+		mc->add_child(delete_project_contents_list);
+
+		delete_project_contents = memnew(CheckBox);
+		delete_project_contents->connect(SceneStringName(toggled), callable_mp(this, &ProjectManager::_show_project_contents_list));
+		erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);

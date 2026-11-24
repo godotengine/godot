@@ -39,6 +39,7 @@ class EditorAssetLibrary;
 class EditorFileDialog;
 class EditorTitleBar;
 class HFlowContainer;
+class ItemList;
 class LineEdit;
 class MarginContainer;
 class OptionButton;
@@ -176,9 +177,10 @@ class ProjectManager : public Control {
 
 	ConfirmationDialog *erase_ask = nullptr;
 	Label *erase_ask_label = nullptr;
-	// Comment out for now until we have a better warning system to
-	// ensure users delete their project only.
-	//CheckBox *delete_project_contents = nullptr;
+	CheckBox *delete_project_contents = nullptr;
+	VBoxContainer *delete_project_contents_list_vb = nullptr;
+	Label *delete_project_contents_list_lb = nullptr;
+	ItemList *delete_project_contents_list = nullptr;
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
@@ -202,6 +204,7 @@ class ProjectManager : public Control {
 	void _duplicate_project_with_action(PostDuplicateAction p_action);
 	void _show_project_in_file_manager();
 	void _erase_project();
+	void _show_project_contents_list(const bool p_visible);
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
