@@ -173,6 +173,7 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 		graph->add_child(node);
 
 		node->set_draggable(!read_only);
+		node->set_allow_reselect(true);
 
 		Ref<AnimationNode> agnode = blend_tree->get_node(E);
 		ERR_CONTINUE(agnode.is_null());
