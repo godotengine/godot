@@ -7535,14 +7535,17 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 
 DisplayServerX11::~DisplayServerX11() {
 	// Send owned clipboard data to clipboard manager before exit.
-	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
-	if (x11_main_window) {
+	const WindowData *main_window = windows.getptr(DisplayServerEnums::MAIN_WINDOW_ID);
+	if (main_window && main_window->x11_window) {
+		const Window x11_main_window = main_window->x11_window;
 		_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
 		_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 	}
 
-	events_thread_done.set();
-	events_thread.wait_to_finish();
+	if (events_thread.is_started()) {
+		events_thread_done.set();
+		events_thread.wait_to_finish();
+	}
 
 	if (native_menu) {
 		memdelete(native_menu);
