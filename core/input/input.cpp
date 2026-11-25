@@ -965,6 +965,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_tilt(mm->get_tilt());
 			drag_event->set_pen_inverted(mm->get_pen_inverted());
 			drag_event->set_pressure(mm->get_pressure());
+			drag_event->set_window_id(mm->get_window_id());
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
