@@ -594,6 +594,7 @@ public:
 		// Clipboard.
 		struct wl_data_source *wl_data_source_selection = nullptr;
 		Vector<uint8_t> selection_data;
+		bool selection_data_is_image = false; // PNG-encoded image if true, UTF-8 text otherwise.
 
 		struct wl_data_offer *wl_data_offer_selection = nullptr;
 
@@ -743,7 +744,9 @@ private:
 	struct libdecor *libdecor_context = nullptr;
 #endif // LIBDECOR_ENABLED
 
-	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd);
+	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd, bool p_is_image = false);
+
+	void _selection_set_data(const Vector<uint8_t> &p_data, bool p_is_image);
 
 	// Main polling method.
 	static void _poll_events_thread(void *p_data);
@@ -1366,6 +1369,7 @@ public:
 	Vector<uint8_t> selection_get_mime(const String &p_mime) const;
 
 	void selection_set_text(const String &p_text);
+	void selection_set_image(const Vector<uint8_t> &p_png_data);
 
 	// Optional primary support - requires wp_primary_selection_unstable_v1
 	bool primary_has_mime(const String &p_mime) const;
