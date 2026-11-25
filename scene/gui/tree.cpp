@@ -4745,6 +4745,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 			popup_editor->set_content_scale_factor(popup_scale);
 		}
 		popup_edit_committed = false; // Start edit popup processing.
+		popup_editor->set_flag(Window::FLAG_NO_FOCUS, !popup_editor->is_embedded());
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4770,6 +4771,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 			popup_editor->set_content_scale_factor(popup_scale);
 		}
 		popup_edit_committed = false; // Start edit popup processing.
+		popup_editor->set_flag(Window::FLAG_NO_FOCUS, !popup_editor->is_embedded());
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
