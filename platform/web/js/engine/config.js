@@ -117,6 +117,15 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		experimentalVK: false,
 		/**
+		 * When enabled, the WebGL context will be created with the ``xrCompatible`` attribute.
+		 *
+		 * @export
+		 * @memberof EngineConfig
+		 * @type {boolean}
+		 * @default
+		 */
+		xrCompatibleByDefault: false,
+		/**
 		 * The progressive web app service worker to install.
 		 *
 		 * @export
@@ -390,6 +399,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'virtualKeyboard': this.experimentalVK,
 			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
+			'xrCompatibleByDefault': this.xrCompatibleByDefault,
 			'debugPort': this.debugPort,
 			'onExecute': this.onExecute,
 			'onTerminatePID': this.onTerminatePID,

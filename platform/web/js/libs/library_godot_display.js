@@ -354,6 +354,16 @@ const GodotDisplay = {
 			const dpi = Math.round(window.devicePixelRatio * 96);
 			return dpi >= 96 ? dpi : 96;
 		},
+		isXRCompatibleRequested: function () {
+			const override = (new URLSearchParams(window.location.search)).get('xr_compatible');
+			if (override === '1') {
+				return true;
+			}
+			if (override === '0') {
+				return false;
+			}
+			return GodotConfig.xr_compatible_by_default;
+		},
 	},
 
 	godot_js_display_is_swap_ok_cancel__proxy: 'sync',
@@ -740,6 +750,12 @@ const GodotDisplay = {
 	godot_js_display_setup_canvas__sig: 'viiii',
 	godot_js_display_setup_canvas: function (p_width, p_height, p_fullscreen, p_hidpi) {
 		const canvas = GodotConfig.canvas;
+		if (GodotDisplay.isXRCompatibleRequested()) {
+			const canvas_get_context = canvas.getContext;
+			canvas.getContext = function (p_type, p_attributes) {
+				return canvas_get_context.call(canvas, p_type, { ...p_attributes, 'xrCompatible': true });
+			};
+		}
 		GodotEventListeners.add(canvas, 'contextmenu', function (ev) {
 			ev.preventDefault();
 		}, false);
