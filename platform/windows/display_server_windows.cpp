@@ -6758,6 +6758,48 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			_legacy_update_hdr_output_for_tracked_windows(true);
 		} break;
 
+		case WM_WINDOWPOSCHANGING: {
+			WindowData &window = windows[window_id];
+			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
+			bool need_off = (window.multiwindow_fs || (!window.fullscreen && window.borderless && window.maximized));
+			if (need_off && !(window_pos_params->flags & SWP_NOSIZE)) {
+				Rect2i new_window_rect = Rect2i(window_pos_params->x, window_pos_params->y, window_pos_params->cx, window_pos_params->cy);
+				new_window_rect.position -= _get_screens_origin();
+
+				int screen_id = window_get_current_screen(window_id);
+				int rq_screen = get_screen_from_rect(new_window_rect);
+
+				Size2i screen_size = screen_get_size(screen_id);
+				Point2i screen_position = screen_get_position(screen_id);
+				Vector2i off = _get_screen_expand_offset(window_get_current_screen(window_id));
+				Rect2i window_rect;
+				{
+					RECT wrect;
+					GetWindowRect(hWnd, &wrect);
+					window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off.x, wrect.bottom - wrect.top - off.y);
+					window_rect.position -= _get_screens_origin();
+				}
+				if (window_rect.position == screen_position && window_rect.size == screen_size && screen_id != rq_screen) {
+					// External source try to move fullscreen window to another screen, adjust it to match screen size, update pre-fullscreen rect and passthrough rect if necessary.
+					Size2i new_screen_size = screen_get_size(rq_screen);
+					Point2i new_screen_position = screen_get_position(rq_screen);
+					if (window.pre_fs_valid) {
+						window.pre_fs_rect.left = window.pre_fs_rect.left - screen_position.x + new_screen_position.x;
+						window.pre_fs_rect.right = window.pre_fs_rect.right - screen_position.x + new_screen_position.x;
+						window.pre_fs_rect.top = window.pre_fs_rect.top - screen_position.y + new_screen_position.y;
+						window.pre_fs_rect.bottom = window.pre_fs_rect.bottom - screen_position.y + new_screen_position.y;
+					}
+					new_screen_position += _get_screens_origin();
+					window_pos_params->x = new_screen_position.x;
+					window_pos_params->y = new_screen_position.y;
+					window_pos_params->cx = new_screen_size.x + off.x;
+					window_pos_params->cy = new_screen_size.y + off.y;
+					window.should_update_mpass = true;
+					return 0;
+				}
+			}
+		} break;
+
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
@@ -6826,6 +6868,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					window.height_with_decorations = window_rect.size.height;
 
 					rect_changed = true;
+				}
+				if (window.should_update_mpass) {
+					window.should_update_mpass = false;
+					_update_window_mouse_passthrough(window_id);
 				}
 #if defined(RD_ENABLED)
 				if (window.create_completed && rendering_context && window.rendering_context_window_created) {

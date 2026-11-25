@@ -306,6 +306,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool fullscreen = false;
 		bool multiwindow_fs = false;
 		bool borderless = false;
+		bool should_update_mpass = false;
 		bool resizable = true;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
