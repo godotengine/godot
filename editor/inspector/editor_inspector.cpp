@@ -3066,6 +3066,33 @@ void EditorInspectorArray::_add_button_pressed() {
 	_move_element(-1, -1);
 }
 
+void EditorInspectorArray::_open_resize_dialog() {
+	PropertyInfo count_property_info;
+	if (mode == MODE_USE_COUNT_PROPERTY && object) {
+		List<PropertyInfo> plist;
+		object->get_property_list(&plist);
+		for (const PropertyInfo &pi : plist) {
+			if (pi.name == count_property) {
+				count_property_info = pi;
+				break;
+			}
+		}
+	}
+
+	bool has_explicit_max = _update_size_range_from_property(count_property_info);
+
+	new_size_spin_box->set_value_no_signal(count);
+	new_size_spin_box->get_line_edit()->set_text(itos(int(new_size_spin_box->get_value())));
+	range_label->set_visible(has_explicit_max);
+	if (has_explicit_max) {
+		range_label->set_text(vformat("%d - %d", int(new_size_spin_box->get_min()), int(new_size_spin_box->get_max())));
+	}
+	resize_dialog->get_ok_button()->set_disabled(false);
+	resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
+	new_size_spin_box->get_line_edit()->grab_focus();
+	new_size_spin_box->get_line_edit()->select_all();
+}
+
 void EditorInspectorArray::_paginator_page_changed(int p_page) {
 	emit_signal("page_change_request", p_page);
 }
@@ -3095,11 +3122,7 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 			_clear_array();
 			break;
 		case OPTION_RESIZE_ARRAY:
-			new_size_spin_box->set_value(count);
-			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
-			new_size_spin_box->get_line_edit()->grab_focus();
-			new_size_spin_box->get_line_edit()->select_all();
+			_open_resize_dialog();
 			break;
 		default:
 			break;
@@ -3507,21 +3530,85 @@ int EditorInspectorArray::_drop_position() const {
 	return -1;
 }
 
+bool EditorInspectorArray::_try_parse_new_size(const String &p_text, int &r_size) const {
+	const String trimmed = p_text.strip_edges();
+	if (!trimmed.is_valid_int()) {
+		return false;
+	}
+	int64_t parsed = trimmed.to_int();
+	int min_size = int(new_size_spin_box->get_min());
+	int max_size = int(new_size_spin_box->get_max());
+	if (parsed < min_size || parsed > max_size) {
+		return false;
+	}
+	r_size = int(parsed);
+	return true;
+}
+
 void EditorInspectorArray::_resize_dialog_confirmed() {
-	if (int(new_size_spin_box->get_value()) == count) {
+	int new_size = 0;
+	if (!_try_parse_new_size(new_size_spin_box->get_line_edit()->get_text(), new_size)) {
 		return;
 	}
 
-	resize_dialog->hide();
-	_resize_array(int(new_size_spin_box->get_value()));
+	if (new_size != count) {
+		_resize_array(new_size);
+	}
 }
 
-void EditorInspectorArray::_new_size_spin_box_value_changed(float p_value) {
-	resize_dialog->get_ok_button()->set_disabled(int(p_value) == count);
+void EditorInspectorArray::_new_size_spin_box_value_changed(double p_value) {
+	resize_dialog->get_ok_button()->set_disabled(false);
 }
 
-void EditorInspectorArray::_new_size_spin_box_text_submitted(const String &p_text) {
-	_resize_dialog_confirmed();
+void EditorInspectorArray::_new_size_spin_box_text_changed(const String &p_text) {
+	int parsed = 0;
+	resize_dialog->get_ok_button()->set_disabled(!_try_parse_new_size(p_text, parsed));
+}
+
+void EditorInspectorArray::_new_size_spin_box_editing_toggled(bool p_toggled_on) {
+	if (!p_toggled_on) {
+		// Re-validate after SpinBox's deferred handler may have reverted or clamped the text.
+		_new_size_spin_box_text_changed(new_size_spin_box->get_line_edit()->get_text());
+	}
+}
+
+bool EditorInspectorArray::_update_size_range_from_property(const PropertyInfo &p_property) {
+	new_size_spin_box->set_min(0);
+	new_size_spin_box->set_max(DEFAULT_MAX_ARRAY_SIZE);
+
+	if (p_property.hint != PROPERTY_HINT_RANGE) {
+		return false;
+	}
+
+	Vector<String> range_slices = p_property.hint_string.split(",");
+	if (range_slices.size() < 2) {
+		return false;
+	}
+
+	const String min_str = range_slices[0].strip_edges();
+	const String max_str = range_slices[1].strip_edges();
+	if (!min_str.is_valid_int() || !max_str.is_valid_int()) {
+		return false;
+	}
+
+	bool or_greater = false;
+	for (int i = 2; i < range_slices.size(); i++) {
+		if (range_slices[i].strip_edges() == "or_greater") {
+			or_greater = true;
+			break;
+		}
+	}
+
+	int min_size = int(CLAMP(min_str.to_int(), 0, INT32_MAX));
+	int max_size = int(CLAMP(max_str.to_int(), min_size, INT32_MAX));
+	new_size_spin_box->set_min(min_size);
+	if (or_greater) {
+		new_size_spin_box->set_max(MAX(DEFAULT_MAX_ARRAY_SIZE, max_size));
+		return false;
+	}
+
+	new_size_spin_box->set_max(max_size);
+	return true;
 }
 
 void EditorInspectorArray::_setup() {
@@ -3887,13 +3974,24 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	VBoxContainer *resize_dialog_vbox = memnew(VBoxContainer);
 	resize_dialog->add_child(resize_dialog_vbox);
 
+	HBoxContainer *new_size_hbox = memnew(HBoxContainer);
+	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_hbox);
+
 	new_size_spin_box = memnew(SpinBox);
 	new_size_spin_box->set_accessibility_name(TTRC("New Size:"));
-	new_size_spin_box->set_max(16384);
+	new_size_spin_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	new_size_spin_box->set_max(DEFAULT_MAX_ARRAY_SIZE);
 	new_size_spin_box->connect(SceneStringName(value_changed), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_value_changed));
-	new_size_spin_box->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
+	new_size_spin_box->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_changed));
+	new_size_spin_box->get_line_edit()->connect(SNAME("editing_toggled"), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_editing_toggled), CONNECT_DEFERRED);
 	new_size_spin_box->set_editable(!read_only);
-	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_spin_box);
+	resize_dialog->register_text_enter(new_size_spin_box->get_line_edit());
+	new_size_hbox->add_child(new_size_spin_box);
+
+	range_label = memnew(Label);
+	range_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	range_label->hide();
+	new_size_hbox->add_child(range_label);
 
 	vbox->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
 }

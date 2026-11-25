@@ -390,6 +390,49 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 	return false;
 }
 
+int TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_max_animation_frames_count() const {
+	if (tile_set_atlas_source.is_null() || tiles.is_empty()) {
+		return 1;
+	}
+
+	int max_frames = 16384;
+	for (const TileSelection &tile : tiles) {
+		const Vector2i &coords = tile.tile;
+		if (!tile_set_atlas_source->has_tile(coords)) {
+			return 1;
+		}
+
+		const Vector2i size = tile_set_atlas_source->get_tile_size_in_atlas(coords);
+		const int cols = tile_set_atlas_source->get_tile_animation_columns(coords);
+		const Vector2i sep = tile_set_atlas_source->get_tile_animation_separation(coords);
+
+		// Exponential search to bound the frame count quickly, then binary search in [low, high).
+		int low = 1;
+		int high = 2;
+		while (high <= max_frames && tile_set_atlas_source->has_room_for_tile(coords, size, cols, sep, high, coords)) {
+			low = high;
+			high *= 2;
+		}
+		high = MIN(high, max_frames + 1);
+
+		while (low + 1 < high) {
+			int mid = low + (high - low) / 2;
+			if (tile_set_atlas_source->has_room_for_tile(coords, size, cols, sep, mid, coords)) {
+				low = mid;
+			} else {
+				high = mid;
+			}
+		}
+
+		max_frames = MIN(max_frames, low);
+		if (max_frames == 1) {
+			break;
+		}
+	}
+
+	return max_frames;
+}
+
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (tile_set_atlas_source.is_null()) {
 		return;
@@ -425,7 +468,8 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("animation_speed")));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_mode"), PROPERTY_HINT_ENUM, "Default,Random Start Times"));
-		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
+		int max_frames = _get_max_animation_frames_count();
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_RANGE, vformat("1,%d,1", max_frames), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
 		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.
 		if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_frame_0/duration", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));

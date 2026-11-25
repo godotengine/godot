@@ -93,6 +93,8 @@ public:
 		Ref<TileSetAtlasSource> tile_set_atlas_source;
 		RBSet<TileSelection> tiles;
 
+		int _get_max_animation_frames_count() const;
+
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
 		bool _get(const StringName &p_name, Variant &r_ret) const;
