@@ -54,6 +54,7 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -3066,6 +3067,14 @@ void EditorInspectorArray::_add_button_pressed() {
 	_move_element(-1, -1);
 }
 
+void EditorInspectorArray::_open_resize_dialog() {
+	new_size_spin_box->set_value(count);
+	resize_dialog->get_ok_button()->set_disabled(true);
+	resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
+	new_size_spin_box->get_line_edit()->grab_focus();
+	new_size_spin_box->get_line_edit()->select_all();
+}
+
 void EditorInspectorArray::_paginator_page_changed(int p_page) {
 	emit_signal("page_change_request", p_page);
 }
@@ -3095,11 +3104,7 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 			_clear_array();
 			break;
 		case OPTION_RESIZE_ARRAY:
-			new_size_spin_box->set_value(count);
-			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
-			new_size_spin_box->get_line_edit()->grab_focus();
-			new_size_spin_box->get_line_edit()->select_all();
+			_open_resize_dialog();
 			break;
 		default:
 			break;
@@ -3651,8 +3656,8 @@ void EditorInspectorArray::_setup() {
 		}
 	}
 
-	// Hide/show the add button.
-	add_button->set_visible(page == max_page && !unresizable);
+	// Hide/show the add and resize buttons.
+	buttons_container->set_visible(page == max_page && !unresizable);
 
 	// Add paginator if there's more than 1 page.
 	if (max_page > 0) {
@@ -3868,10 +3873,20 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	elements_vbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(elements_vbox);
 
+	buttons_container = memnew(HFlowContainer);
+	buttons_container->set_alignment(FlowContainer::ALIGNMENT_CENTER);
+	buttons_container->set_last_wrap_alignment(FlowContainer::LAST_WRAP_ALIGNMENT_CENTER);
+	vbox->add_child(buttons_container);
+
 	add_button = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	add_button->set_disabled(read_only);
-	vbox->add_child(add_button);
+	buttons_container->add_child(add_button);
+
+	resize_button = memnew(EditorInspectorActionButton(TTRC("Resize Array..."), SNAME("EditAddRemove")));
+	resize_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_open_resize_dialog));
+	resize_button->set_disabled(read_only);
+	buttons_container->add_child(resize_button);
 
 	control_dropping = memnew(Control);
 	control_dropping->connect(SceneStringName(draw), callable_mp(this, &EditorInspectorArray::_control_dropping_draw));
