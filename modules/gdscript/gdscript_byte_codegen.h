@@ -115,6 +115,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<GDScriptUtilityFunctions::FunctionPtr, int> gds_utilities_map;
 	RBMap<const MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
+	Vector<ContainerType> container_types;
 
 #ifdef DEBUG_ENABLED
 	// Keep method and property names for pointer and validated operations.
@@ -447,6 +448,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	void patch_jump(int p_address) {
 		opcodes.write[p_address] = opcodes.size();
 	}
+
+	int use_container_type(const GDScriptDataType &p_container_type);
 
 public:
 	virtual uint32_t add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) override;

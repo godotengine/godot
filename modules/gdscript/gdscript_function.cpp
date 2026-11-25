@@ -45,6 +45,14 @@ bool GDScriptDataType::is_type_exact(const ContainerType &p_container_type) cons
 	}
 }
 
+ContainerType GDScriptDataType::make_container_type() const {
+	ContainerType container_type;
+	container_type.variant_type = builtin_type;
+	container_type.class_name = native_type;
+	container_type.script = script_type;
+	return container_type;
+}
+
 bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_conversion) const {
 	switch (kind) {
 		case VARIANT: {
@@ -139,6 +147,12 @@ Variant GDScriptFunction::get_constant(int p_idx) const {
 StringName GDScriptFunction::get_global_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
+}
+
+const ContainerType &GDScriptFunction::get_container_type(int p_idx) const {
+	static ContainerType err_type = ContainerType{ Variant::Type::OBJECT, "<errctype>", nullptr };
+	ERR_FAIL_INDEX_V(p_idx, container_types.size(), err_type);
+	return container_types[p_idx];
 }
 
 struct _GDFKC {
