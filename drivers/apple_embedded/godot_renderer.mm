@@ -35,18 +35,21 @@
 #import "drivers/apple_embedded/os_apple_embedded.h"
 #include "main/main.h"
 
-@interface GDTRenderer ()
-
-@property(assign, nonatomic) BOOL hasCalledProjectDataSetUp;
-@property(assign, nonatomic) BOOL hasStartedMain;
-@property(assign, nonatomic) BOOL hasFinishedSetUp;
-
-@end
+// The engine is set up once per process, not once per renderer. The system can give a running app a new window
+// (iPadOS disconnects a background scene to reclaim memory and connects a new one when the user returns), and each
+// window gets a new renderer, which would otherwise run Main::setup2() again over the live servers.
+static bool has_called_project_data_set_up = false;
+static bool has_started_main = false;
+static bool has_finished_set_up = false;
 
 @implementation GDTRenderer
 
+- (BOOL)hasFinishedSetup {
+	return has_finished_set_up;
+}
+
 - (BOOL)setUp {
-	if (self.hasFinishedSetUp) {
+	if (has_finished_set_up) {
 		return NO;
 	}
 
@@ -54,21 +57,21 @@
 		exit(0);
 	}
 
-	if (!self.hasCalledProjectDataSetUp) {
+	if (!has_called_project_data_set_up) {
 		[self setUpProjectDataShowingBootLogo:YES];
 	}
 
-	if (!self.hasStartedMain) {
+	if (!has_started_main) {
 		[self startMain];
 	}
 
-	self.hasFinishedSetUp = YES;
+	has_finished_set_up = true;
 
 	return NO;
 }
 
 - (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo {
-	self.hasCalledProjectDataSetUp = YES;
+	has_called_project_data_set_up = true;
 	safeDispatchSyncToMain(^{
 		Main::setup2(p_show_boot_logo);
 
@@ -98,7 +101,7 @@
 }
 
 - (void)startMain {
-	self.hasStartedMain = YES;
+	has_started_main = true;
 	safeDispatchSyncToMain(^{
 		OS_AppleEmbedded::get_singleton()->start();
 	});

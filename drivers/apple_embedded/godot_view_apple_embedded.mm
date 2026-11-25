@@ -35,12 +35,17 @@
 #include "core/string/ustring.h"
 #import "drivers/apple_embedded/display_layer_apple_embedded.h"
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
 
 static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
+
+// The layer the engine renders into belongs to the process, not to one view. When the system gives the running app a
+// new window, the new view takes it over instead of the engine being set up again, and it must outlive the old view.
+static CALayer<GDTDisplayLayer> *engine_rendering_layer = nil;
 
 @interface GDTView () {
 	UITouch *godot_touches[max_touches];
@@ -244,13 +249,22 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:NO];
 	}
 
+	if (![self takeEngineRenderingLayer]) {
+		[self stopRendering];
+		return;
+	}
+
 	[self.renderingLayer startRenderDisplayLayer];
 
 	if (!self.renderer) {
 		return;
 	}
 
-	if ([self.renderer setUp]) {
+	BOOL setting_up = [self.renderer setUp];
+	if (self.renderingLayer) {
+		engine_rendering_layer = self.renderingLayer;
+	}
+	if (setting_up) {
 		return;
 	}
 
@@ -280,6 +294,34 @@ static const float earth_gravity = 9.80665;
 	[self.renderer renderOnView:self];
 
 	[self.renderingLayer stopRenderDisplayLayer];
+}
+
+// Only the current view controller's view renders. A view made for a new window takes the engine's rendering layer
+// from the view that had it and lays it out at its own size; any other view stops.
+- (BOOL)takeEngineRenderingLayer {
+	if (self.delegate && (id)self.delegate != (id)GDTAppDelegateService.viewController) {
+		return NO;
+	}
+	CALayer<GDTDisplayLayer> *layer = engine_rendering_layer;
+	if (!layer || self.renderingLayer == layer) {
+		return YES;
+	}
+
+	id owner = layer.superlayer.delegate;
+	if ([owner isKindOfClass:[GDTView class]] && owner != self) {
+		GDTView *previous = (GDTView *)owner;
+		[previous stopRendering];
+		previous.renderingLayer = nil;
+	}
+	[layer removeFromSuperlayer];
+	if (self.renderingLayer) {
+		[self.renderingLayer removeFromSuperlayer];
+	}
+	layer.contentsScale = self.contentScaleFactor;
+	[self.layer addSublayer:layer];
+	self.renderingLayer = layer;
+	[self layoutRenderingLayer];
+	return YES;
 }
 
 - (BOOL)canRender {
