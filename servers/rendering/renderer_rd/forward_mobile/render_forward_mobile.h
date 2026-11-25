@@ -493,6 +493,8 @@ protected:
 				uint64_t sort_key2;
 			};
 			struct {
+				uint64_t depth_layer : 4;
+
 				// Needs to be grouped together to be used in RenderElementInfo, as the value is masked directly.
 				uint64_t lod_index : 8;
 				uint64_t uses_lightmap : 1;
@@ -502,7 +504,6 @@ protected:
 				// Sorted based on optimal order for respecting priority and reducing the amount of rebinding of shaders, materials,
 				// and geometry. This current order was found to be the most optimal in large projects. If you wish to measure
 				// differences, refer to RenderingDeviceGraph and the methods available to print statistics for draw lists.
-				uint64_t depth_layer : 4;
 				uint64_t surface_index : 8;
 				uint64_t geometry_id : 32;
 				uint64_t material_id_hi : 8;
