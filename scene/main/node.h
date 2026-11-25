@@ -253,6 +253,8 @@ private:
 		bool physics_process_internal : 1;
 		bool process_internal : 1;
 
+		bool ignore_suspend : 1;
+
 		bool input : 1;
 		bool shortcut_input : 1;
 		bool unhandled_input : 1;
@@ -719,6 +721,8 @@ public:
 
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
+
+	_FORCE_INLINE_ void set_ignore_suspend(bool p_ignore) { data.ignore_suspend = p_ignore; }
 
 	void queue_accessibility_update();
 
