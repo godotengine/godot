@@ -863,9 +863,9 @@ void Trail3D::_process_trail() {
 			if (points.size() == 2 && _times[0] - _times[1] > lifetime) {
 				if (distance > CMP_EPSILON) {
 					real_t speed_distance = _velocities[1] * delta;
-					real_t time_until_touch = speed_distance / _velocities[last_index];
-					tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], MIN(delta / time_until_touch, 1.));
-					normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], MIN(delta / time_until_touch, 1.));
+					real_t time_until_touch = speed_distance / _velocities[1];
+					tangents.write[1] = tangents[1].slerp(tangents[0], MIN(delta / time_until_touch, 1.));
+					normals.write[1] = normals[1].slerp(normals[0], MIN(delta / time_until_touch, 1.));
 					points.write[1] += dir / distance * MIN(distance, speed_distance);
 				} else {
 					points.write[1] = points[0];
