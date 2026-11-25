@@ -731,7 +731,7 @@ void main() {
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[draw_call.instance_index].prev_transform,
 #ifdef USE_DOUBLE_PRECISION
 			instances.data[draw_call.instance_index].prev_model_precision.xyz,
-			scene_data_block.prev_data.inv_view_precision,
+			scene_data_block.prev_data.inv_view_precision.xyz,
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -793,7 +793,7 @@ void main() {
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[draw_call.instance_index].transform,
 #ifdef USE_DOUBLE_PRECISION
 			instances.data[draw_call.instance_index].model_precision.xyz,
-			scene_data_block.data.inv_view_precision,
+			scene_data_block.data.inv_view_precision.xyz,
 #endif
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.data.dual_paraboloid_side,
