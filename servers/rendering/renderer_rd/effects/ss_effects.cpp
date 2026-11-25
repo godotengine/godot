@@ -1542,6 +1542,7 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 	Projection correction;
 	correction.set_depth_correction(false);
 	Projection temp = correction * p_projection;
+	const float xegtao_falloff_range = 0.615f;
 	xegtao.prefilter_push_constant.depth_unpack[0] = -temp.columns[3][2];
 	xegtao.prefilter_push_constant.depth_unpack[1] = temp.columns[2][2];
 	if (xegtao.prefilter_push_constant.depth_unpack[0] * xegtao.prefilter_push_constant.depth_unpack[1] < 0.0f) {
@@ -1551,13 +1552,14 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 	xegtao.prefilter_push_constant.near_far[1] = p_projection.get_z_far();
 	xegtao.prefilter_push_constant.orthogonal = p_projection.is_orthogonal() ? 1 : 0;
 	xegtao.prefilter_push_constant.effect_radius = MAX(p_settings.radius, 0.0001f);
-	// Reuse Godot's horizon control as the GTAO far-sample falloff control. The default maps to XeGTAO's tuned value.
-	float falloff_range = CLAMP(0.615f + (p_settings.horizon - 0.06f), 0.01f, 1.0f);
-	xegtao.prefilter_push_constant.falloff_range = falloff_range;
+	// XeGTAO's EffectFalloffRange is independent from Godot SSAO's horizon threshold.
+	xegtao.prefilter_push_constant.falloff_range = xegtao_falloff_range;
 
 	float tan_half_fov_x = 1.0f / p_projection.columns[0][0];
 	float tan_half_fov_y = 1.0f / p_projection.columns[1][1];
-	int quality = CLAMP((int)ssao_quality, 0, 4);
+	// Map Godot's five SSAO presets onto XeGTAO's four reference presets:
+	// Very Low/Low -> Low, Medium -> Medium, High -> High, Ultra -> Ultra.
+	int quality = CLAMP((int)ssao_quality - 1, 0, 3);
 	xegtao.push_constant.screen_size[0] = screen_size.x;
 	xegtao.push_constant.screen_size[1] = screen_size.y;
 	xegtao.push_constant.pixel_size[0] = 1.0f / screen_size.x;
@@ -1567,20 +1569,22 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 	xegtao.push_constant.ndc_to_view_add[0] = tan_half_fov_x * -1.0f;
 	xegtao.push_constant.ndc_to_view_add[1] = tan_half_fov_y;
 	xegtao.push_constant.ao_params[0] = MAX(p_settings.radius, 0.0001f);
-	xegtao.push_constant.ao_params[1] = falloff_range;
+	xegtao.push_constant.ao_params[1] = xegtao_falloff_range;
 	xegtao.push_constant.ao_params[2] = 1.457f;
 	xegtao.push_constant.ao_params[3] = 2.0f;
-	xegtao.push_constant.ao_params2[0] = CLAMP(p_settings.detail * 0.2f, 0.0f, 0.7f);
+	// Match XeGTAO's default ThinOccluderCompensation. Godot's Detail control
+	// belongs to its legacy SSAO gather pass and is not a XeGTAO parameter.
+	xegtao.push_constant.ao_params2[0] = 0.0f;
 	xegtao.push_constant.ao_params2[1] = MAX(p_settings.power, 0.01f);
 	xegtao.push_constant.ao_params2[2] = 3.3f;
 	// XeGTAO visibility is already a normalized AO term, while Godot's SSAO intensity
 	// scales a differently normalized obscurance. 0.25 maps the default SSAO
 	// intensity (2.0) to the XeGTAO reference intensity (0.5).
 	xegtao.push_constant.ao_params2[3] = MAX(p_settings.intensity * 0.25f, 0.0f);
-	xegtao.push_constant.ao_params3[0] = p_settings.detail;
-	xegtao.push_constant.ao_params3[1] = p_settings.horizon;
+	xegtao.push_constant.ao_params3[0] = 0.0f;
+	xegtao.push_constant.ao_params3[1] = 0.0f;
 	xegtao.push_constant.ao_params3[2] = (float)quality;
-	xegtao.push_constant.ao_params3[3] = CLAMP(ssao_adaptive_target, 0.0f, 1.0f);
+	xegtao.push_constant.ao_params3[3] = 0.0f;
 	float fadeout_range = ssao_fadeout_to - ssao_fadeout_from;
 	if (fadeout_range > 0.0001f) {
 		xegtao.push_constant.fadeout_params[0] = -1.0f / fadeout_range;
@@ -1607,13 +1611,9 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 
 	xegtao.denoise_push_constant.screen_size[0] = screen_size.x;
 	xegtao.denoise_push_constant.screen_size[1] = screen_size.y;
-	// XeGTAO's 3x3 edge-aware denoiser has a much smaller footprint than Godot's
-	// deinterleaved wide/smart SSAO blur. Spend a few extra passes so the result
-	// matches SSAO's spatial smoothness without needing a different kernel.
-	int denoise_passes = 1;
-	if (ssao_quality > RSE::ENV_SSAO_QUALITY_VERY_LOW && ssao_blur_passes > 0) {
-		denoise_passes = MAX(ssao_blur_passes + 2, 3);
-	}
+	// XeGTAO presets allow 0-3 denoise passes. Keep one identity pass when
+	// disabled so the result is still copied to the full-resolution AO target.
+	int denoise_passes = CLAMP(ssao_blur_passes, 1, 3);
 	xegtao.denoise_push_constant.blur_beta = ssao_blur_passes <= 0 ? 10000.0f : MAX(0.1f, 1.2f * p_settings.sharpness);
 	xegtao.denoise_push_constant.output_scale = 1.0f;
 

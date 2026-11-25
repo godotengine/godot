@@ -1467,9 +1467,8 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	if (environment_get_ssao_use_xegtao(p_environment)) {
-		// Godot's TAA clips the history against the current 3x3 neighborhood, which
-		// prevents XeGTAO's per-frame noise rotation from averaging out. Rotating the
-		// pattern in that situation only adds visible shimmer, so keep it static.
+		// Godot's TAA clips history against the current neighborhood, so it does not
+		// reliably average XeGTAO's changing noise pattern. Keep it spatial and stable.
 		const bool temporal_noise = false;
 		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
 			ss_effects->generate_xegtao(p_render_buffers, v, p_normal_buffers[v], p_projections[v], settings, temporal_noise);
