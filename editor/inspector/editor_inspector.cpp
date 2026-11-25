@@ -5752,9 +5752,12 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 		String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
 		if (src_scene != current_scene_path) {
-			Ref<Resource> duplicated_res = res->duplicate();
-			EditorNode::setup_built_in_resource(duplicated_res, current_scene_path);
-			new_value = duplicated_res;
+			Resource *revert_res = Object::cast_to<Resource>(EditorPropertyRevert::get_property_revert_value(object, p_name, nullptr).get_validated_object());
+			if (res != revert_res) { // Only duplicate the resource if the new value is different from the default.
+				Ref<Resource> duplicated_res = res->duplicate();
+				EditorNode::setup_built_in_resource(duplicated_res, current_scene_path);
+				new_value = duplicated_res;
+			}
 		}
 	}
 
