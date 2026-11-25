@@ -6519,7 +6519,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_unit, height_unit, alt_text);
 				}
 			} else {
-				WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", image));
+				Ref<Texture2D> placeholder = get_editor_theme_icon(SNAME("FileBrokenBigThumb"));
+				add_image(placeholder, 0, 0, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER);
 			}
 
 			pos = end;
