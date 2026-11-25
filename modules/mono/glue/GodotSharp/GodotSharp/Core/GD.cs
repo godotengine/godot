@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Godot.NativeInterop;
 
@@ -336,13 +337,21 @@ namespace Godot
         }
 
         [StackTraceHidden]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ErrPrintError(string message, godot_error_handler_type type = godot_error_handler_type.ERR_HANDLER_ERROR)
         {
             // Skip 1 frame to avoid current method.
             var stackFrame = DebuggingUtils.GetCurrentStackFrame(skipFrames: 1);
-            string callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName());
-            DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out string callerName);
-            int callerLineNumber = stackFrame.GetFileLineNumber();
+
+            string callerName = "<unknown>";
+            string callerFilePath = "<unknown>";
+            int callerLineNumber = 0;
+            if (stackFrame is not null)
+            {
+                callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName());
+                DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out callerName);
+                callerLineNumber = stackFrame.GetFileLineNumber();
+            }
 
             using godot_string messageStr = Marshaling.ConvertStringToNative(message);
             using godot_string callerNameStr = Marshaling.ConvertStringToNative(callerName);
@@ -361,6 +370,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="message">Error message.</param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void PushError(string message)
         {
             ErrPrintError(message);
@@ -377,6 +387,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that form the error message.</param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void PushError(params object[] what)
         {
             ErrPrintError(AppendPrintParams(what));
@@ -391,6 +402,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="message">Warning message.</param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void PushWarning(string message)
         {
             ErrPrintError(message, type: godot_error_handler_type.ERR_HANDLER_WARNING);
@@ -405,6 +417,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that form the warning message.</param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void PushWarning(params object[] what)
         {
             ErrPrintError(AppendPrintParams(what), type: godot_error_handler_type.ERR_HANDLER_WARNING);
