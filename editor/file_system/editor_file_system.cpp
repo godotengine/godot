@@ -2477,6 +2477,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			EditorFileSystemDirectory::FileInfo *fi = fs->files[cpos];
 			const String old_script_class_icon_path = fi->class_info.icon_path;
 			const String old_class_name = fi->class_info.name;
+			const ResourceUID::ID previous_uid = fi->uid;
 			fi->type = type;
 			fi->resource_script_class = script_class;
 			fi->uid = uid;
@@ -2487,7 +2488,32 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
-				if (ResourceUID::get_singleton()->has_id(uid)) {
+				bool is_uid_known = ResourceUID::get_singleton()->has_id(uid);
+				const String old_file_path = is_uid_known ? ResourceUID::get_singleton()->get_id_path(uid) : String::EMPTY;
+				const bool is_duplicated =
+						is_uid_known &&
+						old_file_path != file &&
+						FileAccess::exists(old_file_path) &&
+						ResourceLoader::get_resource_uid(old_file_path) == uid;
+
+				if (is_duplicated) {
+					const bool can_reuse_uid =
+							previous_uid != ResourceUID::INVALID_ID &&
+							(!ResourceUID::get_singleton()->has_id(previous_uid) || ResourceUID::get_singleton()->get_id_path(previous_uid) == file);
+					const ResourceUID::ID new_uid = can_reuse_uid ? previous_uid : ResourceUID::get_singleton()->create_id_for_path(file);
+
+					if (ResourceSaver::set_uid(file, new_uid) == OK) {
+						fi->modified_time = FileAccess::get_modified_time(file);
+						fi->uid = new_uid;
+						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The file UID was changed automatically.", file, old_file_path));
+						is_uid_known = ResourceUID::get_singleton()->has_id(new_uid);
+						uid = new_uid;
+					} else {
+						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The file UID could not be fixed automatically.", file, old_file_path));
+					}
+				}
+
+				if (is_uid_known) {
 					ResourceUID::get_singleton()->set_id(uid, file);
 				} else {
 					ResourceUID::get_singleton()->add_id(uid, file);
