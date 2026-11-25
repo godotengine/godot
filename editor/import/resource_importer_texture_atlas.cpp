@@ -213,6 +213,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 		pack_data.image = image;
 
+		String atlas = options["atlas_file"];
+		ERR_CONTINUE(!atlas.is_valid_filename());
+		ERR_CONTINUE(!atlas.has_extension("png"));
+
 		int mode = options["import_mode"];
 
 		if (mode == IMPORT_MODE_REGION) {
