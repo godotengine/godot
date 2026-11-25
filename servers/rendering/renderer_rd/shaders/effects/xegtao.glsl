@@ -45,6 +45,16 @@ vec4 calculate_edges(float p_center_z, float p_left_z, float p_right_z, float p_
 	return clamp(1.25 - edges / max(p_center_z * 0.011, 0.000001), 0.0, 1.0);
 }
 
+// Godot's SSAO adds a high-frequency term from the four immediate neighbors.
+// Reuse the same idea so close-range depth detail does not disappear in the
+// wider GTAO hemisphere integration.
+float calculate_detail_obscurance(vec3 p_normal, vec3 p_delta, float p_falloff_sq, float p_horizon) {
+	float length_sq = dot(p_delta, p_delta);
+	float n_dot_d = dot(p_normal, p_delta) * inversesqrt(max(length_sq, 0.00000001));
+	float falloff = max(0.0, length_sq * p_falloff_sq + 1.0);
+	return max(0.0, n_dot_d - p_horizon) * falloff;
+}
+
 float pack_edges(vec4 p_edges) {
 	vec4 quantized = round(clamp(p_edges, 0.0, 1.0) * 2.9);
 	return dot(quantized, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
@@ -138,7 +148,35 @@ void main() {
 	float final_value_power = max(params.ao_params2.y, 0.01);
 	float intensity = max(params.ao_params2.w, 0.0);
 
+	// High-frequency detail from the four immediate neighbors, mirroring the
+	// detail term in Godot's SSAO gather pass.
 	int quality = int(params.ao_params3.z + 0.5);
+	float detail_obscurance = 0.0;
+	float detail_strength = clamp(params.ao_params3.x, 0.0, 1.0);
+	// SSAO enables the detail term from the Low preset and disables it for the
+	// reference (adaptive) preset.
+	if (detail_strength > 0.0 && quality >= 1 && quality != 4) {
+		float detail_radius = max(params.ao_params.x, 0.0001);
+		float detail_falloff_sq = -4.0 / (detail_radius * detail_radius);
+		float detail_horizon = params.ao_params3.y;
+		// SSAO compares against a center moved 1% towards the camera, which acts
+		// as a threshold that keeps tiny depth noise from producing detail AO.
+		vec3 detail_center_pos = pixel_center_pos * 0.99;
+		vec2 left_ndc = (vec2(left_coord) + 0.5) * params.pixel_size;
+		vec2 right_ndc = (vec2(right_coord) + 0.5) * params.pixel_size;
+		vec2 top_ndc = (vec2(top_coord) + 0.5) * params.pixel_size;
+		vec2 bottom_ndc = (vec2(bottom_coord) + 0.5) * params.pixel_size;
+		detail_obscurance += edges.x * calculate_detail_obscurance(normal, compute_viewspace_position(left_ndc, pixel_left_z) - detail_center_pos, detail_falloff_sq, detail_horizon);
+		detail_obscurance += edges.y * calculate_detail_obscurance(normal, compute_viewspace_position(right_ndc, pixel_right_z) - detail_center_pos, detail_falloff_sq, detail_horizon);
+		detail_obscurance += edges.z * calculate_detail_obscurance(normal, compute_viewspace_position(top_ndc, pixel_top_z) - detail_center_pos, detail_falloff_sq, detail_horizon);
+		detail_obscurance += edges.w * calculate_detail_obscurance(normal, compute_viewspace_position(bottom_ndc, pixel_bottom_z) - detail_center_pos, detail_falloff_sq, detail_horizon);
+		// SSAO normalizes the detail term by its sample weight sum (roughly 10 for
+		// the Low/Medium presets) and then scales the whole obscurance by intensity.
+		// XeGTAO's intensity is calibrated at 1/4 of SSAO's, so the term needs the
+		// inverse factor to end up with the same contrast.
+		detail_obscurance *= detail_strength * 0.4;
+	}
+
 	int slice_count = 3;
 	int steps_per_slice = 3;
 	if (quality <= 0) {
@@ -224,7 +262,7 @@ void main() {
 	visibility /= float(slice_count);
 	visibility = max(0.03, visibility);
 	float fadeout = clamp(viewspace_z * params.fadeout_params.x + params.fadeout_params.y, 0.0, 1.0);
-	float obscurance = clamp((1.0 - visibility) * intensity, 0.0, 0.97);
+	float obscurance = clamp((1.0 - visibility + detail_obscurance) * intensity, 0.0, 0.97);
 	visibility = pow(clamp(1.0 - obscurance * fadeout, 0.0, 1.0), final_value_power);
 	imageStore(dest_working, pix_coord, vec4(clamp(visibility / XE_GTAO_OCCLUSION_TERM_SCALE, 0.0, 1.0), pack_edges(edges), 0.0, 0.0));
 }
