@@ -178,6 +178,14 @@ public:
 	void screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, float p_blur, float p_taa_frame_count);
 
 private:
+	// Ensures the number of mipmaps is less than or equal to the maximum number of mipmaps for the given resolution.
+	// For example, 16x16 can only have 5 mipmaps (1x1, 2x2, 4x4, 8x8, 16x16).
+	static uint32_t limit_mipmaps(uint32_t p_desired_mipmaps, Size2i resolution) {
+		uint32_t min_resolution = MAX((uint32_t)1, (uint32_t)MIN(resolution.x, resolution.y));
+		uint32_t max_mipmaps = (uint32_t)Math::log2((double)min_resolution) + (uint32_t)1;
+		return MIN(p_desired_mipmaps, max_mipmaps);
+	}
+
 	/* Settings */
 
 	RSE::EnvironmentSSAOQuality ssao_quality = RSE::ENV_SSAO_QUALITY_MEDIUM;
