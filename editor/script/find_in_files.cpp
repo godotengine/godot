@@ -60,6 +60,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
+#include "scene/main/window.h"
 #include "servers/rendering/rendering_server.h"
 
 // TODO: Would be nice in Vector and Vectors.
@@ -1765,6 +1766,9 @@ FindInFilesContainer::FindInFilesContainer() {
 void FindInFiles::open_dock(const String &p_initial_text, bool p_replace) {
 	FindInFilesSearchPanel *search_control = container->get_search_control();
 	EditorDockManager::get_singleton()->focus_dock(container);
+	if (container->is_visible_in_tree() && !container->get_window()->has_focus()) {
+		container->get_window()->grab_focus();
+	}
 	if (search_control->is_rename_mode()) {
 		container->create_new_panel();
 	}
