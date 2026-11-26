@@ -189,6 +189,16 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
 			"The WebP image should load successfully.");
+	// Load animated WebP
+	Ref<Image> image_animated_webp = memnew(Image());
+	Ref<FileAccess> f_animated_webp = FileAccess::open(TestUtils::get_data_path("images/animated.webp"), FileAccess::READ, &err);
+	REQUIRE(f_animated_webp.is_valid());
+	PackedByteArray data_animated_webp;
+	data_animated_webp.resize(f_animated_webp->get_length() + 1);
+	f_animated_webp->get_buffer(data_animated_webp.ptrw(), f_animated_webp->get_length());
+	CHECK_MESSAGE(
+			image_animated_webp->load_webp_from_buffer(data_animated_webp) == OK,
+			"The animated WebP image should load successfully.");
 #endif // MODULE_WEBP_ENABLED
 
 	// Load PNG
