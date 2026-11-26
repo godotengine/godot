@@ -1379,7 +1379,7 @@
 			If [code]true[/code] the language server will run in a separate thread, if [code]false[/code] it will run on the main thread.
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
-			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the Asset Store tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] will be used.
+			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the Asset Store tab). If left empty, the operating system provided certificate bundle will be used. If OS bundle is not available, [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] is used as a fallback.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
 			If [code]true[/code], enable TLSv1.3 negotiation.
