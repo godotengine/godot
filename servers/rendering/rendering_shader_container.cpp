@@ -805,7 +805,7 @@ bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
 
 	// Read container header.
 	ERR_FAIL_COND_V_MSG(int64_t(bytes_offset + sizeof(ContainerHeader)) > p_bytes.size(), false, "Not enough bytes for a container header in shader container.");
-	container_header = *(const ContainerHeader *)(&bytes_ptr[bytes_offset]);
+	memcpy(&container_header, &bytes_ptr[bytes_offset], sizeof(ContainerHeader));
 	bytes_offset += sizeof(ContainerHeader);
 	bytes_offset += _from_bytes_header_extra_data(&bytes_ptr[bytes_offset]);
 
@@ -819,7 +819,7 @@ bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
 
 	// Read reflection data.
 	ERR_FAIL_COND_V_MSG(int64_t(bytes_offset + sizeof(ReflectionData)) > p_bytes.size(), false, "Not enough bytes for reflection data in shader container.");
-	reflection_data = *(const ReflectionData *)(&bytes_ptr[bytes_offset]);
+	memcpy(&reflection_data, &bytes_ptr[bytes_offset], sizeof(ReflectionData));
 	bytes_offset += sizeof(ReflectionData);
 	bytes_offset += _from_bytes_reflection_extra_data(&bytes_ptr[bytes_offset]);
 
