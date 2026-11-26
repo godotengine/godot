@@ -196,7 +196,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
+	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const String &p_ai_reason, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
 	void set_install_mode(InstallMode p_mode);
 	void add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_compat_min, const String &p_compat_max, const String &p_sha256);
 	void add_preview(int p_id, bool p_video = false, const String &p_url = "", const String &p_thumbnail = "");
@@ -282,6 +282,7 @@ class EditorAssetLibrary : public EditorDock {
 	Timer *filter_debounce_timer = nullptr;
 	OptionButton *sort = nullptr;
 	OptionButton *categories = nullptr;
+	OptionButton *uses_ai = nullptr;
 	OptionButton *repository = nullptr;
 	MenuButton *licenses = nullptr;
 	HBoxContainer *error_hb = nullptr;
