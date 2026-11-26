@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <UIKit/UIKit.h>
 
 typedef NSObject<UIApplicationDelegate, UIWindowSceneDelegate> GDTAppDelegateServiceProtocol;
@@ -41,3 +43,5 @@ typedef NSObject<UIApplicationDelegate, UIWindowSceneDelegate> GDTAppDelegateSer
 + (void)addService:(GDTAppDelegateServiceProtocol *)service;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

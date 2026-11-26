@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef LINUXBSD_ENABLED
+
 #include "camera_feed_linux.h"
 
 #include "servers/rendering/rendering_server.h"
@@ -358,3 +360,5 @@ CameraFeedLinux::~CameraFeedLinux() {
 		deactivate_feed();
 	}
 }
+
+#endif // LINUXBSD_ENABLED

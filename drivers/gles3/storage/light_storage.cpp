@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "light_storage.h"
-
 #ifdef GLES3_ENABLED
+
+#include "light_storage.h"
 
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"

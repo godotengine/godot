@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #ifndef __cplusplus
 #include <stddef.h>
 #include <stdint.h>
@@ -63,3 +65,5 @@ extern void godot_nir_free(void *p_block);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // D3D12_ENABLED

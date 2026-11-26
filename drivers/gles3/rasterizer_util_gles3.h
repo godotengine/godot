@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef GLES3_ENABLED
+
 #include <cstdint>
 
 // This class is meant to hold static utility methods with minimal dependencies.
@@ -49,3 +51,5 @@ public:
 	static void clear_depth(float p_depth);
 	static void clear_stencil(int32_t p_stencil);
 };
+
+#endif // GLES3_ENABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #include "os_log_logger.h"
 
 #include "core/object/script_backtrace.h"
@@ -125,3 +127,5 @@ void OsLogLogger::log_error(const char *p_function, const char *p_file, int p_li
 		os_log_with_type(selected_log, log_type, "%{public}s:%d:%{public}s(): %{public}s %{public}s%{public}s", p_file, p_line, p_function, err_details, p_code, back_trace.utf8().ptr());
 	}
 }
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

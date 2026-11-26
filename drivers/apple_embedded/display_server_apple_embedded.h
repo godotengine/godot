@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include "core/os/thread_safe.h"
 #include "servers/display/display_server.h"
 
@@ -267,3 +269,5 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 };
+
+#endif // APPLE_EMBEDDED_ENABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef D3D12_ENABLED
+
 #include "rendering_shader_container_d3d12.h"
 
 #include "core/templates/sort_array.h"
@@ -1029,3 +1031,5 @@ RenderingShaderContainerFormatD3D12::RenderingShaderContainerFormatD3D12() {
 RenderingShaderContainerFormatD3D12::~RenderingShaderContainerFormatD3D12() {
 	glsl_type_singleton_decref();
 }
+
+#endif // D3D12_ENABLED

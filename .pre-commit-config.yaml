@@ -36,13 +36,7 @@ repos:
     hooks:
       - id: clangd-tidy
         # TODO: Platform-specific subfolders currently fail, we should try to include them.
-        exclude: |
-          (?x)^(
-            (driver|platform)/\w+/.*|
-            editor/shader/shader_baker/shader_baker_export_plugin_platform_.*|
-            modules/camera/camera_.*|
-            modules/openxr/extensions/platform/.*
-          )$
+        exclude: ^platform/\w+/(?:[^/]+|(?!api|export)\w+/.*)$
         args: [
             --fix,
             --color=always,

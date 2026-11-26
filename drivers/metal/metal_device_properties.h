@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -199,3 +201,5 @@ public:
 private:
 	static const SampleCount sample_count[RDD::TextureSamples::TEXTURE_SAMPLES_MAX];
 };
+
+#endif // METAL_ENABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "drivers/metal/metal_allocator.h"
 #include "drivers/metal/metal_device_properties.h"
 #include "drivers/metal/metal_utils.h"
@@ -1191,3 +1193,5 @@ public:
 			MDPipeline(MDPipelineType::Compute), state(std::move(p_state)) {}
 	~MDComputePipeline() override = default;
 };
+
+#endif // METAL_ENABLED
