@@ -348,7 +348,7 @@ Error Expression::_get_token(Token &r_token) {
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
-								if (is_digit(c)) {
+								if (is_digit(c) || is_underscore(c)) {
 									if (is_first_char && c == '0') {
 										if (next_char == 'b' || next_char == 'B') {
 											reading = READING_BIN;
@@ -368,7 +368,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_BIN: {
-								if (bin_beg && !is_binary_digit(c)) {
+								if (bin_beg && !is_binary_digit(c) && !is_underscore(c)) {
 									reading = READING_DONE;
 								} else if (c == 'b' || c == 'B') {
 									bin_beg = true;
@@ -376,7 +376,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_HEX: {
-								if (hex_beg && !is_hex_digit(c)) {
+								if (hex_beg && !is_hex_digit(c) && !is_underscore(c)) {
 									reading = READING_DONE;
 								} else if (c == 'x' || c == 'X') {
 									hex_beg = true;
@@ -384,7 +384,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_DEC: {
-								if (is_digit(c)) {
+								if (is_digit(c) || is_underscore(c)) {
 								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 								} else {
@@ -393,7 +393,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_EXP: {
-								if (is_digit(c)) {
+								if (is_digit(c) || is_underscore(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -408,7 +408,9 @@ Error Expression::_get_token(Token &r_token) {
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += c;
+						if (!is_underscore(c)) {
+							num += c;
+						}
 						c = GET_CHAR();
 						is_first_char = false;
 					}
@@ -418,7 +420,6 @@ Error Expression::_get_token(Token &r_token) {
 					}
 
 					r_token.type = TK_CONSTANT;
-
 					if (is_float) {
 						r_token.value = num.to_float();
 					} else if (bin_beg) {
