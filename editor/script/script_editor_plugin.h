@@ -90,7 +90,9 @@ class DocumentList : public VBoxContainer {
 
 	ItemList *item_list = nullptr;
 	LineEdit *filter = nullptr;
+
 	PopupMenu *context_menu = nullptr;
+	PopupMenu *context_docs_submenu = nullptr;
 
 	DocumentEditorContainer *document_editor_container = nullptr;
 
@@ -100,6 +102,9 @@ class DocumentList : public VBoxContainer {
 	void _document_selected(int p_index);
 	void _document_clicked(int p_index, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _show_context_menu();
+
+	PackedStringArray _get_script_docs(const Ref<Script> &p_script) const;
+	void _add_docs_to_menu(PopupMenu *p_menu, const PackedStringArray &p_doc_list) const;
 
 	void _update_item_list();
 
@@ -115,6 +120,7 @@ public:
 	void ensure_current_is_visible();
 	void goto_next_document(bool p_previous = false);
 	void update_editor_settings();
+	String get_current_script_documentation() const;
 
 	DocumentList(DocumentEditorContainer *p_document_editor_container);
 };
@@ -180,6 +186,7 @@ class DocumentEditorContainer : public MarginContainer {
 		FILE_MENU_COPY_PATH,
 		FILE_MENU_COPY_UID,
 		FILE_MENU_SHOW_IN_FILE_SYSTEM,
+		FILE_MENU_OPEN_GENERATED_DOCUMENTATION,
 
 		FILE_MENU_HISTORY_PREV,
 		FILE_MENU_HISTORY_NEXT,
@@ -337,6 +344,8 @@ class DocumentEditorContainer : public MarginContainer {
 
 	void _copy_script_path();
 	void _copy_script_uid();
+
+	void _open_generated_doc(int p_idx, PopupMenu *p_from_menu);
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *p_seb);
 
