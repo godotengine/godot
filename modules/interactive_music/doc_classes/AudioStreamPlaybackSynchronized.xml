@@ -8,4 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_playback">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
+				Returns the playback of a sub-stream, by index.
+				Note that the reference can go stale, for example if [method AudioStreamSynchronized.set_sync_stream] is called.
+			</description>
+		</method>
+	</methods>
 </class>
