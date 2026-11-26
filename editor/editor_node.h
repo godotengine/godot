@@ -1066,7 +1066,7 @@ public:
 	void undo();
 	void redo();
 
-	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr, bool p_print_verbose = false);
 
 	Error setup_android_build_template(const Ref<EditorExportPreset> &p_preset, bool p_confirmed);
 

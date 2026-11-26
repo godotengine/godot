@@ -8150,7 +8150,7 @@ static void _execute_thread(void *p_ud) {
 	eta->done.set();
 }
 
-int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors, String *r_output) {
+int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors, String *r_output, bool p_print_verbose) {
 	if (execute_output_dialog) {
 		execute_output_dialog->set_title(p_title);
 		execute_output_dialog->get_ok_button()->set_disabled(true);
@@ -8174,6 +8174,9 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 			if (prev_len != eta.output.length()) {
 				String to_add = eta.output.substr(prev_len);
 				prev_len = eta.output.length();
+				if (p_print_verbose) {
+					print_verbose(to_add.rstrip("\n"));
+				}
 				execute_outputs->add_text(to_add);
 				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
 				Main::iteration();
@@ -8183,6 +8186,10 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	}
 
 	eta.execute_output_thread.wait_to_finish();
+	if (p_print_verbose && prev_len != eta.output.length()) {
+		// Print output that arrived after the last poll.
+		print_verbose(eta.output.substr(prev_len).rstrip("\n"));
+	}
 	execute_outputs->add_text("\nExit Code: " + itos(eta.exitcode));
 
 	if (execute_output_dialog) {
