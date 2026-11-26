@@ -5724,6 +5724,17 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 		Variant initializer_value = make_expression_reduced_value(p_variable->initializer, is_initializer_value_reduced);
 		if (is_initializer_value_reduced) {
 			result = initializer_value;
+
+			GDScriptParser::DataType datatype = p_variable->type_constraint;
+			if (datatype.is_hard_type() && datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT && result.get_type() != datatype.builtin_type) {
+				Variant converted;
+				const Variant *converted_from = &result;
+				Callable::CallError call_error;
+				Variant::construct(datatype.builtin_type, converted, &converted_from, 1, call_error);
+				if (call_error.error == Callable::CallError::CALL_OK) {
+					result = converted;
+				}
+			}
 		}
 	} else {
 		GDScriptParser::DataType datatype = p_variable->type_constraint;
