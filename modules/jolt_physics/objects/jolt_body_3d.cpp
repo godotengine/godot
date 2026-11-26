@@ -898,6 +898,18 @@ void JoltBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) 
 	_motion_changed();
 }
 
+void JoltBody3D::apply_force_at_position(const Vector3 &p_force, const Vector3 &p_global_position) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	if (unlikely(!is_rigid()) || custom_integrator || p_force == Vector3()) {
+		return;
+	}
+
+	jolt_body->AddForce(to_jolt(p_force), JPH::RVec3(to_jolt(p_global_position)));
+
+	_motion_changed();
+}
+
 void JoltBody3D::apply_central_force(const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
@@ -918,6 +930,18 @@ void JoltBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_positi
 	}
 
 	jolt_body->AddImpulse(to_jolt(p_impulse), jolt_body->GetPosition() + to_jolt(p_position));
+
+	_motion_changed();
+}
+
+void JoltBody3D::apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_global_position) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	if (unlikely(!is_rigid()) || p_impulse == Vector3()) {
+		return;
+	}
+
+	jolt_body->AddImpulse(to_jolt(p_impulse), JPH::RVec3(to_jolt(p_global_position)));
 
 	_motion_changed();
 }

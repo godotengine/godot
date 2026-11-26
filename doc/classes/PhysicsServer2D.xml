@@ -316,6 +316,16 @@
 				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
+		<method name="body_apply_force_at_position">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector2" />
+			<param index="2" name="global_position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a positioned force to the body at position. The force can affect rotation if [param global_position] is different from the body's center of mass. A force is time dependent and meant to be applied every physics update.
+				[param global_position] is the position applied in global coordinates.
+			</description>
+		</method>
 		<method name="body_apply_impulse">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -325,6 +335,17 @@
 				Applies a positioned impulse to the body. The impulse can affect rotation if [param position] is different from the body's center of mass.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 				[param position] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_apply_impulse_at_position">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector2" />
+			<param index="2" name="global_position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a positioned impulse to the body. The impulse can affect rotation if [param global_position] is different from the body's center of mass.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[param global_position] is the position applied in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_torque">
