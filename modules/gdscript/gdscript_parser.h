@@ -1212,6 +1212,7 @@ public:
 
 		bool has_return = false;
 		bool has_continue = false;
+		bool has_break = false;
 		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.
 		bool is_in_loop = false; // The block is nested in a loop (directly or indirectly).
 
