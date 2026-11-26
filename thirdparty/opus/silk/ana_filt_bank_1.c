@@ -32,8 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "SigProc_FIX.h"
 
 /* Coefficients for 2-band filter bank based on first-order allpass filters */
-static opus_int16 A_fb1_20 = 5394 << 1;
-static opus_int16 A_fb1_21 = -24290; /* (opus_int16)(20623 << 1) */
+static const opus_int16 A_fb1_20 = 5394 << 1;
+static const opus_int16 A_fb1_21 = -24290; /* (opus_int16)(20623 << 1) */
 
 /* Split signal into two decimated bands using first-order allpass filters */
 void silk_ana_filt_bank_1(

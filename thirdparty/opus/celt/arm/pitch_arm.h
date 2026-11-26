@@ -30,11 +30,47 @@
 
 # include "armcpu.h"
 
+# if defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+opus_val32 celt_inner_prod_neon(const opus_val16 *x, const opus_val16 *y, int N);
+void dual_inner_prod_neon(const opus_val16 *x, const opus_val16 *y01,
+        const opus_val16 *y02, int N, opus_val32 *xy1, opus_val32 *xy2);
+
+#  if !defined(OPUS_HAVE_RTCD) && defined(OPUS_ARM_PRESUME_NEON)
+#   define OVERRIDE_CELT_INNER_PROD (1)
+#   define OVERRIDE_DUAL_INNER_PROD (1)
+#   define celt_inner_prod(x, y, N, arch) ((void)(arch), PRESUME_NEON(celt_inner_prod)(x, y, N))
+#   define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), PRESUME_NEON(dual_inner_prod)(x, y01, y02, N, xy1, xy2))
+#  endif
+# endif
+
+# if !defined(OVERRIDE_CELT_INNER_PROD)
+#  if defined(OPUS_HAVE_RTCD) && (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
+extern opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const opus_val16 *y, int N);
+#   define OVERRIDE_CELT_INNER_PROD (1)
+#   define celt_inner_prod(x, y, N, arch) ((*CELT_INNER_PROD_IMPL[(arch)&OPUS_ARCHMASK])(x, y, N))
+#  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
+#   define OVERRIDE_CELT_INNER_PROD (1)
+#   define celt_inner_prod(x, y, N, arch) ((void)(arch), celt_inner_prod_neon(x, y, N))
+#  endif
+# endif
+
+# if !defined(OVERRIDE_DUAL_INNER_PROD)
+#  if defined(OPUS_HAVE_RTCD) && (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
+extern void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x,
+        const opus_val16 *y01, const opus_val16 *y02, int N, opus_val32 *xy1, opus_val32 *xy2);
+#   define OVERRIDE_DUAL_INNER_PROD (1)
+#   define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((*DUAL_INNER_PROD_IMPL[(arch)&OPUS_ARCHMASK])(x, y01, y02, N, xy1, xy2))
+#  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
+#   define OVERRIDE_DUAL_INNER_PROD (1)
+#   define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), dual_inner_prod_neon(x, y01, y02, N, xy1, xy2))
+#  endif
+# endif
+
 # if defined(FIXED_POINT)
 
 #  if defined(OPUS_ARM_MAY_HAVE_NEON)
 opus_val32 celt_pitch_xcorr_neon(const opus_val16 *_x, const opus_val16 *_y,
-    opus_val32 *xcorr, int len, int max_pitch);
+    opus_val32 *xcorr, int len, int max_pitch, int arch);
 #  endif
 
 #  if defined(OPUS_ARM_MAY_HAVE_MEDIA)
@@ -43,7 +79,7 @@ opus_val32 celt_pitch_xcorr_neon(const opus_val16 *_x, const opus_val16 *_y,
 
 #  if defined(OPUS_ARM_MAY_HAVE_EDSP)
 opus_val32 celt_pitch_xcorr_edsp(const opus_val16 *_x, const opus_val16 *_y,
-    opus_val32 *xcorr, int len, int max_pitch);
+    opus_val32 *xcorr, int len, int max_pitch, int arch);
 #  endif
 
 #  if defined(OPUS_HAVE_RTCD) && \
@@ -52,18 +88,17 @@ opus_val32 celt_pitch_xcorr_edsp(const opus_val16 *_x, const opus_val16 *_y,
      (defined(OPUS_ARM_MAY_HAVE_EDSP) && !defined(OPUS_ARM_PRESUME_EDSP)))
 extern opus_val32
 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-      const opus_val16 *, opus_val32 *, int, int);
+      const opus_val16 *, opus_val32 *, int, int, int);
 #   define OVERRIDE_PITCH_XCORR (1)
 #   define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
   ((*CELT_PITCH_XCORR_IMPL[(arch)&OPUS_ARCHMASK])(_x, _y, \
-        xcorr, len, max_pitch))
+        xcorr, len, max_pitch, arch))
 
 #  elif defined(OPUS_ARM_PRESUME_EDSP) || \
     defined(OPUS_ARM_PRESUME_MEDIA) || \
     defined(OPUS_ARM_PRESUME_NEON)
 #   define OVERRIDE_PITCH_XCORR (1)
-#   define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-  ((void)(arch),PRESUME_NEON(celt_pitch_xcorr)(_x, _y, xcorr, len, max_pitch))
+#   define celt_pitch_xcorr (PRESUME_NEON(celt_pitch_xcorr))
 
 #  endif
 
@@ -99,25 +134,24 @@ extern void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
 /* Float case */
 #if defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
 void celt_pitch_xcorr_float_neon(const opus_val16 *_x, const opus_val16 *_y,
-                                 opus_val32 *xcorr, int len, int max_pitch);
+                                 opus_val32 *xcorr, int len, int max_pitch, int arch);
 #endif
 
 #  if defined(OPUS_HAVE_RTCD) && \
     (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
 extern void
 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-      const opus_val16 *, opus_val32 *, int, int);
+      const opus_val16 *, opus_val32 *, int, int, int);
 
 #  define OVERRIDE_PITCH_XCORR (1)
 #  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
   ((*CELT_PITCH_XCORR_IMPL[(arch)&OPUS_ARCHMASK])(_x, _y, \
-        xcorr, len, max_pitch))
+        xcorr, len, max_pitch, arch))
 
 #  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
 
 #   define OVERRIDE_PITCH_XCORR (1)
-#   define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-   ((void)(arch),celt_pitch_xcorr_float_neon(_x, _y, xcorr, len, max_pitch))
+#   define celt_pitch_xcorr celt_pitch_xcorr_float_neon
 
 #  endif
 

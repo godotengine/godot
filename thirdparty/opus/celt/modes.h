@@ -39,6 +39,8 @@
 
 #define MAX_PERIOD 1024
 
+#define DEC_PITCH_BUF_SIZE 2048
+
 typedef struct {
    int size;
    const opus_int16 *index;
@@ -66,10 +68,18 @@ struct OpusCustomMode {
    const unsigned char   *allocVectors;   /**< Number of bits in each band for several rates */
    const opus_int16 *logN;
 
-   const opus_val16 *window;
+   const celt_coef *window;
    mdct_lookup mdct;
    PulseCache cache;
+#ifdef ENABLE_QEXT
+   PulseCache qext_cache;
+#endif
 };
 
+#ifdef ENABLE_QEXT
+#define QEXT_PACKET_SIZE_CAP 3825
+#define NB_QEXT_BANDS 14
+void compute_qext_mode(CELTMode *qext, const CELTMode *m);
+#endif
 
 #endif

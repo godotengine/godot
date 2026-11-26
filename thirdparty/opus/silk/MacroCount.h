@@ -27,9 +27,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef SIGPROCFIX_API_MACROCOUNT_H
 #define SIGPROCFIX_API_MACROCOUNT_H
-#include <stdio.h>
 
 #ifdef    silk_MACRO_COUNT
+#include <stdio.h>
 #define varDefine opus_int64 ops_count = 0;
 
 extern opus_int64 ops_count;
@@ -316,14 +316,6 @@ static OPUS_INLINE opus_int32 silk_ADD_POS_SAT32(opus_int64 a, opus_int64 b){
     opus_int32 tmp;
     ops_count += 1;
     tmp = (opus_int32)((((a)+(b)) & 0x80000000) ? silk_int32_MAX : ((a)+(b)));
-    return(tmp);
-}
-
-#undef silk_ADD_POS_SAT64
-static OPUS_INLINE opus_int64 silk_ADD_POS_SAT64(opus_int64 a, opus_int64 b){
-    opus_int64 tmp;
-    ops_count += 1;
-    tmp = ((((a)+(b)) & 0x8000000000000000LL) ? silk_int64_MAX : ((a)+(b)));
     return(tmp);
 }
 
@@ -699,7 +691,7 @@ return(ret);
 
 
 #undef silk_LIMIT_32
-static OPUS_INLINE opus_int silk_LIMIT_32(opus_int32 a, opus_int32 limit1, opus_int32 limit2)
+static OPUS_INLINE opus_int32 silk_LIMIT_32(opus_int32 a, opus_int32 limit1, opus_int32 limit2)
 {
     opus_int32 ret;
     ops_count += 6;
@@ -715,4 +707,3 @@ static OPUS_INLINE opus_int silk_LIMIT_32(opus_int32 a, opus_int32 limit1, opus_
 
 #endif
 #endif
-

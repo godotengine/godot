@@ -38,7 +38,8 @@ void silk_find_LPC_FLP(
     silk_encoder_state              *psEncC,                            /* I/O  Encoder state                               */
     opus_int16                      NLSF_Q15[],                         /* O    NLSFs                                       */
     const silk_float                x[],                                /* I    Input signal                                */
-    const silk_float                minInvGain                          /* I    Inverse of max prediction gain              */
+    const silk_float                minInvGain,                         /* I    Inverse of max prediction gain              */
+    int                             arch
 )
 {
     opus_int    k, subfr_length;
@@ -56,12 +57,12 @@ void silk_find_LPC_FLP(
     psEncC->indices.NLSFInterpCoef_Q2 = 4;
 
     /* Burg AR analysis for the full frame */
-    res_nrg = silk_burg_modified_FLP( a, x, minInvGain, subfr_length, psEncC->nb_subfr, psEncC->predictLPCOrder );
+    res_nrg = silk_burg_modified_FLP( a, x, minInvGain, subfr_length, psEncC->nb_subfr, psEncC->predictLPCOrder, arch );
 
     if( psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR ) {
         /* Optimal solution for last 10 ms; subtract residual energy here, as that's easier than        */
         /* adding it to the residual energy of the first 10 ms in each iteration of the search below    */
-        res_nrg -= silk_burg_modified_FLP( a_tmp, x + ( MAX_NB_SUBFR / 2 ) * subfr_length, minInvGain, subfr_length, MAX_NB_SUBFR / 2, psEncC->predictLPCOrder );
+        res_nrg -= silk_burg_modified_FLP( a_tmp, x + ( MAX_NB_SUBFR / 2 ) * subfr_length, minInvGain, subfr_length, MAX_NB_SUBFR / 2, psEncC->predictLPCOrder, arch );
 
         /* Convert to NLSFs */
         silk_A2NLSF_FLP( NLSF_Q15, a_tmp, psEncC->predictLPCOrder );
@@ -73,7 +74,7 @@ void silk_find_LPC_FLP(
             silk_interpolate( NLSF0_Q15, psEncC->prev_NLSFq_Q15, NLSF_Q15, k, psEncC->predictLPCOrder );
 
             /* Convert to LPC for residual energy evaluation */
-            silk_NLSF2A_FLP( a_tmp, NLSF0_Q15, psEncC->predictLPCOrder );
+            silk_NLSF2A_FLP( a_tmp, NLSF0_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
             /* Calculate residual energy with LSF interpolation */
             silk_LPC_analysis_filter_FLP( LPC_res, a_tmp, x, 2 * subfr_length, psEncC->predictLPCOrder );
@@ -99,6 +100,6 @@ void silk_find_LPC_FLP(
         silk_A2NLSF_FLP( NLSF_Q15, a, psEncC->predictLPCOrder );
     }
 
-    silk_assert( psEncC->indices.NLSFInterpCoef_Q2 == 4 ||
+    celt_assert( psEncC->indices.NLSFInterpCoef_Q2 == 4 ||
         ( psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR ) );
 }

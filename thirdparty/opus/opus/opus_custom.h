@@ -41,7 +41,7 @@
 extern "C" {
 #endif
 
-#ifdef CUSTOM_MODES
+#if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
 # define OPUS_CUSTOM_EXPORT OPUS_EXPORT
 # define OPUS_CUSTOM_EXPORT_STATIC OPUS_EXPORT
 #else
@@ -104,7 +104,8 @@ typedef struct OpusCustomDecoder OpusCustomDecoder;
 /** The mode contains all the information necessary to create an
     encoder. Both the encoder and decoder need to be initialized
     with exactly the same mode, otherwise the output will be
-    corrupted.
+    corrupted. The mode MUST NOT BE DESTROYED until the encoders and
+    decoders that use it are destroyed as well.
    @brief Mode configuration
  */
 typedef struct OpusCustomMode OpusCustomMode;
@@ -140,7 +141,7 @@ OPUS_CUSTOM_EXPORT_STATIC OPUS_WARN_UNUSED_RESULT int opus_custom_encoder_get_si
     int channels
 ) OPUS_ARG_NONNULL(1);
 
-# ifdef CUSTOM_MODES
+#if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
 /** Initializes a previously allocated encoder state
   * The memory pointed to by st must be the size returned by opus_custom_encoder_get_size.
   * This is intended for applications which use their own allocator instead of malloc.
@@ -178,7 +179,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT OpusCustomEncoder *opus_custom_encode
 ) OPUS_ARG_NONNULL(1);
 
 
-/** Destroys a an encoder state.
+/** Destroys an encoder state.
   * @param[in] st <tt>OpusCustomEncoder*</tt>: State to be freed.
   */
 OPUS_CUSTOM_EXPORT void opus_custom_encoder_destroy(OpusCustomEncoder *st);
@@ -224,6 +225,27 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode_float(
 OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode(
     OpusCustomEncoder *st,
     const opus_int16 *pcm,
+    int frame_size,
+    unsigned char *compressed,
+    int maxCompressedBytes
+) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2) OPUS_ARG_NONNULL(4);
+
+/** Encodes a frame of audio.
+  * @param [in] st <tt>OpusCustomEncoder*</tt>: Encoder state
+  * @param [in] pcm <tt>opus_int32*</tt>: PCM audio in signed 32-bit format (native endian) representing (or slightly exceeding) 24-bit values.
+  *          There must be exactly frame_size samples per channel.
+  * @param [in] frame_size <tt>int</tt>: Number of samples per frame of input signal
+  * @param [out] compressed <tt>char *</tt>: The compressed data is written here. This may not alias pcm and must be at least maxCompressedBytes long.
+  * @param [in] maxCompressedBytes <tt>int</tt>: Maximum number of bytes to use for compressing the frame
+  *          (can change from one frame to another)
+  * @return Number of bytes written to "compressed".
+  *       If negative, an error has occurred (see error codes). It is IMPORTANT that
+  *       the length returned be somehow transmitted to the decoder. Otherwise, no
+  *       decoding is possible.
+ */
+OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode24(
+    OpusCustomEncoder *st,
+    const opus_int32 *pcm,
     int frame_size,
     unsigned char *compressed,
     int maxCompressedBytes
@@ -286,7 +308,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT OpusCustomDecoder *opus_custom_decode
     int *error
 ) OPUS_ARG_NONNULL(1);
 
-/** Destroys a an decoder state.
+/** Destroys a decoder state.
   * @param[in] st <tt>OpusCustomDecoder*</tt>: State to be freed.
   */
 OPUS_CUSTOM_EXPORT void opus_custom_decoder_destroy(OpusCustomDecoder *st);
@@ -322,6 +344,23 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode(
     const unsigned char *data,
     int len,
     opus_int16 *pcm,
+    int frame_size
+) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+
+/** Decode an opus custom frame
+  * @param [in] st <tt>OpusCustomDecoder*</tt>: Decoder state
+  * @param [in] data <tt>char*</tt>: Input payload. Use a NULL pointer to indicate packet loss
+  * @param [in] len <tt>int</tt>: Number of bytes in payload
+  * @param [out] pcm <tt>opus_int32*</tt>: Output signal (interleaved if 2 channels) representing (or slightly exceeding) 24-bit values. length
+  *  is frame_size*channels*sizeof(opus_int32)
+  * @param [in] frame_size Number of samples per channel of available space in *pcm.
+  * @returns Number of decoded samples or @ref opus_errorcodes
+  */
+OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode24(
+    OpusCustomDecoder *st,
+    const unsigned char *data,
+    int len,
+    opus_int32 *pcm,
     int frame_size
 ) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
 

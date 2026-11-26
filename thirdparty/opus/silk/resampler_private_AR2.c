@@ -52,4 +52,3 @@ void silk_resampler_private_AR2(
         S[ 1 ]      = silk_SMULWB( out32, A_Q14[ 1 ] );
     }
 }
-

@@ -47,7 +47,7 @@ silk_float silk_residual_energy_covar_FLP(                              /* O    
     silk_float tmp, nrg = 0.0f, regularization;
 
     /* Safety checks */
-    silk_assert( D >= 0 );
+    celt_assert( D >= 0 );
 
     regularization = REGULARIZATION_FACTOR * ( wXX[ 0 ] + wXX[ D * D - 1 ] );
     for( k = 0; k < MAX_ITERATIONS_RESIDUAL_NRG; k++ ) {
