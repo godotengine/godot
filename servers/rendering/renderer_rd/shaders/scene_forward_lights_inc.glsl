@@ -199,7 +199,14 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#ifdef EXPLICIT_FP16
+		// In FP16, normalize(V + L) is NaN when V + L is near zero; use FP32 and fall back to N.
+		vec3 H_full = vec3(V) + vec3(L);
+		float H_len2 = dot(H_full, H_full);
+		hvec3 H = H_len2 > 1e-8 ? hvec3(H_full * inversesqrt(H_len2)) : N;
+#else
 		hvec3 H = normalize(V + L);
+#endif
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
 #endif
 
@@ -288,8 +295,14 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
 			half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 			hvec3 F = f0 + (f90 - f0) * cLdotH5;
+#ifdef EXPLICIT_FP16
+			// In FP16 this product can overflow to inf (NaN with zero attenuation); multiply in FP32.
+			vec3 specular_brdf_NL = vec3(energy_compensation) * float(cNdotL) * float(D) * vec3(F) * float(G);
+			specular_light += hvec3(min(specular_brdf_NL * vec3(light_color) * (float(attenuation) * float(cc_attenuation) * float(specular_amount)), vec3(HALF_FLT_MAX)));
+#else
 			hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
 			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
+#endif
 #endif
 		}
 
