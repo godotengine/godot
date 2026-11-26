@@ -647,6 +647,7 @@
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_unicode_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] Metadata that has a name starting with a double underscore ([code]__[/code]) doesn't get serialized.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -733,6 +734,7 @@
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_unicode_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] Metadata that has a name starting with a double underscore ([code]__[/code]) doesn't get serialized.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -862,6 +864,7 @@
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_unicode_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] Metadata that has a name starting with a double underscore ([code]__[/code]) doesn't get serialized.
 			</description>
 		</method>
 		<method name="remove_user_signal">
@@ -969,6 +972,7 @@
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_unicode_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] Metadata that has a name starting with a double underscore ([code]__[/code]) doesn't get serialized.
 			</description>
 		</method>
 		<method name="set_script">
