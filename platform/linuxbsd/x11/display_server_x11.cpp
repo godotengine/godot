@@ -2799,6 +2799,11 @@ void DisplayServerX11::window_set_size(const Size2i p_size, DisplayServerEnums::
 		gl_manager_egl->window_resize(p_window, xwa.width, xwa.height);
 	}
 #endif
+
+	if (wd.rect_changed_callback.is_valid()) {
+		Rect2i new_rect(wd.position, Size2i(xwa.width, xwa.height));
+		wd.rect_changed_callback.call(new_rect);
+	}
 }
 
 Size2i DisplayServerX11::window_get_size(DisplayServerEnums::WindowID p_window) const {
