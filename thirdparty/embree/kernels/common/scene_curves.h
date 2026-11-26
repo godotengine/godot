@@ -189,9 +189,9 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, size_t i, float time) const
+    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, size_t i, float time, const bool motion_blur = true) const
     {
-      if (hasMotionBlur()) gather(p0,p1,p2,p3,i,time);
+      if (hasMotionBlur() && motion_blur) gather(p0,p1,p2,p3,i,time);
       else                 gather(p0,p1,p2,p3,i);
     }
     
@@ -218,9 +218,9 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time for mblur and non-mblur case */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i, float time) const
+    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i, float time, bool motion_blur = true) const
     {
-      if (hasMotionBlur()) gather(p0,p1,p2,p3,n0,n1,n2,n3,i,time);
+      if (hasMotionBlur() && motion_blur) gather(p0,p1,p2,p3,n0,n1,n2,n3,i,time);
       else                 gather(p0,p1,p2,p3,n0,n1,n2,n3,i);
     }
 

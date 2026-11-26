@@ -58,8 +58,8 @@ namespace embree
       }
 
        /*! returns reference to root */
-      __forceinline       BVH4::NodeRef& root(size_t t = 0)       { return (BVH4::NodeRef&)data[rootOffset + t*sizeof(BVH4::NodeRef)]; }
-      __forceinline const BVH4::NodeRef& root(size_t t = 0) const { return (BVH4::NodeRef&)data[rootOffset + t*sizeof(BVH4::NodeRef)]; }
+      __forceinline       BVH4::NodeRef& root(size_t t = 0)       { return *(BVH4::NodeRef*)&data[rootOffset + t*sizeof(BVH4::NodeRef)]; }
+      __forceinline const BVH4::NodeRef& root(size_t t = 0) const { return *(BVH4::NodeRef*)&data[rootOffset + t*sizeof(BVH4::NodeRef)]; }
 
       /*! returns pointer to BVH array */
       __forceinline       char* bvhData()       { return &data[0]; }
