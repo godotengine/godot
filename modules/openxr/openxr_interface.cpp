@@ -793,6 +793,8 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 		return XRInterface::XR_PLAY_AREA_ROOMSCALE;
 	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STAGE) {
 		return XRInterface::XR_PLAY_AREA_STAGE;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STATIONARY_EXT) {
+		return XRInterface::XR_PLAY_AREA_STATIONARY;
 	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_MAX_ENUM) {
 		return XRInterface::XR_PLAY_AREA_CUSTOM;
 	}
@@ -811,6 +813,8 @@ bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 		reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT;
 	} else if (p_mode == XRInterface::XR_PLAY_AREA_STAGE) {
 		reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
+	} else if (p_mode == XRInterface::XR_PLAY_AREA_STATIONARY) {
+		reference_space = XR_REFERENCE_SPACE_TYPE_STATIONARY_EXT;
 	} else {
 		return false;
 	}
@@ -1487,6 +1491,9 @@ void OpenXRInterface::on_reference_space_change_pending(XrReferenceSpaceType p_t
 			break;
 		case XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR:
 			mode = XR_PLAY_AREA_ROOMSCALE;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_STATIONARY_EXT:
+			mode = XR_PLAY_AREA_STATIONARY;
 			break;
 		default:
 			mode = XR_PLAY_AREA_UNKNOWN;
