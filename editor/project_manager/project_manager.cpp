@@ -100,8 +100,7 @@ void ProjectManager::_notification(int p_what) {
 				main_window->connect("titlebar_changed", callable_mp(this, &ProjectManager::_titlebar_resized));
 			}
 
-			// Theme has already been created in the constructor, so we can skip that step.
-			_update_theme(true);
+			_apply_theme(theme);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -143,7 +142,10 @@ void ProjectManager::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_theme();
+				theme_preview_active = false;
+				theme = EditorThemeManager::generate_theme(theme);
+				DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
+				_apply_theme(theme);
 			}
 			_update_list_placeholder();
 		} break;
@@ -226,14 +228,19 @@ void ProjectManager::_update_size_limits() {
 	}
 }
 
-void ProjectManager::_update_theme(bool p_skip_creation) {
-	if (!p_skip_creation) {
-		theme = EditorThemeManager::generate_theme(theme);
-		DisplayServer::set_early_window_clear_color_override(true, theme->get_color("background", EditorStringName(Editor)));
+void ProjectManager::_preview_theme(const String &p_preset) {
+	if (!p_preset.is_empty()) {
+		theme_preview_active = true;
+		_apply_theme(EditorThemeManager::generate_theme(theme, p_preset));
+	} else if (theme_preview_active) {
+		theme_preview_active = false;
+		_apply_theme(theme);
 	}
+}
 
+void ProjectManager::_apply_theme(const Ref<Theme> &p_theme) {
 	Vector<Ref<Theme>> editor_themes;
-	editor_themes.push_back(theme);
+	editor_themes.push_back(p_theme);
 	editor_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 
 	ThemeContext *node_tc = ThemeDB::get_singleton()->get_theme_context(this);
@@ -336,7 +343,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 #endif
 
 #ifdef ANDROID_ENABLED
-	DisplayServer::get_singleton()->window_set_color(theme->get_color("background", EditorStringName(Editor)));
+	DisplayServer::get_singleton()->window_set_color(p_theme->get_color("background", EditorStringName(Editor)));
 #endif
 }
 
@@ -1898,6 +1905,7 @@ ProjectManager::ProjectManager() {
 		quick_settings_dialog = memnew(QuickSettingsDialog);
 		add_child(quick_settings_dialog);
 		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
+		quick_settings_dialog->connect(SNAME("theme_preview_changed"), callable_mp(this, &ProjectManager::_preview_theme));
 
 		scan_dir = memnew(EditorFileDialog);
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

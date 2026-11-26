@@ -35,9 +35,11 @@
 
 class Button;
 class EditorSettingsDialog;
+class InputEvent;
 class MarginContainer;
 class OptionButton;
 class PanelContainer;
+class Timer;
 class VBoxContainer;
 
 class SettingLabel : public Label {
@@ -80,10 +82,16 @@ class QuickSettingsDialog : public AcceptDialog {
 
 	Label *custom_theme_label = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
+	Timer *theme_preview_timer = nullptr;
+	int theme_preview_index = -1;
 
 	void _language_selected(int p_id);
 	void _style_selected(int p_id);
 	void _theme_selected(int p_id);
+	void _theme_popup_input(const Ref<InputEvent> &p_event);
+	void _queue_theme_preview(int p_index);
+	void _preview_theme();
+	void _end_theme_preview();
 	void _scale_selected(int p_id);
 	void _network_mode_selected(int p_id);
 	void _check_for_update_selected(int p_id);
