@@ -1119,11 +1119,16 @@ String OS_Unix::get_executable_path() const {
 	}
 	return b;
 #elif defined(__OpenBSD__)
-	char resolved_path[MAXPATHLEN];
+	char	buf[PATH_MAX];
+	String	b;
 
-	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
+	if (getexecpath(buf, sizeof(buf)) != 0) {
+		ERR_FAIL_V(vformat("getexecpath error: %d - %s", errno, strerror(errno)));
+	}
 
-	return String(resolved_path);
+	b.append_utf8(buf, strnlen(buf, sizeof(buf)));
+
+	return b;
 #elif defined(__NetBSD__)
 	int mib[4] = { CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME };
 	char buf[MAXPATHLEN];
