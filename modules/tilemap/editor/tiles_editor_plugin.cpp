@@ -42,6 +42,7 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -351,6 +352,86 @@ TileSetSourceItemList::TileSetSourceItemList() {
 	set_texture_filter(TEXTURE_FILTER_NEAREST);
 	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_user_signal(MethodInfo("sort_request"));
+}
+
+void TileSetPatternList::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index == MouseButton::LEFT) {
+		deselect_all();
+	}
+}
+
+void TileSetPatternList::_pattern_preview_done(const Ref<TileMapPattern> &p_pattern, const Ref<Texture2D> &p_texture, int p_index) {
+	if (likely(get_item_metadata(p_index) == p_pattern)) {
+		set_item_icon(p_index, p_texture);
+		return;
+	}
+
+	// Pattern's index changed for some reason (is it even possible?).
+	for (int i = 0; i < get_item_count(); i++) {
+		if (get_item_metadata(i) == p_pattern) {
+			set_item_icon(i, p_texture);
+			break;
+		}
+	}
+}
+
+void TileSetPatternList::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("empty_clicked", callable_mp(this, &TileSetPatternList::_empty_clicked));
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			for (int i = 0; i < get_item_count(); i++) {
+				set_item_tooltip(i, vformat(TTR("Index: %d"), i));
+			}
+		} break;
+	}
+}
+
+void TileSetPatternList::gui_input(const Ref<InputEvent> &p_event) {
+	if (tile_set.is_valid() && !EditorNode::get_singleton()->is_resource_read_only(tile_set) &&
+			p_event->is_pressed() && !p_event->is_echo() && ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
+		const Vector<int> selected = get_selected_items();
+
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Remove TileSet patterns"));
+		for (int pattern_index : selected) {
+			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
+			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
+		}
+		undo_redo->commit_action();
+
+		accept_event();
+		return;
+	}
+	ItemList::gui_input(p_event);
+}
+
+void TileSetPatternList::update_list(const Ref<TileSet> &p_from_tileset) {
+	tile_set = p_from_tileset;
+	clear();
+
+	if (tile_set.is_null()) {
+		return;
+	}
+
+	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
+		int id = add_item(String());
+		set_item_metadata(id, tile_set->get_pattern(i));
+		set_item_tooltip(id, vformat(TTR("Index: %d"), i));
+		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetPatternList::_pattern_preview_done).bind(i));
+	}
+}
+
+TileSetPatternList::TileSetPatternList() {
+	const int thumbnail_size = 64;
+	set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
+	set_max_columns(0);
+	set_icon_mode(ItemList::ICON_MODE_TOP);
+	set_fixed_column_width(thumbnail_size * 3 / 2);
+	set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 }
 
 void TileMapEditorPlugin::_tile_map_layer_changed() {

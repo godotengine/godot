@@ -45,6 +45,7 @@ class HBoxContainer;
 class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
+class TileSetPatternList;
 class TileSetSourceItemList;
 
 class TileSetEditor : public EditorDock {
@@ -95,10 +96,8 @@ private:
 
 	// Patterns.
 	MarginContainer *patterns_mc = nullptr;
-	ItemList *patterns_item_list = nullptr;
+	TileSetPatternList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
-	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
-	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	void _update_patterns_list();
 
 	// Expanded editor.
