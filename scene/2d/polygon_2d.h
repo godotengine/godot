@@ -56,7 +56,6 @@ class Polygon2D : public Node2D {
 
 	Size2 tex_scale = Vector2(1, 1);
 	Vector2 tex_ofs;
-	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
 	real_t invert_border = 100.0;
@@ -75,22 +74,25 @@ class Polygon2D : public Node2D {
 	void _skeleton_bone_setup_changed();
 
 	RID mesh;
+	int last_len = 0;
+	int last_index_count = 0;
+	bool last_has_uv = false;
+	bool last_has_color = false;
+	bool last_has_bones = false;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 
@@ -142,7 +144,7 @@ public:
 	void add_bone(const NodePath &p_path = NodePath(), const Vector<float> &p_weights = Vector<float>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	Vector<float> get_bone_weights(int p_index) const;
+	const Vector<float> &get_bone_weights(int p_index) const _LIFETIME_BOUND_;
 	void erase_bone(int p_idx);
 	void clear_bones();
 	void set_bone_weights(int p_index, const Vector<float> &p_weights);

@@ -15,9 +15,10 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "src/webp/types.h"
+
 #include "src/webp/encode.h"
 #include "src/webp/format_constants.h"
+#include "src/webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -126,10 +127,10 @@ struct VP8LHashChain {
   // (through WINDOW_SIZE = 1<<20).
   // The lower 12 bits contain the length of the match. The 12 bit limit is
   // defined in MaxFindCopyLength with MAX_LENGTH=4096.
-  uint32_t* offset_length_;
+  uint32_t* offset_length;
   // This is the maximum size of the hash_chain that can be constructed.
   // Typically this is the pixel count (width x height) for a given image.
-  int size_;
+  int size;
 };
 
 // Must be called first, to set size.
@@ -143,12 +144,12 @@ void VP8LHashChainClear(VP8LHashChain* const p);  // release memory
 
 static WEBP_INLINE int VP8LHashChainFindOffset(const VP8LHashChain* const p,
                                                const int base_position) {
-  return p->offset_length_[base_position] >> MAX_LENGTH_BITS;
+  return p->offset_length[base_position] >> MAX_LENGTH_BITS;
 }
 
 static WEBP_INLINE int VP8LHashChainFindLength(const VP8LHashChain* const p,
                                                const int base_position) {
-  return p->offset_length_[base_position] & ((1U << MAX_LENGTH_BITS) - 1);
+  return p->offset_length[base_position] & ((1U << MAX_LENGTH_BITS) - 1);
 }
 
 static WEBP_INLINE void VP8LHashChainFindCopy(const VP8LHashChain* const p,
@@ -170,12 +171,12 @@ typedef struct VP8LBackwardRefs VP8LBackwardRefs;
 
 // Container for blocks chain
 struct VP8LBackwardRefs {
-  int block_size_;               // common block-size
-  int error_;                    // set to true if some memory error occurred
-  PixOrCopyBlock* refs_;         // list of currently used blocks
-  PixOrCopyBlock** tail_;        // for list recycling
-  PixOrCopyBlock* free_blocks_;  // free-list
-  PixOrCopyBlock* last_block_;   // used for adding new refs (internal)
+  int block_size;               // common block-size
+  int error;                    // set to true if some memory error occurred
+  PixOrCopyBlock* refs;         // list of currently used blocks
+  PixOrCopyBlock** tail;        // for list recycling
+  PixOrCopyBlock* free_blocks;  // free-list
+  PixOrCopyBlock* last_block;   // used for adding new refs (internal)
 };
 
 // Initialize the object. 'block_size' is the common block size to store
@@ -189,8 +190,8 @@ typedef struct {
   // public:
   PixOrCopy* cur_pos;           // current position
   // private:
-  PixOrCopyBlock* cur_block_;   // current block in the refs list
-  const PixOrCopy* last_pos_;   // sentinel for switching to next block
+  PixOrCopyBlock* cur_block;    // current block in the refs list
+  const PixOrCopy* last_pos;    // sentinel for switching to next block
 } VP8LRefsCursor;
 
 // Returns a cursor positioned at the beginning of the references list.
@@ -205,7 +206,7 @@ void VP8LRefsCursorNextBlock(VP8LRefsCursor* const c);
 static WEBP_INLINE void VP8LRefsCursorNext(VP8LRefsCursor* const c) {
   assert(c != NULL);
   assert(VP8LRefsCursorOk(c));
-  if (++c->cur_pos == c->last_pos_) VP8LRefsCursorNextBlock(c);
+  if (++c->cur_pos == c->last_pos) VP8LRefsCursorNextBlock(c);
 }
 
 // -----------------------------------------------------------------------------

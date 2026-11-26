@@ -4,7 +4,7 @@
  *
  *   FreeType TrueType driver component (body only).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -24,6 +24,7 @@
 #include "ttinterp.c"
 #include "ttobjs.c"     /* object manager      */
 #include "ttpload.c"    /* tables loader       */
+#include "ttvarc.c"     /* variable composites */
 
 
 /* END */

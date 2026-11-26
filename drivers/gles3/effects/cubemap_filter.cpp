@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "cubemap_filter.h"
 
-#include "../storage/texture_storage.h"
+#ifdef GLES3_ENABLED
+
 #include "core/config/project_settings.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -72,8 +72,8 @@ CubemapFilter::CubemapFilter() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -157,7 +157,7 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 		float roughness4 = roughness * roughness;
 		roughness4 *= roughness4;
 
-		float solid_angle_texel = 4.0 * Math::PI / float(6 * size * size);
+		float solid_angle_texel = 4.0 * Math::PI / float(6 * p_source_size * p_source_size);
 
 		LocalVector<float> sample_directions;
 		sample_directions.resize(4 * sample_count);

@@ -14,7 +14,10 @@
 #ifndef WEBP_DEC_ALPHAI_DEC_H_
 #define WEBP_DEC_ALPHAI_DEC_H_
 
+#include "src/dec/vp8_dec.h"
+#include "src/webp/types.h"
 #include "src/dec/webpi_dec.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/filters_utils.h"
 
 #ifdef __cplusplus
@@ -25,24 +28,24 @@ struct VP8LDecoder;  // Defined in dec/vp8li.h.
 
 typedef struct ALPHDecoder ALPHDecoder;
 struct ALPHDecoder {
-  int width_;
-  int height_;
-  int method_;
-  WEBP_FILTER_TYPE filter_;
-  int pre_processing_;
-  struct VP8LDecoder* vp8l_dec_;
-  VP8Io io_;
-  int use_8b_decode_;  // Although alpha channel requires only 1 byte per
+  int width;
+  int height;
+  int method;
+  WEBP_FILTER_TYPE filter;
+  int pre_processing;
+  struct VP8LDecoder* vp8l_dec;
+  VP8Io io;
+  int use_8b_decode;   // Although alpha channel requires only 1 byte per
                        // pixel, sometimes VP8LDecoder may need to allocate
                        // 4 bytes per pixel internally during decode.
-  uint8_t* output_;
-  const uint8_t* prev_line_;   // last output row (or NULL)
+  uint8_t* output;
+  const uint8_t* prev_line;   // last output row (or NULL)
 };
 
 //------------------------------------------------------------------------------
 // internal functions. Not public.
 
-// Deallocate memory associated to dec->alpha_plane_ decoding
+// Deallocate memory associated to dec->alpha_plane decoding
 void WebPDeallocateAlphaMemory(VP8Decoder* const dec);
 
 //------------------------------------------------------------------------------

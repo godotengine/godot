@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2024 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,29 @@
 #ifndef _TVG_LOCK_H_
 #define _TVG_LOCK_H_
 
-#ifdef THORVG_THREAD_SUPPORT
-
 #include <mutex>
 #include "tvgTaskScheduler.h"
 
-namespace tvg {
-
+namespace tvg
+{
+#ifdef THORVG_THREAD_SUPPORT
     struct Key
     {
         std::mutex mtx;
+
+        void lock()
+        {
+            mtx.lock();
+        }
+
+        void unlock()
+        {
+            mtx.unlock();
+        }
+    };
+
+    struct StrictKey : Key
+    {
     };
 
     struct ScopedLock
@@ -47,30 +60,59 @@ namespace tvg {
             }
         }
 
+        ScopedLock(StrictKey& k)
+        {
+            k.mtx.lock();
+            key = &k;
+        }
+
         ~ScopedLock()
         {
-            if (TaskScheduler::threads() > 0) {
-                key->mtx.unlock();
-            }
+            if (key) key->mtx.unlock();
+        }
+    };
+#else //THORVG_THREAD_SUPPORT
+    struct Key {};
+
+    struct StrictKey : Key
+    {
+#ifdef __STDCPP_THREADS__
+        std::mutex mtx;
+#endif
+
+        void lock()
+        {
+#ifdef __STDCPP_THREADS__
+            mtx.lock();
+#endif
+        }
+
+        void unlock()
+        {
+#ifdef __STDCPP_THREADS__
+            mtx.unlock();
+#endif
         }
     };
 
-}
-
-#else //THORVG_THREAD_SUPPORT
-
-namespace tvg {
-
-    struct Key {};
-
     struct ScopedLock
     {
-        ScopedLock(Key& key) {}
-    };
+        StrictKey* key = nullptr;
 
+        ScopedLock(Key& k) {}
+
+        ScopedLock(StrictKey& k)
+        {
+            k.lock();
+            key = &k;
+        }
+
+        ~ScopedLock()
+        {
+            if (key) key->unlock();
+        }
+    };
+#endif //THORVG_THREAD_SUPPORT
 }
 
-#endif //THORVG_THREAD_SUPPORT
-
 #endif //_TVG_LOCK_H_
-

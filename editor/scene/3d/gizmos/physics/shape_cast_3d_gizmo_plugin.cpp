@@ -31,6 +31,7 @@
 #include "shape_cast_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/shape_cast_3d.h"
+#include "scene/main/scene_tree.h"
 
 ShapeCast3DGizmoPlugin::ShapeCast3DGizmoPlugin() {
 	const Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();

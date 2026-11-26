@@ -30,10 +30,14 @@
 
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/main/scene_tree.h"
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 	if (col_sdf) {
@@ -42,7 +46,6 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 			if (path.is_empty()) {
 				path = "res://" + col_sdf->get_name() + "_data.exr";
 			} else {
-				String ext = path.get_extension();
 				path = path.get_basename() + "." + col_sdf->get_name() + "_data.exr";
 			}
 			probe_file->set_current_path(path);

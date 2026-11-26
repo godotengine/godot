@@ -58,7 +58,7 @@ struct CFF2FDSelect
     return_trace (true);
   }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   {
     switch (format)
     {
@@ -83,7 +83,8 @@ struct CFF2FDSelect
     }
   }
 
-  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
+  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount,
+                 unsigned int charstring_count = HB_CODEPOINT_INVALID) const
   {
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
@@ -92,9 +93,9 @@ struct CFF2FDSelect
 
     switch (format)
     {
-    case 0: hb_barrier (); return_trace (u.format0.sanitize (c, fdcount));
-    case 3: hb_barrier (); return_trace (u.format3.sanitize (c, fdcount));
-    case 4: hb_barrier (); return_trace (u.format4.sanitize (c, fdcount));
+    case 0: hb_barrier (); return_trace (u.format0.sanitize (c, fdcount, charstring_count));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c, fdcount, charstring_count));
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c, fdcount, charstring_count));
     default:return_trace (false);
     }
   }
@@ -130,7 +131,7 @@ struct CFF2ItemVariationStore
     return_trace (true);
   }
 
-  unsigned int get_size () const { return HBUINT16::static_size + size; }
+  size_t get_size () const { return HBUINT16::static_size + size; }
 
   HBUINT16	size;
   ItemVariationStore  varStore;
@@ -302,6 +303,9 @@ struct cff2_private_dict_opset_t : dict_opset_t
 	env.clear_args ();
 	break;
       case OpCode_blenddict:
+        /* Hint values are ignored here. Discard each group so raw operands
+         * from successive blends cannot overflow the stack. */
+        env.clear_args ();
 	break;
 
       default:
@@ -343,6 +347,12 @@ struct cff2_private_dict_opset_subset_t : dict_opset_t
 
       case OpCode_Subrs:
 	dictval.subrsOffset = env.argStack.pop_int ();
+	env.clear_args ();
+	break;
+
+      case OpCode_vsindexdict:
+	env.process_vsindex ();
+	dictval.ivs = env.get_ivs ();
 	env.clear_args ();
 	break;
 
@@ -428,7 +438,6 @@ struct cff2
       varStore = &StructAtOffsetOrNull<CFF2ItemVariationStore> (cff2, topDict.vstoreOffset, sc);
       charStrings = &StructAtOffsetOrNull<CFF2CharStrings> (cff2, topDict.charStringsOffset, sc);
       fdArray = &StructAtOffsetOrNull<CFF2FDArray> (cff2, topDict.FDArrayOffset, sc);
-      fdSelect = &StructAtOffsetOrNull<CFF2FDSelect> (cff2, topDict.FDSelectOffset, sc, fdArray->count);
 
       if (charStrings == &Null (CFF2CharStrings) ||
 	  globalSubrs == &Null (CFF2Subrs) ||
@@ -437,6 +446,18 @@ struct cff2
 
       num_glyphs = charStrings->count;
       if (num_glyphs != sc.get_num_glyphs ())
+      {
+        /* VARC can define glyphs beyond the CFF2 CharStrings INDEX. */
+        hb_blob_t *varc = face->reference_table (HB_TAG ('V','A','R','C'));
+        bool valid_count = num_glyphs < sc.get_num_glyphs () &&
+                           hb_blob_get_length (varc);
+        hb_blob_destroy (varc);
+        if (!valid_count) goto fail;
+      }
+
+      fdSelect = &StructAtOffsetOrNull<CFF2FDSelect> (cff2, topDict.FDSelectOffset, sc,
+                                                   fdArray->count, num_glyphs);
+      if (topDict.FDSelectOffset && fdSelect == &Null (CFF2FDSelect))
         goto fail;
 
       fdCount = fdArray->count;
@@ -531,9 +552,10 @@ struct cff2
     HB_INTERNAL bool get_extents_at (hb_font_t *font,
 				     hb_codepoint_t glyph,
 				     hb_glyph_extents_t *extents,
-				     hb_array_t<const int> coords) const;
-    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
-    HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const;
+				     hb_array_t<const int> coords,
+				     int64_t *budget = nullptr) const;
+    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, int64_t *budget = nullptr) const;
+    HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords, int64_t *budget = nullptr) const;
   };
 
   struct accelerator_subset_t : accelerator_templ_t<cff2_private_dict_opset_subset_t, cff2_private_dict_values_subset_t>

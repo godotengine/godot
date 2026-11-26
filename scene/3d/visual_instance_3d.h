@@ -31,6 +31,10 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
+#include "servers/rendering/rendering_server_enums.h"
+
+class Material;
+class TriangleMesh;
 
 class VisualInstance3D : public Node3D {
 	GDCLASS(VisualInstance3D, Node3D);
@@ -90,10 +94,10 @@ public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::GEOMETRY_INSTANCE_3D;
 
 	enum ShadowCastingSetting {
-		SHADOW_CASTING_SETTING_OFF = RS::SHADOW_CASTING_SETTING_OFF,
-		SHADOW_CASTING_SETTING_ON = RS::SHADOW_CASTING_SETTING_ON,
-		SHADOW_CASTING_SETTING_DOUBLE_SIDED = RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
-		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		SHADOW_CASTING_SETTING_OFF = RSE::SHADOW_CASTING_SETTING_OFF,
+		SHADOW_CASTING_SETTING_ON = RSE::SHADOW_CASTING_SETTING_ON,
+		SHADOW_CASTING_SETTING_DOUBLE_SIDED = RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY,
 	};
 
 	enum GIMode {
@@ -111,9 +115,9 @@ public:
 	};
 
 	enum VisibilityRangeFadeMode {
-		VISIBILITY_RANGE_FADE_DISABLED = RS::VISIBILITY_RANGE_FADE_DISABLED,
-		VISIBILITY_RANGE_FADE_SELF = RS::VISIBILITY_RANGE_FADE_SELF,
-		VISIBILITY_RANGE_FADE_DEPENDENCIES = RS::VISIBILITY_RANGE_FADE_DEPENDENCIES,
+		VISIBILITY_RANGE_FADE_DISABLED = RSE::VISIBILITY_RANGE_FADE_DISABLED,
+		VISIBILITY_RANGE_FADE_SELF = RSE::VISIBILITY_RANGE_FADE_SELF,
+		VISIBILITY_RANGE_FADE_DEPENDENCIES = RSE::VISIBILITY_RANGE_FADE_DEPENDENCIES,
 	};
 
 private:
@@ -146,6 +150,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();

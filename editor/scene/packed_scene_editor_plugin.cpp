@@ -30,12 +30,13 @@
 
 #include "packed_scene_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
 
 void PackedSceneEditor::_on_open_scene_pressed() {
 	// Using deferred call because changing scene updates the Inspector and thus destroys this plugin.
-	callable_mp(EditorNode::get_singleton(), &EditorNode::load_scene).call_deferred(packed_scene->get_path(), false, false, false, false);
+	callable_mp(EditorNode::get_singleton(), &EditorNode::open_scene).call_deferred(packed_scene->get_path(), false, false, false);
 }
 
 PackedSceneEditor::PackedSceneEditor(Ref<PackedScene> &p_packed_scene) {

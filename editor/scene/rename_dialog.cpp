@@ -30,6 +30,9 @@
 
 #include "rename_dialog.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/string/regex.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -43,8 +46,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
-
-#include "modules/regex/regex.h"
+#include "scene/main/scene_tree.h"
 
 RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	scene_tree_editor = p_scene_tree_editor;
@@ -119,6 +121,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	vbc->add_child(cbut_collapse_features);
 
 	tabc_features = memnew(TabContainer);
+	tabc_features->set_theme_type_variation("TabContainerInner");
 	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 

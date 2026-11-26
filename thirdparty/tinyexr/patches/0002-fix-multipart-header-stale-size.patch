@@ -1,0 +1,16 @@
+Custom fix for CVE-2026-110597 to appease distro maintainers.
+We don't actually use that code in Godot.
+
+diff --git a/thirdparty/tinyexr/tinyexr.h b/thirdparty/tinyexr/tinyexr.h
+index 7a3948d107..5c96a1a149 100644
+--- a/thirdparty/tinyexr/tinyexr.h
++++ b/thirdparty/tinyexr/tinyexr.h
+@@ -10617,7 +10617,7 @@ int ParseEXRMultipartHeaderFromMemory(EXRHeader ***exr_headers,
+ 
+     // move to next header.
+     marker += info.header_len;
+-    size -= info.header_len;
++    marker_size -= info.header_len;
+   }
+ 
+   // allocate memory for EXRHeader and create array of EXRHeader pointers.

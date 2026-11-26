@@ -16,7 +16,7 @@ struct PairPosFormat1_3
 
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of subtable */
   ValueFormat   valueFormat[2];         /* [0] Defines the types of data in
@@ -25,11 +25,11 @@ struct PairPosFormat1_3
                                         /* [1] Defines the types of data in
                                          * ValueRecord2--for the second glyph
                                          * in the pair--may be zero (0) */
-  Array16Of<typename Types::template OffsetTo<PairSet>>
-                pairSet;                /* Array of PairSet tables
-                                         * ordered by Coverage Index */
+  typename Types::template ArrayOf<typename Types::template OffsetTo<PairSet>>
+                pairSet;                /* Array of PairSet tables ordered by
+                                         * Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (8 + Types::size, pairSet);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + 2 * ValueFormat::static_size + Types::HBUINT::static_size, pairSet);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -56,7 +56,7 @@ struct PairPosFormat1_3
 
     if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len))
     {
-      for (hb_codepoint_t g : glyphs->iter())
+      for (hb_codepoint_t g : glyphs->iter ())
       {
 	unsigned i = cov.get_coverage (g);
 	if ((this+pairSet[i]).intersects (glyphs, valueFormat))
@@ -101,48 +101,48 @@ struct PairPosFormat1_3
       (this+pairSet[i]).collect_glyphs (c, valueFormat);
   }
 
+  void collect_second_glyphs (hb_set_digest_t *digest) const
+  {
+    unsigned count = pairSet.len;
+    for (unsigned i = 0; i < count; i++)
+      (this+pairSet[i]).collect_second_glyphs (digest, valueFormat);
+  }
+
   const Coverage &get_coverage () const { return this+coverage; }
 
-  unsigned cache_cost () const
+  struct external_cache_t
   {
-    return (this+coverage).cost ();
-  }
-  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+    hb_ot_layout_mapping_cache_t coverage;
+    hb_set_digest_t pair_sets[HB_VAR_ARRAY];
+  };
+  void *external_cache_create () const
   {
-    switch (op)
+    unsigned count = pairSet.len;
+    unsigned size = sizeof (external_cache_t) -
+		    HB_VAR_ARRAY * sizeof (hb_set_digest_t) +
+		    count * sizeof (hb_set_digest_t);
+    external_cache_t *cache = (external_cache_t *) hb_malloc (size);
+    if (likely (cache))
     {
-      case hb_ot_lookup_cache_op_t::CREATE:
+      cache->coverage.clear ();
+      for (unsigned i = 0; i < count; i++)
       {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) hb_malloc (sizeof (hb_ot_lookup_cache_t));
-	if (likely (cache))
-	  cache->clear ();
-	return cache;
-      }
-      case hb_ot_lookup_cache_op_t::ENTER:
-	return (void *) true;
-      case hb_ot_lookup_cache_op_t::LEAVE:
-	return nullptr;
-      case hb_ot_lookup_cache_op_t::DESTROY:
-      {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) p;
-	hb_free (cache);
-	return nullptr;
+	cache->pair_sets[i].init ();
+	(this+pairSet[i]).collect_second_glyphs (&cache->pair_sets[i], valueFormat);
       }
     }
-    return nullptr;
+    return cache;
   }
 
-  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
-  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
-  bool _apply (hb_ot_apply_context_t *c, bool cached) const
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
 
     hb_buffer_t *buffer = c->buffer;
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    hb_ot_lookup_cache_t *cache = cached ? (hb_ot_lookup_cache_t *) c->lookup_accel->cache : nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache);
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
 #endif
@@ -156,6 +156,16 @@ struct PairPosFormat1_3
       buffer->unsafe_to_concat (buffer->idx, unsafe_to);
       return_trace (false);
     }
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    if (cache &&
+	index < pairSet.len &&
+	!cache->pair_sets[index].may_have (buffer->info[skippy_iter.idx].codepoint))
+    {
+      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
+      return_trace (false);
+    }
+#endif
 
     return_trace ((this+pairSet[index]).apply (c, valueFormat, skippy_iter.idx));
   }
@@ -231,8 +241,6 @@ struct PairPosFormat1_3
                                                                  bool strip_hints, bool strip_empty,
                                                                  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map = nullptr) const
   {
-    unsigned record_size = PairSet::get_size (valueFormat);
-
     unsigned format1 = 0;
     unsigned format2 = 0;
     for (const auto & _ :
@@ -242,20 +250,13 @@ struct PairPosFormat1_3
 	)
     {
       const PairSet& set = (this + _);
-      const PairValueRecord *record = &set.firstPairValueRecord;
+      auto formats = set.get_values_view (valueFormat).compute_effective_value_formats (
+          glyphset, valueFormat, strip_hints, strip_empty, varidx_delta_map);
+      format1 |= formats.first;
+      format2 |= formats.second;
 
-      unsigned count = set.len;
-      for (unsigned i = 0; i < count; i++)
-      {
-        if (record->intersects (glyphset))
-        {
-          format1 = format1 | valueFormat[0].get_effective_format (record->get_values_1 (), strip_hints, strip_empty, &set, varidx_delta_map);
-          format2 = format2 | valueFormat[1].get_effective_format (record->get_values_2 (valueFormat[0]), strip_hints, strip_empty, &set, varidx_delta_map);
-        }
-        record = &StructAtOffset<const PairValueRecord> (record, record_size);
-      }
-
-      if (format1 == valueFormat[0] && format2 == valueFormat[1])
+      if (!varidx_delta_map &&
+          format1 == valueFormat[0] && format2 == valueFormat[1])
         break;
     }
 

@@ -39,7 +39,9 @@ class AspectRatioContainer;
 class ColorRect;
 class TextureRect;
 class ShaderMaterial;
+class Button;
 class ColorChannelSelector;
+class SpinBox;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
@@ -57,19 +59,22 @@ private:
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
+	Button *metadata_toggle = nullptr;
 
 	static inline Ref<ShaderMaterial> texture_material;
 
 	ColorChannelSelector *channel_selector = nullptr;
+	SpinBox *mipmap_spinbox = nullptr;
 
 	void _draw_outline();
 	void _update_metadata_label_text();
+	void _toggle_metadata_label();
 
 protected:
 	void _notification(int p_what);
 	void _update_texture_display_ratio();
-
 	void on_selected_channels_changed();
+	void on_selected_mipmap_changed(double p_value);
 
 public:
 	static void init_shaders();
@@ -81,6 +86,8 @@ public:
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
+
+	Ref<Image> this_image;
 
 public:
 	virtual bool can_handle(Object *p_object) override;

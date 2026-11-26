@@ -30,6 +30,8 @@
 
 #include "websocket_peer.h"
 
+#include "core/object/class_db.h"
+
 WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
 WebSocketPeer::WebSocketPeer() {

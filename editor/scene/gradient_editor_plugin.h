@@ -32,6 +32,7 @@
 
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/resources/gradient.h"
 
 class EditorSpinSlider;
 class ColorPicker;

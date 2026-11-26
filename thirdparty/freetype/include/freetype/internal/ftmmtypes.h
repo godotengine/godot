@@ -5,7 +5,7 @@
  *   OpenType Variations type definitions for internal use
  *   with the multi-masters service (specification).
  *
- * Copyright (C) 2022-2024 by
+ * Copyright (C) 2022-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, George Williams, and
  * Dominik Röttsches.
  *
@@ -70,6 +70,13 @@ FT_BEGIN_HEADER
     FT_UShort     axisCount;
     FT_UInt       regionCount;          /* total number of regions defined */
     GX_VarRegion  varRegionList;
+
+    /* Cache of per-region scalars for the current normalized coordinates. */
+    /* `regionScalars` holds `regionCount` values, `cachedCoords` the      */
+    /* `axisCount` coordinates they were computed for; both are NULL until */
+    /* first use and recomputed whenever the coordinates change.           */
+    FT_Fixed*  regionScalars;
+    FT_Fixed*  cachedCoords;
 
   } GX_ItemVarStoreRec, *GX_ItemVarStore;
 

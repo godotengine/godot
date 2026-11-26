@@ -103,8 +103,6 @@ public:
 	template <typename AE, typename BE>
 	EStatus				GetPenetrationDepthStepGJK(const AE &inAExcludingConvexRadius, float inConvexRadiusA, const BE &inBExcludingConvexRadius, float inConvexRadiusB, float inTolerance, Vec3 &ioV, Vec3 &outPointA, Vec3 &outPointB)
 	{
-		JPH_PROFILE_FUNCTION();
-
 		JPH_IF_ENABLE_ASSERTS(mGJKTolerance = inTolerance;)
 
 		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points.
@@ -126,7 +124,7 @@ public:
 		if (closest_points_dist_sq > 0.0f)
 		{
 			// Collision within convex radius, adjust points for convex radius
-			float v_len = sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
+			float v_len = Sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
 			outPointA += ioV * (inConvexRadiusA / v_len);
 			outPointB -= ioV * (inConvexRadiusB / v_len);
 			return EStatus::Colliding;
@@ -544,7 +542,7 @@ public:
 			AddConvexRadius add_convex_b(inB, inConvexRadiusB);
 			TransformedConvexObject transformed_a(inStart, add_convex_a);
 			if (!GetPenetrationDepthStepEPA(transformed_a, add_convex_b, inPenetrationTolerance, outContactNormal, outPointA, outPointB))
-				return false;
+				outContactNormal = inDirection; // Failed to get the deepest point, use points returned by GJK and use cast direction as normal
 		}
 		else if (contact_normal_invalid)
 		{

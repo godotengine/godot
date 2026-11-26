@@ -4,7 +4,7 @@
  *
  *   TT CMAP classes definitions (specification only).
  *
- * Copyright (C) 2009-2024 by
+ * Copyright (C) 2009-2026 by
  * Oran Agra and Mickey Gabel.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -50,6 +50,10 @@
 
 #ifdef TT_CONFIG_CMAP_FORMAT_14
   TTCMAPCITEM( tt_cmap14_class_rec )
+#endif
+
+#ifdef TT_CONFIG_CMAP_FORMAT_15
+  TTCMAPCITEM( tt_cmap15_class_rec )
 #endif
 
 

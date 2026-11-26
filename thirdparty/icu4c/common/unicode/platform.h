@@ -369,19 +369,6 @@
 #endif
 
 /**
- * \def U_HAVE_PLACEMENT_NEW
- * Determines whether to override placement new and delete for STL.
- * @stable ICU 2.6
- */
-#ifdef U_HAVE_PLACEMENT_NEW
-    /* Use the predefined value. */
-#elif defined(__BORLANDC__)
-#   define U_HAVE_PLACEMENT_NEW 0
-#else
-#   define U_HAVE_PLACEMENT_NEW 1
-#endif
-
-/**
  * \def U_HAVE_DEBUG_LOCATION_NEW 
  * Define this to define the MFC debug version of the operator new.
  *
@@ -421,6 +408,17 @@
 #else
 #   define UPRV_HAS_FEATURE(x) 0
 #endif
+#if UPRV_HAS_FEATURE(address_sanitizer) || \
+    UPRV_HAS_FEATURE(memory_sanitizer) || \
+    UPRV_HAS_FEATURE(thread_sanitizer) || \
+    UPRV_HAS_FEATURE(undefined_sanitizer) || \
+    defined(__SANITIZE_ADDRESS__) || \
+    defined(__SANITIZE_THREAD__) || \
+    defined(__SANITIZE_UNDEFINED__)
+#   define UPRV_HAS_SANITIZER 1
+#else
+#   define UPRV_HAS_SANITIZER 0
+#endif
 #ifdef __has_extension
 #   define UPRV_HAS_EXTENSION(x) __has_extension(x)
 #else
@@ -434,8 +432,10 @@
 
 
 #if defined(__clang__)
+#define UPRV_NO_SANITIZE_FUNCTION __attribute__((no_sanitize("function")))
 #define UPRV_NO_SANITIZE_UNDEFINED __attribute__((no_sanitize("undefined")))
 #else
+#define UPRV_NO_SANITIZE_FUNCTION
 #define UPRV_NO_SANITIZE_UNDEFINED
 #endif
 
@@ -479,6 +479,12 @@
     /* Otherwise use the predefined value. */
 #elif !defined(__cplusplus)
 #   define U_CPLUSPLUS_VERSION 0
+// The value of _MSVC_LANG for C++23 preview is undocumented, except that it is larger than 202002.
+// As of this writing, it is 202004.
+#elif __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#   define U_CPLUSPLUS_VERSION 23
+#elif __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#   define U_CPLUSPLUS_VERSION 20
 #elif __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #   define U_CPLUSPLUS_VERSION 17
 #elif __cplusplus >= 201402L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L)
@@ -493,12 +499,10 @@
 /**
  * \def U_FALLTHROUGH
  * Annotate intentional fall-through between switch labels.
- * http://clang.llvm.org/docs/AttributeReference.html#fallthrough-clang-fallthrough
+ * https://clang.llvm.org/docs/AttributeReference.html#fallthrough
  * @internal
  */
-#ifndef __cplusplus
-    // Not for C.
-#elif defined(U_FALLTHROUGH)
+#if defined(U_FALLTHROUGH)
     // Use the predefined value.
 #elif defined(__clang__)
     // Test for compiler vs. feature separately.
@@ -514,6 +518,37 @@
 
 #ifndef U_FALLTHROUGH
 #   define U_FALLTHROUGH
+#endif
+
+#ifndef U_IN_DOXYGEN
+/**
+ * \def U_LIFETIME_BOUND
+ *
+ * Annotate a function parameter or implicit object parameter to indicate that
+ * objects that are referred to by that parameter may also be referred to by the
+ * return value of the annotated function (or, for a parameter of a constructor,
+ * by the value of the constructed object).
+ *
+ * https://clang.llvm.org/docs/AttributeReference.html#lifetimebound
+ * https://learn.microsoft.com/en-us/cpp/code-quality/c26816?view=msvc-170
+ *
+ * @internal
+ */
+#ifndef __cplusplus
+// Not for C.
+#elif defined(U_LIFETIME_BOUND)
+// Use the predefined value.
+#elif  UPRV_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+#   define U_LIFETIME_BOUND [[clang::lifetimebound]]
+#elif UPRV_HAS_CPP_ATTRIBUTE(msvc::lifetimebound)
+#   define U_LIFETIME_BOUND [[msvc::lifetimebound]]
+#elif UPRV_HAS_ATTRIBUTE(lifetimebound)
+#   define U_LIFETIME_BOUND __attribute__((lifetimebound))
+#endif
+
+#ifndef U_LIFETIME_BOUND
+#   define U_LIFETIME_BOUND
+#endif
 #endif
 
 /** @} */

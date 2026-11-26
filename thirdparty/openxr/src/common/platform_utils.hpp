@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -100,6 +100,7 @@ static inline char* ImplGetSecureEnv(const char* name) {
 #elif defined(HAVE___SECURE_GETENV)
     return __secure_getenv(name);
 #else
+// NOLINTNEXTLINE(clang-diagnostic-#pragma-messages)
 #pragma message(                                                    \
     "Warning:  Falling back to non-secure getenv for environmental" \
     "lookups!  Consider updating to a different libc.")

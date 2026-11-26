@@ -33,7 +33,7 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/PlaneShape.h"
+#include <Jolt/Physics/Collision/Shape/PlaneShape.h>
 
 JPH::ShapeRefC JoltWorldBoundaryShape3D::_build() const {
 	const Plane normalized_plane = plane.normalized();

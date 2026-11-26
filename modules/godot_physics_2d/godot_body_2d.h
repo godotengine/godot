@@ -36,12 +36,14 @@
 #include "core/templates/list.h"
 #include "core/templates/pair.h"
 #include "core/templates/vset.h"
+#include "core/variant/variant.h"
+#include "servers/physics_2d/physics_server_2d_constants.h"
 
 class GodotConstraint2D;
 class GodotPhysicsDirectBodyState2D;
 
 class GodotBody2D : public GodotCollisionObject2D {
-	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_RIGID;
+	PS2DE::BodyMode mode = PS2DE::BODY_MODE_RIGID;
 
 	Vector2 biased_linear_velocity;
 	real_t biased_angular_velocity = 0.0;
@@ -55,8 +57,8 @@ class GodotBody2D : public GodotCollisionObject2D {
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity = 0.0;
 
-	PhysicsServer2D::BodyDampMode linear_damp_mode = PhysicsServer2D::BODY_DAMP_MODE_COMBINE;
-	PhysicsServer2D::BodyDampMode angular_damp_mode = PhysicsServer2D::BODY_DAMP_MODE_COMBINE;
+	PS2DE::BodyDampMode linear_damp_mode = PS2DE::BODY_DAMP_MODE_COMBINE;
+	PS2DE::BodyDampMode angular_damp_mode = PS2DE::BODY_DAMP_MODE_COMBINE;
 
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;
@@ -96,7 +98,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	SelfList<GodotBody2D> direct_state_query_list;
 
 	VSet<RID> exceptions;
-	PhysicsServer2D::CCDMode continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
+	PS2DE::CCDMode continuous_cd_mode = PS2DE::CCD_MODE_DISABLED;
 	bool omit_force_integration = false;
 	bool active = true;
 	bool can_sleep = true;
@@ -181,10 +183,10 @@ public:
 	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) {
-		ERR_FAIL_INDEX(p_size, MAX_CONTACTS_REPORTED_2D_MAX);
+		ERR_FAIL_INDEX(p_size, PS2DC::MAX_CONTACTS_REPORTED_2D_MAX);
 		contacts.resize(p_size);
 		contact_count = 0;
-		if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC && p_size) {
+		if (mode == PS2DE::BODY_MODE_KINEMATIC && p_size) {
 			set_active(true);
 		}
 	}
@@ -285,23 +287,23 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((!get_space()) || mode == PhysicsServer2D::BODY_MODE_STATIC || mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		if ((!get_space()) || mode == PS2DE::BODY_MODE_STATIC || mode == PS2DE::BODY_MODE_KINEMATIC) {
 			return;
 		}
 		set_active(true);
 	}
 
-	void set_param(PhysicsServer2D::BodyParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer2D::BodyParameter p_param) const;
+	void set_param(PS2DE::BodyParameter p_param, const Variant &p_value);
+	Variant get_param(PS2DE::BodyParameter p_param) const;
 
-	void set_mode(PhysicsServer2D::BodyMode p_mode);
-	PhysicsServer2D::BodyMode get_mode() const;
+	void set_mode(PS2DE::BodyMode p_mode);
+	PS2DE::BodyMode get_mode() const;
 
-	void set_state(PhysicsServer2D::BodyState p_state, const Variant &p_variant);
-	Variant get_state(PhysicsServer2D::BodyState p_state) const;
+	void set_state(PS2DE::BodyState p_state, const Variant &p_variant);
+	Variant get_state(PS2DE::BodyState p_state) const;
 
-	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) { continuous_cd_mode = p_mode; }
-	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
+	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PS2DE::CCDMode p_mode) { continuous_cd_mode = p_mode; }
+	_FORCE_INLINE_ PS2DE::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
 
 	void set_space(GodotSpace2D *p_space) override;
 
@@ -319,13 +321,13 @@ public:
 	void integrate_velocities(real_t p_step);
 
 	_FORCE_INLINE_ Vector2 get_velocity_in_local_point(const Vector2 &rel_pos) const {
-		return linear_velocity + Vector2(-angular_velocity * rel_pos.y, angular_velocity * rel_pos.x);
+		return linear_velocity + Vector2(-angular_velocity * (rel_pos.y - center_of_mass.y), angular_velocity * (rel_pos.x - center_of_mass.x));
 	}
 
 	_FORCE_INLINE_ Vector2 get_motion() const {
-		if (mode > PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		if (mode > PS2DE::BODY_MODE_KINEMATIC) {
 			return new_transform.get_origin() - get_transform().get_origin();
-		} else if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		} else if (mode == PS2DE::BODY_MODE_KINEMATIC) {
 			return get_transform().get_origin() - new_transform.get_origin(); //kinematic simulates forward
 		}
 		return Vector2();

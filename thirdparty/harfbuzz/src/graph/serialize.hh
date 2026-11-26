@@ -27,6 +27,8 @@
 #ifndef GRAPH_SERIALIZE_HH
 #define GRAPH_SERIALIZE_HH
 
+#include "graph-result.hh"
+
 namespace graph {
 
 struct overflow_record_t
@@ -104,38 +106,41 @@ bool is_valid_offset (int64_t offset,
 /*
  * Will any offsets overflow on graph when it's serialized?
  */
-inline bool
+inline graph_result_t<bool>
 will_overflow (graph_t& graph,
                hb_vector_t<overflow_record_t>* overflows = nullptr)
 {
-  if (overflows) overflows->resize (0);
+  if (overflows) overflows->clear ();
   graph.update_positions ();
 
-  hb_hashmap_t<overflow_record_t*, bool> record_set;
+  hb_hashmap_t<overflow_record_t, bool> record_set;
   const auto& vertices = graph.vertices_;
-  for (int parent_idx = vertices.length - 1; parent_idx >= 0; parent_idx--)
+  for (unsigned parent_idx : graph.ordering_)
   {
     // Don't need to check virtual links for overflow
-    for (const auto& link : vertices.arrayZ[parent_idx].obj.real_links)
+    for (const auto& link : vertices.arrayZ[parent_idx].obj ().real_links)
     {
       int64_t offset = compute_offset (graph, parent_idx, link);
       if (likely (is_valid_offset (offset, link)))
         continue;
 
-      if (!overflows) return true;
+      if (!overflows) return Ok(true);
 
       overflow_record_t r;
       r.parent = parent_idx;
       r.child = link.objidx;
-      if (record_set.has(&r)) continue; // don't keep duplicate overflows.
+      if (record_set.has(r)) continue; // don't keep duplicate overflows.
 
       overflows->push (r);
-      record_set.set(&r, true);
+      record_set.set (r, true);
     }
   }
 
-  if (!overflows) return false;
-  return overflows->length;
+  TRY (graph_result_t<void>::from (record_set, ALLOCATION_FAILURE));
+  if (overflows)
+    TRY (graph_result_t<void>::from (*overflows, ALLOCATION_FAILURE));
+
+  return Ok((bool) (overflows && overflows->length));
 }
 
 inline
@@ -144,7 +149,13 @@ void print_overflows (graph_t& graph,
 {
   if (!DEBUG_ENABLED(SUBSET_REPACK)) return;
 
-  graph.update_parents ();
+  auto r = graph.update_parents ();
+  if (r.is_err()) {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to print overflows due to error updating parent links: %s",
+      to_string(r.error()));
+    return;
+  }
+
   int limit = 10;
   for (const auto& o : overflows)
   {
@@ -157,11 +168,11 @@ void print_overflows (graph_t& graph,
                "%4u (%4u in, %4u out, space %2u)",
                o.parent,
                parent.incoming_edges (),
-               parent.obj.real_links.length + parent.obj.virtual_links.length,
+               parent.obj ().real_links.length + parent.obj ().virtual_links.length,
                graph.space_for (o.parent),
                o.child,
                child.incoming_edges (),
-               child.obj.real_links.length + child.obj.virtual_links.length,
+               child.obj ().real_links.length + child.obj ().virtual_links.length,
                graph.space_for (o.child));
   }
   if (overflows.length > 10) {
@@ -173,16 +184,20 @@ template <typename O> inline void
 serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
                         char* head,
                         unsigned size,
+                        const hb_vector_t<unsigned>& id_map,
                         hb_serialize_context_t* c)
 {
-  assert(link.position + link.width <= size);
+  // A link must never write outside the bounds of its parent object.
+  if (unlikely (link.position + link.width > size))
+  {
+    c->err (HB_SERIALIZE_ERROR_OTHER);
+    return;
+  }
 
   OT::Offset<O>* offset = reinterpret_cast<OT::Offset<O>*> (head + link.position);
   *offset = 0;
   c->add_link (*offset,
-               // serializer has an extra nil object at the start of the
-               // object array. So all id's are +1 of what our id's are.
-               link.objidx + 1,
+               id_map[link.objidx],
                (hb_serialize_context_t::whence_t) link.whence,
                link.bias);
 }
@@ -191,6 +206,7 @@ inline
 void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
                      char* head,
                      unsigned size,
+                     const hb_vector_t<unsigned>& id_map,
                      hb_serialize_context_t* c)
 {
   switch (link.width)
@@ -201,21 +217,21 @@ void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
     case 4:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT32> (link, head, size, c);
+        serialize_link_of_type<OT::HBINT32> (link, head, size, id_map, c);
       } else {
-        serialize_link_of_type<OT::HBUINT32> (link, head, size, c);
+        serialize_link_of_type<OT::HBUINT32> (link, head, size, id_map, c);
       }
       return;
     case 2:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT16> (link, head, size, c);
+        serialize_link_of_type<OT::HBINT16> (link, head, size, id_map, c);
       } else {
-        serialize_link_of_type<OT::HBUINT16> (link, head, size, c);
+        serialize_link_of_type<OT::HBUINT16> (link, head, size, id_map, c);
       }
       return;
     case 3:
-      serialize_link_of_type<OT::HBUINT24> (link, head, size, c);
+      serialize_link_of_type<OT::HBUINT24> (link, head, size, id_map, c);
       return;
     default:
       // Unexpected link width.
@@ -226,50 +242,69 @@ void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
 /*
  * serialize graph into the provided serialization buffer.
  */
-inline hb_blob_t* serialize (const graph_t& graph)
+inline graph_result_t<hb_blob_t*> serialize (const graph_t& graph)
 {
   hb_vector_t<char> buffer;
   size_t size = graph.total_size_in_bytes ();
 
-  if (!size) return hb_blob_get_empty ();
+  if (!size) return Ok(hb_blob_get_empty ());
 
-  if (!buffer.alloc (size)) {
+  if (unlikely (!buffer.alloc (size))) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate output buffer.");
-    return nullptr;
+    return Err(ALLOCATION_FAILURE);
   }
   hb_serialize_context_t c((void *) buffer, size);
 
   c.start_serialize<void> ();
   const auto& vertices = graph.vertices_;
-  for (unsigned i = 0; i < vertices.length; i++) {
+
+  // Objects are placed in the serializer in reverse order since children need
+  // to be inserted before their parents.
+
+  // Maps from our obj id's to the id's used during this serialization.
+  hb_vector_t<unsigned> id_map;
+  if (unlikely (!id_map.resize(graph.ordering_.length))) {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate id_map buffer.");
+    return Err(ALLOCATION_FAILURE);
+  }
+
+  for (int pos = graph.ordering_.length - 1; pos >= 0; pos--) {
+    unsigned i = graph.ordering_[pos];
     c.push ();
 
-    size_t size = vertices[i].obj.tail - vertices[i].obj.head;
+    auto& v = vertices[i];
+
+    size_t size = v.table_size ();
+
     char* start = c.allocate_size <char> (size);
-    if (!start) {
+    if (unlikely (!start)) {
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Buffer out of space.");
-      return nullptr;
+      return Err(ALLOCATION_FAILURE);
     }
 
-    hb_memcpy (start, vertices[i].obj.head, size);
+    hb_memcpy (start, v.obj ().head, size);
 
     // Only real links needs to be serialized.
-    for (const auto& link : vertices[i].obj.real_links)
-      serialize_link (link, start, size, &c);
+    for (const auto& link : v.obj ().real_links)
+      serialize_link (link, start, size, id_map, &c);
 
     // All duplications are already encoded in the graph, so don't
     // enable sharing during packing.
-    c.pop_pack (false);
+    id_map[i] = c.pop_pack (false);
   }
   c.end_serialize ();
 
-  if (c.in_error ()) {
+  if (unlikely (c.in_error ())) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Error during serialization. Err flag: %d",
                c.errors);
-    return nullptr;
+    if (c.errors & HB_SERIALIZE_ERROR_OFFSET_OVERFLOW)
+      return Err(OVERFLOW_RESOLUTION_FAILED);
+    return Err(ALLOCATION_FAILURE);
   }
 
-  return c.copy_blob ();
+  auto* blob = c.copy_blob ();
+  if (unlikely (!blob)) return Err(ALLOCATION_FAILURE);
+  return Ok(blob);
 }
 
 } // namespace graph

@@ -418,7 +418,7 @@ GetRegionFromKey(const char* localeID, std::string_view key, UErrorCode& status)
     if (U_SUCCESS(status) && len >= 3 && len <= 6 &&
         uprv_isASCIILetter(kw[0]) && uprv_isASCIILetter(kw[1])) {
         // Additional Check
-        static icu::RegionValidateMap valid;
+        icu::RegionValidateMap valid;
         const char region[] = {kw[0], kw[1], '\0'};
         if (valid.isSet(region)) {
             result.append(uprv_toupper(kw[0]), status);
@@ -495,7 +495,7 @@ bool RegionValidateMap::equals(const RegionValidateMap& that) const {
 // The code transform two letter a-z to a integer valued between -1, 26x26.
 // -1 indicate the region is outside the range of two letter a-z
 // the rest of value is between 0 and 676 (= 26x26) and used as an index
-// the the bigmap in map. The map is an array of 22 int32_t.
+// the bigmap in map. The map is an array of 22 int32_t.
 // since 32x21 < 676/32 < 32x22 we store this 676 bits bitmap into 22 int32_t.
 int32_t RegionValidateMap::value(const char* region) const {
     if (uprv_isASCIILetter(region[0]) && uprv_isASCIILetter(region[1]) &&

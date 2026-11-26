@@ -4,7 +4,7 @@
  *
  *   TrueType-specific tables loader (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -69,7 +69,11 @@
 
 
     /* we need the size of the `glyf' table for malformed `loca' tables */
-    error = face->goto_table( face, TTAG_glyf, stream, &face->glyf_len );
+    error = face->goto_table( face,
+                              face->is_extended_glyf ? TTAG_GLYF
+                                                     : TTAG_glyf,
+                              stream,
+                              &face->glyf_len );
 
     /* it is possible that a font doesn't have a glyf table at all */
     /* or its size is zero                                         */
@@ -91,7 +95,11 @@
     }
 
     FT_TRACE2(( "Locations " ));
-    error = face->goto_table( face, TTAG_loca, stream, &table_len );
+    error = face->goto_table( face,
+                              face->is_extended_glyf ? TTAG_LOCA
+                                                     : TTAG_loca,
+                              stream,
+                              &table_len );
     if ( error )
     {
       error = FT_THROW( Locations_Missing );
@@ -100,7 +108,8 @@
 
     shift = face->header.Index_To_Loc_Format != 0 ? 2 : 1;
 
-    if ( table_len > 0x10000UL << shift )
+    if ( !face->is_extended_glyf        &&
+         table_len > 0x10000UL << shift )
     {
       FT_TRACE2(( "table too large\n" ));
       table_len = 0x10000UL << shift;
@@ -110,7 +119,7 @@
 
     if ( face->num_locations != (FT_ULong)face->root.num_glyphs + 1 )
     {
-      FT_TRACE2(( "glyph count mismatch!  loca: %ld, maxp: %ld\n",
+      FT_TRACE2(( "glyph count mismatch!  loca: %lu, maxp: %ld\n",
                   face->num_locations - 1, face->root.num_glyphs ));
 
       /* we only handle the case where `maxp' gives a larger value */
@@ -151,7 +160,7 @@
           face->num_locations = (FT_ULong)face->root.num_glyphs + 1;
           table_len           = new_loca_len;
 
-          FT_TRACE2(( "adjusting num_locations to %ld\n",
+          FT_TRACE2(( "adjusting num_locations to %lu\n",
                       face->num_locations ));
         }
         else
@@ -225,7 +234,7 @@
     if ( pos1 > ttface->glyf_len )
     {
       FT_TRACE1(( "tt_face_get_location:"
-                  " too large offset (0x%08lx) found for glyph index %d,\n",
+                  " too large offset (0x%08lx) found for glyph index %u,\n",
                   pos1, gindex ));
       FT_TRACE1(( "                     "
                   " exceeding the end of `glyf' table (0x%08lx)\n",
@@ -240,17 +249,17 @@
       if ( gindex == ttface->num_locations - 2 )
       {
         FT_TRACE1(( "tt_face_get_location:"
-                    " too large size (%ld bytes) found for glyph index %d,\n",
+                    " too large size (%lu bytes) found for glyph index %u,\n",
                     pos2 - pos1, gindex ));
         FT_TRACE1(( "                     "
-                    " truncating at the end of `glyf' table to %ld bytes\n",
+                    " truncating at the end of `glyf' table to %lu bytes\n",
                     ttface->glyf_len - pos1 ));
         pos2 = ttface->glyf_len;
       }
       else
       {
         FT_TRACE1(( "tt_face_get_location:"
-                    " too large offset (0x%08lx) found for glyph index %d,\n",
+                    " too large offset (0x%08lx) found for glyph index %u,\n",
                     pos2, gindex + 1 ));
         FT_TRACE1(( "                     "
                     " exceeding the end of `glyf' table (0x%08lx)\n",
@@ -419,7 +428,7 @@
       if ( FT_FRAME_EXTRACT( table_len, face->font_program ) )
         goto Exit;
 
-      FT_TRACE2(( "loaded, %12ld bytes\n", face->font_program_size ));
+      FT_TRACE2(( "loaded, %12lu bytes\n", face->font_program_size ));
     }
 
   Exit:
@@ -482,7 +491,7 @@
       if ( FT_FRAME_EXTRACT( table_len, face->cvt_program ) )
         goto Exit;
 
-      FT_TRACE2(( "loaded, %12ld bytes\n", face->cvt_program_size ));
+      FT_TRACE2(( "loaded, %12lu bytes\n", face->cvt_program_size ));
     }
 
   Exit:

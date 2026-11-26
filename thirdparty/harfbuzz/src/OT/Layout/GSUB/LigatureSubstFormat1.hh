@@ -13,14 +13,14 @@ struct LigatureSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::template OffsetTo<LigatureSet<Types>>>
+  typename Types::template ArrayOf<typename Types::template OffsetTo<LigatureSet<Types>>>
                 ligatureSet;            /* Array LigatureSet tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (4 + Types::size, ligatureSet);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, ligatureSet);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -42,6 +42,18 @@ struct LigatureSubstFormat1_2
 
   bool may_have_non_1to1 () const
   { return true; }
+
+  void depend (hb_depend_context_t *c) const
+  {
+    + hb_zip (this+coverage, ligatureSet)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<LigatureSet<Types>>&> &_)
+                {
+                  const LigatureSet<Types>& ls = this+_.second;
+                  ls.depend (c, _.first);
+                })
+    ;
+  }
 
   void closure (hb_closure_context_t *c) const
   {
@@ -67,6 +79,14 @@ struct LigatureSubstFormat1_2
     ;
   }
 
+  void collect_second_glyphs (hb_set_digest_t *digest) const
+  {
+    + hb_iter (ligatureSet)
+    | hb_map (hb_add (this))
+    | hb_apply ([digest] (const LigatureSet<Types> &_) { _.collect_seconds (*digest); })
+    ;
+  }
+
   const Coverage &get_coverage () const { return this+coverage; }
 
   bool would_apply (hb_would_apply_context_t *c) const
@@ -78,60 +98,53 @@ struct LigatureSubstFormat1_2
     return lig_set.would_apply (c);
   }
 
-  unsigned cache_cost () const
+  struct external_cache_t
   {
-    return (this+coverage).cost ();
-  }
-  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+    hb_ot_layout_mapping_cache_t coverage;
+    hb_set_digest_t seconds;
+  };
+  void *external_cache_create () const
   {
-    switch (op)
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
     {
-      case hb_ot_lookup_cache_op_t::CREATE:
-      {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) hb_malloc (sizeof (hb_ot_lookup_cache_t));
-	if (likely (cache))
-	  cache->clear ();
-	return cache;
-      }
-      case hb_ot_lookup_cache_op_t::ENTER:
-	return (void *) true;
-      case hb_ot_lookup_cache_op_t::LEAVE:
-	return nullptr;
-      case hb_ot_lookup_cache_op_t::DESTROY:
-      {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) p;
-	hb_free (cache);
-	return nullptr;
-      }
+      cache->coverage.clear ();
+
+      cache->seconds.init ();
+      + hb_iter (ligatureSet)
+      | hb_map (hb_add (this))
+      | hb_apply ([cache] (const LigatureSet<Types> &_) { _.collect_seconds (cache->seconds); })
+      ;
     }
-    return nullptr;
+    return cache;
   }
 
-  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
-  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
-  bool _apply (hb_ot_apply_context_t *c, bool cached) const
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
     hb_buffer_t *buffer = c->buffer;
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    hb_ot_lookup_cache_t *cache = cached ? (hb_ot_lookup_cache_t *) c->lookup_accel->cache : nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache);
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    const hb_set_digest_t *seconds = cache ? &cache->seconds : nullptr;
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+    const hb_set_digest_t *seconds = nullptr;
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint);
 #endif
     if (index == NOT_COVERED) return_trace (false);
 
     const auto &lig_set = this+ligatureSet[index];
-    return_trace (lig_set.apply (c));
+    return_trace (lig_set.apply (c, seconds));
   }
 
+  template <typename GlyphID>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> first_glyphs,
+                  hb_sorted_array_t<GlyphID> first_glyphs,
                   hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-                  hb_array_t<const HBGlyphID16> ligatures_list,
+                  hb_array_t<GlyphID> ligatures_list,
                   hb_array_t<const unsigned int> component_count_list,
-                  hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
+                  hb_array_t<GlyphID> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);

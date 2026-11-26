@@ -30,11 +30,17 @@
 
 #include "egl_manager.h"
 
+#ifdef EGL_ENABLED
+
+#include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+#include "core/io/file_access.h"
+#include "core/os/os.h"
 
-#ifdef EGL_ENABLED
+#ifdef WINDOWS_ENABLED
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 
 #if defined(EGL_STATIC)
 
@@ -181,6 +187,8 @@ EGLsizeiANDROID EGLManager::_get_cache(const void *p_key, EGLsizeiANDROID p_key_
 
 Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	EGLint attribs[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		1,
 		EGL_BLUE_SIZE,
@@ -193,9 +201,11 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	};
 
 	EGLint attribs_layered[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		8,
-		EGL_GREEN_SIZE,
+		EGL_BLUE_SIZE,
 		8,
 		EGL_GREEN_SIZE,
 		8,
@@ -208,10 +218,21 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 
 	EGLint config_count = 0;
 
+	// Try desktop GL.
 	if (OS::get_singleton()->is_layered_allowed()) {
 		eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
 	} else {
 		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+	}
+	if (config_count == 0) {
+		// Try GLES3.
+		if (OS::get_singleton()->is_layered_allowed()) {
+			attribs_layered[1] = EGL_OPENGL_ES3_BIT;
+			eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
+		} else {
+			attribs[1] = EGL_OPENGL_ES3_BIT;
+			eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+		}
 	}
 
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
@@ -248,7 +269,7 @@ int EGLManager::display_get_native_visual_id(void *p_display) {
 	return native_visual_id;
 }
 
-Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
+Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
 
@@ -316,7 +337,7 @@ Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_dis
 	return OK;
 }
 
-void EGLManager::window_destroy(DisplayServer::WindowID p_window_id) {
+void EGLManager::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_INDEX(p_window_id, (int)windows.size());
 
 	GLWindow &glwindow = windows[p_window_id];
@@ -344,6 +365,7 @@ void EGLManager::release_current() {
 	GLDisplay &current_display = displays[current_window->gldisplay_id];
 
 	eglMakeCurrent(current_display.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	current_window = nullptr;
 }
 
 void EGLManager::swap_buffers() {
@@ -361,8 +383,8 @@ void EGLManager::swap_buffers() {
 	eglSwapBuffers(current_display.egl_display, current_window->egl_surface);
 }
 
-void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == DisplayServer::INVALID_WINDOW_ID) {
+void EGLManager::window_make_current(DisplayServerEnums::WindowID p_window_id) {
+	if (p_window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -404,7 +426,7 @@ bool EGLManager::is_using_vsync() const {
 	return use_vsync;
 }
 
-EGLContext EGLManager::get_context(DisplayServer::WindowID p_window_id) {
+EGLContext EGLManager::get_context(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &glwindow = windows[p_window_id];
 
 	if (!glwindow.initialized) {
@@ -416,7 +438,7 @@ EGLContext EGLManager::get_context(DisplayServer::WindowID p_window_id) {
 	return display.egl_context;
 }
 
-EGLDisplay EGLManager::get_display(DisplayServer::WindowID p_window_id) {
+EGLDisplay EGLManager::get_display(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &glwindow = windows[p_window_id];
 
 	if (!glwindow.initialized) {
@@ -428,7 +450,7 @@ EGLDisplay EGLManager::get_display(DisplayServer::WindowID p_window_id) {
 	return display.egl_display;
 }
 
-EGLConfig EGLManager::get_config(DisplayServer::WindowID p_window_id) {
+EGLConfig EGLManager::get_config(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &glwindow = windows[p_window_id];
 
 	if (!glwindow.initialized) {

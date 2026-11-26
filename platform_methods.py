@@ -51,8 +51,7 @@ def detect_arch():
 def validate_arch(arch, platform_name, supported_arches):
     if arch not in supported_arches:
         methods.print_error(
-            'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
-            % (arch, platform_name, ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{arch}" for {platform_name}. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit(255)
 
@@ -63,14 +62,14 @@ def get_build_version(short):
     name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
+    v = f"{version.major}.{version.minor}"
     if version.patch > 0:
-        v += ".%d" % version.patch
+        v += f".{version.patch}"
     status = version.status
     if not short:
         if os.getenv("GODOT_VERSION_STATUS") is not None:
             status = str(os.getenv("GODOT_VERSION_STATUS"))
-        v += ".%s.%s" % (status, name)
+        v += f".{status}.{name}"
     return v
 
 
@@ -94,6 +93,71 @@ def lipo(prefix, suffix):
         subprocess.run(lipo_command)
 
     return target_bin
+
+
+def check_accesskit_version(path, req_ver="0.23.1"):
+    def int_or_zero(i):
+        try:
+            return int(i)
+        except (TypeError, ValueError):
+            return 0
+
+    def ver_parse(a):
+        return [int_or_zero(i) for i in a.split(".")]
+
+    def file_hash(fname):
+        import hashlib
+
+        sha1 = hashlib.sha1()
+        with open(fname, "rb") as f:
+            while True:
+                data = f.read(4096)
+                if not data:
+                    break
+                sha1.update(data)
+        return sha1.hexdigest()
+
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.abspath(os.path.join(caller_script_dir, "..", "..", "bin", "build_deps"))
+        except Exception:  # Give up.
+            deps_folder = ""
+
+    if os.path.abspath(path) == os.path.join(deps_folder, "accesskit"):  # Check auto-downloaded dependency only.
+        verfile = os.path.join(path, "version")
+        if os.path.exists(verfile):
+            with open(verfile) as f:
+                dep_version = f.read()
+        else:
+            # Compatibility, use known hashes to detect version.
+            hash = file_hash(os.path.join(path, "include", "accesskit.h"))
+            if hash == "300e20f908da029fc1e3ffa37bc0d2e06adc4334":
+                dep_version = "0.23.1"
+            elif hash == "02f692f8282c37156092913a3da136825c14d029":
+                dep_version = "0.22.3"
+            else:
+                dep_version = "0.21.3"
+
+        if ver_parse(dep_version) != ver_parse(req_ver):
+            methods.print_warning(
+                f"Incompatible AccessKit version detected. Version required {req_ver}, version found {dep_version}.\n"
+                f"You can install required version by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            return False
+
+    return True
 
 
 def get_mvk_sdk_path(osname):
@@ -172,13 +236,93 @@ def combine_libs_apple_embedded(target, source, env):
     )
 
 
-def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+def lipo_and_copy_apple_embedded(
+    platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, module_prefix, app_dir, env
+):
     bin_dir = env.Dir("#bin").abspath
 
+    # Lipo template libraries.
+    #
+    # env.extra_suffix contains ".simulator" when building for simulator,
+    # but it's undesired when calling lipo()
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    rel_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, extra_suffix + ".a")
+    dbg_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, extra_suffix + ".a")
+    rel_target_bin_sim = lipo(
+        bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, ".simulator" + extra_suffix + ".a"
+    )
+    dbg_target_bin_sim = lipo(
+        bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, ".simulator" + extra_suffix + ".a"
+    )
+    # Assemble Xcode project bundle.
+    if rel_target_bin != "":
+        print(f' Copying "{platform}" release framework')
+        shutil.copy(
+            rel_target_bin,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".release.xcframework/"
+            + framework_dir
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if dbg_target_bin != "":
+        print(f' Copying "{platform}" debug framework')
+        shutil.copy(
+            dbg_target_bin,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".debug.xcframework/"
+            + framework_dir
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if rel_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) release framework')
+        shutil.copy(
+            rel_target_bin_sim,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".release.xcframework/"
+            + framework_dir_sim
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+    if dbg_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) debug framework')
+        shutil.copy(
+            dbg_target_bin_sim,
+            app_dir
+            + "/libgodot"
+            + module_prefix
+            + "."
+            + platform
+            + ".debug.xcframework/"
+            + framework_dir_sim
+            + "/libgodot"
+            + module_prefix
+            + ".a",
+        )
+
+
+def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
     # Template bundle.
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
     app_prefix = "godot." + platform
-    rel_prefix = "libgodot." + platform + "." + "template_release"
-    dbg_prefix = "libgodot." + platform + "." + "template_debug"
+    rel_prefix = platform + "." + "template_release"
+    dbg_prefix = platform + "." + "template_debug"
     if env.dev_build:
         app_prefix += ".dev"
         rel_prefix += ".dev"
@@ -188,47 +332,22 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
         rel_prefix += ".double"
         dbg_prefix += ".double"
 
-    # Lipo template libraries.
-    #
-    # env.extra_suffix contains ".simulator" when building for simulator,
-    # but it's undesired when calling lipo()
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
-    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, extra_suffix + ".a")
-    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, extra_suffix + ".a")
-    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + extra_suffix + ".a")
-    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
-    # Assemble Xcode project bundle.
     app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
     templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
     if os.path.exists(app_dir):
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
-    if rel_target_bin != "":
-        print(f' Copying "{platform}" release framework')
-        shutil.copy(
-            rel_target_bin, app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir + "/libgodot.a"
-        )
-    if dbg_target_bin != "":
-        print(f' Copying "{platform}" debug framework')
-        shutil.copy(
-            dbg_target_bin, app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir + "/libgodot.a"
-        )
-    if rel_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) release framework')
-        shutil.copy(
-            rel_target_bin_sim,
-            app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir_sim + "/libgodot.a",
-        )
-    if dbg_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) debug framework')
-        shutil.copy(
-            dbg_target_bin_sim,
-            app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
-        )
+
+    lipo_and_copy_apple_embedded(platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, "", app_dir, env)
+    if "MODULES_EXTERNAL" in env:
+        for mod in env["MODULES_EXTERNAL"]:
+            lipo_and_copy_apple_embedded(
+                platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, mod, app_dir, env
+            )
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):
-        if entry.startswith("libgodot.") and entry.endswith(".xcframework"):
+        if (entry.startswith("libgodot.") or entry.startswith("libgodot_")) and entry.endswith(".xcframework"):
             parts = entry.split(".")
             if len(parts) >= 3 and parts[1] != platform:
                 full_path = os.path.join(app_dir, entry)
@@ -237,7 +356,18 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     if use_mkv:
         mvk_path = detect_mvk(env, "ios-arm64")
         if mvk_path != "":
-            shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
+            shutil.copytree(mvk_path + "/ios-arm64", app_dir + "/MoltenVK.xcframework/ios-arm64")
+            shutil.copytree(
+                mvk_path + "/ios-arm64_x86_64-simulator", app_dir + "/MoltenVK.xcframework/ios-arm64_x86_64-simulator"
+            )
+            shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
+
+    if env["accesskit"]:
+        ak_sdk_path = env.get("accesskit_sdk_path")
+        if ak_sdk_path:
+            ak_xcf = os.path.join(ak_sdk_path, "lib", "ios", "AccessKit.xcframework")
+            if os.path.isdir(ak_xcf):
+                shutil.copytree(ak_xcf, app_dir + "/AccessKit.xcframework")
 
     # ZIP Xcode project bundle.
     zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
@@ -245,17 +375,26 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     shutil.rmtree(app_dir)
 
 
-def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_header_filename, all_swift_files):
+def setup_swift_builder(
+    env,
+    apple_platform,
+    sdk_path,
+    current_path,
+    bridging_header_filename,
+    all_swift_files,
+):
+    # Compile Swift sources and emit a Swift->ObjC interop header.
+
     from SCons.Script import Action, Builder
 
     if apple_platform == "macos":
         target_suffix = "macosx10.9"
 
     elif apple_platform == "ios":
-        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "iossimulator":
-        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0-simulator"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "visionos":
         target_suffix = "xros26.0"
@@ -268,14 +407,28 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
     swiftc_target = env["arch"] + "-apple-" + target_suffix
 
-    env["ALL_SWIFT_FILES"] = all_swift_files
-    env["CURRENT_PATH"] = current_path
-    frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+    if "SWIFT_COMPILER" in env and env["SWIFT_COMPILER"] != "":
+        swiftc_path = env["SWIFT_COMPILER"]
+    elif "osxcross" not in env:
+        swiftc_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swiftc"
+    else:
+        swiftc_path = None
+
+    if swiftc_path is None:
+        raise Exception("Swift compiler path is not set. Please set SWIFT_COMPILER.")
+
     bridging_header_path = current_path + "/" + bridging_header_filename
-    env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
-    env["SWIFTCFLAGS"] = [
+    swift_module_name = "godot_swift_module"
+    # Standard `<module>-Swift.h` name plus `.gen.h` so it's covered by `*.gen.*` in `.gitignore`.
+    swift_objc_header_path = current_path + "/" + swift_module_name + "-Swift.gen.h"
+    env["SWIFTC"] = swiftc_path  # Swift compiler
+    # Flags for the whole-module Swift compile.
+    common_swift_flags = [
+        "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
+        "-emit-objc-header-path",
+        swift_objc_header_path,
         "-target",
         swiftc_target,
         "-sdk",
@@ -286,9 +439,22 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         "6",
         "-parse-as-library",
         "-module-name",
-        "godot_swift_module",
+        swift_module_name,
         "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
     ]
+    # All sources are compiled together into a single object, which requires whole-module mode.
+    # Whole-module mode is also required for `-emit-objc-header-path`; per-file mode drops it.
+    env["SWIFTCFLAGS"] = ["-wmo"] + common_swift_flags
+
+    if "osxcross" in env:
+        env.Append(
+            SWIFTCFLAGS=[
+                "-resource-dir",
+                "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+                "-Xfrontend",
+                "-enable-cross-import-overlays",
+            ]
+        )
 
     if env["debug_symbols"]:
         env.Append(SWIFTCFLAGS=["-g"])
@@ -303,11 +469,8 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         env.Append(SWIFTCFLAGS=["-Onone"])
 
     def generate_swift_action(source, target, env, for_signature):
-        fullpath_swift_files = [env["CURRENT_PATH"] + "/" + file for file in env["ALL_SWIFT_FILES"]]
-        fullpath_swift_files.remove(source[0].abspath)
-
-        fullpath_swift_files_string = '"' + '" "'.join(fullpath_swift_files) + '"'
-        compile_command = "$SWIFTC " + fullpath_swift_files_string + " -primary-file $SOURCE -o $TARGET $SWIFTCFLAGS"
+        swift_files_string = '"' + '" "'.join([file.abspath for file in source]) + '"'
+        compile_command = "$SWIFTC " + swift_files_string + " -o $TARGET $SWIFTCFLAGS"
 
         swift_comdstr = env.get("SWIFTCOMSTR")
         if swift_comdstr is not None:
@@ -317,11 +480,23 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
         return swift_action
 
-    # Define Builder for Swift files
+    def swift_emitter(target, source, env):
+        # Redirect the object, but keep the interop header next to the Swift sources so
+        # ObjC++ in the same directory resolves it with a quoted `#import`.
+        target, source = methods.redirect_emitter(target, source, env)
+        return target + [env.File(swift_objc_header_path)], source
+
+    # Define Builder that compiles all Swift sources into a single object file plus the
+    # `@objc` interop header.
     swift_builder = Builder(
-        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
+        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=swift_emitter
     )
 
-    env.Append(BUILDERS={"Swift": swift_builder})
-    env["BUILDERS"]["Library"].add_src_builder("Swift")
-    env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))
+    env.Append(BUILDERS={"SwiftModule": swift_builder})
+
+    swift_sources = [env.File(current_path + "/" + file) for file in all_swift_files]
+    swift_module, swift_objc_header = env.SwiftModule(current_path + "/" + swift_module_name, swift_sources)
+    # Lets ObjC++ sources that `#import` the interop header order against its generation.
+    env["SWIFT_OBJC_HEADER_TARGET"] = swift_objc_header
+
+    return [swift_module]

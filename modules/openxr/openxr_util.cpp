@@ -111,7 +111,7 @@ String OpenXRUtil::string_from_xruuid(const XrUuid &xr_uuid) {
 	for (int i = 0; i < XR_UUID_SIZE; i++) {
 		non_zero |= xr_uuid.data[i] != 0;
 
-		char a = xr_uuid.data[i] & 0xF0 >> 4;
+		char a = (xr_uuid.data[i] & 0xF0) >> 4;
 		char b = xr_uuid.data[i] & 0x0F;
 
 		if (a < 10) {
@@ -189,7 +189,7 @@ XrUuid OpenXRUtil::xruuid_from_string(const String &p_uuid) {
 //              Paul Upchurch, Mathieu Desbrun
 //              Journal of Graphics Tools, Volume 16, Issue 1, 2012
 void OpenXRUtil::XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-		const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ) {
+		const float tanAngleUp, const float tanAngleDown, const float nearZ, const float farZ) {
 	const float tanAngleWidth = tanAngleRight - tanAngleLeft;
 
 	// Set to tanAngleUp - tanAngleDown for a clip space with positive Y up.
@@ -245,11 +245,11 @@ void OpenXRUtil::XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float
 
 // Creates a projection matrix based on the specified FOV.
 void OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ) {
-	const float tanLeft = std::tan(fov.angleLeft);
-	const float tanRight = std::tan(fov.angleRight);
+	const float tanLeft = Math::tan(fov.angleLeft);
+	const float tanRight = Math::tan(fov.angleRight);
 
-	const float tanDown = std::tan(fov.angleDown);
-	const float tanUp = std::tan(fov.angleUp);
+	const float tanDown = Math::tan(fov.angleDown);
+	const float tanUp = Math::tan(fov.angleUp);
 
 	XrMatrix4x4f_CreateProjection(result, tanLeft, tanRight, tanUp, tanDown, nearZ, farZ);
 }

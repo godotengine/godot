@@ -31,9 +31,7 @@
 #pragma once
 
 #include "core/io/config_file.h"
-#include "core/io/resource_importer.h"
 #include "editor/docks/editor_dock.h"
-#include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
@@ -52,14 +50,12 @@ class ImportDock : public EditorDock {
 	MenuButton *preset = nullptr;
 	EditorInspector *import_opts = nullptr;
 
-	List<PropertyInfo> properties;
-	HashMap<StringName, Variant> property_values;
-
 	ConfirmationDialog *reimport_confirm = nullptr;
 	Label *cleanup_warning = nullptr;
 	Label *label_warning = nullptr;
 	Button *import = nullptr;
 	List<String> need_cleanup;
+	bool dirty = false;
 
 	Control *advanced_spacer = nullptr;
 	Button *advanced = nullptr;

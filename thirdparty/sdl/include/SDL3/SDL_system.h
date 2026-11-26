@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,6 +86,8 @@ typedef bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * \param callback the SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_WindowsMessageHook
@@ -169,6 +171,8 @@ typedef bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * \param callback the SDL_X11EventHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
@@ -186,6 +190,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
@@ -201,6 +207,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int
  *                    SCHED_OTHER, etc...).
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -247,14 +255,14 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *
  * For more information see:
  *
- * https://wiki.libsdl.org/SDL3/README/ios
+ * https://wiki.libsdl.org/SDL3/README-ios
  *
  * Note that if you use the "main callbacks" instead of a standard C `main`
  * function, you don't have to use this API, as SDL will manage this for you.
  *
  * Details on main callbacks are here:
  *
- * https://wiki.libsdl.org/SDL3/README/main-functions
+ * https://wiki.libsdl.org/SDL3/README-main-functions
  *
  * \param window the window for which the animation callback should be set.
  * \param interval the number of frames after which **callback** will be
@@ -263,6 +271,8 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * \param callbackParam a pointer that is passed to `callback`.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -276,6 +286,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window,
  * This function is only available on Apple iOS.
  *
  * \param enabled true to enable the event pump, false to disable it.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -370,6 +382,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
  *
  * \returns the Android API level.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
@@ -379,6 +393,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  *
  * \returns true if this is a Chromebook, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
@@ -387,6 +403,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
  * Query if the application is running on a Samsung DeX docking station.
  *
  * \returns true if this is a DeX docking station, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -605,6 +623,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
  *
  * \returns true if the device is a tablet, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
@@ -615,6 +635,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
  * If SDL can't determine this, it will return false.
  *
  * \returns true if the device is a TV, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */

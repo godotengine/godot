@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,87 +20,96 @@
  * SOFTWARE.
  */
 
-#include "tvgIteratorAccessor.h"
+#include "tvgAccessor.h"
 #include "tvgCompressor.h"
+#include "tvgPicture.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static bool accessChildren(Iterator* it, function<bool(const Paint* paint, void* data)> func, void* data)
-{
-    while (auto child = it->next()) {
-        //Access the child
-        if (!func(child, data)) return false;
+#define IMPL static_cast<AccessorImpl*>(this)
 
-        //Access the children of the child
-        if (auto it2 = IteratorAccessor::iterator(child)) {
-            if (!accessChildren(it2, func, data)) {
+Accessor::Accessor() = default;
+
+struct AccessorImpl : Accessor
+{
+    Paint* paint;
+    AccessorCallback cb;
+    bool accessible = false;  // special searching for picture nested scenes with id maps
+
+    bool access(AccessorIterator* it)
+    {
+        while (auto child = it->next()) {
+            // access the child
+            if (!cb.func(child, cb.data)) return false;
+
+            // access the children of the child
+            if (auto it2 = AccessorIterator::iterator(child)) {
+                if (!access(it2)) {
+                    delete (it2);
+                    return false;
+                }
                 delete(it2);
-                return false;
             }
-            delete(it2);
+        }
+        return true;
+    }
+
+    // pre-order tree search
+    void search()
+    {
+        // root
+        if (!cb.func(paint, cb.data)) return;
+
+        // children
+        if (auto it = AccessorIterator::iterator(paint)) {
+            access(it);
+            delete (it);
         }
     }
-    return true;
-}
-
+};
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-TVG_DEPRECATED unique_ptr<Picture> Accessor::set(unique_ptr<Picture> picture, function<bool(const Paint* paint)> func) noexcept
-{
-    auto backward = [](const tvg::Paint* paint, void* data) -> bool
-    {
-        auto func = reinterpret_cast<function<bool(const Paint* paint)>*>(data);
-        if (!(*func)(paint)) return false;
-        return true;
-    };
-
-    set(picture.get(), backward, reinterpret_cast<void*>(&func));
-    return picture;
-}
-
-
 Result Accessor::set(Paint* paint, function<bool(const Paint* paint, void* data)> func, void* data) noexcept
 {
-    if (!paint || !func) return Result::InvalidArguments;
+    if (paint && func) {
+        IMPL->paint = paint;
+        IMPL->cb = {func, data};
+        IMPL->accessible = (paint->type() == Type::Picture && static_cast<Picture*>(paint)->accessible);
 
-    //Use the Preorder Tree-Searc
+        paint->ref();
 
-    //Root
-    if (!func(paint, data)) return Result::Success;
+        if (IMPL->accessible) to<PictureImpl>(IMPL->paint)->access(IMPL->cb);
+        else IMPL->search();
 
-    //Children
-    if (auto it = IteratorAccessor::iterator(paint)) {
-        accessChildren(it, func, data);
-        delete(it);
+        paint->unref(false);
+
+        IMPL->accessible = false;
+
+        return Result::Success;
     }
-    return Result::Success;
+    return Result::InvalidArguments;
 }
 
+const char* Accessor::name(uint32_t id) noexcept
+{
+    if (IMPL->accessible) {
+        auto entity = to<PictureImpl>(IMPL->paint)->access(id);
+        if (entity) return entity->name;
+    } else TVGLOG("RENDERER", "Did you enable Picture::accessible?");
+    return nullptr;
+}
 
 uint32_t Accessor::id(const char* name) noexcept
 {
     return djb2Encode(name);
 }
 
-
-Accessor::~Accessor()
+Accessor* Accessor::gen() noexcept
 {
-
-}
-
-
-Accessor::Accessor() : pImpl(nullptr)
-{
-
-}
-
-
-unique_ptr<Accessor> Accessor::gen() noexcept
-{
-    return unique_ptr<Accessor>(new Accessor);
+    return new AccessorImpl;
 }

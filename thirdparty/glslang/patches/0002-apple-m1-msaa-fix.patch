@@ -1,0 +1,16 @@
+diff --git a/thirdparty/glslang/SPIRV/GlslangToSpv.cpp b/thirdparty/glslang/SPIRV/GlslangToSpv.cpp
+index 1a5c40c53a..d4af42f70b 100644
+--- a/thirdparty/glslang/SPIRV/GlslangToSpv.cpp
++++ b/thirdparty/glslang/SPIRV/GlslangToSpv.cpp
+@@ -5181,6 +5181,11 @@ spv::Id TGlslangToSpvTraverser::createSpvVariable(const glslang::TIntermSymbol*
+     glslang::TQualifier typeQualifier = node->getType().getQualifier();
+     TranslateMemoryDecoration(typeQualifier, topLevelDecorations, glslangIntermediate->usingVulkanMemoryModel());
+     for (auto deco : topLevelDecorations) {
++#ifdef __APPLE__
++        if (deco != spv::Decoration::Restrict &&
++            deco != spv::Decoration::RestrictPointer &&
++            deco != spv::Decoration::RestrictPointerEXT)
++#endif
+         builder.addDecoration(var, deco);
+     }
+     return var;

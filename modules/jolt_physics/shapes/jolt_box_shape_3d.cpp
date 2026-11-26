@@ -33,7 +33,7 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/BoxShape.h"
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 JPH::ShapeRefC JoltBoxShape3D::_build() const {
 	const float min_half_extent = (float)half_extents[half_extents.min_axis_index()];

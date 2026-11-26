@@ -30,9 +30,8 @@
 
 #include "gltf_physics_shape.h"
 
-#include "../../gltf_state.h"
-
 #include "core/math/convex_hull.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -73,14 +72,14 @@ void GLTFPhysicsShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_trigger"), "set_is_trigger", "get_is_trigger");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_index"), "set_mesh_index", "get_mesh_index");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "importer_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ImporterMesh"), "set_importer_mesh", "get_importer_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "importer_mesh", PROPERTY_HINT_RESOURCE_TYPE, ImporterMesh::get_class_static()), "set_importer_mesh", "get_importer_mesh");
 }
 
 String GLTFPhysicsShape::get_shape_type() const {
 	return shape_type;
 }
 
-void GLTFPhysicsShape::set_shape_type(String p_shape_type) {
+void GLTFPhysicsShape::set_shape_type(const String &p_shape_type) {
 	shape_type = p_shape_type;
 }
 
@@ -88,7 +87,7 @@ Vector3 GLTFPhysicsShape::get_size() const {
 	return size;
 }
 
-void GLTFPhysicsShape::set_size(Vector3 p_size) {
+void GLTFPhysicsShape::set_size(const Vector3 &p_size) {
 	size = p_size;
 }
 
@@ -128,7 +127,7 @@ Ref<ImporterMesh> GLTFPhysicsShape::get_importer_mesh() const {
 	return importer_mesh;
 }
 
-void GLTFPhysicsShape::set_importer_mesh(Ref<ImporterMesh> p_importer_mesh) {
+void GLTFPhysicsShape::set_importer_mesh(const Ref<ImporterMesh> &p_importer_mesh) {
 	importer_mesh = p_importer_mesh;
 }
 
@@ -267,21 +266,28 @@ Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 	return _shape_cache;
 }
 
-Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFPhysicsShape>(), "Failed to parse GLTFPhysicsShape, missing required field 'type'.");
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();
-	String shape_type = p_dictionary["type"];
-	if (shape_type == "hull") {
+	String declared_shape_type = p_dictionary["type"];
+	String shape_type;
+	// Compatibility aliases for different iterations of the physics extensions.
+	// Khronos glTF 2.1: convexMesh and mesh. OMI_physics_shape: convex and trimesh. OMI_collider: hull and trimesh.
+	if (declared_shape_type == "hull" || declared_shape_type == "convexMesh") {
 		shape_type = "convex";
+	} else if (declared_shape_type == "mesh") {
+		shape_type = "trimesh";
+	} else {
+		shape_type = declared_shape_type;
 	}
 	gltf_shape->shape_type = shape_type;
 	if (shape_type != "box" && shape_type != "capsule" && shape_type != "cylinder" && shape_type != "sphere" && shape_type != "convex" && shape_type != "trimesh") {
 		ERR_PRINT("GLTFPhysicsShape: Error parsing unknown shape type '" + shape_type + "'. Only box, capsule, cylinder, sphere, convex, and trimesh are supported.");
 	}
 	Dictionary properties;
-	if (p_dictionary.has(shape_type)) {
-		properties = p_dictionary[shape_type];
+	if (p_dictionary.has(declared_shape_type)) {
+		properties = p_dictionary[declared_shape_type];
 	} else {
 		properties = p_dictionary;
 	}
@@ -299,9 +305,12 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary p_dicti
 			ERR_PRINT("GLTFPhysicsShape: Error parsing the size, it must have exactly 3 numbers.");
 		}
 	}
+#ifndef DISABLE_DEPRECATED
+	// "isTrigger" is only present in the deprecated OMI_collider extension.
 	if (properties.has("isTrigger")) {
 		gltf_shape->set_is_trigger(properties["isTrigger"]);
 	}
+#endif // DISABLE_DEPRECATED
 	if (properties.has("mesh")) {
 		gltf_shape->set_mesh_index(properties["mesh"]);
 	}

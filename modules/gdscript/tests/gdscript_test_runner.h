@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "../gdscript.h"
-
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
@@ -115,7 +114,6 @@ class GDScriptTestRunner {
 	Vector<GDScriptTest> tests;
 
 	bool is_generating = false;
-	bool do_init_languages = false;
 	bool print_filenames; // Whether filenames should be printed when generated/running tests
 	bool binary_tokens; // Test with buffer tokenizer.
 
@@ -126,11 +124,10 @@ class GDScriptTestRunner {
 public:
 	static StringName test_function_name;
 
-	static void handle_cmdline();
 	int run_tests();
 	bool generate_outputs();
 
-	GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames = false, bool p_use_binary_tokens = false);
+	GDScriptTestRunner(const String &p_source_dir, bool p_print_filenames = false, bool p_use_binary_tokens = false);
 	~GDScriptTestRunner();
 };
 

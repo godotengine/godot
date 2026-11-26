@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 if [ ! -e "version.py" ]; then
   echo "This script should be ran from the root folder of the Godot repository."

@@ -926,7 +926,7 @@ namespace Godot
                 return false;
 
             int from = 0;
-            if (instance.Length != 1 && instance[0] == '+' || instance[0] == '-')
+            if (instance.Length != 1 && (instance[0] == '+' || instance[0] == '-'))
             {
                 from++;
             }
@@ -935,26 +935,24 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
+                if (instance[from] != '0' || (instance[from + 1] != 'x' && instance[from + 1] != 'X'))
                     return false;
                 from += 2;
             }
 
+            if (from == instance.Length)
+                return false;
+
             for (int i = from; i < instance.Length; i++)
             {
                 char c = instance[i];
-                if (IsHexDigit(c))
+                if (char.IsAsciiHexDigit(c))
                     continue;
 
                 return false;
             }
 
             return true;
-
-            static bool IsHexDigit(char c)
-            {
-                return char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-            }
         }
 
         /// <summary>
@@ -1394,7 +1392,7 @@ namespace Godot
             if (pos < 0)
                 return string.Empty;
 
-            return instance.Substring(pos, instance.Length - pos);
+            return instance.Substring(pos);
         }
 
         /// <summary>
@@ -1539,7 +1537,7 @@ namespace Godot
                 if (end < 0)
                     end = len;
                 if (allowEmpty || end > from)
-                    ret.Add(float.Parse(instance.AsSpan(from), CultureInfo.InvariantCulture));
+                    ret.Add(float.Parse(instance.AsSpan(from, end - from), CultureInfo.InvariantCulture));
                 if (end == len)
                     break;
 
@@ -1730,7 +1728,7 @@ namespace Godot
         /// <summary>
         /// Decodes a string in URL encoded format. This is meant to
         /// decode parameters in a URL when receiving an HTTP request.
-        /// This mostly wraps around <see cref="Uri.UnescapeDataString"/>,
+        /// This mostly wraps around <see cref="Uri.UnescapeDataString(string)"/>,
         /// but also handles <c>+</c>.
         /// See <see cref="URIEncode"/> for encoding.
         /// </summary>
@@ -1744,7 +1742,7 @@ namespace Godot
         /// <summary>
         /// Encodes a string to URL friendly format. This is meant to
         /// encode parameters in a URL when sending an HTTP request.
-        /// This wraps around <see cref="Uri.EscapeDataString"/>.
+        /// This wraps around <see cref="Uri.EscapeDataString(string)"/>.
         /// See <see cref="URIDecode"/> for decoding.
         /// </summary>
         /// <param name="instance">The string to encode.</param>

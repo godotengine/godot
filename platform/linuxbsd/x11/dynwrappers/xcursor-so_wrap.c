@@ -64,7 +64,7 @@
 #define XcursorGetTheme XcursorGetTheme_dylibloader_orig_xcursor
 #define XcursorGetThemeCore XcursorGetThemeCore_dylibloader_orig_xcursor
 #define XcursorSetThemeCore XcursorSetThemeCore_dylibloader_orig_xcursor
-#include "thirdparty/linuxbsd_headers/X11/Xcursor/Xcursor.h"
+#include <thirdparty/linuxbsd_headers/X11/Xcursor/Xcursor.h>
 #undef XcursorImageCreate
 #undef XcursorImageDestroy
 #undef XcursorImagesCreate

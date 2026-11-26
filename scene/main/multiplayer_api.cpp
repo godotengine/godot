@@ -31,6 +31,8 @@
 #include "multiplayer_api.h"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+
 StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {
@@ -122,10 +124,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 		} break;
 		default:
 			// Any other case is not yet compressed.
-			Error err = encode_variant(p_variant, r_buffer, r_len, p_allow_object_decoding);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERROR(encode_variant(p_variant, r_buffer, r_len, p_allow_object_decoding));
 			if (r_buffer) {
 				// The first byte is not used by the marshaling, so store the type
 				// so we know how to decompress and decode this variant.
@@ -195,10 +194,7 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 			}
 		} break;
 		default:
-			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, p_allow_object_decoding);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERROR(decode_variant(r_variant, p_buffer, p_len, r_len, p_allow_object_decoding));
 	}
 
 	return OK;
@@ -297,7 +293,7 @@ void MultiplayerAPI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerPeer", PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
 
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("set_default_interface", "interface_name"), &MultiplayerAPI::set_default_interface);
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("get_default_interface"), &MultiplayerAPI::get_default_interface);

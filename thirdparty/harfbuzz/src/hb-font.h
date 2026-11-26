@@ -1159,10 +1159,6 @@ hb_font_set_parent (hb_font_t *font,
 HB_EXTERN hb_font_t *
 hb_font_get_parent (hb_font_t *font);
 
-HB_EXTERN void
-hb_font_set_face (hb_font_t *font,
-		  hb_face_t *face);
-
 HB_EXTERN hb_face_t *
 hb_font_get_face (hb_font_t *font);
 

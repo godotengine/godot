@@ -15,7 +15,6 @@
 
 #include "mbedtls/x509.h"
 #include "mbedtls/x509_crl.h"
-#include "mbedtls/bignum.h"
 
 /**
  * \addtogroup x509_module
@@ -81,8 +80,13 @@ typedef struct mbedtls_x509_crt {
 
     mbedtls_x509_buf MBEDTLS_PRIVATE(sig);               /**< Signature: hash of the tbs part signed with the private key. */
     mbedtls_md_type_t MBEDTLS_PRIVATE(sig_md);           /**< Internal representation of the MD algorithm of the signature algorithm, e.g. MBEDTLS_MD_SHA256 */
-    mbedtls_pk_type_t MBEDTLS_PRIVATE(sig_pk);           /**< Internal representation of the Public Key algorithm of the signature algorithm, e.g. MBEDTLS_PK_RSA */
-    void *MBEDTLS_PRIVATE(sig_opts);             /**< Signature options to be passed to mbedtls_pk_verify_ext(), e.g. for RSASSA-PSS */
+    mbedtls_pk_sigalg_t MBEDTLS_PRIVATE(sig_pk);           /**< Internal representation of the Public Key algorithm of the signature algorithm, e.g. MBEDTLS_PK_RSA */
+
+    /* Unused field reserved for future use */
+    union {
+        size_t number;
+        void *ptr;
+    } MBEDTLS_PRIVATE(unused);
 
     /** Next certificate in the linked list that constitutes the CA chain.
      * \p NULL indicates the end of the list.
@@ -235,7 +239,7 @@ mbedtls_x509write_cert;
  * \param ctx       Certificate context to use
  * \param san_list  List of SAN values
  *
- * \return          0 if successful, or MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  *
  * \note            "dnsName", "uniformResourceIdentifier", "IP address",
  *                  "otherName", and "DirectoryName", as defined in RFC 5280,
@@ -258,7 +262,7 @@ typedef struct {
 #define MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE  (MBEDTLS_X509_MAX_INTERMEDIATE_CA + 2)
 
 /**
- * Verification chain as built by \c mbedtls_crt_verify_chain()
+ * Verification chain as built by \c mbedtls_x509_crt_verify_chain()
  */
 typedef struct {
     mbedtls_x509_crt_verify_chain_item MBEDTLS_PRIVATE(items)[MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE];
@@ -273,7 +277,7 @@ typedef struct {
 #endif /* MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK */
 } mbedtls_x509_crt_verify_chain;
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
 
 /**
  * \brief       Context for resuming X.509 verify operations
@@ -300,12 +304,12 @@ typedef struct {
 
 } mbedtls_x509_crt_restart_ctx;
 
-#else /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+#else /* MBEDTLS_ECP_RESTARTABLE */
 
 /* Now we can declare functions that take a pointer to that */
 typedef void mbedtls_x509_crt_restart_ctx;
 
-#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+#endif /* MBEDTLS_ECP_RESTARTABLE */
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 /**
@@ -345,9 +349,8 @@ extern const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none;
  * \brief          Parse a single DER formatted certificate and add it
  *                 to the end of the provided chained list.
  *
- * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
  *
  * \param chain    The pointer to the start of the CRT chain to attach to.
  *                 When parsing the first CRT in a chain, this should point
@@ -410,9 +413,8 @@ typedef int (*mbedtls_x509_crt_ext_cb_t)(void *p_ctx,
  * \brief            Parse a single DER formatted certificate and add it
  *                   to the end of the provided chained list.
  *
- * \note             If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                   subsystem must have been initialized by calling
- *                   psa_crypto_init() before calling this function.
+ * \note             The PSA crypto subsystem must have been initialized by
+ *                   calling psa_crypto_init() before calling this function.
  *
  * \param chain      The pointer to the start of the CRT chain to attach to.
  *                   When parsing the first CRT in a chain, this should point
@@ -464,9 +466,8 @@ int mbedtls_x509_crt_parse_der_with_ext_cb(mbedtls_x509_crt *chain,
  *                 temporary ownership of the CRT buffer until the CRT
  *                 is destroyed.
  *
- * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
  *
  * \param chain    The pointer to the start of the CRT chain to attach to.
  *                 When parsing the first CRT in a chain, this should point
@@ -508,9 +509,8 @@ int mbedtls_x509_crt_parse_der_nocopy(mbedtls_x509_crt *chain,
  *                 long as the certificates are enclosed in the PEM specific
  *                 '-----{BEGIN/END} CERTIFICATE-----' delimiters.
  *
- * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
  *
  * \param chain    The chain to which to add the parsed certificates.
  * \param buf      The buffer holding the certificate data in PEM or DER format.
@@ -536,9 +536,8 @@ int mbedtls_x509_crt_parse(mbedtls_x509_crt *chain, const unsigned char *buf, si
  *                 of failed certificates it encountered. If none complete
  *                 correctly, the first error is returned.
  *
- * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
  *
  * \param chain    points to the start of the chain
  * \param path     filename to read the certificates from
@@ -600,7 +599,47 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
 /**
  * \brief          Verify a chain of certificates.
  *
- *                 The verify callback is a user-supplied callback that
+ * \note           The \p cn represents the reference identifier (historically,
+ *                 the Common Name component of the certificate's Subject). It
+ *                 should be either a DNS name, a URI or an IP address. (If the
+ *                 string can be interpreted either as a URI or an IP address,
+ *                 it will be considered an IP address.)
+ *
+ *                 DNS names must be provided in the "preferred name syntax", as
+ *                 specified by Section 3.5 of RFC 1034 and as modified by
+ *                 Section 2.1 of RFC 1123. Internationalized domain names must
+ *                 be in ASCII Compatible Encoding (ACE) format as specified in
+ *                 Section 4 of RFC 3490 (also known as Punycode).
+ *
+ *                 The provided DNS name will be matched against Subject
+ *                 Alternative Name (SAN) entries of type dNSName if the SAN
+ *                 extension is present; otherwise against CN components of the
+ *                 Subject. (This behaviour was present in RFC 6125, removed in
+ *                 RFC 9525, but we preserve it for improved compatibility.)
+ *
+ *                 DNS name matching is case-insensitive. If the certificate
+ *                 contains a wildcard, it is matched according to RFC 9525:
+ *                 a single wildcard is allowed and it must be the entire
+ *                 content of the leftmost label.
+ *
+ *                 IP addresses must be provided in dotted-quad format for IPv4,
+ *                 and for IPv6 in the textual representation defined by RFC
+ *                 4291 section 2.2. They will be converted to binary and
+ *                 matched against iPAddress entries in the SAN extension. The
+ *                 match must be exact (RFC 9525).
+ *
+ *                 URIs must not be relative and must follow RFC 3986. They will
+ *                 be matched against uniformResourceIdentifier entries in the
+ *                 SAN extension. Support for this type is limited: no kind of
+ *                 parsing or normalization is performed, and only exact
+ *                 byte-for-byte matches will yield a positive result.
+ *
+ *                 As a compatibility measure, if the name passed does not look
+ *                 like a valid IP, URI or DNS, it is treated as a free string
+ *                 intended to match one of the CN components of the Subject.
+ *                 The match must then be byte-for-byte.
+ *
+ * \note           The \p f_vrfy callback is a user-supplied callback that
  *                 can clear / modify / add flags for a certificate. If set,
  *                 the verification callback is called for each
  *                 certificate in the chain (from the trust-ca down to the
@@ -616,7 +655,7 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
  *                 other than fatal error, as a non-zero return code
  *                 immediately aborts the verification process. For fatal
  *                 errors, a specific error code should be used (different
- *                 from MBEDTLS_ERR_X509_CERT_VERIFY_FAILED which should not
+ *                 from #MBEDTLS_ERR_X509_CERT_VERIFY_FAILED which should not
  *                 be returned at this point), or MBEDTLS_ERR_X509_FATAL_ERROR
  *                 can be used if no better code is available.
  *
@@ -641,20 +680,19 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
- * \param cn       The expected Common Name. This will be checked to be
- *                 present in the certificate's subjectAltNames extension or,
- *                 if this extension is absent, as a CN component in its
- *                 Subject name. DNS names and IP addresses are fully
- *                 supported, while the URI subtype is partially supported:
- *                 only exact matching, without any normalization procedures
- *                 described in 7.4 of RFC5280, will result in a positive
- *                 URI verification.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
+ * \param cn       The expected Common Name or reference identifier.
  *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note above for expected formats and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
- * \param f_vrfy   The verification callback to use. See the documentation
- *                 of mbedtls_x509_crt_verify() for more information.
+ * \param f_vrfy   The verification callback to use. See note above
+ *                 for more information.
  * \param p_vrfy   The context to be passed to \p f_vrfy.
  *
  * \return         \c 0 if the chain is valid with respect to the
@@ -688,9 +726,16 @@ int mbedtls_x509_crt_verify(mbedtls_x509_crt *crt,
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
  * \param profile  The security profile to use for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -717,18 +762,25 @@ int mbedtls_x509_crt_verify_with_profile(mbedtls_x509_crt *crt,
                                          void *p_vrfy);
 
 /**
- * \brief          Restartable version of \c mbedtls_crt_verify_with_profile()
+ * \brief          Restartable version of \c mbedtls_x509_crt_verify_with_profile()
  *
- * \note           Performs the same job as \c mbedtls_crt_verify_with_profile()
+ * \note           Performs the same job as \c mbedtls_x509_crt_verify_with_profile()
  *                 but can return early and restart according to the limit
- *                 set with \c mbedtls_ecp_set_max_ops() to reduce blocking.
+ *                 set with \c psa_interruptible_set_max_ops() to reduce blocking.
  *
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
  * \param profile  The security profile to use for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -738,9 +790,9 @@ int mbedtls_x509_crt_verify_with_profile(mbedtls_x509_crt *crt,
  * \param rs_ctx   The restart context to use. This may be set to \c NULL
  *                 to disable restartable ECC.
  *
- * \return         See \c mbedtls_crt_verify_with_profile(), or
- * \return         #MBEDTLS_ERR_ECP_IN_PROGRESS if maximum number of
- *                 operations was reached: see \c mbedtls_ecp_set_max_ops().
+ * \return         See \c mbedtls_x509_crt_verify_with_profile(), or
+ * \return         #PSA_OPERATION_INCOMPLETE if maximum number of
+ *                 operations was reached: see \c psa_interruptible_set_max_ops().
  */
 int mbedtls_x509_crt_verify_restartable(mbedtls_x509_crt *crt,
                                         mbedtls_x509_crt *trust_ca,
@@ -797,8 +849,13 @@ typedef int (*mbedtls_x509_crt_ca_cb_t)(void *p_ctx,
  *                 ::mbedtls_x509_crt_ca_cb_t for more information.
  * \param p_ca_cb  The opaque context to be passed to \p f_ca_cb.
  * \param profile  The security profile for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -806,7 +863,7 @@ typedef int (*mbedtls_x509_crt_ca_cb_t)(void *p_ctx,
  *                 of mbedtls_x509_crt_verify() for more information.
  * \param p_vrfy   The context to be passed to \p f_vrfy.
  *
- * \return         See \c mbedtls_crt_verify_with_profile().
+ * \return         See \c mbedtls_x509_crt_verify_with_profile().
  */
 int mbedtls_x509_crt_verify_with_ca_cb(mbedtls_x509_crt *crt,
                                        mbedtls_x509_crt_ca_cb_t f_ca_cb,
@@ -832,7 +889,7 @@ int mbedtls_x509_crt_verify_with_ca_cb(mbedtls_x509_crt *crt,
  *                 that bit MAY be set.
  *
  * \return         0 is these uses of the certificate are allowed,
- *                 MBEDTLS_ERR_X509_BAD_INPUT_DATA if the keyUsage extension
+ *                 #MBEDTLS_ERR_X509_BAD_INPUT_DATA if the keyUsage extension
  *                 is present but does not match the usage argument.
  *
  * \note           You should only call this function on leaf certificates, on
@@ -851,7 +908,7 @@ int mbedtls_x509_crt_check_key_usage(const mbedtls_x509_crt *crt,
  * \param usage_len Length of usage_oid (eg given by MBEDTLS_OID_SIZE()).
  *
  * \return          0 if this use of the certificate is allowed,
- *                  MBEDTLS_ERR_X509_BAD_INPUT_DATA if not.
+ *                  #MBEDTLS_ERR_X509_BAD_INPUT_DATA if not.
  *
  * \note            Usually only makes sense on leaf certificates.
  */
@@ -862,6 +919,20 @@ int mbedtls_x509_crt_check_extended_key_usage(const mbedtls_x509_crt *crt,
 #if defined(MBEDTLS_X509_CRL_PARSE_C)
 /**
  * \brief          Verify the certificate revocation status
+ *
+ * \warning        A certificate is only considerd to be revoked if its
+ *                 issuer name matches an entry in the CRL. Mbed TLS
+ *                 does not fully normalize the names before comparing
+ *                 them. It ignores the ASN.1 type (e.g. a PrintableString
+ *                 can match an UTF8String), and it compares ASCII characters
+ *                 case-insensitively, but no other normalization is done.
+ *                 Thus, for example, the following do not match:
+ *                 - `AUTORITÉ` vs `autorité`
+ *                   (case insensitivity is restricted to ASCII letters);
+ *                 - `"autorite\u0301"` vs `"autorit\u00e9"`
+ *                   (no Unicode canonicalization);
+ *                 - `two__words` vs `two_words` where `_` is a space
+ *                   (no space folding).
  *
  * \param crt      a certificate to be verified
  * \param crl      the CRL to verify against
@@ -886,7 +957,7 @@ void mbedtls_x509_crt_init(mbedtls_x509_crt *crt);
  */
 void mbedtls_x509_crt_free(mbedtls_x509_crt *crt);
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
 /**
  * \brief           Initialize a restart context
  */
@@ -896,7 +967,7 @@ void mbedtls_x509_crt_restart_init(mbedtls_x509_crt_restart_ctx *ctx);
  * \brief           Free the components of a restart context
  */
 void mbedtls_x509_crt_restart_free(mbedtls_x509_crt_restart_ctx *ctx);
-#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+#endif /* MBEDTLS_ECP_RESTARTABLE */
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 /**
@@ -948,28 +1019,6 @@ void mbedtls_x509write_crt_init(mbedtls_x509write_cert *ctx);
  */
 void mbedtls_x509write_crt_set_version(mbedtls_x509write_cert *ctx, int version);
 
-#if defined(MBEDTLS_BIGNUM_C) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-/**
- * \brief           Set the serial number for a Certificate.
- *
- * \deprecated      This function is deprecated and will be removed in a
- *                  future version of the library. Please use
- *                  mbedtls_x509write_crt_set_serial_raw() instead.
- *
- * \note            Even though the MBEDTLS_BIGNUM_C guard looks redundant since
- *                  X509 depends on PK and PK depends on BIGNUM, this emphasizes
- *                  a direct dependency between X509 and BIGNUM which is going
- *                  to be deprecated in the future.
- *
- * \param ctx       CRT context to use
- * \param serial    serial number to set
- *
- * \return          0 if successful
- */
-int MBEDTLS_DEPRECATED mbedtls_x509write_crt_set_serial(
-    mbedtls_x509write_cert *ctx, const mbedtls_mpi *serial);
-#endif // MBEDTLS_BIGNUM_C && !MBEDTLS_DEPRECATED_REMOVED
-
 /**
  * \brief           Set the serial number for a Certificate.
  *
@@ -980,11 +1029,11 @@ int MBEDTLS_DEPRECATED mbedtls_x509write_crt_set_serial(
  *                     input buffer
  *
  * \return          0 if successful, or
- *                  MBEDTLS_ERR_X509_BAD_INPUT_DATA if the provided input buffer
+ *                  #MBEDTLS_ERR_X509_BAD_INPUT_DATA if the provided input buffer
  *                  is too big (longer than MBEDTLS_X509_RFC5280_MAX_SERIAL_LEN)
  */
 int mbedtls_x509write_crt_set_serial_raw(mbedtls_x509write_cert *ctx,
-                                         unsigned char *serial, size_t serial_len);
+                                         const unsigned char *serial, size_t serial_len);
 
 /**
  * \brief           Set the validity period for a Certificate
@@ -1069,7 +1118,7 @@ void mbedtls_x509write_crt_set_md_alg(mbedtls_x509write_cert *ctx, mbedtls_md_ty
  * \param val       value of the extension OCTET STRING
  * \param val_len   length of the value data
  *
- * \return          0 if successful, or a MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_extension(mbedtls_x509write_cert *ctx,
                                         const char *oid, size_t oid_len,
@@ -1085,12 +1134,12 @@ int mbedtls_x509write_crt_set_extension(mbedtls_x509write_cert *ctx,
  *                      certificate (only for CA certificates, -1 is
  *                      unlimited)
  *
- * \return          0 if successful, or a MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_basic_constraints(mbedtls_x509write_cert *ctx,
                                                 int is_ca, int max_pathlen);
 
-#if defined(MBEDTLS_MD_CAN_SHA1)
+#if defined(PSA_WANT_ALG_SHA_1)
 /**
  * \brief           Set the subjectKeyIdentifier extension for a CRT
  *                  Requires that mbedtls_x509write_crt_set_subject_key() has been
@@ -1098,7 +1147,7 @@ int mbedtls_x509write_crt_set_basic_constraints(mbedtls_x509write_cert *ctx,
  *
  * \param ctx       CRT context to use
  *
- * \return          0 if successful, or a MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_subject_key_identifier(mbedtls_x509write_cert *ctx);
 
@@ -1109,10 +1158,10 @@ int mbedtls_x509write_crt_set_subject_key_identifier(mbedtls_x509write_cert *ctx
  *
  * \param ctx       CRT context to use
  *
- * \return          0 if successful, or a MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_authority_key_identifier(mbedtls_x509write_cert *ctx);
-#endif /* MBEDTLS_MD_CAN_SHA1 */
+#endif /* PSA_WANT_ALG_SHA_1 */
 
 /**
  * \brief           Set the Key Usage Extension flags
@@ -1121,7 +1170,7 @@ int mbedtls_x509write_crt_set_authority_key_identifier(mbedtls_x509write_cert *c
  * \param ctx       CRT context to use
  * \param key_usage key usage flags to set
  *
- * \return          0 if successful, or MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_key_usage(mbedtls_x509write_cert *ctx,
                                         unsigned int key_usage);
@@ -1134,7 +1183,7 @@ int mbedtls_x509write_crt_set_key_usage(mbedtls_x509write_cert *ctx,
  * \param exts      extended key usage extensions to set, a sequence of
  *                  MBEDTLS_ASN1_OID objects
  *
- * \return          0 if successful, or MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_ext_key_usage(mbedtls_x509write_cert *ctx,
                                             const mbedtls_asn1_sequence *exts);
@@ -1146,7 +1195,7 @@ int mbedtls_x509write_crt_set_ext_key_usage(mbedtls_x509write_cert *ctx,
  * \param ctx           CRT context to use
  * \param ns_cert_type  Netscape Cert Type flags to set
  *
- * \return          0 if successful, or MBEDTLS_ERR_X509_ALLOC_FAILED
+ * \return          0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_x509write_crt_set_ns_cert_type(mbedtls_x509write_cert *ctx,
                                            unsigned char ns_cert_type);
@@ -1167,17 +1216,11 @@ void mbedtls_x509write_crt_free(mbedtls_x509write_cert *ctx);
  * \param ctx       certificate to write away
  * \param buf       buffer to write to
  * \param size      size of the buffer
- * \param f_rng     RNG function. This must not be \c NULL.
- * \param p_rng     RNG parameter
  *
  * \return          length of data written if successful, or a specific
  *                  error code
- *
- * \note            \p f_rng is used for the signature operation.
  */
-int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size,
-                              mbedtls_f_rng_t *f_rng,
-                              void *p_rng);
+int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size);
 
 #if defined(MBEDTLS_PEM_WRITE_C)
 /**
@@ -1186,16 +1229,11 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, s
  * \param ctx       certificate to write away
  * \param buf       buffer to write to
  * \param size      size of the buffer
- * \param f_rng     RNG function. This must not be \c NULL.
- * \param p_rng     RNG parameter
  *
  * \return          0 if successful, or a specific error code
  *
- * \note            \p f_rng is used for the signature operation.
  */
-int mbedtls_x509write_crt_pem(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size,
-                              mbedtls_f_rng_t *f_rng,
-                              void *p_rng);
+int mbedtls_x509write_crt_pem(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size);
 #endif /* MBEDTLS_PEM_WRITE_C */
 #endif /* MBEDTLS_X509_CRT_WRITE_C */
 

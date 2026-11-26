@@ -64,6 +64,8 @@ class NativeMenuMacOS : public NativeMenu {
 	RID help_menu;
 	RID dock_menu;
 
+	void _update_align(MenuData *p_md);
+
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
 	bool _is_menu_opened(NSMenu *p_menu) const;
@@ -88,6 +90,9 @@ public:
 	virtual void free_menu(const RID &p_rid) override;
 
 	NSMenu *get_native_menu_handle(const RID &p_rid);
+
+	virtual String get_system_menu_text(SystemMenus p_menu_id) const override;
+	virtual void set_system_menu_text(SystemMenus p_menu_id, const String &p_name) override;
 
 	virtual Size2 get_size(const RID &p_rid) const override;
 	virtual void popup(const RID &p_rid, const Vector2i &p_position) override;
@@ -116,6 +121,7 @@ public:
 	virtual int find_item_index_with_tag(const RID &p_rid, const Variant &p_tag) const override;
 
 	virtual bool is_item_checked(const RID &p_rid, int p_idx) const override;
+	virtual bool is_item_indeterminate(const RID &p_rid, int p_idx) const override;
 	virtual bool is_item_checkable(const RID &p_rid, int p_idx) const override;
 	virtual bool is_item_radio_checkable(const RID &p_rid, int p_idx) const override;
 	virtual Callable get_item_callback(const RID &p_rid, int p_idx) const override;
@@ -133,6 +139,7 @@ public:
 	virtual int get_item_indentation_level(const RID &p_rid, int p_idx) const override;
 
 	virtual void set_item_checked(const RID &p_rid, int p_idx, bool p_checked) override;
+	virtual void set_item_indeterminate(const RID &p_rid, int p_idx, bool p_cindeterminate) override;
 	virtual void set_item_checkable(const RID &p_rid, int p_idx, bool p_checkable) override;
 	virtual void set_item_radio_checkable(const RID &p_rid, int p_idx, bool p_checkable) override;
 	virtual void set_item_callback(const RID &p_rid, int p_idx, const Callable &p_callback) override;
@@ -149,6 +156,7 @@ public:
 	virtual void set_item_max_states(const RID &p_rid, int p_idx, int p_max_states) override;
 	virtual void set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon) override;
 	virtual void set_item_indentation_level(const RID &p_rid, int p_idx, int p_level) override;
+	virtual int set_item_index(const RID &p_rid, int p_idx, int p_target_idx) override;
 
 	virtual int get_item_count(const RID &p_rid) const override;
 	virtual bool is_system_menu(const RID &p_rid) const override;

@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/string/ustring.h"
 
@@ -65,6 +64,8 @@ public:
 	String get_project_data_dir() const;
 	String get_export_templates_dir() const;
 	String get_debug_keystore_path() const;
+	String get_default_java_sdk_path() const;
+	String get_default_android_sdk_path() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;

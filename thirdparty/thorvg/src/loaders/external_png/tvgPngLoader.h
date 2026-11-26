@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,13 @@
 #include <png.h>
 #include "tvgLoader.h"
 
-class PngLoader : public ImageLoader
+struct PngLoader : BitmapLoader
 {
-public:
     PngLoader();
     ~PngLoader();
 
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
+    Result open(const char* path, const LoaderOps& ops) override;
+    Result open(const char* data, uint32_t size, const LoaderOps& ops) override;
     bool read() override;
 
 private:

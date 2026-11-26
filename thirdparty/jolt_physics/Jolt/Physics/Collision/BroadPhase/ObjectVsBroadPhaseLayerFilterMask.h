@@ -15,7 +15,7 @@ class ObjectVsBroadPhaseLayerFilterMask : public ObjectVsBroadPhaseLayerFilter
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-/// Constructor
+	/// Constructor
 					ObjectVsBroadPhaseLayerFilterMask(const BroadPhaseLayerInterfaceMask &inBroadPhaseLayerInterface) :
 		mBroadPhaseLayerInterface(inBroadPhaseLayerInterface)
 	{

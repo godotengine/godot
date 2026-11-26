@@ -31,13 +31,11 @@
 #pragma once
 
 #include "audio_driver_web.h"
+#include "godot_js.h"
 #include "webmidi_driver.h"
 
-#include "godot_js.h"
-
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
 
 #include <emscripten/html5.h>
 
@@ -47,6 +45,7 @@ class OS_Web : public OS_Unix {
 
 	MIDIDriverWebMidi midi_driver;
 
+	ProcessID web_pid = 0;
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
@@ -110,9 +109,13 @@ public:
 
 	bool is_userfs_persistent() const override;
 
+	Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
+
+	Error move_to_trash(const String &p_path) override;
 
 	void resume_audio();
 

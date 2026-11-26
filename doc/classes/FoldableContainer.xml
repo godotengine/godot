@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FoldableContainer" inherits="Container" api_type="core" keywords="expandable, collapsible, collapse, accordion, details" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that can be expanded/collapsed.
 	</brief_description>
 	<description>
-		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons.
-		The title can be positioned at the top or bottom of the container.
-		The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused.
-		Child control nodes are hidden when the container is collapsed. Ignores non-control children.
-		Can allow grouping with other FoldableContainers, check [member foldable_group] and [FoldableGroup].
+		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons. This is also called an accordion.
+		The title can be positioned at the top or bottom of the container. The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused. Child control nodes are hidden when the container is collapsed. Ignores non-control children.
+		A FoldableContainer can be grouped with other FoldableContainers so that only one of them can be opened at a time; see [member foldable_group] and [FoldableGroup].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -33,6 +31,20 @@
 				Folds the container and emits [signal folding_changed].
 			</description>
 		</method>
+		<method name="get_title_bar_control" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the title bar [Control] at the given [param index], or [code]null[/code] if the index is out of bounds.
+				Use [method get_title_bar_control_count] to get the total number of title bar controls.
+			</description>
+		</method>
+		<method name="get_title_bar_control_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of controls added to the title bar via [method add_title_bar_control].
+			</description>
+		</method>
 		<method name="remove_title_bar_control">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
@@ -47,10 +59,10 @@
 			The [FoldableGroup] associated with the container. When multiple [FoldableContainer] nodes share the same group, only one of them is allowed to be unfolded.
 		</member>
 		<member name="folded" type="bool" setter="set_folded" getter="is_folded" default="false">
-			If [code]true[/code], the container will becomes folded and will hide all its children.
+			If [code]true[/code], the container will become folded and will hide all its children.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for text shaping algorithms. If left empty, current locale is used instead.
+			Language code used for text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
@@ -101,6 +113,9 @@
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal separation between the title's icon and text, and between title bar controls.
 		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [FoldableContainer]'s icon. The height is adjusted according to the icon's ratio.
+		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The title's font outline size.
 		</theme_item>
@@ -121,6 +136,16 @@
 		</theme_item>
 		<theme_item name="folded_arrow_mirrored" data_type="icon" type="Texture2D">
 			The title's icon used when collapsed (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="expanded_sound" data_type="sound" type="AudioStream">
+			Played when the container is expanded with any input method.
+		</theme_item>
+		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
+			Played when this [FoldableContainer] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
+		</theme_item>
+		<theme_item name="folded_sound" data_type="sound" type="AudioStream">
+			Played when the container is folded with any input method.
+			[b]Note:[/b] This does not play if the container is folded as a result of being part of a [FoldableGroup] and another container in the same group was expanded.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			Background used when [FoldableContainer] has GUI focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.

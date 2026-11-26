@@ -31,6 +31,8 @@
 #include "editor_import_collada.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/templates/rb_set.h"
 #include "editor/import/3d/collada.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -135,10 +137,7 @@ Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p
 
 	int id = r_bone++;
 	for (int i = 0; i < p_node->children.size(); i++) {
-		Error err = _populate_skeleton(p_skeleton, p_node->children[i], r_bone, id);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_populate_skeleton(p_skeleton, p_node->children[i], r_bone, id));
 	}
 
 	return OK;
@@ -176,10 +175,7 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 	}
 
 	for (int i = 0; i < p_node->children.size(); i++) {
-		Error err = _create_scene_skeletons(p_node->children[i]);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_create_scene_skeletons(p_node->children[i]));
 	}
 	return OK;
 }
@@ -319,10 +315,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 	}
 
 	for (int i = 0; i < p_node->children.size(); i++) {
-		Error err = _create_scene(p_node->children[i], node);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_create_scene(p_node->children[i], node));
 	}
 	return OK;
 }
@@ -919,7 +912,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			uint64_t mesh_flags = 0;
 
 			if (p_use_compression) {
-				mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			// We can't generate tangents without UVs, so create dummy tangents.
@@ -957,10 +950,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				if (has_weights) {
 					Vector<float> weights;
 					Vector<int> bones;
-					weights.resize(RS::ARRAY_WEIGHTS_SIZE);
-					bones.resize(RS::ARRAY_WEIGHTS_SIZE);
+					weights.resize(RSE::ARRAY_WEIGHTS_SIZE);
+					bones.resize(RSE::ARRAY_WEIGHTS_SIZE);
 					//float sum=0.0;
-					for (int l = 0; l < RS::ARRAY_WEIGHTS_SIZE; l++) {
+					for (int l = 0; l < RSE::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
 							bones.write[l] = vertex_array[k].weights[l].bone_idx;
@@ -1004,7 +997,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 
 			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller || is_mesh_2d) {
 				// Can't compress if attributes missing or if using vertex weights.
-				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			////////////////////////////
@@ -1012,9 +1005,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			////////////////////////////
 
 			Array d = surftool->commit_to_arrays();
-			d.resize(RS::ARRAY_MAX);
+			d.resize(RSE::ARRAY_MAX);
 
-			if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
+			if (mesh_flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = d[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
@@ -1022,7 +1015,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 					if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 						// Tangent is not perpendicular to the normal, so we can't use compression.
-						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 					}
 				}
 			}
@@ -1319,10 +1312,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 	}
 
 	for (int i = 0; i < p_node->children.size(); i++) {
-		Error err = _create_resources(p_node->children[i], p_use_compression);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_create_resources(p_node->children[i], p_use_compression));
 	}
 	return OK;
 }

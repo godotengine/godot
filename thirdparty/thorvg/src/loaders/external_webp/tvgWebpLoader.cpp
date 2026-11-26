@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,24 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-
 void WebpLoader::run(unsigned tid)
 {
-    //TODO: acquire the current colorspace format & pre-multiplied alpha image.
-    surface.buf8 = WebPDecodeBGRA(data, size, nullptr, nullptr);
-    surface.stride = (uint32_t)w;
-    surface.w = (uint32_t)w;
-    surface.h = (uint32_t)h;
-    surface.channelSize = sizeof(uint32_t);
-    surface.cs = ColorSpace::ARGB8888;
-    surface.premultiplied = false;
+    WebPDecoderConfig config;
+    if (!WebPInitDecoderConfig(&config)) return;
 
+    ColorSpace cs;
+
+    // request premultiplied image data
+    if (BitmapLoader::cs == ColorSpace::ARGB8888 || BitmapLoader::cs == ColorSpace::ARGB8888S) {
+        config.output.colorspace = MODE_bgrA;
+        if (WebPDecode(data, size, &config) != VP8_STATUS_OK) return;
+        cs = surface.opaque ? ColorSpace::XRGB8888 : ColorSpace::ARGB8888;
+    } else {
+        config.output.colorspace = MODE_rgbA;
+        if (WebPDecode(data, size, &config) != VP8_STATUS_OK) return;
+        cs = surface.opaque ? ColorSpace::XBGR8888 : ColorSpace::ABGR8888;
+    }
+    surface.setup((pixel_t*)config.output.u.RGBA.rgba, (uint32_t)w, (uint32_t)w, (uint32_t)h, sizeof(uint32_t), cs);
 }
 
 
@@ -49,86 +55,57 @@ void WebpLoader::run(unsigned tid)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-WebpLoader::WebpLoader() : ImageLoader(FileType::Webp)
-{
-}
-
-
 WebpLoader::~WebpLoader()
 {
     done();
 
-    if (freeData) free(data);
+    if (owner != Ownership::Borrow) tvg::free(data);
     data = nullptr;
     size = 0;
-    freeData = false;
+    owner = Ownership::Borrow;
     WebPFree(surface.buf8);
 }
 
-
-bool WebpLoader::open(const string& path)
+Result WebpLoader::open(const char* path, const LoaderOps& ops)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    auto webpFile = fopen(path.c_str(), "rb");
-    if (!webpFile) return false;
+    if (!(data = (unsigned char*)Loader::open(path, size))) return Result::InvalidArguments;
+    owner = Ownership::Transfer;
 
-    auto ret = false;
-
-    //determine size
-    if (fseek(webpFile, 0, SEEK_END) < 0) goto finalize;
-    if (((size = ftell(webpFile)) < 1)) goto finalize;
-    if (fseek(webpFile, 0, SEEK_SET)) goto finalize;
-
-    data = (unsigned char *) malloc(size);
-    if (!data) goto finalize;
-
-    freeData = true;
-
-    if (fread(data, size, 1, webpFile) < 1) goto finalize;
-
-    int width, height;
-    if (!WebPGetInfo(data, size, &width, &height)) goto finalize;
-
-    w = static_cast<float>(width);
-    h = static_cast<float>(height);
-
-    ret = true;
-
-finalize:
-    fclose(webpFile);
-    return ret;
+    WebPBitstreamFeatures features;
+    if (WebPGetFeatures(data, size, &features)) return Result::InvalidArguments;
+    w = static_cast<float>(features.width);
+    h = static_cast<float>(features.height);
+    surface.opaque = !features.has_alpha;
+    return Result::Success;
 #else
-    return false;
+    return Result::NonSupport;
 #endif
 }
 
-
-bool WebpLoader::open(const char* data, uint32_t size, bool copy)
+Result WebpLoader::open(const char* data, uint32_t size, const LoaderOps& ops)
 {
-    if (copy) {
-        this->data = (unsigned char *) malloc(size);
-        if (!this->data) return false;
+    if (ops.owner == Ownership::Copy) {
+        this->data = tvg::malloc<unsigned char>(size);
         memcpy((unsigned char *)this->data, data, size);
-        freeData = true;
     } else {
         this->data = (unsigned char *) data;
-        freeData = false;
     }
+    owner = ops.owner;
 
-    int width, height;
-    if (!WebPGetInfo(this->data, size, &width, &height)) return false;
-
-    w = static_cast<float>(width);
-    h = static_cast<float>(height);
-    surface.cs = ColorSpace::ARGB8888;
+    WebPBitstreamFeatures features;
+    if (WebPGetFeatures(this->data, size, &features)) return Result::InvalidArguments;
+    w = static_cast<float>(features.width);
+    h = static_cast<float>(features.height);
+    surface.opaque = !features.has_alpha;
     this->size = size;
-    return true;
+    return Result::Success;
 }
 
 
 bool WebpLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (!data || w == 0 || h == 0) return false;
 
@@ -142,5 +119,5 @@ RenderSurface* WebpLoader::bitmap()
 {
     this->done();
 
-    return ImageLoader::bitmap();
+    return BitmapLoader::bitmap();
 }

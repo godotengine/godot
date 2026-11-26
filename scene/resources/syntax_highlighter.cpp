@@ -30,6 +30,8 @@
 
 #include "syntax_highlighter.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/text_edit.h"
 
 Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {

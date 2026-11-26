@@ -15,6 +15,13 @@ def run_closure_compiler(target, source, env, for_signature):
     )
     cmd = [WhereIs("node"), closure_bin]
     cmd.extend(["--compilation_level", "ADVANCED_OPTIMIZATIONS"])
+    for allow in ["header", "callback"]:
+        cmd.extend(["--extra_annotation_name", allow])
+    if env["warnings"] != "none":
+        if env["werror"]:
+            cmd.append("--jscomp_error='*'")
+        else:
+            cmd.append("--jscomp_warning='*'")
     for f in env["JSEXTERNS"]:
         cmd.extend(["--externs", f.get_abspath()])
     for f in source:
@@ -56,14 +63,19 @@ def create_template_zip(env, js, wasm, side):
         html = "#misc/dist/html/editor.html"
         cache = [
             "godot.editor.html",
+            "godot.editor.iframe.html",
             "offline.html",
             "godot.editor.js",
             "godot.editor.audio.worklet.js",
             "godot.editor.audio.position.worklet.js",
             "logo.svg",
             "favicon.png",
+            "inter-regular.woff2",
+            "inter-bold.woff2",
         ]
         opt_cache = ["godot.editor.wasm"]
+
+        env["GODOT_WEB_FILESIZES"] = lambda: json.dumps({"godot.editor.wasm": wasm.get_size()})
         subst_dict = {
             "___GODOT_VERSION___": get_build_version(False),
             "___GODOT_NAME___": "GodotEngine",
@@ -73,13 +85,22 @@ def create_template_zip(env, js, wasm, side):
             "___GODOT_THREADS_ENABLED___": "true" if env["threads"] else "false",
             "___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___": "true",
         }
-        html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
+        subst_dict_sizes = dict(subst_dict)
+        subst_dict_sizes["___GODOT_EDITOR_FILESIZES___"] = "${GODOT_WEB_FILESIZES()}"
+        html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict_sizes)
+        env.Depends(html, wasm)
         in_files.append(html)
         out_files.append(zip_dir.File(binary_name + ".html"))
+        iframe = env.Textfile(
+            target="#bin/godot${PROGSUFFIX}.iframe.html",
+            source='<!DOCTYPE html>\n<html lang="en"><head><title></title></head></html>',
+        )
+        in_files.append(iframe)
+        out_files.append(zip_dir.File(binary_name + ".iframe.html"))
         # And logo/favicon
         in_files.append("#misc/dist/html/logo.svg")
         out_files.append(zip_dir.File("logo.svg"))
-        in_files.append("#icon.png")
+        in_files.append("#misc/logo/icon.png")
         out_files.append(zip_dir.File("favicon.png"))
         # PWA
         service_worker = env.Substfile(
@@ -93,6 +114,10 @@ def create_template_zip(env, js, wasm, side):
         out_files.append(zip_dir.File("manifest.json"))
         in_files.append("#misc/dist/html/offline.html")
         out_files.append(zip_dir.File("offline.html"))
+        in_files.append("#thirdparty/fonts/Inter_Regular.woff2")
+        out_files.append(zip_dir.File("inter-regular.woff2"))
+        in_files.append("#thirdparty/fonts/Inter_Bold.woff2")
+        out_files.append(zip_dir.File("inter-bold.woff2"))
     else:
         # HTML
         in_files.append("#misc/dist/html/full-size.html")

@@ -172,7 +172,7 @@ static float transformTriangles(float* triangles, const unsigned int* indices, s
 	extent = (maxv[1] - minv[1]) < extent ? extent : (maxv[1] - minv[1]);
 	extent = (maxv[2] - minv[2]) < extent ? extent : (maxv[2] - minv[2]);
 
-	float scale = kViewport / extent;
+	float scale = extent == 0.f ? 0.f : kViewport / extent;
 
 	for (size_t i = 0; i < index_count; ++i)
 	{

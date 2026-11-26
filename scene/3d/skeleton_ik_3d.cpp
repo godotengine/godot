@@ -30,6 +30,9 @@
 
 #include "skeleton_ik_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {
 	for (int i = children.size() - 1; 0 <= i; --i) {
 		if (p_bone_id == children[i].bone) {
@@ -225,9 +228,7 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 }
 
 void FabrikInverseKinematic::free_task(Task *p_task) {
-	if (p_task) {
-		memdelete(p_task);
-	}
+	memdelete(p_task);
 }
 
 void FabrikInverseKinematic::set_goal(Task *p_task, const Transform3D &p_goal) {

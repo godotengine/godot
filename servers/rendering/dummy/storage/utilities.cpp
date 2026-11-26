@@ -30,24 +30,24 @@
 
 #include "utilities.h"
 
-#include "light_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "texture_storage.h"
+#include "servers/rendering/dummy/storage/light_storage.h"
+#include "servers/rendering/dummy/storage/material_storage.h"
+#include "servers/rendering/dummy/storage/mesh_storage.h"
+#include "servers/rendering/dummy/storage/texture_storage.h"
 
 using namespace RendererDummy;
 
 Utilities *Utilities::singleton = nullptr;
 
-RS::InstanceType Utilities::get_base_type(RID p_rid) const {
+RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
 	if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		return RS::INSTANCE_MESH;
+		return RSE::INSTANCE_MESH;
 	} else if (RendererDummy::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		return RS::INSTANCE_MULTIMESH;
+		return RSE::INSTANCE_MULTIMESH;
 	} else if (RendererDummy::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		return RS::INSTANCE_LIGHTMAP;
+		return RSE::INSTANCE_LIGHTMAP;
 	}
-	return RS::INSTANCE_NONE;
+	return RSE::INSTANCE_NONE;
 }
 
 bool Utilities::free(RID p_rid) {

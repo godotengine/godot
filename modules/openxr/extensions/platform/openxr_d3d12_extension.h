@@ -44,7 +44,7 @@
 
 class OpenXRD3D12Extension : public OpenXRGraphicsExtensionWrapper, D3D12Hooks {
 public:
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
@@ -77,8 +77,8 @@ private:
 	EXT_PROTO_XRRESULT_FUNC3(xrGetD3D12GraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsD3D12KHR *), p_graphics_requirements)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainImages, (XrSwapchain), p_swapchain, (uint32_t), p_image_capacity_input, (uint32_t *), p_image_count_output, (XrSwapchainImageBaseHeader *), p_images)
 
-	ComPtr<ID3D12Device> graphics_device;
-	ComPtr<ID3D12CommandQueue> command_queue;
+	Microsoft::WRL::ComPtr<ID3D12Device> graphics_device;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> command_queue;
 };
 
 #endif // D3D12_ENABLED

@@ -30,13 +30,18 @@
 
 #pragma once
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GLTF_ENABLED
 #include "../openxr_uuid.h"
 #include "../util.h"
-#include "core/templates/rid_owner.h"
-#include "modules/gltf/gltf_document.h"
 #include "openxr_extension_wrapper.h"
+
+#include "core/templates/rid_owner.h"
 #include "scene/3d/node_3d.h"
 #include "servers/xr/xr_pose.h"
+
+#include "modules/gltf/gltf_document.h"
 
 #include <openxr/openxr.h>
 
@@ -74,7 +79,7 @@ public:
 	OpenXRRenderModelExtension();
 	virtual ~OpenXRRenderModelExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_session_created(const XrSession p_session) override;
@@ -166,3 +171,4 @@ private:
 	EXT_PROTO_XRRESULT_FUNC1(xrDestroySpace, (XrSpace), space);
 	EXT_PROTO_XRRESULT_FUNC5(xrPathToString, (XrInstance), instance, (XrPath), path, (uint32_t), bufferCapacityInput, (uint32_t *), bufferCountOutput, (char *), buffer);
 };
+#endif // MODULE_GLTF_ENABLED

@@ -33,7 +33,7 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/MeshShape.h"
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
 JPH::ShapeRefC JoltConcavePolygonShape3D::_build() const {
 	const int vertex_count = (int)faces.size();
@@ -75,7 +75,7 @@ JPH::ShapeRefC JoltConcavePolygonShape3D::_build() const {
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
 
-	return JoltShape3D::with_double_sided(shape_result.Get(), back_face_collision);
+	return shape_result.Get();
 }
 
 AABB JoltConcavePolygonShape3D::_calculate_aabb() const {

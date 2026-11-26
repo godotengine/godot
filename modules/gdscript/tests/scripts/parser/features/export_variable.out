@@ -15,10 +15,30 @@ var test_color_no_alpha: Color = Color(0, 0, 0, 1)
   hint=COLOR_NO_ALPHA hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_node_path: NodePath = NodePath("hello")
   hint=NODE_PATH_VALID_TYPES hint_string="Sprite2D,Sprite3D,Control,Node" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
-var test_side: Side = 0
+var test_side_weak: Side = 0
   hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
-var test_atm: Node.AutoTranslateMode = 0
+var test_atm_weak: Node.AutoTranslateMode = 0
   hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
+var test_custom_enum_weak: ExportVariableTest.CustomEnum = 0
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"ExportVariableTest.CustomEnum"
+var test_side_hard: Side = 0
+  hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
+var test_atm_hard: Node.AutoTranslateMode = 0
+  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
+var test_custom_enum_hard: ExportVariableTest.CustomEnum = 0
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"ExportVariableTest.CustomEnum"
+var test_side_weak_no_export: Variant = 0
+  hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=SCRIPT_VARIABLE|NIL_IS_VARIANT class_name=&""
+var test_atm_weak_no_export: Variant = 0
+  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=SCRIPT_VARIABLE|NIL_IS_VARIANT class_name=&""
+var test_custom_enum_weak_no_export: Variant = 0
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=SCRIPT_VARIABLE|NIL_IS_VARIANT class_name=&""
+var test_side_hard_no_export: Side = 0
+  hint=ENUM hint_string="Side Left:0,Side Top:1,Side Right:2,Side Bottom:3" usage=SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Side"
+var test_atm_hard_no_export: Node.AutoTranslateMode = 0
+  hint=ENUM hint_string="Auto Translate Mode Inherit:0,Auto Translate Mode Always:1,Auto Translate Mode Disabled:2" usage=SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"Node.AutoTranslateMode"
+var test_custom_enum_hard_no_export: ExportVariableTest.CustomEnum = 0
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=SCRIPT_VARIABLE|CLASS_IS_ENUM class_name=&"ExportVariableTest.CustomEnum"
 var test_image: Image = null
   hint=RESOURCE_TYPE hint_string="Image" usage=DEFAULT|SCRIPT_VARIABLE class_name=&"Image"
 var test_timer: Timer = null

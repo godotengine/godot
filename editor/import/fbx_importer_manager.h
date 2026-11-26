@@ -39,7 +39,6 @@ class FBXImporterManager : public ConfirmationDialog {
 
 	bool is_importing = false;
 
-	Label *message = nullptr;
 	LineEdit *fbx_path = nullptr;
 	Button *fbx_path_browse = nullptr;
 	EditorFileDialog *browse_dialog = nullptr;

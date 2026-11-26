@@ -30,6 +30,7 @@
 
 #include "object_view.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
@@ -80,6 +81,8 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list->set_hide_root(true);
 	object_list->set_columns(diff_data ? 5 : 4);
 	object_list->set_column_titles_visible(true);
+	object_list->set_theme_type_variation("TreeSecondary");
+
 	int offset = 0;
 	if (diff_data) {
 		object_list->set_column_title(0, TTRC("Snapshot"));
@@ -87,6 +90,7 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 		object_list->set_column_title_tooltip_text(0, "A: " + snapshot_data->name + ", B: " + diff_data->name);
 		offset++;
 	}
+
 	object_list->set_column_title(offset + 0, TTRC("Class"));
 	object_list->set_column_expand(offset + 0, true);
 	object_list->set_column_title_tooltip_text(offset + 0, TTRC("Object's class"));
@@ -142,7 +146,13 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 0, pair.value->type_name);
+		if (has_theme_icon(pair.value->type_name, SNAME("EditorIcons"))) {
+			item->set_icon(offset + 0, get_editor_theme_icon(pair.value->type_name));
+		} else {
+			item->set_icon(offset + 0, get_editor_theme_icon(SNAME("Object")));
+		}
 		item->set_text(offset + 1, pair.value->get_name());
+		item->set_tooltip_text(offset + 1, pair.value->remote_path);
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
 		item->set_text(offset + 3, String::num_uint64(pair.value->outbound_references.size()));
 		item_data_map[item] = pair.value;

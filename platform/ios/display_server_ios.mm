@@ -32,6 +32,10 @@
 
 #import "device_metrics.h"
 
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
+
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
@@ -39,14 +43,14 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServerAppleEmbedded::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) :
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) :
 		DisplayServerAppleEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error) {
 }
 
 DisplayServerIOS::~DisplayServerIOS() {
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
@@ -67,13 +71,27 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 	uname(&systemInfo);
 
 	NSString *string = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
-
-	NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiList];
-
-	for (NSArray *keyArray in iOSModelToDPI) {
-		if ([keyArray containsObject:string]) {
-			NSNumber *value = iOSModelToDPI[keyArray];
-			return [value intValue];
+	print_line(String::utf8([string UTF8String]));
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
+	if (@available(iOS 27.1, *)) {
+		if (!GDTAppDelegateService.viewController.godotView.hingeClosed) {
+			NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiListInternal];
+			for (NSArray *keyArray in iOSModelToDPI) {
+				if ([keyArray containsObject:string]) {
+					NSNumber *value = iOSModelToDPI[keyArray];
+					return [value intValue];
+				}
+			}
+		}
+	}
+#endif
+	{
+		NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiList];
+		for (NSArray *keyArray in iOSModelToDPI) {
+			if ([keyArray containsObject:string]) {
+				NSNumber *value = iOSModelToDPI[keyArray];
+				return [value intValue];
+			}
 		}
 	}
 
@@ -117,4 +135,25 @@ float DisplayServerIOS::screen_get_scale(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
 	return [UIScreen mainScreen].scale;
+}
+
+bool DisplayServerIOS::_screen_hdr_is_supported() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].potentialEDRHeadroom > 1.0;
+	}
+	return false;
+}
+
+float DisplayServerIOS::_screen_potential_edr_headroom() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].potentialEDRHeadroom;
+	}
+	return 1.0f;
+}
+
+float DisplayServerIOS::_screen_current_edr_headroom() const {
+	if (@available(iOS 16.0, *)) {
+		return [UIScreen mainScreen].currentEDRHeadroom;
+	}
+	return 1.0f;
 }

@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 
 #define FILESYSTEM_CACHE_VERSION 1
@@ -84,8 +85,8 @@ Vector<RemoteFilesystemClient::FileCache> RemoteFilesystemClient::_load_cache_fi
 	return file_cache;
 }
 
-Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &modified_time) {
-	modified_time = 0;
+Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &r_modified_time) {
+	r_modified_time = 0;
 	String full_path = cache_path.path_join(FILES_SUBFOLDER).path_join(p_path);
 	String base_file_dir = full_path.get_base_dir();
 
@@ -98,13 +99,10 @@ Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVecto
 	Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Unable to open file for writing to remote filesystem cache: '%s'.", p_path));
 	f->store_buffer(p_file.ptr(), p_file.size());
-	Error err = f->get_error();
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(f->get_error());
 	f.unref(); // Unref to ensure file is not locked and modified time can be obtained.
 
-	modified_time = FileAccess::get_modified_time(full_path);
+	r_modified_time = FileAccess::get_modified_time(full_path);
 	return OK;
 }
 

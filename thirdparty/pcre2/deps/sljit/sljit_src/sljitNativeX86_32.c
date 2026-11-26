@@ -105,20 +105,20 @@ static sljit_u8* emit_x86_instruction(struct sljit_compiler *compiler, sljit_uw 
 	if (a == SLJIT_IMM) {
 		if (flags & EX86_BIN_INS) {
 			if (imma <= 127 && imma >= -128) {
-				inst_size += 1;
+				inst_size += sizeof(sljit_s8);
 				flags |= EX86_BYTE_ARG;
 			} else
-				inst_size += 4;
+				inst_size += sizeof(sljit_sw);
 		} else if (flags & EX86_SHIFT_INS) {
 			SLJIT_ASSERT(imma <= 0x1f);
 			if (imma != 1) {
-				inst_size++;
+				inst_size += sizeof(sljit_s8);
 				flags |= EX86_BYTE_ARG;
 			}
 		} else if (flags & EX86_BYTE_ARG)
-			inst_size++;
+			inst_size += sizeof(sljit_s8);
 		else if (flags & EX86_HALF_ARG)
-			inst_size += sizeof(short);
+			inst_size += sizeof(sljit_s16);
 		else
 			inst_size += sizeof(sljit_sw);
 	} else
@@ -1268,39 +1268,57 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_select(struct sljit_compiler *comp
 	CHECK_EXTRA_REGS(src1, src1w, (void)0);
 	CHECK_EXTRA_REGS(src2_reg, src2w, (void)0);
 
-	type &= ~SLJIT_32;
-
 	if (dst & SLJIT_MEM) {
 		if (src1 == SLJIT_IMM || (!(src1 & SLJIT_MEM) && (src2_reg & SLJIT_MEM))) {
 			EMIT_MOV(compiler, TMP_REG1, 0, src1, src1w);
 			src1 = src2_reg;
 			src1w = src2w;
-			type ^= 0x1;
+			if (!(type & SLJIT_COMPARE_SELECT))
+				type ^= 0x1;
 		} else
 			EMIT_MOV(compiler, TMP_REG1, 0, src2_reg, src2w);
 
 		dst_reg = TMP_REG1;
-	} else {
-		if (dst_reg != src2_reg) {
-			if (dst_reg == src1) {
-				src1 = src2_reg;
-				src1w = src2w;
+	} else if (dst_reg != src2_reg) {
+		if (dst_reg == src1) {
+			src1 = src2_reg;
+			src1w = src2w;
+			if (!(type & SLJIT_COMPARE_SELECT))
 				type ^= 0x1;
-			} else if (ADDRESSING_DEPENDS_ON(src1, dst_reg)) {
-				EMIT_MOV(compiler, dst_reg, 0, src1, src1w);
-				src1 = src2_reg;
-				src1w = src2w;
+		} else if (ADDRESSING_DEPENDS_ON(src1, dst_reg)) {
+			EMIT_MOV(compiler, dst_reg, 0, src1, src1w);
+			src1 = src2_reg;
+			src1w = src2w;
+			if (!(type & SLJIT_COMPARE_SELECT))
 				type ^= 0x1;
-			} else
-				EMIT_MOV(compiler, dst_reg, 0, src2_reg, src2w);
-		}
+		} else
+			EMIT_MOV(compiler, dst_reg, 0, src2_reg, src2w);
 	}
 
-	if (sljit_has_cpu_feature(SLJIT_HAS_CMOV) && (src1 != SLJIT_IMM || dst_reg != TMP_REG1)) {
-		if (SLJIT_UNLIKELY(src1 == SLJIT_IMM)) {
+	if (type & SLJIT_COMPARE_SELECT) {
+		if (dst_reg != TMP_REG1 && !FAST_IS_REG(src1)) {
 			EMIT_MOV(compiler, TMP_REG1, 0, src1, src1w);
 			src1 = TMP_REG1;
 			src1w = 0;
+		}
+
+		type ^= 0x1;
+		FAIL_IF(emit_cmp_binary(compiler, dst_reg, 0, src1, src1w));
+	}
+
+	type &= ~(SLJIT_32 | SLJIT_COMPARE_SELECT);
+
+	if (sljit_has_cpu_feature(SLJIT_HAS_CMOV)) {
+		if (SLJIT_UNLIKELY(src1 == SLJIT_IMM)) {
+			if (dst_reg != TMP_REG1) {
+				EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_IMM, src1w);
+				src1 = TMP_REG1;
+				src1w = 0;
+			} else {
+				EMIT_MOV(compiler, SLJIT_MEM1(SLJIT_SP), 0, SLJIT_IMM, src1w);
+				src1 = SLJIT_MEM1(SLJIT_SP);
+				src1w = 0;
+			}
 		}
 
 		FAIL_IF(emit_groupf(compiler, U8(get_jump_code((sljit_uw)type) - 0x40), dst_reg, src1, src1w));

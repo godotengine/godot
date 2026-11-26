@@ -30,6 +30,8 @@
 
 #include "color_palette.h"
 
+#include "core/object/class_db.h"
+
 void ColorPalette::set_colors(const PackedColorArray &p_colors) {
 	colors = p_colors;
 }

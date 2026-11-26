@@ -707,8 +707,6 @@ private:
 #endif
 };
 
-// The determinant that is calculated in the Triangle constructor is really sensitive
-// to numerical round off, disable the fmadd instructions to maintain precision.
 JPH_PRECISE_MATH_ON
 
 EPAConvexHullBuilder::Triangle::Triangle(int inIdx0, int inIdx1, int inIdx2, const Vec3 *inPositions)
@@ -747,7 +745,7 @@ EPAConvexHullBuilder::Triangle::Triangle(int inIdx0, int inIdx1, int inIdx2, con
 	if (y20_dot_y20 < y21_dot_y21)
 	{
 		// We select the edges y10 and y20
-		mNormal = y10.Cross(y20);
+		mNormal = y10.CrossPrecise(y20);
 
 		// Check if triangle is degenerate
 		float normal_len_sq = mNormal.LengthSq();
@@ -775,13 +773,13 @@ EPAConvexHullBuilder::Triangle::Triangle(int inIdx0, int inIdx1, int inIdx2, con
 			// Cramers rule to invert matrix:
 			float y10_dot_y10 = y10.LengthSq();
 			float y10_dot_y20 = y10.Dot(y20);
-			float determinant = y10_dot_y10 * y20_dot_y20 - y10_dot_y20 * y10_dot_y20;
+			float determinant = DifferenceOfProducts(y10_dot_y10, y20_dot_y20, y10_dot_y20, y10_dot_y20);
 			if (determinant > 0.0f) // If determinant == 0 then the system is linearly dependent and the triangle is degenerate, since y10.10 * y20.y20 > y10.y20^2 it should also be > 0
 			{
 				float y0_dot_y10 = y0.Dot(y10);
 				float y0_dot_y20 = y0.Dot(y20);
-				float l0 = (y10_dot_y20 * y0_dot_y20 - y20_dot_y20 * y0_dot_y10) / determinant;
-				float l1 = (y10_dot_y20 * y0_dot_y10 - y10_dot_y10 * y0_dot_y20) / determinant;
+				float l0 = DifferenceOfProducts(y10_dot_y20, y0_dot_y20, y20_dot_y20, y0_dot_y10) / determinant;
+				float l1 = DifferenceOfProducts(y10_dot_y20, y0_dot_y10, y10_dot_y10, y0_dot_y20) / determinant;
 				mLambda[0] = l0;
 				mLambda[1] = l1;
 				mLambdaRelativeTo0 = true;
@@ -797,7 +795,7 @@ EPAConvexHullBuilder::Triangle::Triangle(int inIdx0, int inIdx1, int inIdx2, con
 	else
 	{
 		// We select the edges y10 and y21
-		mNormal = y10.Cross(y21);
+		mNormal = y10.CrossPrecise(y21);
 
 		// Check if triangle is degenerate
 		float normal_len_sq = mNormal.LengthSq();
@@ -821,13 +819,13 @@ EPAConvexHullBuilder::Triangle::Triangle(int inIdx0, int inIdx1, int inIdx2, con
 			// Cramers rule to invert matrix:
 			float y10_dot_y10 = y10.LengthSq();
 			float y10_dot_y21 = y10.Dot(y21);
-			float determinant = y10_dot_y10 * y21_dot_y21 - y10_dot_y21 * y10_dot_y21;
+			float determinant = DifferenceOfProducts(y10_dot_y10, y21_dot_y21, y10_dot_y21, y10_dot_y21);
 			if (determinant > 0.0f)
 			{
 				float y1_dot_y10 = y1.Dot(y10);
 				float y1_dot_y21 = y1.Dot(y21);
-				float l0 = (y21_dot_y21 * y1_dot_y10 - y10_dot_y21 * y1_dot_y21) / determinant;
-				float l1 = (y10_dot_y21 * y1_dot_y10 - y10_dot_y10 * y1_dot_y21) / determinant;
+				float l0 = DifferenceOfProducts(y21_dot_y21, y1_dot_y10, y10_dot_y21, y1_dot_y21) / determinant;
+				float l1 = DifferenceOfProducts(y10_dot_y21, y1_dot_y10, y10_dot_y10, y1_dot_y21) / determinant;
 				mLambda[0] = l0;
 				mLambda[1] = l1;
 				mLambdaRelativeTo0 = false;

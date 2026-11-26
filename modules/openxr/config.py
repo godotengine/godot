@@ -19,6 +19,7 @@ def get_doc_classes():
         "OpenXRAPIExtension",
         "OpenXRExtensionWrapper",
         "OpenXRExtensionWrapperExtension",
+        "OpenXRFrameSynthesisExtension",
         "OpenXRFutureResult",
         "OpenXRFutureExtension",
         "OpenXRInteractionProfile",
@@ -26,6 +27,7 @@ def get_doc_classes():
         "OpenXRIPBinding",
         "OpenXRHand",
         "OpenXRVisibilityMask",
+        "OpenXRFoveatedInsetViewport",
         "OpenXRCompositionLayer",
         "OpenXRCompositionLayerQuad",
         "OpenXRCompositionLayerCylinder",
@@ -73,6 +75,11 @@ def get_doc_classes():
         "OpenXRSpatialAnchorCapability",
         "OpenXRSpatialPlaneTrackingCapability",
         "OpenXRSpatialMarkerTrackingCapability",
+        "OpenXRAndroidThreadSettingsExtension",
+        "OpenXRUserPresenceExtension",
+        "OpenXRSpatialContainerExtension",
+        "OpenXRSpatialContainerSelfRenderingExtension",
+        "OpenXRSpatialContainerState",
     ]
 
 

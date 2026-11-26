@@ -30,6 +30,8 @@
 
 #include "gltf_document_extension.h"
 
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
+
 void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
 	GDVIRTUAL_BIND(_import_preflight, "state", "extensions");
@@ -45,6 +47,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_import_node, "state", "gltf_node", "json", "node");
 	GDVIRTUAL_BIND(_import_post, "state", "root");
 	// Export process.
+	GDVIRTUAL_BIND(_export_get_property_list, "root_node");
 	GDVIRTUAL_BIND(_export_preflight, "state", "root");
 	GDVIRTUAL_BIND(_convert_scene_node, "state", "gltf_node", "scene_node");
 	GDVIRTUAL_BIND(_export_post_convert, "state", "root");
@@ -59,7 +62,7 @@ void GLTFDocumentExtension::_bind_methods() {
 }
 
 // Import process.
-Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
 	GDVIRTUAL_CALL(_import_preflight, p_state, p_extensions, err);
@@ -72,11 +75,11 @@ Vector<String> GLTFDocumentExtension::get_supported_extensions() {
 	return ret;
 }
 
-Error GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) {
+Error GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_parse_node_extensions, p_state, p_gltf_node, p_extensions, err);
+	GDVIRTUAL_CALL(_parse_node_extensions, p_state, p_gltf_node, Dictionary(p_extensions), err);
 	return err;
 }
 
@@ -98,7 +101,7 @@ Error GLTFDocumentExtension::parse_texture_json(Ref<GLTFState> p_state, const Di
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(r_gltf_texture.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_parse_texture_json, p_state, p_texture_json, r_gltf_texture, err);
+	GDVIRTUAL_CALL(_parse_texture_json, p_state, Dictionary(p_texture_json), r_gltf_texture, err);
 	return err;
 }
 
@@ -136,7 +139,7 @@ Error GLTFDocumentExtension::import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, r_dict, p_node, err);
+	GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, Dictionary(r_dict), p_node, err);
 	return err;
 }
 
@@ -149,6 +152,19 @@ Error GLTFDocumentExtension::import_post(Ref<GLTFState> p_state, Node *p_root) {
 }
 
 // Export process.
+List<PropertyInfo> GLTFDocumentExtension::export_get_property_list(Node *p_root_node) {
+	TypedArray<Dictionary> ret_dicts;
+	GDVIRTUAL_CALL(_export_get_property_list, p_root_node, ret_dicts);
+	List<PropertyInfo> ret;
+	if (ret_dicts.is_empty()) {
+		return ret;
+	}
+	for (int i = 0; i < ret_dicts.size(); i++) {
+		ret.push_back(PropertyInfo::from_dict(ret_dicts[i]));
+	}
+	return ret;
+}
+
 Error GLTFDocumentExtension::export_preflight(Ref<GLTFState> p_state, Node *p_root) {
 	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
 	Error err = OK;
@@ -193,11 +209,11 @@ Vector<String> GLTFDocumentExtension::get_saveable_image_formats() {
 	return ret;
 }
 
-PackedByteArray GLTFDocumentExtension::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary p_image_dict, const String &p_image_format, float p_lossy_quality) {
+PackedByteArray GLTFDocumentExtension::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary &r_image_dict, const String &p_image_format, float p_lossy_quality) {
 	PackedByteArray ret;
 	ERR_FAIL_COND_V(p_state.is_null(), ret);
 	ERR_FAIL_COND_V(p_image.is_null(), ret);
-	GDVIRTUAL_CALL(_serialize_image_to_bytes, p_state, p_image, p_image_dict, p_image_format, p_lossy_quality, ret);
+	GDVIRTUAL_CALL(_serialize_image_to_bytes, p_state, p_image, Dictionary(r_image_dict), p_image_format, p_lossy_quality, ret);
 	return ret;
 }
 
@@ -209,11 +225,11 @@ Error GLTFDocumentExtension::save_image_at_path(Ref<GLTFState> p_state, Ref<Imag
 	return ret;
 }
 
-Error GLTFDocumentExtension::serialize_texture_json(Ref<GLTFState> p_state, Dictionary p_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
+Error GLTFDocumentExtension::serialize_texture_json(Ref<GLTFState> p_state, Dictionary &r_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_texture.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_serialize_texture_json, p_state, p_texture_json, p_gltf_texture, p_image_format, err);
+	GDVIRTUAL_CALL(_serialize_texture_json, p_state, Dictionary(r_texture_json), p_gltf_texture, p_image_format, err);
 	return err;
 }
 
@@ -221,7 +237,7 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, r_dict, p_node, err);
+	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, Dictionary(r_dict), p_node, err);
 	return err;
 }
 

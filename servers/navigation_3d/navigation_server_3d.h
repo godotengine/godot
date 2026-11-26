@@ -30,13 +30,16 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
-#include "core/templates/rid.h"
+#include "core/object/ref_counted.h"
+#include "core/os/rw_lock.h"
+#include "core/templates/rid_owner.h"
+#include "scene/resources/material.h"
 
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
-#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+class Node;
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+class NavigationPathQueryParameters3D;
+class NavigationPathQueryResult3D;
 
 struct NavMeshGeometryParser3D {
 	RID self;
@@ -517,20 +520,6 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
 #endif // DEBUG_ENABLED
-};
-
-typedef NavigationServer3D *(*NavigationServer3DCallback)();
-
-/// Manager used for the server singleton registration
-class NavigationServer3DManager {
-	static NavigationServer3DCallback create_callback;
-
-public:
-	static void set_default_server(NavigationServer3DCallback p_callback);
-	static NavigationServer3D *new_default_server();
-
-	static void initialize_server();
-	static void finalize_server();
 };
 
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);

@@ -9,7 +9,7 @@
 JPH_NAMESPACE_BEGIN
 
 /// Holds a 4x4 matrix of floats with the last column consisting of doubles
-class [[nodiscard]] alignas(JPH_DVECTOR_ALIGNMENT) DMat44
+class [[nodiscard]] alignas(max(JPH_VECTOR_ALIGNMENT, JPH_DVECTOR_ALIGNMENT)) DMat44
 {
 public:
 	JPH_OVERRIDE_NEW_DELETE
@@ -151,7 +151,7 @@ private:
 	DVec3						mCol3;													///< Translation column, 4th element is assumed to be 1
 };
 
-static_assert(std::is_trivial<DMat44>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<DMat44>() && std::is_trivially_copyable<DMat44>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

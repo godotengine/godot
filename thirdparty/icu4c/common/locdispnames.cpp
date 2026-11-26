@@ -42,7 +42,7 @@
 U_NAMESPACE_BEGIN
 
 UnicodeString&
-Locale::getDisplayLanguage(UnicodeString& dispLang) const
+Locale::getDisplayLanguage(UnicodeString& dispLang U_LIFETIME_BOUND) const
 {
     return this->getDisplayLanguage(getDefault(), dispLang);
 }
@@ -54,8 +54,8 @@ Locale::getDisplayLanguage(UnicodeString& dispLang) const
 * the exact buffer we need copy it to the UnicodeString and delete it*/
 
 UnicodeString&
-Locale::getDisplayLanguage(const Locale &displayLocale,
-                           UnicodeString &result) const {
+Locale::getDisplayLanguage(const Locale& displayLocale,
+                           UnicodeString& result U_LIFETIME_BOUND) const {
     char16_t *buffer;
     UErrorCode errorCode=U_ZERO_ERROR;
     int32_t length;
@@ -66,7 +66,7 @@ Locale::getDisplayLanguage(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayLanguage(fullName, displayLocale.fullName,
+    length=uloc_getDisplayLanguage(getName(), displayLocale.getName(),
                                    buffer, result.getCapacity(),
                                    &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -78,7 +78,7 @@ Locale::getDisplayLanguage(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayLanguage(fullName, displayLocale.fullName,
+        length=uloc_getDisplayLanguage(getName(), displayLocale.getName(),
                                        buffer, result.getCapacity(),
                                        &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -88,14 +88,14 @@ Locale::getDisplayLanguage(const Locale &displayLocale,
 }
 
 UnicodeString&
-Locale::getDisplayScript(UnicodeString& dispScript) const
+Locale::getDisplayScript(UnicodeString& dispScript U_LIFETIME_BOUND) const
 {
     return this->getDisplayScript(getDefault(), dispScript);
 }
 
 UnicodeString&
-Locale::getDisplayScript(const Locale &displayLocale,
-                          UnicodeString &result) const {
+Locale::getDisplayScript(const Locale& displayLocale,
+                         UnicodeString& result U_LIFETIME_BOUND) const {
     char16_t *buffer;
     UErrorCode errorCode=U_ZERO_ERROR;
     int32_t length;
@@ -106,7 +106,7 @@ Locale::getDisplayScript(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayScript(fullName, displayLocale.fullName,
+    length=uloc_getDisplayScript(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -118,7 +118,7 @@ Locale::getDisplayScript(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayScript(fullName, displayLocale.fullName,
+        length=uloc_getDisplayScript(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -128,14 +128,14 @@ Locale::getDisplayScript(const Locale &displayLocale,
 }
 
 UnicodeString&
-Locale::getDisplayCountry(UnicodeString& dispCntry) const
+Locale::getDisplayCountry(UnicodeString& dispCntry U_LIFETIME_BOUND) const
 {
     return this->getDisplayCountry(getDefault(), dispCntry);
 }
 
 UnicodeString&
-Locale::getDisplayCountry(const Locale &displayLocale,
-                          UnicodeString &result) const {
+Locale::getDisplayCountry(const Locale& displayLocale,
+                          UnicodeString& result U_LIFETIME_BOUND) const {
     char16_t *buffer;
     UErrorCode errorCode=U_ZERO_ERROR;
     int32_t length;
@@ -146,7 +146,7 @@ Locale::getDisplayCountry(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayCountry(fullName, displayLocale.fullName,
+    length=uloc_getDisplayCountry(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -158,7 +158,7 @@ Locale::getDisplayCountry(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayCountry(fullName, displayLocale.fullName,
+        length=uloc_getDisplayCountry(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -168,14 +168,14 @@ Locale::getDisplayCountry(const Locale &displayLocale,
 }
 
 UnicodeString&
-Locale::getDisplayVariant(UnicodeString& dispVar) const
+Locale::getDisplayVariant(UnicodeString& dispVar U_LIFETIME_BOUND) const
 {
     return this->getDisplayVariant(getDefault(), dispVar);
 }
 
 UnicodeString&
-Locale::getDisplayVariant(const Locale &displayLocale,
-                          UnicodeString &result) const {
+Locale::getDisplayVariant(const Locale& displayLocale,
+                          UnicodeString& result U_LIFETIME_BOUND) const {
     char16_t *buffer;
     UErrorCode errorCode=U_ZERO_ERROR;
     int32_t length;
@@ -186,7 +186,7 @@ Locale::getDisplayVariant(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayVariant(fullName, displayLocale.fullName,
+    length=uloc_getDisplayVariant(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -198,7 +198,7 @@ Locale::getDisplayVariant(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayVariant(fullName, displayLocale.fullName,
+        length=uloc_getDisplayVariant(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -208,14 +208,14 @@ Locale::getDisplayVariant(const Locale &displayLocale,
 }
 
 UnicodeString&
-Locale::getDisplayName( UnicodeString& name ) const
+Locale::getDisplayName(UnicodeString& name U_LIFETIME_BOUND) const
 {
     return this->getDisplayName(getDefault(), name);
 }
 
 UnicodeString&
-Locale::getDisplayName(const Locale &displayLocale,
-                       UnicodeString &result) const {
+Locale::getDisplayName(const Locale& displayLocale,
+                       UnicodeString& result U_LIFETIME_BOUND) const {
     char16_t *buffer;
     UErrorCode errorCode=U_ZERO_ERROR;
     int32_t length;
@@ -226,7 +226,7 @@ Locale::getDisplayName(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayName(fullName, displayLocale.fullName,
+    length=uloc_getDisplayName(getName(), displayLocale.getName(),
                                buffer, result.getCapacity(),
                                &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -238,7 +238,7 @@ Locale::getDisplayName(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayName(fullName, displayLocale.fullName,
+        length=uloc_getDisplayName(getName(), displayLocale.getName(),
                                    buffer, result.getCapacity(),
                                    &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -253,7 +253,7 @@ Locale::getDisplayName(const Locale &displayLocale,
 // Gets the objectLocale display name in the default locale language.
 UnicodeString& U_EXPORT2
 BreakIterator::getDisplayName(const Locale& objectLocale,
-                             UnicodeString& name)
+                              UnicodeString& name U_LIFETIME_BOUND)
 {
     return objectLocale.getDisplayName(name);
 }
@@ -262,8 +262,8 @@ BreakIterator::getDisplayName(const Locale& objectLocale,
 // Gets the objectLocale display name in the displayLocale language.
 UnicodeString& U_EXPORT2
 BreakIterator::getDisplayName(const Locale& objectLocale,
-                             const Locale& displayLocale,
-                             UnicodeString& name)
+                              const Locale& displayLocale,
+                              UnicodeString& name U_LIFETIME_BOUND)
 {
     return objectLocale.getDisplayName(displayLocale, name);
 }

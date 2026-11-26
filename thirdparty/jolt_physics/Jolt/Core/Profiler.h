@@ -6,12 +6,11 @@
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <mutex>
-#include <chrono>
 JPH_SUPPRESS_WARNINGS_STD_END
 
 #include <Jolt/Core/NonCopyable.h>
 #include <Jolt/Core/TickCounter.h>
-#include <Jolt/Core/UnorderedMap.h>
+#include <Jolt/Core/UnorderedMapFwd.h>
 
 #if defined(JPH_EXTERNAL_PROFILE)
 
@@ -113,6 +112,9 @@ public:
 	/// Remove a thread from being instrumented
 	void						RemoveThread(ProfileThread *inThread);
 
+	/// Get the amount of ticks per second, note that this number will never be fully accurate as the amount of ticks per second may vary with CPU load, so this number is only to be used to give an indication of time for profiling purposes
+	uint64						GetProcessorTicksPerSecond() const;
+
 	/// Singleton instance
 	static Profiler *			sInstance;
 
@@ -167,16 +169,13 @@ private:
 	/// We measure the amount of ticks per second, this function resets the reference time point
 	void						UpdateReferenceTime();
 
-	/// Get the amount of ticks per second, note that this number will never be fully accurate as the amount of ticks per second may vary with CPU load, so this number is only to be used to give an indication of time for profiling purposes
-	uint64						GetProcessorTicksPerSecond() const;
-
 	/// Dump profiling statistics
 	void						DumpInternal();
 	void						DumpChart(const char *inTag, const Threads &inThreads, const KeyToAggregator &inKeyToAggregators, const Aggregators &inAggregators);
 
 	std::mutex					mLock;																///< Lock that protects mThreads
 	uint64						mReferenceTick;														///< Tick count at the start of the frame
-	std::chrono::high_resolution_clock::time_point mReferenceTime;									///< Time at the start of the frame
+	uint64						mReferenceTime;														///< Time at the start of the frame in microseconds
 	Array<ProfileThread *>		mThreads;															///< List of all active threads
 	bool						mDump = false;														///< When true, the samples are dumped next frame
 	String						mDumpTag;															///< When not empty, this overrides the auto incrementing number of the dump filename

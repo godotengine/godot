@@ -110,7 +110,9 @@ namespace Godot.SourceGenerators
             source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
-            var members = symbol.GetMembers();
+            var members = symbol.GetMembers()
+                .Where(m => !m.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
@@ -123,10 +125,12 @@ namespace Godot.SourceGenerators
 
             // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
             // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+            var godotClassProperties = propertySymbols
+                .Where(property => !(property.IsReadOnly || property.IsWriteOnly) && property.SetMethodOrBaseSetMethod() is { IsInitOnly: false })
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
-            var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
+            var godotClassFields = fieldSymbols
+                .Where(property => !property.IsReadOnly)
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
 
@@ -172,7 +176,7 @@ namespace Godot.SourceGenerators
                 source.Append("        info.AddProperty(PropertyName.@")
                     .Append(propertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.@", propertyName),
+                    .AppendManagedToVariantExpr(("this.@", propertyName),
                         property.PropertySymbol.Type, property.Type)
                     .Append(");\n");
             }
@@ -186,7 +190,7 @@ namespace Godot.SourceGenerators
                 source.Append("        info.AddProperty(PropertyName.@")
                     .Append(fieldName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.@", fieldName),
+                    .AppendManagedToVariantExpr(("this.@", fieldName),
                         field.FieldSymbol.Type, field.Type)
                     .Append(");\n");
             }
@@ -226,7 +230,7 @@ namespace Godot.SourceGenerators
                     .Append("            this.@")
                     .Append(propertyName)
                     .Append(" = ")
-                    .AppendVariantToManagedExpr(string.Concat("_value_", propertyName),
+                    .AppendVariantToManagedExpr(("_value_", propertyName),
                         property.PropertySymbol.Type, property.Type)
                     .Append(";\n");
             }
@@ -245,7 +249,7 @@ namespace Godot.SourceGenerators
                     .Append("            this.@")
                     .Append(fieldName)
                     .Append(" = ")
-                    .AppendVariantToManagedExpr(string.Concat("_value_", fieldName),
+                    .AppendVariantToManagedExpr(("_value_", fieldName),
                         field.FieldSymbol.Type, field.Type)
                     .Append(";\n");
             }

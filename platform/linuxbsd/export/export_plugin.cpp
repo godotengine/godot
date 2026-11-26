@@ -33,11 +33,15 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 #include "modules/svg/image_loader_svg.h"
@@ -57,7 +61,7 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 	return OK;
 }
 
-Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -107,8 +111,9 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		path = tmp_dir_path.path_join(p_path.get_file().get_basename());
 	}
 
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
 	// Export project.
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -192,17 +197,17 @@ void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_opti
 						"\"{temp_dir}/{exe_name}\" {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 bool EditorExportPlatformLinuxBSD::is_elf(const String &p_path) const {
@@ -221,6 +226,12 @@ bool EditorExportPlatformLinuxBSD::is_shebang(const String &p_path) const {
 
 bool EditorExportPlatformLinuxBSD::is_executable(const String &p_path) const {
 	return is_elf(p_path) || is_shebang(p_path);
+}
+
+void EditorExportPlatformLinuxBSD::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("linux");
+	r_features->push_back("linuxbsd");
 }
 
 bool EditorExportPlatformLinuxBSD::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
@@ -289,6 +300,177 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 		default:
 			return "unknown";
 	}
+}
+
+static inline size_t _padding(size_t p_s, size_t p_a) {
+	return (p_s % p_a == 0) ? 0 : (p_a - p_s % p_a);
+}
+
+Error EditorExportPlatformLinuxBSD::fixup_debug_symbol_link(const String &p_path, const String &p_symbol_file) {
+	// Patch the ".gnu_debuglink" section in the ELF file so that it corresponds to external debug symbols file.
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		return ERR_CANT_OPEN;
+	}
+
+	// New debug symbols link data.
+	CharString cs_link = p_symbol_file.utf8();
+	uint32_t new_link_size = cs_link.size() + _padding(cs_link.size(), 4) + 4;
+
+	// Read and check ELF magic number.
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), TTR("Executable file header corrupted."));
+			return ERR_FILE_CORRUPT;
+		}
+	}
+
+	// Read program architecture bits from class field.
+
+	int bits = f->get_8() * 32;
+
+	// Get info about the section header table.
+
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		f->seek(0x20);
+		section_table_pos = f->get_32();
+		f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		f->seek(0x28);
+		section_table_pos = f->get_64();
+		f->seek(0x3c);
+	}
+	int num_sections = f->get_16();
+	int string_section_idx = f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		// Jump to the strings section header.
+		f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			f->seek(f->get_position() + 0x10);
+			string_data_pos = f->get_32();
+			string_data_size = f->get_32();
+		} else { // 64
+			f->seek(f->get_position() + 0x18);
+			string_data_pos = f->get_64();
+			string_data_size = f->get_64();
+		}
+
+		// Read strings data.
+		f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return ERR_OUT_OF_MEMORY;
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the ".gnu_debuglink" section.
+
+	uint32_t link_crc32 = 0;
+	bool found = false;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		f->seek(section_header_pos);
+
+		uint32_t name_offset = f->get_32();
+		if (strcmp((char *)strings + name_offset, ".gnu_debuglink") == 0) {
+			// ".gnu_debuglink" section found.
+
+			int64_t link_start = 0;
+			int64_t link_size = 0;
+			if (bits == 32) {
+				f->seek(section_header_pos + 0x10);
+				link_start = f->get_32();
+				link_size = f->get_32();
+			} else { // 64
+				f->seek(section_header_pos + 0x18);
+				link_start = f->get_64();
+				link_size = f->get_64();
+			}
+
+			f->seek(link_start);
+
+			// Read CRC.
+			uint32_t link_off = 0;
+			while (link_off < link_size) {
+				uint8_t c = f->get_8();
+				link_off++;
+				if (c == 0x00) {
+					uint32_t pad = _padding(link_off, 4);
+					f->seek(f->get_position() + pad);
+					link_crc32 = f->get_32();
+					break;
+				}
+			}
+
+			if (link_size >= new_link_size) {
+				// Update existing section in place.
+				f->seek(link_start);
+				f->store_buffer((const uint8_t *)cs_link.get_data(), cs_link.size());
+				for (uint32_t j = 0; j < _padding(cs_link.size(), 4); j++) {
+					f->store_8(0x00);
+				}
+				f->store_32(link_crc32);
+
+				// Update section data.
+				if (bits == 32) {
+					f->seek(section_header_pos + 0x14);
+					f->store_32(new_link_size);
+				} else { // 64
+					f->seek(section_header_pos + 0x20);
+					f->store_64(new_link_size);
+				}
+			} else {
+				// Zero old section data.
+				f->seek(link_start);
+				for (uint32_t j = 0; j < link_size; j++) {
+					f->store_8(0x00);
+				}
+				// Append new data.
+				f->seek_end();
+				uint64_t link_pos = f->get_position();
+				f->store_buffer((const uint8_t *)cs_link.get_data(), cs_link.size());
+				for (uint32_t j = 0; j < _padding(cs_link.size(), 4); j++) {
+					f->store_8(0x00);
+				}
+				f->store_32(link_crc32);
+				// Update section data.
+				if (bits == 32) {
+					f->seek(section_header_pos + 0x10);
+					f->store_32(link_pos);
+					f->store_32(new_link_size);
+				} else { // 64
+					f->seek(section_header_pos + 0x18);
+					f->store_64(link_pos);
+					f->store_64(new_link_size);
+				}
+			}
+
+			found = true;
+			break;
+		}
+	}
+
+	memfree(strings);
+
+	if (!found) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Debug Symbols Link"), TTR("Executable \".gnu_debuglink\" section not found."));
+		return ERR_FILE_CORRUPT;
+	}
+	return OK;
 }
 
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
@@ -403,15 +585,7 @@ Ref<Texture2D> EditorExportPlatformLinuxBSD::get_run_icon() const {
 }
 
 bool EditorExportPlatformLinuxBSD::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	int prev = menu_options;
 	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
@@ -494,19 +668,19 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 
 	const String basepath = dest.path_join("tmp_linuxbsd_export");
 
-#define CLEANUP_AND_RETURN(m_err)                      \
-	{                                                  \
-		if (da->file_exists(basepath + ".zip")) {      \
-			da->remove(basepath + ".zip");             \
-		}                                              \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.sh")) { \
-			da->remove(basepath + "_start.sh");        \
-		}                                              \
+			da->remove(basepath + "_start.sh"); \
+		} \
 		if (da->file_exists(basepath + "_clean.sh")) { \
-			da->remove(basepath + "_clean.sh");        \
-		}                                              \
-		return m_err;                                  \
-	}                                                  \
+			da->remove(basepath + "_clean.sh"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {
@@ -617,10 +791,10 @@ void EditorExportPlatformLinuxBSD::initialize() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		set_logo(ImageTexture::create_from_image(img));
 
-		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		run_icon = ImageTexture::create_from_image(img);
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();

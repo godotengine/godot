@@ -32,8 +32,8 @@
 
 #include "webrtc_data_channel.h"
 
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 
 class WebRTCDataChannelExtension : public WebRTCDataChannel {
@@ -68,8 +68,8 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	/** GDExtension **/
-	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
-	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
+	GDVIRTUAL2R(Error, _get_packet, GDExtensionPtr<const uint8_t *>, GDExtensionPtr<int>);
+	GDVIRTUAL2R(Error, _put_packet, GDExtensionPtr<const uint8_t>, int);
 
 	WebRTCDataChannelExtension() {}
 };

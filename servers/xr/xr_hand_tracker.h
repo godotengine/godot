@@ -117,7 +117,7 @@ private:
 	bool has_tracking_data = false;
 	HandTrackingSource hand_tracking_source = HAND_TRACKING_SOURCE_UNKNOWN;
 
-	BitField<HandJointFlags> hand_joint_flags[HAND_JOINT_MAX];
+	BitField<HandJointFlags> hand_joint_flags[HAND_JOINT_MAX] = {};
 	Transform3D hand_joint_transforms[HAND_JOINT_MAX];
 	float hand_joint_radii[HAND_JOINT_MAX] = {};
 	Vector3 hand_joint_linear_velocities[HAND_JOINT_MAX];

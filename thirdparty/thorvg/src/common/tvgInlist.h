@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,10 @@
 #ifndef _TVG_INLIST_H_
 #define _TVG_INLIST_H_
 
-namespace tvg {
+#include <cstdint>
+
+namespace tvg
+{
 
 //NOTE: declare this in your list item
 #define INLIST_ITEM(T) \
@@ -35,6 +38,12 @@ struct Inlist
 {
     T* head = nullptr;
     T* tail = nullptr;
+    uint32_t count = 0;
+
+    ~Inlist()
+    {
+        free();
+    }
 
     void free()
     {
@@ -44,6 +53,7 @@ struct Inlist
             delete(t);
         }
         head = tail = nullptr;
+        count = 0;
     }
 
     void back(T* element)
@@ -58,6 +68,7 @@ struct Inlist
             element->prev = nullptr;
             element->next = nullptr;
         }
+        ++count;
     }
 
     void front(T* element)
@@ -72,11 +83,13 @@ struct Inlist
             element->prev = nullptr;
             element->next = nullptr;
         }
+        ++count;
     }
 
     T* back()
     {
         if (!tail) return nullptr;
+        --count;
         auto t = tail;
         tail = t->prev;
         if (!tail) head = nullptr;
@@ -86,6 +99,7 @@ struct Inlist
     T* front()
     {
         if (!head) return nullptr;
+        --count;
         auto t = head;
         head = t->next;
         if (!head) tail = nullptr;
@@ -98,6 +112,8 @@ struct Inlist
         if (element->next) element->next->prev = element->prev;
         if (element == head) head = element->next;
         if (element == tail) tail = element->prev;
+        element->prev = element->next = nullptr;
+        --count;
     }
 
     bool empty() const
@@ -105,6 +121,14 @@ struct Inlist
         return head ? false : true;
     }
 };
+
+#define INLIST_FOREACH(inlist, cur) \
+    for (auto cur = inlist.head; cur; cur = cur->next)
+
+#define INLIST_SAFE_FOREACH(inlist, cur) \
+    auto cur = inlist.head; \
+    auto next = cur ? cur->next : nullptr; \
+    for (; cur; cur = next, next = (cur ? cur->next : nullptr))
 
 }
 

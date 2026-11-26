@@ -4,7 +4,7 @@
  *
  *   OpenType font driver implementation (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Dominik Röttsches.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -38,6 +38,10 @@
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
 #include <freetype/internal/services/svmm.h>
 #include <freetype/internal/services/svmetric.h>
+#endif
+
+#ifdef TT_CONFIG_OPTION_VARC
+#include <freetype/internal/services/svvarc.h>
 #endif
 
 #include "cfferrs.h"
@@ -121,7 +125,20 @@
     kerning->y = 0;
 
     if ( sfnt )
-      kerning->x = sfnt->get_kerning( cffface, left_glyph, right_glyph );
+    {
+      /* Use 'kern' table if available since that can be faster; otherwise */
+      /* use GPOS kerning pairs if available.                              */
+      if ( cffface->kern_avail_bits )
+        kerning->x = sfnt->get_kerning( cffface,
+                                        left_glyph,
+                                        right_glyph );
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+      else if ( cffface->num_gpos_lookups_kerning )
+        kerning->x = sfnt->get_gpos_kerning( cffface,
+                                             left_glyph,
+                                             right_glyph );
+#endif
+    }
 
     return FT_Err_Ok;
   }
@@ -168,25 +185,7 @@
     CFF_Size       cffsize = (CFF_Size)size;
 
 
-    if ( !cffslot )
-      return FT_THROW( Invalid_Slot_Handle );
-
-    FT_TRACE1(( "cff_glyph_load: glyph index %d\n", glyph_index ));
-
-    /* check whether we want a scaled outline or bitmap */
-    if ( !cffsize )
-      load_flags |= FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
-
-    /* reset the size object if necessary */
-    if ( load_flags & FT_LOAD_NO_SCALE )
-      size = NULL;
-
-    if ( size )
-    {
-      /* these two objects must have the same parent */
-      if ( size->face != slot->face )
-        return FT_THROW( Invalid_Face_Handle );
-    }
+    FT_TRACE1(( "cff_glyph_load: glyph index %u\n", glyph_index ));
 
     /* now load the glyph outline if necessary */
     error = cff_slot_load( cffslot, cffsize, glyph_index, load_flags );
@@ -205,105 +204,70 @@
                     FT_Int32   flags,
                     FT_Fixed*  advances )
   {
-    FT_UInt       nn;
-    FT_Error      error = FT_Err_Ok;
-    FT_GlyphSlot  slot  = face->glyph;
+    CFF_Face  cffface = (CFF_Face)face;
+    FT_Bool   horz;
+    FT_UInt   nn;
 
 
-    if ( FT_IS_SFNT( face ) )
+    if ( !FT_IS_SFNT( face ) )
+      return FT_THROW( Unimplemented_Feature );
+
+    horz = !( flags & FT_LOAD_VERTICAL_LAYOUT );
+
+    if ( horz )
     {
       /* OpenType 1.7 mandates that the data from `hmtx' table be used; */
       /* it is no longer necessary that those values are identical to   */
       /* the values in the `CFF' table                                  */
+      if ( !cffface->horizontal.number_Of_HMetrics )
+        return FT_THROW( Unimplemented_Feature );
 
-      CFF_Face  cffface = (CFF_Face)face;
-      FT_Short  dummy;
-
-
-      if ( flags & FT_LOAD_VERTICAL_LAYOUT )
-      {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-        /* no fast retrieval for blended MM fonts without VVAR table */
-        if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
-             !( cffface->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-          return FT_THROW( Unimplemented_Feature );
+      /* no fast retrieval for blended MM fonts without HVAR table */
+      if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
+           !( cffface->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
+        return FT_THROW( Unimplemented_Feature );
 #endif
+    }
+    else  /* vertical */
+    {
+      /* check whether we have data from the `vmtx' table at all; */
+      /* otherwise we extract the info from the CFF glyphstrings  */
+      /* (instead of synthesizing a global value using the `OS/2' */
+      /* table)                                                   */
+      if ( !cffface->vertical_info )
+        return FT_THROW( Unimplemented_Feature );
 
-        /* check whether we have data from the `vmtx' table at all; */
-        /* otherwise we extract the info from the CFF glyphstrings  */
-        /* (instead of synthesizing a global value using the `OS/2' */
-        /* table)                                                   */
-        if ( !cffface->vertical_info )
-          goto Missing_Table;
-
-        for ( nn = 0; nn < count; nn++ )
-        {
-          FT_UShort  ah;
-
-
-          ( (SFNT_Service)cffface->sfnt )->get_metrics( cffface,
-                                                        1,
-                                                        start + nn,
-                                                        &dummy,
-                                                        &ah );
-
-          FT_TRACE5(( "  idx %d: advance height %d font unit%s\n",
-                      start + nn,
-                      ah,
-                      ah == 1 ? "" : "s" ));
-          advances[nn] = ah;
-        }
-      }
-      else
-      {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-        /* no fast retrieval for blended MM fonts without HVAR table */
-        if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
-             !( cffface->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-          return FT_THROW( Unimplemented_Feature );
+      /* no fast retrieval for blended MM fonts without VVAR table */
+      if ( ( FT_IS_NAMED_INSTANCE( face ) || FT_IS_VARIATION( face ) ) &&
+           !( cffface->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
+        return FT_THROW( Unimplemented_Feature );
 #endif
-
-        /* check whether we have data from the `hmtx' table at all */
-        if ( !cffface->horizontal.number_Of_HMetrics )
-          goto Missing_Table;
-
-        for ( nn = 0; nn < count; nn++ )
-        {
-          FT_UShort  aw;
-
-
-          ( (SFNT_Service)cffface->sfnt )->get_metrics( cffface,
-                                                        0,
-                                                        start + nn,
-                                                        &dummy,
-                                                        &aw );
-
-          FT_TRACE5(( "  idx %d: advance width %d font unit%s\n",
-                      start + nn,
-                      aw,
-                      aw == 1 ? "" : "s" ));
-          advances[nn] = aw;
-        }
-      }
-
-      return error;
     }
 
-  Missing_Table:
-    flags |= (FT_UInt32)FT_LOAD_ADVANCE_ONLY;
-
+    /* proceed to fast advances */
     for ( nn = 0; nn < count; nn++ )
     {
-      error = cff_glyph_load( slot, face->size, start + nn, flags );
-      if ( error )
-        break;
+      FT_UShort  aw;
+      FT_Short   dummy;
 
-      advances[nn] = ( flags & FT_LOAD_VERTICAL_LAYOUT )
-                     ? slot->linearVertAdvance
-                     : slot->linearHoriAdvance;
+
+      ( (SFNT_Service)cffface->sfnt )->get_metrics( cffface,
+                                                    !horz,
+                                                    start + nn,
+                                                    &dummy,
+                                                    &aw );
+
+      FT_TRACE5(( "  idx %u: advance %s %d font unit%s\n",
+                  start + nn,
+                  horz ? "width" : "height",
+                  aw,
+                  aw == 1 ? "" : "s" ));
+      advances[nn] = aw;
     }
 
-    return error;
+    return FT_Err_Ok;
   }
 
 
@@ -496,8 +460,8 @@
                                                          dict->weight );
       font_info->italic_angle        = dict->italic_angle;
       font_info->is_fixed_pitch      = dict->is_fixed_pitch;
-      font_info->underline_position  = (FT_Short)dict->underline_position;
-      font_info->underline_thickness = (FT_UShort)dict->underline_thickness;
+      font_info->underline_position  = dict->underline_position;
+      font_info->underline_thickness = dict->underline_thickness;
 
       cff->font_info = font_info;
     }
@@ -1125,6 +1089,111 @@
 #endif
 
 
+#ifdef TT_CONFIG_OPTION_VARC
+
+  /*
+   * VARC SERVICE
+   *
+   * The implementation belongs to the `truetype' module.  The CFF
+   * driver only forwards calls for OpenType/CFF faces, in the same way
+   * that it forwards variation-font operations.
+   */
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_init_axes( FT_Face  face,
+                      FT_UInt  axis_count )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return varc && varc->init_axes
+             ? varc->init_axes( face, axis_count )
+             : FT_THROW( Missing_Module );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_load( FT_Face    face,
+                 FT_Stream  stream )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return varc ? varc->load( face, stream )
+                : FT_THROW( Missing_Module );
+  }
+
+
+  FT_CALLBACK_DEF( void )
+  cff_varc_done( FT_Face  face )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    if ( varc )
+      varc->done( face );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Bool )
+  cff_varc_has_glyph( FT_Face  face,
+                      FT_UInt  glyph_index )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return FT_BOOL( varc && varc->has_glyph( face, glyph_index ) );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_load_glyph( FT_Face       face,
+                       FT_GlyphSlot  glyph_slot,
+                       FT_UInt       glyph_index,
+                       FT_Int32      load_flags )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+    CFF_Font         cff     = (CFF_Font)cffface->extra.data;
+
+    FT_Error  error;
+
+
+    if ( !varc )
+      return FT_THROW( Missing_Module );
+
+    if ( !FT_HAS_MULTIPLE_MASTERS( face ) &&
+         cff                              &&
+         cff->cff2                        &&
+         cff->vstore.axisCount            )
+    {
+      error = varc->init_axes( face, cff->vstore.axisCount );
+      if ( error )
+        return error;
+    }
+
+    return varc->load_glyph( face, glyph_slot,
+                             glyph_index, load_flags );
+  }
+
+
+  FT_DEFINE_SERVICE_VARCREC(
+    cff_service_varc,
+
+    cff_varc_init_axes,
+    cff_varc_load,
+    cff_varc_done,
+    cff_varc_has_glyph,
+    cff_varc_load_glyph
+  )
+
+#endif /* TT_CONFIG_OPTION_VARC */
+
+
   /*
    * CFFLOAD SERVICE
    *
@@ -1153,13 +1222,44 @@
   /*************************************************************************/
   /*************************************************************************/
 
-#if defined TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#if defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT ) && \
+    defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC11(
+    cff_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
+    FT_SERVICE_ID_MULTI_MASTERS,        &cff_service_multi_masters,
+    FT_SERVICE_ID_METRICS_VARIATIONS,   &cff_service_metrics_variations,
+    FT_SERVICE_ID_VARC,                 &cff_service_varc,
+    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
+    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
+    FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,
+    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
+    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
+    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
+    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
+  )
+#elif defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT )
   FT_DEFINE_SERVICEDESCREC10(
     cff_services,
 
     FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
     FT_SERVICE_ID_MULTI_MASTERS,        &cff_service_multi_masters,
     FT_SERVICE_ID_METRICS_VARIATIONS,   &cff_service_metrics_variations,
+    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
+    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
+    FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,
+    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
+    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
+    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
+    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
+  )
+#elif defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC9(
+    cff_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
+    FT_SERVICE_ID_VARC,                 &cff_service_varc,
     FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
     FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
     FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,

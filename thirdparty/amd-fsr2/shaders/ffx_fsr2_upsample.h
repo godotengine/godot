@@ -85,17 +85,10 @@ FfxFloat32 ComputeMaxKernelWeight() {
 FfxFloat32x4 ComputeUpsampledColorAndWeight(const AccumulationPassCommonParams params,
     FFX_PARAMETER_INOUT RectificationBox clippingBox, FfxFloat32 fReactiveFactor)
 {
-    #if FFX_FSR2_OPTION_UPSAMPLE_SAMPLERS_USE_DATA_HALF && FFX_HALF
-    #include "ffx_fsr2_force16_begin.h"
-    #endif
     // We compute a sliced lanczos filter with 2 lobes (other slices are accumulated temporaly)
     FfxFloat32x2 fDstOutputPos = FfxFloat32x2(params.iPxHrPos) + FFX_BROADCAST_FLOAT32X2(0.5f);      // Destination resolution output pixel center position
     FfxFloat32x2 fSrcOutputPos = fDstOutputPos * DownscaleFactor();                   // Source resolution output pixel center position
     FfxInt32x2 iSrcInputPos = FfxInt32x2(floor(fSrcOutputPos));                     // TODO: what about weird upscale factors...
-
-    #if FFX_FSR2_OPTION_UPSAMPLE_SAMPLERS_USE_DATA_HALF && FFX_HALF
-    #include "ffx_fsr2_force16_end.h"
-    #endif
 
     FfxFloat32x3 fSamples[iLanczos2SampleCount];
 
@@ -183,10 +176,6 @@ FfxFloat32x4 ComputeUpsampledColorAndWeight(const AccumulationPassCommonParams p
 
         Deringing(clippingBox, fColorAndWeight.xyz);
     }
-
-    #if FFX_FSR2_OPTION_UPSAMPLE_SAMPLERS_USE_DATA_HALF && FFX_HALF
-    #include "ffx_fsr2_force16_end.h"
-    #endif
 
     return fColorAndWeight;
 }

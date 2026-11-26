@@ -35,7 +35,7 @@
 class StaticRaycaster : public RefCounted {
 	GDCLASS(StaticRaycaster, RefCounted)
 protected:
-	static StaticRaycaster *(*create_function)();
+	static Ref<StaticRaycaster> (*create_function)();
 
 public:
 	// Compatible with embree4 rays.

@@ -30,6 +30,8 @@
 
 #include "audio_effect_limiter.h"
 
+#include "core/object/class_db.h"
+
 void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float threshdb = base->threshold;
 	float ceiling = Math::db_to_linear(base->ceiling);

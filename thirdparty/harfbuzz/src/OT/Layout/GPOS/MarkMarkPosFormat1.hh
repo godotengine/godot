@@ -7,33 +7,28 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
-typedef AnchorMatrix Mark2Array;        /* mark2-major--
-                                         * in order of Mark2Coverage Index--,
-                                         * mark1-minor--
-                                         * ordered by class--zero-based. */
-
 template <typename Types>
 struct MarkMarkPosFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 mark1Coverage;          /* Offset to Combining Mark1 Coverage
                                          * table--from beginning of MarkMarkPos
                                          * subtable */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 mark2Coverage;          /* Offset to Combining Mark2 Coverage
                                          * table--from beginning of MarkMarkPos
                                          * subtable */
   HBUINT16      classCount;             /* Number of defined mark classes */
-  typename Types::template OffsetTo<MarkArray>
+  typename Types::template LOffsetTo<MarkArray<Types>>
                 mark1Array;             /* Offset to Mark1Array table--from
                                          * beginning of MarkMarkPos subtable */
-  typename Types::template OffsetTo<Mark2Array>
+  typename Types::template LOffsetTo<AnchorMatrix<Types, HBUINT16>>
                 mark2Array;             /* Offset to Mark2Array table--from
                                          * beginning of MarkMarkPos subtable */
   public:
-  DEFINE_SIZE_STATIC (4 + 4 * Types::size);
+  DEFINE_SIZE_STATIC (4 + 4 * Types::LOffset::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -56,31 +51,15 @@ struct MarkMarkPosFormat1_2
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
-    + hb_zip (this+mark1Coverage, this+mark1Array)
-    | hb_filter (c->glyph_set, hb_first)
-    | hb_map (hb_second)
-    | hb_apply ([&] (const MarkRecord& record) { record.collect_variation_indices (c, &(this+mark1Array)); })
-    ;
+    (this+mark1Array).collect_variation_indices (c, this+mark1Coverage);
 
     hb_map_t klass_mapping;
     Markclass_closure_and_remap_indexes (this+mark1Coverage, this+mark1Array, *c->glyph_set, &klass_mapping);
 
-    unsigned mark2_count = (this+mark2Array).rows;
-    auto mark2_iter =
-    + hb_zip (this+mark2Coverage, hb_range (mark2_count))
-    | hb_filter (c->glyph_set, hb_first)
-    | hb_map (hb_second)
-    ;
-
     hb_sorted_vector_t<unsigned> mark2_indexes;
-    for (const unsigned row : mark2_iter)
-    {
-      + hb_range ((unsigned) classCount)
-      | hb_filter (klass_mapping)
-      | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
-      | hb_sink (mark2_indexes)
-      ;
-    }
+    collect_anchor_indexes (this+mark2Coverage, (this+mark2Array).rows,
+                            classCount, *c->glyph_set, klass_mapping,
+                            mark2_indexes);
     (this+mark2Array).collect_variation_indices (c, mark2_indexes.iter ());
   }
 
@@ -89,6 +68,9 @@ struct MarkMarkPosFormat1_2
     if (unlikely (!(this+mark1Coverage).collect_coverage (c->input))) return;
     if (unlikely (!(this+mark2Coverage).collect_coverage (c->input))) return;
   }
+
+  void collect_second_glyphs (hb_set_digest_t *digest) const
+  { (this+mark2Coverage).collect_coverage (digest); }
 
   const Coverage &get_coverage () const { return this+mark1Coverage; }
 
@@ -189,35 +171,20 @@ struct MarkMarkPosFormat1_2
 						     &klass_mapping)))
       return_trace (false);
 
-    unsigned mark2count = (this+mark2Array).rows;
-    auto mark2_iter =
-    + hb_zip (this+mark2Coverage, hb_range (mark2count))
-    | hb_filter (glyphset, hb_first)
-    ;
-
     new_coverage.reset ();
-    + mark2_iter
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
+    hb_sorted_vector_t<unsigned> mark2_indexes;
+    const auto &mark2_array = this+mark2Array;
+    collect_subset_anchor_indexes (this+mark2Coverage, mark2_array.rows,
+                                   classCount, mark2_array.matrixZ.arrayZ,
+                                   glyphset, glyph_map, klass_mapping,
+                                   new_coverage, mark2_indexes);
 
+    if (!new_coverage) return_trace (false);
     if (!out->mark2Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
       return_trace (false);
 
-    hb_sorted_vector_t<unsigned> mark2_indexes;
-    for (const unsigned row : + mark2_iter
-                              | hb_map (hb_second))
-    {
-      + hb_range ((unsigned) classCount)
-      | hb_filter (klass_mapping)
-      | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
-      | hb_sink (mark2_indexes)
-      ;
-    }
-
     return_trace (out->mark2Array.serialize_subset (c, mark2Array, this,
-						    mark2_iter.len (),
+						    new_coverage.length,
 						    mark2_indexes.iter ()));
 
   }

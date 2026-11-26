@@ -25,7 +25,7 @@ public:
 	/// Create a convex hull from inPoints and maximum convex radius inMaxConvexRadius, the radius is automatically lowered if the hull requires it.
 	/// (internally this will be subtracted so the total size will not grow with the convex radius).
 							ConvexHullShapeSettings(const Vec3 *inPoints, int inNumPoints, float inMaxConvexRadius = cDefaultConvexRadius, const PhysicsMaterial *inMaterial = nullptr) : ConvexShapeSettings(inMaterial), mPoints(inPoints, inPoints + inNumPoints), mMaxConvexRadius(inMaxConvexRadius) { }
-							ConvexHullShapeSettings(const Array<Vec3> &inPoints, float inConvexRadius = cDefaultConvexRadius, const PhysicsMaterial *inMaterial = nullptr) : ConvexShapeSettings(inMaterial), mPoints(inPoints), mMaxConvexRadius(inConvexRadius) { }
+	explicit				ConvexHullShapeSettings(const Array<Vec3> &inPoints, float inConvexRadius = cDefaultConvexRadius, const PhysicsMaterial *inMaterial = nullptr) : ConvexShapeSettings(inMaterial), mPoints(inPoints), mMaxConvexRadius(inConvexRadius) { }
 
 	// See: ShapeSettings
 	virtual ShapeResult		Create() const override;

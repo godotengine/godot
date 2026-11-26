@@ -6,7 +6,7 @@
 
 #define GR2_VERSION_MAJOR   1
 #define GR2_VERSION_MINOR   3
-#define GR2_VERSION_BUGFIX  14
+#define GR2_VERSION_BUGFIX  15
 
 #ifdef __cplusplus
 extern "C"

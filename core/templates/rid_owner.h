@@ -40,16 +40,6 @@
 #include <cstdio>
 #include <typeinfo> // IWYU pragma: keep // Used in macro.
 
-#ifdef SANITIZERS_ENABLED
-#ifdef __has_feature
-#if __has_feature(thread_sanitizer)
-#define TSAN_ENABLED
-#endif
-#elif defined(__SANITIZE_THREAD__)
-#define TSAN_ENABLED
-#endif
-#endif
-
 #ifdef TSAN_ENABLED
 #include <sanitizer/tsan_interface.h>
 #endif
@@ -75,7 +65,7 @@
 #endif
 
 class RID_AllocBase {
-	static SafeNumeric<uint64_t> base_id;
+	static inline SafeNumeric<uint64_t> base_id{ 1 };
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {
@@ -164,7 +154,7 @@ class RID_Alloc : public RID_AllocBase {
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFF);
+		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFE);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;

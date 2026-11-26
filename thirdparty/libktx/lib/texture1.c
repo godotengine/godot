@@ -13,7 +13,7 @@
  *
  * @brief ktxTexture1 implementation. Support for KTX format.
  *
- * @author Mark Callow, www.edgewise-consulting.com
+ * @author Mark Callow, github.com/MarkCallow
  */
 
 #if defined(_WIN32)
@@ -284,8 +284,10 @@ ktxTexture1_constructFromStreamAndHeader(ktxTexture1* This, ktxStream* pStream,
             }
 
             result = stream->read(stream, pKvd, kvdLen);
-            if (result != KTX_SUCCESS)
+            if (result != KTX_SUCCESS) {
+                free(pKvd);
                 goto cleanup;
+            }
 
             if (private->_needSwap) {
                 /* Swap the counts inside the key & value data. */

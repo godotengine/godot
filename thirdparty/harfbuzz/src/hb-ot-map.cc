@@ -128,7 +128,7 @@ void
 hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
 				  unsigned int  table_index,
 				  unsigned int  feature_index,
-				  unsigned int  variations_index,
+				  const hb_ot_shape_plan_key_t &key,
 				  hb_mask_t     mask,
 				  bool          auto_zwnj,
 				  bool          auto_zwj,
@@ -142,13 +142,37 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
 
   table_lookup_count = hb_ot_layout_table_get_lookup_count (face, table_tags[table_index]);
 
+  hb_set_t varied_lookups;
+  if (key.get_lookup_variations (face, table_index, feature_index, &varied_lookups))
+  {
+    if (unlikely (varied_lookups.in_error ()))
+    {
+      m.lookups[table_index].ensure_error ();
+      return;
+    }
+    for (unsigned int lookup_index : varied_lookups)
+    {
+      if (lookup_index >= table_lookup_count)
+	continue;
+      hb_ot_map_t::lookup_map_t *lookup = m.lookups[table_index].push ();
+      lookup->mask = mask;
+      lookup->index = lookup_index;
+      lookup->auto_zwnj = auto_zwnj;
+      lookup->auto_zwj = auto_zwj;
+      lookup->random = random;
+      lookup->per_syllable = per_syllable;
+      lookup->feature_tag = feature_tag;
+    }
+    return;
+  }
+
   offset = 0;
   do {
     len = ARRAY_LENGTH (lookup_indices);
     hb_ot_layout_feature_with_variations_get_lookups (face,
-						      table_tags[table_index],
-						      feature_index,
-						      variations_index,
+					      table_tags[table_index],
+					      feature_index,
+					      key.variations_index[table_index],
 						      offset, &len,
 						      lookup_indices);
 
@@ -342,7 +366,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
 	  required_feature_stage[table_index] == stage)
 	add_lookups (m, table_index,
 		     required_feature_index[table_index],
-		     key.variations_index[table_index],
+		     key,
 		     global_bit_mask);
 
       for (auto &feature : m.features)
@@ -350,7 +374,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
 	if (feature.stage[table_index] == stage)
 	  add_lookups (m, table_index,
 		       feature.index[table_index],
-		       key.variations_index[table_index],
+		       key,
 		       feature.mask,
 		       feature.auto_zwnj,
 		       feature.auto_zwj,

@@ -14,18 +14,11 @@ SConscript("display/SCsub")
 SConscript("movie_writer/SCsub")
 SConscript("rendering/SCsub")
 SConscript("text/SCsub")
-
-if not env["disable_navigation_2d"]:
-    SConscript("navigation_2d/SCsub")
-if not env["disable_physics_2d"]:
-    SConscript("physics_2d/SCsub")
-
-if not env["disable_navigation_3d"]:
-    SConscript("navigation_3d/SCsub")
-if not env["disable_physics_3d"]:
-    SConscript("physics_3d/SCsub")
-if not env["disable_xr"]:
-    SConscript("xr/SCsub")
+SConscript("navigation_2d/SCsub")
+SConscript("physics_2d/SCsub")
+SConscript("navigation_3d/SCsub")
+SConscript("physics_3d/SCsub")
+SConscript("xr/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 

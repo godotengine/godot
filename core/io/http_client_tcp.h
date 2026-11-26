@@ -30,9 +30,11 @@
 
 #pragma once
 
-#include "http_client.h"
-
 #include "core/crypto/crypto.h"
+#include "core/io/http_client.h"
+#include "core/io/ip.h"
+
+class StreamPeerTCP;
 
 class HTTPClientTCP : public HTTPClient {
 	GDSOFTCLASS(HTTPClientTCP, HTTPClient);

@@ -41,6 +41,7 @@ public:
 		bool use_euler = false;
 		Vector3::Axis primary_rotation_axis = Vector3::AXIS_X;
 		bool use_secondary_rotation = true;
+		bool relative = true;
 	};
 
 protected:
@@ -51,7 +52,9 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _process_constraint(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) override;
+	virtual void _process_constraint_by_bone(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) override;
+	virtual void _process_constraint_by_node(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const NodePath &p_reference_node, float p_amount) override;
+	virtual void _process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, Vector3 p_target, float p_amount);
 	virtual void _validate_setting(int p_index) override;
 
 public:
@@ -63,6 +66,8 @@ public:
 	Vector3::Axis get_primary_rotation_axis(int p_index) const;
 	void set_use_secondary_rotation(int p_index, bool p_enabled);
 	bool is_using_secondary_rotation(int p_index) const;
+	void set_relative(int p_index, bool p_enabled);
+	bool is_relative(int p_index) const;
 
 	~AimModifier3D();
 };

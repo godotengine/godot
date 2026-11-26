@@ -169,6 +169,9 @@ struct hb_subset_plan_t
   // whether GDEF ItemVariationStore is retained
   mutable bool has_gdef_varstore;
 
+  // whether we're doing avar2 partial instancing
+  bool has_avar2;
+
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"
 #undef HB_SUBSET_PLAN_MEMBER
@@ -178,8 +181,8 @@ struct hb_subset_plan_t
 
   os2_info_t os2_info;
 
-  const hb_subset_accelerator_t* accelerator;
-  hb_subset_accelerator_t* inprogress_accelerator;
+  const hb_subset_accelerator_t* accelerator = nullptr;
+  hb_subset_accelerator_t* inprogress_accelerator = nullptr;
 
  public:
 
@@ -212,6 +215,8 @@ struct hb_subset_plan_t
 
   bool in_error () const { return !successful; }
 
+  HB_INTERNAL double layout_variation_delta (unsigned var_idx);
+
   bool check_success(bool success)
   {
     successful = (successful && success);
@@ -236,6 +241,18 @@ struct hb_subset_plan_t
   glyphset_gsub () const
   {
     return &_glyphset_gsub;
+  }
+
+  /*
+   * Old-to-new glyph id mapping for GSUB glyphs, through the flat
+   * array; returns HB_MAP_VALUE_INVALID for glyphs not retained.
+   */
+  inline hb_codepoint_t
+  map_gsub_glyph (hb_codepoint_t old_gid) const
+  {
+    return old_gid < glyph_map_gsub_flat.length
+	 ? glyph_map_gsub_flat.arrayZ[old_gid]
+	 : HB_MAP_VALUE_INVALID;
   }
 
   /*
@@ -300,6 +317,7 @@ struct hb_subset_plan_t
 // compile times more reasonable:
 // - hb-subset-plan.cc
 // - hb-subset-plan-layout.cc
+// - hb-subset-plan-var.cc
 //
 // The functions below are those needed to connect the split files
 // above together.
@@ -332,7 +350,7 @@ generate_varstore_inner_maps (const hb_set_t& varidx_set,
                               unsigned subtable_count,
                               hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */);
 
-HB_INTERNAL void
+HB_INTERNAL bool
 normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan);
 
 HB_INTERNAL void

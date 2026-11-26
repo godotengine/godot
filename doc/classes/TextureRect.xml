@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextureRect" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control that displays a texture.
 	</brief_description>
 	<description>
 		A control that displays a texture, for example an icon inside a GUI. The texture's placement can be controlled with the [member stretch_mode] property. It can scale, tile, or stay centered inside its bounding rectangle.
+		By default, the minimum size of [TextureRect] is equal to the assigned [member texture]'s size. If you want it to be smaller, set [member expand_mode] to [constant EXPAND_IGNORE_SIZE].
 	</description>
 	<tutorials>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
@@ -51,6 +52,7 @@
 		</constant>
 		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
 			Tile inside the node's bounding rectangle.
+			[b]Note:[/b] [constant STRETCH_TILE] mode is not supported for [member texture] set to an [AtlasTexture] with non-zero [member AtlasTexture.margin].
 		</constant>
 		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
 			The texture keeps its original size and stays in the bounding rectangle's top-left corner.

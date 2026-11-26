@@ -30,6 +30,7 @@
 
 #include "audio_effect_capture.h"
 
+#include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
 bool AudioEffectCapture::can_get_buffer(int p_frames) const {
@@ -79,7 +80,7 @@ Ref<AudioEffectInstance> AudioEffectCapture::instantiate() {
 	if (!buffer_initialized) {
 		float target_buffer_size = AudioServer::get_singleton()->get_mix_rate() * buffer_length_seconds;
 		ERR_FAIL_COND_V(target_buffer_size <= 0 || target_buffer_size >= (1 << 27), Ref<AudioEffectInstance>());
-		buffer.resize(nearest_shift((uint32_t)target_buffer_size));
+		buffer.resize(Math::nearest_shift((uint32_t)target_buffer_size));
 		buffer_initialized = true;
 	}
 

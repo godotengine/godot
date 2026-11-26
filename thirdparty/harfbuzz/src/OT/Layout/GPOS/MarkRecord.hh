@@ -5,27 +5,30 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
+template <typename Types> struct MarkArray;
+
+template <typename Types>
 struct MarkRecord
 {
-  friend struct MarkArray;
+  friend struct MarkArray<Types>;
 
   public:
   HBUINT16      klass;                  /* Class defined for this mark */
-  Offset16To<Anchor>
+  typename Types::template OffsetTo<Anchor, MarkArray<Types>>
                 markAnchor;             /* Offset to Anchor table--from
                                          * beginning of MarkArray table */
   public:
-  DEFINE_SIZE_STATIC (4);
+  DEFINE_SIZE_STATIC (2 + Types::size);
 
   unsigned get_class () const { return (unsigned) klass; }
-  bool sanitize (hb_sanitize_context_t *c, const void *base) const
+  bool sanitize (hb_sanitize_context_t *c, const MarkArray<Types> *base) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) && markAnchor.sanitize (c, base));
   }
 
   bool subset (hb_subset_context_t    *c,
-	       const void             *src_base,
+	       const MarkArray<Types> *src_base,
 	       const hb_map_t         *klass_mapping) const
   {
     TRACE_SUBSET (this);
@@ -37,7 +40,7 @@ struct MarkRecord
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
-                                  const void *src_base) const
+                                  const MarkArray<Types> *src_base) const
   {
     (src_base+markAnchor).collect_variation_indices (c);
   }

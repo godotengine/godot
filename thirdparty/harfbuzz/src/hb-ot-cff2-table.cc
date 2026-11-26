@@ -24,6 +24,10 @@
  * Adobe Author(s): Michiharu Ariza
  */
 
+#ifndef HB_OT_CFF2_TABLE_CC
+#define HB_OT_CFF2_TABLE_CC
+#ifdef HB_OT_CFF2_TABLE_CC /* Pacify -Wunused-macros. */
+
 #include "hb.hh"
 
 #ifndef HB_NO_OT_FONT_CFF
@@ -109,7 +113,8 @@ bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
 bool OT::cff2::accelerator_t::get_extents_at (hb_font_t *font,
 					      hb_codepoint_t glyph,
 					      hb_glyph_extents_t *extents,
-					      hb_array_t<const int> coords) const
+					      hb_array_t<const int> coords,
+					      int64_t *budget) const
 {
 #ifdef HB_NO_OT_FONT_CFF
   /* XXX Remove check when this code moves to .hh file. */
@@ -118,12 +123,15 @@ bool OT::cff2::accelerator_t::get_extents_at (hb_font_t *font,
 
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
+
   unsigned int fd = fdSelect->get_fd (glyph);
   const hb_ubytes_t str = (*charStrings)[glyph];
   cff2_cs_interp_env_t<number_t> env (str, *this, fd, coords.arrayZ, coords.length);
   cff2_cs_interpreter_t<cff2_cs_opset_extents_t, cff2_extents_param_t, number_t> interp (env);
   cff2_extents_param_t  param;
-  if (unlikely (!interp.interpret (param))) return false;
+  if (unlikely (!interp.interpret (param, budget))) return false;
 
   if (param.min_x >= param.max_x)
   {
@@ -132,8 +140,9 @@ bool OT::cff2::accelerator_t::get_extents_at (hb_font_t *font,
   }
   else
   {
-    extents->x_bearing = roundf (param.min_x.to_real ());
-    extents->width = roundf (param.max_x.to_real () - extents->x_bearing);
+    double x_bearing = roundf (param.min_x.to_real ());
+    extents->x_bearing = hb_clamp_to<hb_position_t> (x_bearing);
+    extents->width = hb_clamp_to<hb_position_t> ((double) roundf (param.max_x.to_real ()) - x_bearing);
   }
   if (param.min_y >= param.max_y)
   {
@@ -142,8 +151,9 @@ bool OT::cff2::accelerator_t::get_extents_at (hb_font_t *font,
   }
   else
   {
-    extents->y_bearing = roundf (param.max_y.to_real ());
-    extents->height = roundf (param.min_y.to_real () - extents->y_bearing);
+    double y_bearing = roundf (param.max_y.to_real ());
+    extents->y_bearing = hb_clamp_to<hb_position_t> (y_bearing);
+    extents->height = hb_clamp_to<hb_position_t> ((double) roundf (param.min_y.to_real ()) - y_bearing);
   }
 
   font->scale_glyph_extents (extents);
@@ -200,16 +210,22 @@ struct cff2_path_procs_path_t : path_procs_t<cff2_path_procs_path_t, cff2_cs_int
 
 struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_param_t, number_t, cff2_path_procs_path_t> {};
 
-bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
+bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph,
+				       hb_draw_session_t &draw_session,
+				       int64_t *budget) const
 {
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
+
   return get_path_at (font,
 		      glyph,
 		      draw_session,
 		      hb_array (font->coords,
-				font->has_nonzero_coords ? font->num_coords : 0));
+				font->has_nonzero_coords ? font->num_coords : 0),
+		      budget);
 }
 
-bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const
+bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords, int64_t *budget) const
 {
 #ifdef HB_NO_OT_FONT_CFF
   /* XXX Remove check when this code moves to .hh file. */
@@ -218,13 +234,19 @@ bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph
 
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
+
   unsigned int fd = fdSelect->get_fd (glyph);
   const hb_ubytes_t str = (*charStrings)[glyph];
   cff2_cs_interp_env_t<number_t> env (str, *this, fd, coords.arrayZ, coords.length);
   cff2_cs_interpreter_t<cff2_cs_opset_path_t, cff2_path_param_t, number_t> interp (env);
   cff2_path_param_t param (font, draw_session);
-  if (unlikely (!interp.interpret (param))) return false;
+  if (unlikely (!interp.interpret (param, budget))) return false;
   return true;
 }
 
 #endif
+
+#endif /* HB_OT_CFF2_TABLE_CC pacify */
+#endif /* HB_OT_CFF2_TABLE_CC guard */

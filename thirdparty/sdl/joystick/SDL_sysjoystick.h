@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,6 @@
 
 // This is the system specific header for the SDL joystick API
 #include "SDL_joystick_c.h"
-
-#include <stdlib.h>
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus

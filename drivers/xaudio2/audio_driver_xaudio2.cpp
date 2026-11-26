@@ -30,8 +30,8 @@
 
 #include "audio_driver_xaudio2.h"
 
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/config/engine.h"
+#include "core/math/math_funcs_binary.h"
 
 Error AudioDriverXAudio2::init() {
 	active.clear();
@@ -46,7 +46,7 @@ Error AudioDriverXAudio2::init() {
 	channels = 2;
 
 	int latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
+	buffer_size = Math::closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, size_t(buffer_size) * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
@@ -97,7 +97,7 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 			ad->stop_counting_ticks();
 			ad->unlock();
 
-			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
+			for (int i = 0; i < ad->buffer_size * ad->channels; i++) {
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
@@ -174,7 +174,7 @@ void AudioDriverXAudio2::finish() {
 
 AudioDriverXAudio2::AudioDriverXAudio2() {
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		xaudio_buffer[i] = { 0 };
-		samples_out[i] = 0;
+		xaudio_buffer[i] = {};
+		samples_out[i] = nullptr;
 	}
 }

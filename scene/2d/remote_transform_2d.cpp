@@ -30,6 +30,8 @@
 
 #include "remote_transform_2d.h"
 
+#include "core/object/class_db.h"
+
 void RemoteTransform2D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {

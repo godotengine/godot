@@ -31,14 +31,17 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/property_utils.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
 }
 
-bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
+bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field, bool p_undo_redo) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es) {
 		return false;
@@ -59,21 +62,29 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
-	ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
+	if (p_undo_redo) {
+		ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
+	}
+
 	for (const NodePath &E : nodes) {
 		Node *n = es->get_node_or_null(E);
 		if (!n) {
 			continue;
 		}
 
+		Variant new_value;
 		if (p_value.get_type() == Variant::NODE_PATH) {
 			NodePath path;
 			if (node_path_target) {
 				path = n->get_path_to(node_path_target);
 			}
-			ur->add_do_property(n, name, path);
+
+			if (p_undo_redo) {
+				ur->add_do_property(n, name, path);
+			} else {
+				n->set(name, path);
+			}
 		} else {
-			Variant new_value;
 			if (p_field.is_empty()) {
 				// whole value
 				new_value = p_value;
@@ -81,13 +92,32 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 				// only one field
 				new_value = fieldwise_assign(n->get(name), p_value, p_field);
 			}
-			ur->add_do_property(n, name, new_value);
+
+			if (p_undo_redo) {
+				ur->add_do_property(n, name, new_value);
+			} else {
+				n->set(name, new_value);
+			}
 		}
 
-		ur->add_undo_property(n, name, n->get(name));
+		if (p_undo_redo) {
+			ur->add_undo_property(n, name, n->get(name));
+			Variant old_value = n->get(p_name);
+			Variant::Type type = old_value.get_type();
+			if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && old_value != new_value) {
+				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, true);
+				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, false);
+				// Perhaps an inefficient way of updating the resource count.
+				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
+				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, true);
+				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, false);
+			}
+		}
 	}
 
-	ur->commit_action();
+	if (p_undo_redo) {
+		ur->commit_action();
+	}
 	return true;
 }
 
@@ -159,8 +189,27 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				data_list.push_back(usage_data);
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage_data->info == F) {
+			// Make sure only properties with matching PropertyInfo data will appear.
+			if (usage_data->info.name == F.name &&
+					usage_data->info.type == F.type &&
+					usage_data->info.class_name == F.class_name &&
+					usage_data->info.hint == F.hint &&
+					usage_data->info.hint_string == F.hint_string) {
+				if (usage_data->info.usage != F.usage) {
+					// Checkable properties (mostly theme items) need special treatment.
+					if (usage_data->info.usage & PROPERTY_USAGE_CHECKABLE && F.usage & PROPERTY_USAGE_CHECKABLE) {
+						if (usage_data->info.usage & PROPERTY_USAGE_CHECKED) {
+							F.usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+						} else {
+							F.usage &= ~(PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED);
+						}
+
+						if (usage_data->info.usage != F.usage) {
+							continue;
+						}
+					}
+				}
+
 				usage_data->uses++;
 			}
 		}
@@ -174,7 +223,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()));
 }
 
 String MultiNodeEdit::_get_editor_name() const {
@@ -214,7 +263,16 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 			continue;
 		}
 
-		r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+		// Check if property can revert before using class default.
+		if (node->property_can_revert(p_name)) {
+			r_property = node->property_get_revert(p_name);
+		} else {
+			bool is_valid = false;
+			r_property = PropertyUtils::get_property_default_value(node, p_name, &is_valid);
+			if (!is_valid) {
+				r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+			}
+		}
 		return true;
 	}
 

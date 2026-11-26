@@ -30,6 +30,7 @@
 
 #include "callable.h"
 
+#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -57,15 +58,13 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 		custom->call(p_arguments, p_argcount, r_return_value, r_call_error);
 	} else {
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
-#ifdef DEBUG_ENABLED
-		if (!obj) {
+		if (unlikely(!obj)) {
 			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			r_call_error.argument = 0;
 			r_call_error.expected = 0;
 			r_return_value = Variant();
 			return;
 		}
-#endif
 		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
 	}
 }
@@ -305,7 +304,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 			if (less_a == less_b) {
 				return less_a(custom, p_callable.custom);
 			} else {
-				return less_a < less_b; //it's something..
+				return (uintptr_t)less_a < (uintptr_t)less_b; //it's something..
 			}
 
 		} else {

@@ -90,7 +90,7 @@ public:
 	/// @param inObjectLayer Object layer to test collision with
 	/// @param inUp World space up vector, used to avoid colliding with vertical walls.
 	/// @param inMaxSlopeAngle Max angle (rad) that is considered for colliding wheels. This is to avoid colliding with vertical walls.
-									VehicleCollisionTesterRay(ObjectLayer inObjectLayer, Vec3Arg inUp = Vec3::sAxisY(), float inMaxSlopeAngle = DegreesToRadians(80.0f)) : VehicleCollisionTester(inObjectLayer), mUp(inUp), mCosMaxSlopeAngle(Cos(inMaxSlopeAngle)) { }
+	explicit						VehicleCollisionTesterRay(ObjectLayer inObjectLayer, Vec3Arg inUp = Vec3::sAxisY(), float inMaxSlopeAngle = DegreesToRadians(80.0f)) : VehicleCollisionTester(inObjectLayer), mUp(inUp), mCosMaxSlopeAngle(Cos(inMaxSlopeAngle)) { }
 
 	// See: VehicleCollisionTester
 	virtual bool					Collide(PhysicsSystem &inPhysicsSystem, const VehicleConstraint &inVehicleConstraint, uint inWheelIndex, RVec3Arg inOrigin, Vec3Arg inDirection, const BodyID &inVehicleBodyID, Body *&outBody, SubShapeID &outSubShapeID, RVec3 &outContactPosition, Vec3 &outContactNormal, float &outSuspensionLength) const override;
@@ -133,7 +133,7 @@ public:
 	/// Constructor
 	/// @param inObjectLayer Object layer to test collision with
 	/// @param inConvexRadiusFraction Fraction of half the wheel width (or wheel radius if it is smaller) that is used as the convex radius
-									VehicleCollisionTesterCastCylinder(ObjectLayer inObjectLayer, float inConvexRadiusFraction = 0.1f) : VehicleCollisionTester(inObjectLayer), mConvexRadiusFraction(inConvexRadiusFraction) { JPH_ASSERT(mConvexRadiusFraction >= 0.0f && mConvexRadiusFraction <= 1.0f); }
+	explicit						VehicleCollisionTesterCastCylinder(ObjectLayer inObjectLayer, float inConvexRadiusFraction = 0.1f) : VehicleCollisionTester(inObjectLayer), mConvexRadiusFraction(inConvexRadiusFraction) { JPH_ASSERT(mConvexRadiusFraction >= 0.0f && mConvexRadiusFraction <= 1.0f); }
 
 	// See: VehicleCollisionTester
 	virtual bool					Collide(PhysicsSystem &inPhysicsSystem, const VehicleConstraint &inVehicleConstraint, uint inWheelIndex, RVec3Arg inOrigin, Vec3Arg inDirection, const BodyID &inVehicleBodyID, Body *&outBody, SubShapeID &outSubShapeID, RVec3 &outContactPosition, Vec3 &outContactNormal, float &outSuspensionLength) const override;

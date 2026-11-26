@@ -30,9 +30,8 @@
 
 #include "renderer_compositor.h"
 
-#include "core/config/project_settings.h"
-
 #ifndef XR_DISABLED
+#include "core/config/project_settings.h"
 #include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 

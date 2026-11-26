@@ -30,10 +30,12 @@
 
 #include "refcounted_view.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 
 SnapshotRefCountedView::SnapshotRefCountedView() {
 	set_name(TTRC("RefCounted"));
@@ -82,6 +84,7 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_list->set_hide_root(true);
 	refs_list->set_columns(diff_data ? 7 : 6);
 	refs_list->set_column_titles_visible(true);
+	refs_list->set_theme_type_variation("TreeSecondary");
 
 	if (diff_data) {
 		refs_list->set_column_title(0, TTRC("Snapshot"));
@@ -222,10 +225,10 @@ void SnapshotRefCountedView::_refcounted_selected() {
 	Array ref_cycles = (Array)d->extra_debug_data["ref_cycles"];
 
 	String count_str = "[ul]\n";
-	count_str += vformat(TTRC("Native References: %d\n"), native_refs);
-	count_str += vformat(TTRC("ObjectDB References: %d\n"), objectdb_refs);
-	count_str += vformat(TTRC("Total References: %d\n"), total_refs);
-	count_str += vformat(TTRC("ObjectDB Cycles: %d\n"), ref_cycles.size());
+	count_str += vformat(TTR("Native References: %d"), native_refs) + "\n";
+	count_str += vformat(TTR("ObjectDB References: %d"), objectdb_refs) + "\n";
+	count_str += vformat(TTR("Total References: %d"), total_refs) + "\n";
+	count_str += vformat(TTR("ObjectDB Cycles: %d"), ref_cycles.size()) + "\n";
 	count_str += "[/ul]\n";
 	RichTextLabel *counts = memnew(RichTextLabel(count_str));
 	counts->set_use_bbcode(true);

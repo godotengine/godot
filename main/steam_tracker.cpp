@@ -32,6 +32,9 @@
 
 #include "steam_tracker.h"
 
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+
 // https://partner.steamgames.com/doc/sdk/api#initialization_and_shutdown
 
 SteamTracker::SteamTracker() {

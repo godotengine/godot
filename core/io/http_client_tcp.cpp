@@ -32,7 +32,10 @@
 
 #include "http_client_tcp.h"
 
+#include "core/io/stream_peer_tcp.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
 HTTPClient *HTTPClientTCP::_create_func(bool p_notify_postinitialize) {
@@ -153,10 +156,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	Error err = verify_headers(p_headers);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(verify_headers(p_headers));
 
 	String uri = p_url;
 	if (tls_options.is_null() && http_proxy_port != -1) {
@@ -290,7 +290,7 @@ Error HTTPClientTCP::poll() {
 
 					Error err = ERR_BUG; // Should be at least one entry.
 					while (ip_candidates.size() > 0) {
-						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front().to<IPAddress>(), server_port);
 						if (err == OK) {
 							break;
 						}
@@ -409,7 +409,7 @@ Error HTTPClientTCP::poll() {
 					Error err = ERR_CANT_CONNECT;
 					while (ip_candidates.size() > 0) {
 						tcp_connection->disconnect_from_host();
-						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front().to<IPAddress>(), server_port);
 						if (err == OK) {
 							return OK;
 						}

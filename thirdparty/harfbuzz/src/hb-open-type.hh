@@ -62,7 +62,7 @@ struct NumType
   typedef Type type;
   /* For reason we define cast out operator for signed/unsigned, instead of Type, see:
    * https://github.com/harfbuzz/harfbuzz/pull/2875/commits/09836013995cab2b9f07577a179ad7b024130467 */
-  typedef typename std::conditional<std::is_integral<Type>::value,
+  typedef typename std::conditional<std::is_integral<Type>::value && sizeof (Type) <= sizeof(int),
 				     typename std::conditional<std::is_signed<Type>::value, signed, unsigned>::type,
 				     Type>::type WideType;
 
@@ -82,6 +82,7 @@ struct NumType
   NumType operator ++ (int) { NumType c (*this); ++*this; return c; }
   NumType operator -- (int) { NumType c (*this); --*this; return c; }
 
+  uint32_t hash () const { return hb_array ((const char *) &v, sizeof (v)).hash (); }
   HB_INTERNAL static int cmp (const NumType *a, const NumType *b)
   { return b->cmp (*a); }
   HB_INTERNAL static int cmp (const void *a, const void *b)
@@ -117,6 +118,8 @@ typedef NumType<true, uint16_t> HBUINT16;	/* 16-bit big-endian unsigned integer.
 typedef NumType<true, int16_t>  HBINT16;	/* 16-bit big-endian signed integer. */
 typedef NumType<true, uint32_t> HBUINT32;	/* 32-bit big-endian unsigned integer. */
 typedef NumType<true, int32_t>  HBINT32;	/* 32-bit big-endian signed integer. */
+typedef NumType<true, uint64_t> HBUINT64;	/* 64-bit big-endian unsigned integer. */
+typedef NumType<true, int64_t>  HBINT64;	/* 64-bit big-endian signed integer. */
 /* Note: we cannot defined a signed HBINT24 because there's no corresponding C type.
  * Works for unsigned, but not signed, since we rely on compiler for sign-extension. */
 typedef NumType<true, uint32_t, 3> HBUINT24;	/* 24-bit big-endian unsigned integer. */
@@ -125,6 +128,8 @@ typedef NumType<false, uint16_t> HBUINT16LE;	/* 16-bit little-endian unsigned in
 typedef NumType<false, int16_t>  HBINT16LE;	/* 16-bit little-endian signed integer. */
 typedef NumType<false, uint32_t> HBUINT32LE;	/* 32-bit little-endian unsigned integer. */
 typedef NumType<false, int32_t>  HBINT32LE;	/* 32-bit little-endian signed integer. */
+typedef NumType<false, uint64_t> HBUINT64LE;	/* 64-bit little-endian unsigned integer. */
+typedef NumType<false, int64_t>  HBINT64LE;	/* 64-bit little-endian signed integer. */
 
 typedef NumType<true,  float>  HBFLOAT32BE;	/* 32-bit little-endian floating point number. */
 typedef NumType<true,  double> HBFLOAT64BE;	/* 64-bit little-endian floating point number. */
@@ -143,7 +148,7 @@ struct HBUINT15 : HBUINT16
 /* 32-bit unsigned integer with variable encoding. */
 struct HBUINT32VAR
 {
-  unsigned get_size () const
+  size_t get_size () const
   {
     unsigned b0 = v[0];
     if (b0 < 0x80)
@@ -158,7 +163,7 @@ struct HBUINT32VAR
       return 5;
   }
 
-  static unsigned get_size (uint32_t v)
+  static size_t get_size (uint32_t v)
   {
     if (v < 0x80)
       return 1;
@@ -192,17 +197,12 @@ struct HBUINT32VAR
     else if (b0 < 0xF0)
       return ((b0 & 0x0F) << 24) | (v[1] << 16) | (v[2] << 8) | v[3];
     else
-      return (v[1] << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
+      return (uint32_t (v[1]) << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
   }
 
-  static bool serialize (hb_serialize_context_t *c, uint32_t v)
+  static unsigned serialize_unsafe (unsigned char *buf, uint32_t v)
   {
     unsigned len = get_size (v);
-
-    unsigned char *buf = c->allocate_size<unsigned char> (len, false);
-    if (unlikely (!buf))
-      return false;
-
     unsigned char *p = buf + len;
     for (unsigned i = 0; i < len; i++)
     {
@@ -213,6 +213,17 @@ struct HBUINT32VAR
     if (len > 1)
       buf[0] |= ((1 << (len - 1)) - 1) << (9 - len);
 
+    return len;
+  }
+
+  static bool serialize (hb_serialize_context_t *c, uint32_t v)
+  {
+    unsigned len = get_size (v);
+    unsigned char *buf = c->allocate_size<unsigned char> (len, false);
+    if (unlikely (!buf))
+      return false;
+
+    serialize_unsafe (buf, v);
     return true;
   }
 
@@ -521,16 +532,9 @@ struct OffsetTo : Offset<OffsetType, has_null>
     return_trace (sanitize_shallow (c, base) &&
 		  hb_barrier () &&
 		  (this->is_null () ||
-		   c->dispatch (StructAtOffset<Type> (base, *this), std::forward<Ts> (ds)...) ||
-		   neuter (c)));
+		   c->dispatch (StructAtOffset<Type> (base, *this), std::forward<Ts> (ds)...)));
   }
 
-  /* Set the offset to Null */
-  bool neuter (hb_sanitize_context_t *c) const
-  {
-    if (!has_null) return false;
-    return c->try_set (this, 0);
-  }
   DEFINE_SIZE_STATIC (sizeof (OffsetType));
 };
 /* Partial specializations. */
@@ -565,8 +569,8 @@ struct UnsizedArrayOf
     return arrayZ[i];
   }
 
-  static unsigned int get_size (unsigned int len)
-  { return len * Type::static_size; }
+  static size_t get_size (unsigned int len)
+  { return hb_unsigned_mul_saturate (len, Type::static_size); }
 
   template <typename T> operator T * () { return arrayZ; }
   template <typename T> operator const T * () const { return arrayZ; }
@@ -727,8 +731,8 @@ struct ArrayOf
     return arrayZ[i];
   }
 
-  unsigned int get_size () const
-  { return len.static_size + len * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (len, Type::static_size, len.static_size); }
 
   explicit operator bool () const { return len; }
 
@@ -911,8 +915,8 @@ struct HeadlessArrayOf
     hb_barrier ();
     return arrayZ[i-1];
   }
-  unsigned int get_size () const
-  { return lenP1.static_size + get_length () * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (get_length (), Type::static_size, lenP1.static_size); }
 
   unsigned get_length () const { return lenP1 ? lenP1 - 1 : 0; }
 
@@ -1005,8 +1009,8 @@ struct ArrayOfM1
     hb_barrier ();
     return arrayZ[i];
   }
-  unsigned int get_size () const
-  { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (lenM1 + 1, Type::static_size, lenM1.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1199,8 +1203,8 @@ struct VarSizedBinSearchArrayOf
   }
   unsigned int get_length () const
   { return header.nUnits - last_is_terminator (); }
-  unsigned int get_size () const
-  { return header.static_size + header.nUnits * header.unitSize; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (header.nUnits, header.unitSize, header.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1277,11 +1281,22 @@ struct CFFIndex
     if (unlikely (!serialize_header (c, +it, data_size, min_off_size))) return_trace (false);
     unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
     if (unlikely (!ret)) return_trace (false);
+    unsigned remaining = data_size;
     for (const auto &_ : +it)
     {
       unsigned len = _.length;
+
       if (!len)
 	continue;
+
+      if (unlikely (len > remaining)) {
+        // We have more bytes to write then the computed data size, so the size calculation
+        // must have encountered overflow.
+        return_trace (c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+      }
+
+      remaining -= len;
+
       if (len <= 1)
       {
 	*ret++ = *_.arrayZ;
@@ -1452,10 +1467,11 @@ struct CFFIndex
     return hb_ubytes_t (data_base () + offset0, offset1 - offset0);
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     if (count)
-      return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
+      return hb_unsigned_add_saturate (min_size, offSize.static_size,
+				       offset_array_size (), offset_at (count) - 1);
     return min_size;  /* empty CFFIndex contains count only */
   }
 
@@ -1498,8 +1514,8 @@ struct TupleValues
     VALUE_RUN_COUNT_MASK = 0x3F
   };
 
-  static unsigned compile (hb_array_t<const int> values, /* IN */
-			   hb_array_t<unsigned char> encoded_bytes /* OUT */)
+  static unsigned compile_unsafe (hb_array_t<const int> values, /* IN */
+				  unsigned char *encoded_bytes /* OUT */)
   {
     unsigned num_values = values.length;
     unsigned encoded_len = 0;
@@ -1508,24 +1524,23 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
       if (val == 0)
-        encoded_len += encode_value_run_as_zeroes (i, encoded_bytes.sub_array (encoded_len), values);
-      else if (val >= -128 && val <= 127)
-        encoded_len += encode_value_run_as_bytes (i, encoded_bytes.sub_array (encoded_len), values);
-      else if (val >= -32768 && val <= 32767)
-        encoded_len += encode_value_run_as_words (i, encoded_bytes.sub_array (encoded_len), values);
+        encoded_len += encode_value_run_as_zeroes (i, encoded_bytes + encoded_len, values);
+      else if ((int8_t) val == val)
+        encoded_len += encode_value_run_as_bytes (i, encoded_bytes + encoded_len, values);
+      else if ((int16_t) val == val)
+        encoded_len += encode_value_run_as_words (i, encoded_bytes + encoded_len, values);
       else
-        encoded_len += encode_value_run_as_longs (i, encoded_bytes.sub_array (encoded_len), values);
+        encoded_len += encode_value_run_as_longs (i, encoded_bytes + encoded_len, values);
     }
     return encoded_len;
   }
 
   static unsigned encode_value_run_as_zeroes (unsigned& i,
-					      hb_array_t<unsigned char> encoded_bytes,
+					      unsigned char *it,
 					      hb_array_t<const int> values)
   {
     unsigned num_values = values.length;
     unsigned run_length = 0;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (i < num_values && values.arrayZ[i] == 0)
     {
@@ -1549,7 +1564,7 @@ struct TupleValues
   }
 
   static unsigned encode_value_run_as_bytes (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1557,7 +1572,7 @@ struct TupleValues
     while (i < num_values)
     {
       int val = values.arrayZ[i];
-      if (val > 127 || val < -128)
+      if ((int8_t) val != val)
         break;
 
       /* from fonttools: if there're 2 or more zeros in a sequence,
@@ -1570,7 +1585,6 @@ struct TupleValues
     unsigned run_length = i - start;
 
     unsigned encoded_len = 0;
-    auto it = encoded_bytes.iter ();
 
     while (run_length >= 64)
     {
@@ -1578,10 +1592,9 @@ struct TupleValues
       encoded_len++;
 
       for (unsigned j = 0; j < 64; j++)
-      {
-        *it++ = static_cast<char> (values.arrayZ[start + j]);
-        encoded_len++;
-      }
+	it[j] = static_cast<char> (values.arrayZ[start + j]);
+      it += 64;
+      encoded_len += 64;
 
       start += 64;
       run_length -= 64;
@@ -1592,18 +1605,16 @@ struct TupleValues
       *it++ = (VALUES_ARE_BYTES | (run_length - 1));
       encoded_len++;
 
-      while (start < i)
-      {
-        *it++ = static_cast<char> (values.arrayZ[start++]);
-        encoded_len++;
-      }
+      for (unsigned j = 0; j < run_length; j++)
+        it[j] = static_cast<char> (values.arrayZ[start + j]);
+      encoded_len += run_length;
     }
 
     return encoded_len;
   }
 
   static unsigned encode_value_run_as_words (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1612,22 +1623,24 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
 
-      /* start a new run for a single zero value*/
+      if ((int16_t) val != val)
+        break;
+
+      /* start a new run for a single zero value. */
       if (val == 0) break;
 
-      /* from fonttools: continue word-encoded run if there's only one
+      /* From fonttools: continue word-encoded run if there's only one
        * single value in the range [-128, 127] because it is more compact.
        * Only start a new run when there're 2 continuous such values. */
-      if (val >= -128 && val <= 127 &&
+      if ((int8_t) val == val &&
           i + 1 < num_values &&
-          values.arrayZ[i+1] >= -128 && values.arrayZ[i+1] <= 127)
+          (int8_t) values.arrayZ[i+1] == values.arrayZ[i+1])
         break;
 
       i++;
     }
 
     unsigned run_length = i - start;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (run_length >= 64)
     {
@@ -1664,7 +1677,7 @@ struct TupleValues
   }
 
   static unsigned encode_value_run_as_longs (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1673,14 +1686,13 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
 
-      if (val >= -32768 && val <= 32767)
+      if ((int16_t) val == val)
         break;
 
       i++;
     }
 
     unsigned run_length = i - start;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (run_length >= 64)
     {
@@ -1721,6 +1733,9 @@ struct TupleValues
   }
 
   template <typename T>
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   static bool decompile (const HBUINT8 *&p /* IN/OUT */,
 			 hb_vector_t<T> &values /* IN/OUT */,
 			 const HBUINT8 *end,
@@ -1738,7 +1753,7 @@ struct TupleValues
       unsigned run_count = (control & VALUE_RUN_COUNT_MASK) + 1;
       if (consume_all)
       {
-        if (unlikely (!values.resize (values.length + run_count, false)))
+        if (unlikely (!values.resize_dirty  (values.length + run_count)))
 	  return false;
       }
       unsigned stop = i + run_count;
@@ -1749,8 +1764,8 @@ struct TupleValues
 
       if ((control & VALUES_SIZE_MASK) == VALUES_ARE_ZEROS)
       {
-        for (; i < stop; i++)
-          values.arrayZ[i] = 0;
+	hb_memset (&values.arrayZ[i], 0, (stop - i) * sizeof (T));
+	i = stop;
       }
       else if ((control & VALUES_SIZE_MASK) ==  VALUES_ARE_WORDS)
       {
@@ -1805,11 +1820,38 @@ struct TupleValues
     return true;
   }
 
+  static bool skip (const unsigned char *&p /* IN/OUT */,
+		    const unsigned char *end,
+		    unsigned count)
+  {
+    unsigned seen = 0;
+    while (seen < count)
+    {
+      if (unlikely (p >= end)) return false;
+      unsigned control = *p++;
+      unsigned run_count = (control & VALUE_RUN_COUNT_MASK) + 1;
+      if (unlikely (run_count > count - seen)) return false;
+
+      unsigned width = 0;
+      switch (control & VALUES_SIZE_MASK)
+      {
+	case VALUES_ARE_ZEROS: break;
+	case VALUES_ARE_BYTES: width = HBINT8::static_size; break;
+	case VALUES_ARE_WORDS: width = HBINT16::static_size; break;
+	case VALUES_ARE_LONGS: width = HBINT32::static_size; break;
+      }
+      if (unlikely (unsigned (end - p) < run_count * width)) return false;
+      p += run_count * width;
+      seen += run_count;
+    }
+    return true;
+  }
+
   struct iter_t : hb_iter_with_fallback_t<iter_t, int>
   {
     iter_t (const unsigned char *p_, unsigned len_)
 	    : p (p_), endp (p_ + len_)
-    { if (ensure_run ()) read_value (); }
+    { if (likely (ensure_run ())) read_value (); }
 
     private:
     const unsigned char *p;
@@ -1818,10 +1860,14 @@ struct TupleValues
     signed run_count = 0;
     unsigned width = 0;
 
+    HB_ALWAYS_INLINE
     bool ensure_run ()
     {
       if (likely (run_count > 0)) return true;
-
+      return _ensure_run ();
+    }
+    bool _ensure_run ()
+    {
       if (unlikely (p >= endp))
       {
         run_count = 0;
@@ -1911,10 +1957,15 @@ struct TupleValues
     signed run_count = 0;
     unsigned width = 0;
 
+    HB_ALWAYS_INLINE
     bool ensure_run ()
     {
-      if (run_count > 0) return true;
+      if (likely (run_count > 0)) return true;
+      return _ensure_run ();
+    }
 
+    bool _ensure_run ()
+    {
       if (unlikely (p >= end))
       {
         run_count = 0;
@@ -1942,6 +1993,7 @@ struct TupleValues
       return true;
     }
 
+    public:
     void skip (unsigned n)
     {
       while (n)
@@ -1955,11 +2007,12 @@ struct TupleValues
       }
     }
 
-    template <bool scaled>
-    void _add_to (hb_array_t<float> out, float scale = 1.0f)
+    private:
+    template <bool scaled, typename T>
+    void _add_to (hb_array_t<T> out, T scale = T (1))
     {
       unsigned n = out.length;
-      float *arrayZ = out.arrayZ;
+      T *arrayZ = out.arrayZ;
 
       for (unsigned i = 0; i < n;)
       {
@@ -2027,22 +2080,18 @@ struct TupleValues
     }
 
     public:
-    void add_to (hb_array_t<float> out, float scale = 1.0f)
+    template <typename T>
+    void add_to (hb_array_t<T> out, float scale = 1.0f)
     {
-      unsigned n = out.length;
-
-      if (scale == 0.0f)
-      {
-        skip (n);
-	return;
-      }
-
 #ifndef HB_OPTIMIZE_SIZE
-      if (scale == 1.0f)
+      // The following branch is supposed to speed things up by avoiding
+      // the multiplication in _add_to<> if scale is 1.0f.
+      // But in practice it seems to bloat the code and slow things down.
+      if (false && scale == 1.0f)
         _add_to<false> (out);
       else
 #endif
-        _add_to<true> (out, scale);
+        _add_to<true> (out, (T) scale);
     }
   };
 };
@@ -2068,7 +2117,7 @@ struct TupleList : CFF2Index
 template <unsigned int alignment>
 struct Align
 {
-  unsigned get_size (const void *base) const
+  size_t get_size (const void *base) const
   {
     unsigned offset = (const char *) this - (const char *) base;
     return (alignment - offset) & (alignment - 1);

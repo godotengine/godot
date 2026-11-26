@@ -112,7 +112,7 @@ void main() {
 	}
 
 	if (params.sample_count == 2) {
-		best_index = (pos.x & 1) ^ ((pos.y >> 1) & 1); //not much can be done here
+		best_index = (group1.x < group1.y) ? 1 : 0; // Not much can be done here. Pick the sample closer to the camera.
 	} else if (params.sample_count == 4) {
 		vec4 freq = vec4(equal(group1, vec4(group1.x)));
 		freq += vec4(equal(group1, vec4(group1.y)));

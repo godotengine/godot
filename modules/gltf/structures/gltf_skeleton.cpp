@@ -32,6 +32,7 @@
 
 #include "../gltf_template_convert.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/bone_attachment_3d.h"
 
 void GLTFSkeleton::_bind_methods() {
@@ -54,19 +55,19 @@ void GLTFSkeleton::_bind_methods() {
 }
 
 Vector<GLTFNodeIndex> GLTFSkeleton::get_joints() {
-	return joints;
+	return Vector<GLTFNodeIndex>(joints);
 }
 
-void GLTFSkeleton::set_joints(Vector<GLTFNodeIndex> p_joints) {
-	joints = p_joints;
+void GLTFSkeleton::set_joints(const Vector<GLTFNodeIndex> &p_joints) {
+	joints = Vector<GLTFNodeIndex>(p_joints);
 }
 
 Vector<GLTFNodeIndex> GLTFSkeleton::get_roots() {
-	return roots;
+	return Vector<GLTFNodeIndex>(roots);
 }
 
-void GLTFSkeleton::set_roots(Vector<GLTFNodeIndex> p_roots) {
-	roots = p_roots;
+void GLTFSkeleton::set_roots(const Vector<GLTFNodeIndex> &p_roots) {
+	roots = Vector<GLTFNodeIndex>(p_roots);
 }
 
 Skeleton3D *GLTFSkeleton::get_godot_skeleton() {
@@ -77,7 +78,7 @@ TypedArray<String> GLTFSkeleton::get_unique_names() {
 	return GLTFTemplateConvert::to_array(unique_names);
 }
 
-void GLTFSkeleton::set_unique_names(TypedArray<String> p_unique_names) {
+void GLTFSkeleton::set_unique_names(const TypedArray<String> &p_unique_names) {
 	GLTFTemplateConvert::set_from_array(unique_names, p_unique_names);
 }
 
@@ -85,7 +86,7 @@ Dictionary GLTFSkeleton::get_godot_bone_node() {
 	return GLTFTemplateConvert::to_dictionary(godot_bone_node);
 }
 
-void GLTFSkeleton::set_godot_bone_node(Dictionary p_indict) {
+void GLTFSkeleton::set_godot_bone_node(const Dictionary &p_indict) {
 	GLTFTemplateConvert::set_from_dictionary(godot_bone_node, p_indict);
 }
 

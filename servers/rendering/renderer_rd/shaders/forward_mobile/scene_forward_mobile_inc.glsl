@@ -2,6 +2,7 @@
 #define MAX_VIEWS 2
 
 #include "../decal_data_inc.glsl"
+#include "../oct_inc.glsl"
 #include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -20,7 +21,7 @@ layout(push_constant, std430) uniform DrawCall {
 #ifdef UBERSHADER
 	uint sc_packed_0;
 	uint sc_packed_1;
-	float sc_packed_2;
+	uint sc_packed_2;
 	uint uc_packed_0;
 #endif
 }
@@ -43,7 +44,7 @@ uint sc_packed_1() {
 	return draw_call.sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return draw_call.sc_packed_2;
 }
 
@@ -56,7 +57,7 @@ uint uc_cull_mode() {
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
 layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
-layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
+layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
@@ -66,7 +67,7 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return pso_sc_packed_2;
 }
 
@@ -116,32 +117,40 @@ bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 10) & 1U) != 0;
 }
 
-bool sc_multimesh() {
+bool sc_use_material_debanding() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }
 
-bool sc_multimesh_format_2d() {
+bool sc_multimesh() {
 	return ((sc_packed_0() >> 12) & 1U) != 0;
 }
 
-bool sc_multimesh_has_color() {
+bool sc_multimesh_format_2d() {
 	return ((sc_packed_0() >> 13) & 1U) != 0;
 }
 
-bool sc_multimesh_has_custom_data() {
+bool sc_multimesh_has_color() {
 	return ((sc_packed_0() >> 14) & 1U) != 0;
 }
 
-bool sc_scene_use_ambient_cubemap() {
+bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_0() >> 15) & 1U) != 0;
 }
 
-bool sc_scene_use_reflection_cubemap() {
+bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 16) & 1U) != 0;
 }
 
-bool sc_scene_roughness_limiter_enabled() {
+bool sc_scene_use_reflection_color() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
+}
+
+bool sc_scene_use_reflection_cubemap() {
+	return ((sc_packed_0() >> 18) & 1U) != 0;
+}
+
+bool sc_scene_roughness_limiter_enabled() {
+	return ((sc_packed_0() >> 19) & 1U) != 0;
 }
 
 uint sc_soft_shadow_samples() {
@@ -185,18 +194,23 @@ uint sc_spot_lights(uint bound) {
 	return option_to_count(option, bound);
 }
 
-uint sc_reflection_probes(uint bound) {
+uint sc_area_lights(uint bound) {
 	uint option = (sc_packed_1() >> 16) & 3U;
 	return option_to_count(option, bound);
 }
 
-uint sc_directional_lights(uint bound) {
+uint sc_reflection_probes(uint bound) {
 	uint option = (sc_packed_1() >> 18) & 3U;
 	return option_to_count(option, bound);
 }
 
+uint sc_directional_lights(uint bound) {
+	uint option = (sc_packed_1() >> 20) & 3U;
+	return option_to_count(option, bound);
+}
+
 uint sc_decals(uint bound) {
-	if (((sc_packed_1() >> 20) & 1U) != 0) {
+	if (((sc_packed_1() >> 22) & 1U) != 0) {
 		return bound;
 	} else {
 		return 0;
@@ -204,12 +218,38 @@ uint sc_decals(uint bound) {
 }
 
 bool sc_directional_light_blend_split(uint i) {
-	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
+	return ((sc_packed_1() >> (23 + i)) & 1U) != 0;
+}
+
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 31) & 1U) != 0;
 }
 
 half sc_luminance_multiplier() {
-	return half(sc_packed_2());
+	return ((sc_packed_2() >> 0) & 1U) != 0 ? half(2.0) : half(1.0);
 }
+
+bool sc_material_feedback() {
+	return ((sc_packed_2() >> 1) & 1U) != 0;
+}
+
+layout(constant_id = 3) const bool sc_emulate_point_size = false;
+
+#ifdef POINT_SIZE_USED
+
+#define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
+#define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
+
+#else
+
+#define VERTEX_INDEX gl_VertexIndex
+#define INSTANCE_INDEX gl_InstanceIndex
+
+#endif
+
+// Like the luminance multiplier, but it is only for sky and reflection probes
+// since they are always LDR.
+#define REFLECTION_MULTIPLIER half(2.0)
 
 /* Set 0: Base Pass (never changes) */
 
@@ -240,12 +280,17 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std430) restrict readonly buffer ReflectionProbeData {
+layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
+	LightData data[];
+}
+area_lights;
+
+layout(set = 0, binding = 6, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
 
-layout(set = 0, binding = 6, std140) uniform DirectionalLights {
+layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -259,13 +304,13 @@ directional_lights;
 #define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
 
 struct Lightmap {
-	mat3 normal_xform;
+	mat3x4 normal_xform_and_specular_intensity; // "normal_xform" is the 3x3 matrix. "specular_intensity" is the 4th row of the 1st column.
 	vec2 light_texture_size;
 	float exposure_normalization;
 	uint flags;
 };
 
-layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
+layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
@@ -274,25 +319,31 @@ struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 9) uniform texture2D decal_atlas;
-layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas;
+layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalShaderUniformData {
+layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
 global_shader_uniforms;
 
-layout(set = 0, binding = 13) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+
+layout(set = 0, binding = 15) uniform texture2D ltc_lut1;
+
+layout(set = 0, binding = 16) uniform texture2D ltc_lut2;
+
+layout(set = 0, binding = 17) uniform texture2D area_light_atlas;
 
 /* Set 1: Render Pass (changes per render pass) */
 
@@ -305,7 +356,8 @@ scene_data_block;
 struct InstanceData {
 	highp mat3x4 transform;
 	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec3 compressed_aabb_size_pad; // Only .xyz is used.
+	uint material_feedback_index; // Index into the material feedback buffer.
 	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; // Base offset in global buffer for instance variables.
@@ -317,7 +369,9 @@ struct InstanceData {
 	uvec2 reflection_probes;
 	uvec2 omni_lights;
 	uvec2 spot_lights;
+	uvec2 area_lights;
 	uvec2 decals;
+	uvec2 padding;
 #ifdef USE_DOUBLE_PRECISION
 	vec4 model_precision;
 	vec4 prev_model_precision;
@@ -329,17 +383,17 @@ layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer
 }
 instances;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform texture2DArray radiance_octmap;
 
 #else
 
-layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 2) uniform texture2D radiance_octmap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 3) uniform texture2DArray reflection_atlas;
 
 layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 
@@ -374,6 +428,14 @@ layout(set = 1, binding = 13 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_R
 layout(set = 1, binding = 13 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
 layout(set = 1, binding = 13 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+
+#ifdef TEXTURE_STREAMING
+// Texture streaming material feedback buffer access
+layout(set = 1, binding = 25, std430) buffer restrict MaterialFeedbackBuffer {
+	uint data[];
+}
+material_feedback;
+#endif
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

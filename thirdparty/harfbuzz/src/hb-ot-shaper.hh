@@ -396,6 +396,17 @@ hb_ot_shaper_categorize (hb_script_t script,
     case HB_SCRIPT_TODHRI:
     case HB_SCRIPT_TULU_TIGALARI:
 
+    /* Unicode-17.0 additions */
+    case HB_SCRIPT_BERIA_ERFE:
+    case HB_SCRIPT_SIDETIC:
+    case HB_SCRIPT_TAI_YO:
+    case HB_SCRIPT_TOLONG_SIKI:
+
+    /* Unicode-18.0 additions */
+    case HB_SCRIPT_JURCHEN:
+    case HB_SCRIPT_PROTO_CUNEIFORM:
+    case HB_SCRIPT_SEAL:
+
       /* If the designer designed the font for the 'DFLT' script,
        * (or we ended up arbitrarily pick 'latn'), use the default shaper.
        * Otherwise, use the specific shaper.

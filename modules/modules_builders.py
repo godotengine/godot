@@ -15,24 +15,20 @@ def modules_enabled_builder(target, source, env):
 def register_module_types_builder(target, source, env):
     modules = source[0].read()
     mod_inc = "\n".join([f'#include "{value}/register_types.h"' for value in modules.values()])
-    mod_init = "\n".join(
-        [
-            f"""\
+    mod_init = "\n".join([
+        f"""\
 #ifdef MODULE_{key.upper()}_ENABLED
 	initialize_{key}_module(p_level);
 #endif"""
-            for key in modules.keys()
-        ]
-    )
-    mod_uninit = "\n".join(
-        [
-            f"""\
+        for key in modules.keys()
+    ])
+    mod_uninit = "\n".join([
+        f"""\
 #ifdef MODULE_{key.upper()}_ENABLED
 	uninitialize_{key}_module(p_level);
 #endif"""
-            for key in modules.keys()
-        ]
-    )
+        for key in modules.keys()
+    ])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             f"""\
@@ -40,7 +36,9 @@ def register_module_types_builder(target, source, env):
 
 #include "modules/modules_enabled.gen.h"
 
+// IWYU pragma: begin_keep.
 {mod_inc}
+// IWYU pragma: end_keep.
 
 void initialize_modules(ModuleInitializationLevel p_level) {{
 {mod_init}
@@ -56,5 +54,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 def modules_tests_builder(target, source, env):
     headers = sorted([os.path.relpath(src.path, methods.base_folder).replace("\\", "/") for src in source])
     with methods.generated_wrapper(str(target[0])) as file:
+        file.write("// IWYU pragma: begin_keep.\n")
         for header in headers:
             file.write(f'#include "{header}"\n')
+        file.write("// IWYU pragma: end_keep.\n")

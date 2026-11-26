@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,13 @@
 using tjhandle = void*;
 
 //TODO: Use Task?
-class JpgLoader : public ImageLoader
+struct JpgLoader : BitmapLoader
 {
-public:
     JpgLoader();
     ~JpgLoader();
 
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
+    Result open(const char* path, const LoaderOps& ops) override;
+    Result open(const char* data, uint32_t size, const LoaderOps& ops) override;
     bool read() override;
 
 private:
@@ -43,8 +42,7 @@ private:
 
     tjhandle jpegDecompressor;
     unsigned char* data = nullptr;
-    unsigned long size = 0;
-    bool freeData = false;
+    uint32_t size = 0;
 };
 
 #endif //_TVG_JPG_LOADER_H_

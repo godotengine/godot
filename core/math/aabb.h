@@ -32,6 +32,7 @@
 
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
+#include "core/templates/hashfuncs.h"
 
 /**
  * AABB (Axis Aligned Bounding Box)
@@ -131,12 +132,26 @@ struct [[nodiscard]] AABB {
 		return position + (size * 0.5f);
 	}
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(position.x);
+		h = hash_murmur3_one_real(position.y, h);
+		h = hash_murmur3_one_real(position.z, h);
+		h = hash_murmur3_one_real(size.x, h);
+		h = hash_murmur3_one_real(size.y, h);
+		h = hash_murmur3_one_real(size.z, h);
+		return hash_fmix32(h);
+	}
+
 	explicit operator String() const;
 
 	AABB() = default;
 	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
 			position(p_pos),
 			size(p_size) {
+	}
+	constexpr AABB(real_t p_pos_x, real_t p_pos_y, real_t p_pos_z, real_t p_size_x, real_t p_size_y, real_t p_size_z) :
+			position(p_pos_x, p_pos_y, p_pos_z),
+			size(p_size_x, p_size_y, p_size_z) {
 	}
 };
 
@@ -276,10 +291,10 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 
 	for (int k = 0; k < 3; k++) {
 		for (int i = 0; i < p_point_count; i++) {
-			if (p_points[i].coord[k] > ofs.coord[k] + half_extents.coord[k]) {
+			if (p_points[i][k] > ofs[k] + half_extents[k]) {
 				bad_point_counts_positive[k]++;
 			}
-			if (p_points[i].coord[k] < ofs.coord[k] - half_extents.coord[k]) {
+			if (p_points[i][k] < ofs[k] - half_extents[k]) {
 				bad_point_counts_negative[k]++;
 			}
 		}

@@ -40,11 +40,11 @@ bool godot_api_cache_updated = false;
 void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	int checked_count = 0;
 
-#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
-	{                                                                                      \
-		ERR_FAIL_NULL_MSG(m_var,                                                           \
+#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) \
+	{ \
+		ERR_FAIL_NULL_MSG(m_var, \
 				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
-		checked_count += 1;                                                                \
+		checked_count += 1; \
 	}
 
 #define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)
@@ -63,19 +63,25 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetGlobalClassName);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SetGodotObjectPtr);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignalViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetOrCreateScriptBridgeForPath);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, TryReloadRegisteredScriptWithClass);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptTrampolines);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyDefaultValues);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CallStatic);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CallStaticWithTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallViaTrampoline);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SetViaTrampoline);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, GetViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);

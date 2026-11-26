@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,63 +20,38 @@
  * SOFTWARE.
  */
 
-#include <fstream>
-#include <string.h>
 #include "tvgLoader.h"
 #include "tvgRawLoader.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
-
-
-/************************************************************************/
-/* External Class Implementation                                        */
-/************************************************************************/
-
-RawLoader::RawLoader() : ImageLoader(FileType::Raw)
-{
-}
-
-
 RawLoader::~RawLoader()
 {
-    if (copy) free(surface.buf32);
+    if (owner != Ownership::Borrow) tvg::free(surface.buf32);
 }
 
-
-bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
+bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, Ownership owner)
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (!data || w == 0 || h == 0) return false;
 
     this->w = (float)w;
     this->h = (float)h;
-    this->copy = copy;
+    this->owner = owner;
 
-    if (copy) {
-        surface.buf32 = (uint32_t*)malloc(sizeof(uint32_t) * w * h);
-        if (!surface.buf32) return false;
+    if (owner == Ownership::Copy) {
+        surface.buf32 = tvg::malloc<uint32_t>(sizeof(uint32_t) * w * h);
         memcpy((void*)surface.buf32, data, sizeof(uint32_t) * w * h);
+    } else {
+        surface.buf32 = const_cast<uint32_t*>(data);
     }
-    else surface.buf32 = const_cast<uint32_t*>(data);
 
-    //setup the surface
-    surface.stride = w;
-    surface.w = w;
-    surface.h = h;
-    surface.cs = ColorSpace::ARGB8888;
-    surface.channelSize = sizeof(uint32_t);
-    surface.premultiplied = true;
-
+    surface.setup(surface.buf32, w, w, h, sizeof(uint32_t), cs);
     return true;
 }
 
-
 bool RawLoader::read()
 {
-    LoadModule::read();
+    Loader::read();
 
     return true;
 }

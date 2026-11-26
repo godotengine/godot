@@ -17,34 +17,33 @@
  *  [SIRO] https://cabforum.org/wp-content/uploads/Chunghwatelecom201503cabforumV4.pdf
  */
 
-#include "common.h"
+#include "x509_internal.h"
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 
 #include "mbedtls/x509_crt.h"
-#include "x509_internal.h"
 #include "mbedtls/error.h"
 #include "mbedtls/oid.h"
+#include "x509_oid.h"
 #include "mbedtls/platform_util.h"
 
+#include <limits.h>
 #include <string.h>
 
 #if defined(MBEDTLS_PEM_PARSE_C)
 #include "mbedtls/pem.h"
 #endif
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
 #include "psa/crypto.h"
-#include "psa_util_internal.h"
 #include "mbedtls/psa_util.h"
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
-#include "pk_internal.h"
 
 #include "mbedtls/platform.h"
 
 #if defined(MBEDTLS_THREADING_C)
 #include "mbedtls/threading.h"
 #endif
+
+#include "mbedtls_utils.h"
 
 #if defined(MBEDTLS_HAVE_TIME)
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
@@ -88,13 +87,15 @@ typedef struct {
  * concerns. */
 const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default =
 {
-    /* Hashes from SHA-256 and above. Note that this selection
-     * should be aligned with ssl_preset_default_hashes in ssl_tls.c. */
+    /* Hashes from SHA-256 and above. */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA256) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA384) |
-    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512),
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_256) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_384) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_512),
     0xFFFFFFF, /* Any PK alg    */
-#if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+#if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     /* Curves at or above 128-bit security level. Note that this selection
      * should be aligned with ssl_preset_default_curves in ssl_tls.c. */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP256R1) |
@@ -104,9 +105,9 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default =
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_BP384R1) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_BP512R1) |
     0,
-#else /* MBEDTLS_PK_HAVE_ECC_KEYS */
+#else /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
     0,
-#endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+#endif /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
     2048,
 };
 
@@ -119,7 +120,7 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_next =
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA384) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512),
     0xFFFFFFF, /* Any PK alg    */
-#if defined(MBEDTLS_ECP_C)
+#if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     /* Curves at or above 128-bit security level. */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP256R1) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP384R1) |
@@ -145,13 +146,13 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_suiteb =
     /* Only ECDSA */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_PK_ECDSA) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_PK_ECKEY),
-#if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+#if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     /* Only NIST P-256 and P-384 */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP256R1) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP384R1),
-#else /* MBEDTLS_PK_HAVE_ECC_KEYS */
+#else /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
     0,
-#endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+#endif /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
     0,
 };
 
@@ -166,12 +167,8 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none =
     (uint32_t) -1,
 };
 
-/*
- * Check md_alg against profile
- * Return 0 if md_alg is acceptable for this profile, -1 otherwise
- */
-static int x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
-                                     mbedtls_md_type_t md_alg)
+int mbedtls_x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
+                                      mbedtls_md_type_t md_alg)
 {
     if (md_alg == MBEDTLS_MD_NONE) {
         return -1;
@@ -184,14 +181,10 @@ static int x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
     return -1;
 }
 
-/*
- * Check pk_alg against profile
- * Return 0 if pk_alg is acceptable for this profile, -1 otherwise
- */
-static int x509_profile_check_pk_alg(const mbedtls_x509_crt_profile *profile,
-                                     mbedtls_pk_type_t pk_alg)
+int mbedtls_x509_profile_check_pk_alg(const mbedtls_x509_crt_profile *profile,
+                                      mbedtls_pk_sigalg_t pk_alg)
 {
-    if (pk_alg == MBEDTLS_PK_NONE) {
+    if (pk_alg == MBEDTLS_PK_SIGALG_NONE) {
         return -1;
     }
 
@@ -211,7 +204,7 @@ static int x509_profile_check_key(const mbedtls_x509_crt_profile *profile,
 {
     const mbedtls_pk_type_t pk_alg = mbedtls_pk_get_type(pk);
 
-#if defined(MBEDTLS_RSA_C)
+#if defined(PSA_WANT_KEY_TYPE_RSA_KEY_PAIR_BASIC)
     if (pk_alg == MBEDTLS_PK_RSA || pk_alg == MBEDTLS_PK_RSASSA_PSS) {
         if (mbedtls_pk_get_bitlen(pk) >= profile->rsa_min_bitlen) {
             return 0;
@@ -219,9 +212,9 @@ static int x509_profile_check_key(const mbedtls_x509_crt_profile *profile,
 
         return -1;
     }
-#endif /* MBEDTLS_RSA_C */
+#endif /* PSA_WANT_KEY_TYPE_RSA_KEY_PAIR_BASIC */
 
-#if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+#if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     if (pk_alg == MBEDTLS_PK_ECDSA ||
         pk_alg == MBEDTLS_PK_ECKEY ||
         pk_alg == MBEDTLS_PK_ECKEY_DH) {
@@ -237,7 +230,7 @@ static int x509_profile_check_key(const mbedtls_x509_crt_profile *profile,
 
         return -1;
     }
-#endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+#endif /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
 
     return -1;
 }
@@ -272,17 +265,22 @@ static int x509_memcasecmp(const void *s1, const void *s2, size_t len)
 
 /*
  * Return 0 if name matches wildcard, -1 otherwise
+ *
+ * Follow RFC 9525: the wildcard can only be the entirety of the leftmost label.
+ * (Note: RFC 6125 was more lenient, but too complex for our own good.)
  */
-static int x509_check_wildcard(const char *cn, const mbedtls_x509_buf *name)
+static int x509_check_dns_wildcard(const char *cn, size_t cn_len,
+                                   const mbedtls_x509_buf *name)
 {
     size_t i;
-    size_t cn_idx = 0, cn_len = strlen(cn);
+    size_t cn_idx = 0;
 
     /* We can't have a match if there is no wildcard to match */
     if (name->len < 3 || name->p[0] != '*' || name->p[1] != '.') {
         return -1;
     }
 
+    /* Find the first dot. This ensures the wildcard only matches one label. */
     for (i = 0; i < cn_len; ++i) {
         if (cn[i] == '.') {
             cn_idx = i;
@@ -513,22 +511,35 @@ static int x509_get_basic_constraints(unsigned char **p,
     }
 
     if (*p == end) {
+        /* Empty basicConstraints: valid, not a CA. */
         return 0;
     }
 
-    if ((ret = mbedtls_asn1_get_bool(p, end, ca_istrue)) != 0) {
-        if (ret == MBEDTLS_ERR_ASN1_UNEXPECTED_TAG) {
-            ret = mbedtls_asn1_get_int(p, end, ca_istrue);
-        }
+    if ((size_t) (end - *p) != len) {
+        /* Reject junk after the SEQUENCE inside the extension (which is
+         * probably benign), and reject a SEQUENCE that extends beyond
+         * the extension (could be very dangerous). */
+        return MBEDTLS_ERR_X509_INVALID_EXTENSIONS;
+    }
 
-        if (ret != 0) {
+    if ((ret = mbedtls_asn1_get_bool(p, end, ca_istrue)) != 0) {
+        /* cA is DEFAULT FALSE. If it is absent, the first element must
+         * be pathLenConstraint. Keep cA false and let the INTEGER parser
+         * below validate the element.
+         *
+         * Note: historically, from XySSL 0.9 to Mbed TLS 3.6.6/4.1.0,
+         * `SEQUENCE { INTEGER n }` was interpreted as cA=FALSE if n == 0
+         * and cA=TRUE if n != 0. This was dangerous since
+         * `SEQUENCE { INTEGER n }` should be parsed as cA=FALSE
+         * according to RFC 5280.
+         */
+        if (ret != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG) {
             return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
         }
-
-        if (*ca_istrue != 0) {
-            *ca_istrue = 1;
-        }
     }
+    /* `SEQUENCE { BOOLEAN FALSE }` is not DER since default-value fields
+     * must be omitted in DER. But it seems harmless, and Mbed TLS has
+     * always accepted it, so we continue to accept it. */
 
     if (*p == end) {
         return 0;
@@ -634,6 +645,11 @@ static int x509_get_authority_key_id(unsigned char **p,
                                  MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
+    /* All fields are OPTIONAL, so an empty SEQUENCE is valid. */
+    if (*p == end) {
+        return 0;
+    }
+
     ret = mbedtls_asn1_get_tag(p, end, &len,
                                MBEDTLS_ASN1_CONTEXT_SPECIFIC);
 
@@ -680,8 +696,8 @@ static int x509_get_authority_key_id(unsigned char **p,
     }
 
     if (*p != end) {
-        return MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
-               MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                 MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     return 0;
@@ -929,7 +945,7 @@ static int x509_get_crt_ext(unsigned char **p,
         /*
          * Detect supported extensions
          */
-        ret = mbedtls_oid_get_x509_ext_type(&extn_oid, &ext_type);
+        ret = mbedtls_x509_oid_get_x509_ext_type(&extn_oid, &ext_type);
 
         if (ret != 0) {
             /* Give the callback (if any) a chance to handle the extension */
@@ -1018,7 +1034,7 @@ static int x509_get_crt_ext(unsigned char **p,
                 }
                 break;
 
-            case MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES:
+            case MBEDTLS_X509_EXT_CERTIFICATE_POLICIES:
                 /* Parse certificate policies type */
                 if ((ret = x509_get_certificate_policies(p, end_ext_octet,
                                                          &crt->certificate_policies)) != 0) {
@@ -1166,8 +1182,7 @@ static int x509_crt_parse_der_core(mbedtls_x509_crt *crt,
     crt->version++;
 
     if ((ret = mbedtls_x509_get_sig_alg(&crt->sig_oid, &sig_params1,
-                                        &crt->sig_md, &crt->sig_pk,
-                                        &crt->sig_opts)) != 0) {
+                                        &crt->sig_md, &crt->sig_pk)) != 0) {
         mbedtls_x509_crt_free(crt);
         return ret;
     }
@@ -1696,7 +1711,7 @@ static int x509_info_ext_key_usage(char **buf, size_t *size,
     const char *sep = "";
 
     while (cur != NULL) {
-        if (mbedtls_oid_get_extended_key_usage(&cur->buf, &desc) != 0) {
+        if (mbedtls_x509_oid_get_extended_key_usage(&cur->buf, &desc) != 0) {
             desc = "???";
         }
 
@@ -1725,7 +1740,7 @@ static int x509_info_cert_policies(char **buf, size_t *size,
     const char *sep = "";
 
     while (cur != NULL) {
-        if (mbedtls_oid_get_certificate_policies(&cur->buf, &desc) != 0) {
+        if (mbedtls_x509_oid_get_certificate_policies(&cur->buf, &desc) != 0) {
             desc = "???";
         }
 
@@ -1746,15 +1761,15 @@ static int x509_info_cert_policies(char **buf, size_t *size,
 /*
  * Return an informational string about the certificate.
  */
-#define BEFORE_COLON    18
-#define BC              "18"
+#define MBEDTLS_BEFORE_COLON        18
+#define MBEDTLS_BEFORE_COLON_STR    "18"
 int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
                           const mbedtls_x509_crt *crt)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t n;
     char *p;
-    char key_size_str[BEFORE_COLON];
+    char key_size_str[MBEDTLS_BEFORE_COLON];
 
     p = buf;
     n = size;
@@ -1803,18 +1818,17 @@ int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
     ret = mbedtls_snprintf(p, n, "\n%ssigned using      : ", prefix);
     MBEDTLS_X509_SAFE_SNPRINTF;
 
-    ret = mbedtls_x509_sig_alg_gets(p, n, &crt->sig_oid, crt->sig_pk,
-                                    crt->sig_md, crt->sig_opts);
+    ret = mbedtls_x509_sig_alg_gets(p, n, &crt->sig_oid, crt->sig_pk, crt->sig_md);
     MBEDTLS_X509_SAFE_SNPRINTF;
 
     /* Key size */
-    if ((ret = mbedtls_x509_key_size_helper(key_size_str, BEFORE_COLON,
-                                            mbedtls_pk_get_name(&crt->pk))) != 0) {
+    if ((ret = mbedtls_x509_key_size_helper(key_size_str, MBEDTLS_BEFORE_COLON,
+                                            mbedtls_x509_pk_type_as_string(&crt->pk))) != 0) {
         return ret;
     }
 
-    ret = mbedtls_snprintf(p, n, "\n%s%-" BC "s: %d bits", prefix, key_size_str,
-                           (int) mbedtls_pk_get_bitlen(&crt->pk));
+    ret = mbedtls_snprintf(p, n, "\n%s%-" MBEDTLS_BEFORE_COLON_STR "s: %d bits",
+                           prefix, key_size_str, (int) mbedtls_pk_get_bitlen(&crt->pk));
     MBEDTLS_X509_SAFE_SNPRINTF;
 
     /*
@@ -1871,7 +1885,7 @@ int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
         }
     }
 
-    if (crt->ext_types & MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES) {
+    if (crt->ext_types & MBEDTLS_X509_EXT_CERTIFICATE_POLICIES) {
         ret = mbedtls_snprintf(p, n, "\n%scertificate policies : ", prefix);
         MBEDTLS_X509_SAFE_SNPRINTF;
 
@@ -2014,11 +2028,7 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
 {
     int flags = 0;
     unsigned char hash[MBEDTLS_MD_MAX_SIZE];
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
     psa_algorithm_t psa_algorithm;
-#else
-    const mbedtls_md_info_t *md_info;
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
     size_t hash_length;
 
     if (ca == NULL) {
@@ -2044,15 +2054,14 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
         /*
          * Check if CRL is correctly signed by the trusted CA
          */
-        if (x509_profile_check_md_alg(profile, crl_list->sig_md) != 0) {
+        if (mbedtls_x509_profile_check_md_alg(profile, crl_list->sig_md) != 0) {
             flags |= MBEDTLS_X509_BADCRL_BAD_MD;
         }
 
-        if (x509_profile_check_pk_alg(profile, crl_list->sig_pk) != 0) {
+        if (mbedtls_x509_profile_check_pk_alg(profile, crl_list->sig_pk) != 0) {
             flags |= MBEDTLS_X509_BADCRL_BAD_PK;
         }
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
         psa_algorithm = mbedtls_md_psa_alg_from_type(crl_list->sig_md);
         if (psa_hash_compute(psa_algorithm,
                              crl_list->tbs.p,
@@ -2064,24 +2073,12 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
             flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
             break;
         }
-#else
-        md_info = mbedtls_md_info_from_type(crl_list->sig_md);
-        hash_length = mbedtls_md_get_size(md_info);
-        if (mbedtls_md(md_info,
-                       crl_list->tbs.p,
-                       crl_list->tbs.len,
-                       hash) != 0) {
-            /* Note: this can't happen except after an internal error */
-            flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
-            break;
-        }
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
         if (x509_profile_check_key(profile, &ca->pk) != 0) {
             flags |= MBEDTLS_X509_BADCERT_BAD_KEY;
         }
 
-        if (mbedtls_pk_verify_ext(crl_list->sig_pk, crl_list->sig_opts, &ca->pk,
+        if (mbedtls_pk_verify_ext(crl_list->sig_pk, &ca->pk,
                                   crl_list->sig_md, hash, hash_length,
                                   crl_list->sig.p, crl_list->sig.len) != 0) {
             flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
@@ -2127,18 +2124,15 @@ static int x509_crt_check_signature(const mbedtls_x509_crt *child,
 {
     size_t hash_len;
     unsigned char hash[MBEDTLS_MD_MAX_SIZE];
-#if !defined(MBEDTLS_USE_PSA_CRYPTO)
-    const mbedtls_md_info_t *md_info;
-    md_info = mbedtls_md_info_from_type(child->sig_md);
-    hash_len = mbedtls_md_get_size(md_info);
-
-    /* Note: hash errors can happen only after an internal error */
-    if (mbedtls_md(md_info, child->tbs.p, child->tbs.len, hash) != 0) {
-        return -1;
-    }
-#else
     psa_algorithm_t hash_alg = mbedtls_md_psa_alg_from_type(child->sig_md);
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+
+    /* Skip expensive computation on obvious mismatch */
+    if (!mbedtls_pk_can_do_psa(&parent->pk,
+                               mbedtls_psa_alg_from_pk_sigalg(child->sig_pk, hash_alg),
+                               PSA_KEY_USAGE_VERIFY_HASH)) {
+        return -1;
+    }
 
     status = psa_hash_compute(hash_alg,
                               child->tbs.p,
@@ -2150,14 +2144,8 @@ static int x509_crt_check_signature(const mbedtls_x509_crt *child,
         return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
     }
 
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
-    /* Skip expensive computation on obvious mismatch */
-    if (!mbedtls_pk_can_do(&parent->pk, child->sig_pk)) {
-        return -1;
-    }
-
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
-    if (rs_ctx != NULL && child->sig_pk == MBEDTLS_PK_ECDSA) {
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+    if (rs_ctx != NULL && child->sig_pk == MBEDTLS_PK_SIGALG_ECDSA) {
         return mbedtls_pk_verify_restartable(&parent->pk,
                                              child->sig_md, hash, hash_len,
                                              child->sig.p, child->sig.len, &rs_ctx->pk);
@@ -2166,7 +2154,7 @@ static int x509_crt_check_signature(const mbedtls_x509_crt *child,
     (void) rs_ctx;
 #endif
 
-    return mbedtls_pk_verify_ext(child->sig_pk, child->sig_opts, &parent->pk,
+    return mbedtls_pk_verify_ext(child->sig_pk, &parent->pk,
                                  child->sig_md, hash, hash_len,
                                  child->sig.p, child->sig.len);
 }
@@ -2266,7 +2254,7 @@ static int x509_crt_find_parent_in(
     mbedtls_x509_crt *parent, *fallback_parent;
     int signature_is_good = 0, fallback_signature_is_good;
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
     /* did we have something in progress? */
     if (rs_ctx != NULL && rs_ctx->parent != NULL) {
         /* restore saved state */
@@ -2300,12 +2288,12 @@ static int x509_crt_find_parent_in(
         }
 
         /* Signature */
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
 check_signature:
 #endif
         ret = x509_crt_check_signature(child, parent, rs_ctx);
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
             /* save state */
             rs_ctx->parent = parent;
@@ -2390,7 +2378,7 @@ static int x509_crt_find_parent(
 
     *parent_is_trusted = 1;
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
     /* restore then clear saved state if we have some stored */
     if (rs_ctx != NULL && rs_ctx->parent_is_trusted != -1) {
         *parent_is_trusted = rs_ctx->parent_is_trusted;
@@ -2406,7 +2394,7 @@ static int x509_crt_find_parent(
                                       *parent_is_trusted,
                                       path_cnt, self_cnt, rs_ctx, now);
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
             /* save state */
             rs_ctx->parent_is_trusted = *parent_is_trusted;
@@ -2533,7 +2521,7 @@ static int x509_crt_verify_chain(
     }
 #endif
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
     /* resume if we had an operation in progress */
     if (rs_ctx != NULL && rs_ctx->in_progress == x509_crt_rs_find_parent) {
         /* restore saved state */
@@ -2547,7 +2535,7 @@ static int x509_crt_verify_chain(
 
         goto find_parent;
     }
-#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+#endif /* MBEDTLS_ECP_RESTARTABLE */
 
     child = crt;
     self_cnt = 0;
@@ -2579,11 +2567,11 @@ static int x509_crt_verify_chain(
         }
 
         /* Check signature algorithm: MD & PK algs */
-        if (x509_profile_check_md_alg(profile, child->sig_md) != 0) {
+        if (mbedtls_x509_profile_check_md_alg(profile, child->sig_md) != 0) {
             *flags |= MBEDTLS_X509_BADCERT_BAD_MD;
         }
 
-        if (x509_profile_check_pk_alg(profile, child->sig_pk) != 0) {
+        if (mbedtls_x509_profile_check_pk_alg(profile, child->sig_pk) != 0) {
             *flags |= MBEDTLS_X509_BADCERT_BAD_PK;
         }
 
@@ -2593,7 +2581,7 @@ static int x509_crt_verify_chain(
             return 0;
         }
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
 find_parent:
 #endif
 
@@ -2625,7 +2613,7 @@ find_parent:
                                    ver_chain->len - 1, self_cnt, rs_ctx,
                                    &now);
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
             /* save state */
             rs_ctx->in_progress = x509_crt_rs_find_parent;
@@ -2748,22 +2736,25 @@ static int x509_inet_pton_ipv6(const char *src, void *dst)
             if (*p == '\0') {
                 break;
             } else if (*p == '.') {
-                /* Don't accept IPv4 too early or late */
-                if ((nonzero_groups == 0 && zero_group_start == -1) ||
+                /* Don't accept IPv4 too early or late:
+                 * - The first 6 nonzero groups must be 16 bit pieces of address delimited by ':'
+                 * - This might be fully or partially represented with compressed syntax (a zero
+                 *   group "::")
+                 */
+                if ((nonzero_groups < 6 && zero_group_start == -1) ||
                     nonzero_groups >= 7) {
                     break;
                 }
 
-                /* Walk back to prior ':', then parse as IPv4-mapped */
-                int steps = 4;
+                /* Walk back to prior ':', then parse as IPv4-mapped.
+                 * At this point nonzero_groups == 6 or zero_group_start >= 0. Either way we have a
+                 * ':' before the current position and still inside the buffer. Thus it is safe to
+                 * search back for that ':' without any further checks.
+                 */
                 do {
                     p--;
-                    steps--;
-                } while (*p != ':' && steps > 0);
+                } while (*p != ':');
 
-                if (*p != ':') {
-                    break;
-                }
                 p++;
                 nonzero_groups--;
                 if (x509_inet_pton_ipv4((const char *) p,
@@ -2882,56 +2873,20 @@ size_t mbedtls_x509_crt_parse_cn_inet_pton(const char *cn, void *dst)
 }
 
 /*
- * Check for CN match
+ * Check for DNS hostname match
  */
-static int x509_crt_check_cn(const mbedtls_x509_buf *name,
-                             const char *cn, size_t cn_len)
+static int x509_crt_check_dns_name(const mbedtls_x509_buf *name,
+                                   const char *cn, size_t cn_len)
 {
-    /* try exact match */
+    /* try exact match, case-insensitive (RFC 6125 or 9525) */
     if (name->len == cn_len &&
         x509_memcasecmp(cn, name->p, cn_len) == 0) {
         return 0;
     }
 
     /* try wildcard match */
-    if (x509_check_wildcard(cn, name) == 0) {
+    if (x509_check_dns_wildcard(cn, cn_len, name) == 0) {
         return 0;
-    }
-
-    return -1;
-}
-
-static int x509_crt_check_san_ip(const mbedtls_x509_sequence *san,
-                                 const char *cn, size_t cn_len)
-{
-    uint32_t ip[4];
-    cn_len = mbedtls_x509_crt_parse_cn_inet_pton(cn, ip);
-    if (cn_len == 0) {
-        return -1;
-    }
-
-    for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        const unsigned char san_type = (unsigned char) cur->buf.tag &
-                                       MBEDTLS_ASN1_TAG_VALUE_MASK;
-        if (san_type == MBEDTLS_X509_SAN_IP_ADDRESS &&
-            cur->buf.len == cn_len && memcmp(cur->buf.p, ip, cn_len) == 0) {
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
-static int x509_crt_check_san_uri(const mbedtls_x509_sequence *san,
-                                  const char *cn, size_t cn_len)
-{
-    for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        const unsigned char san_type = (unsigned char) cur->buf.tag &
-                                       MBEDTLS_ASN1_TAG_VALUE_MASK;
-        if (san_type == MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER &&
-            cur->buf.len == cn_len && memcmp(cur->buf.p, cn, cn_len) == 0) {
-            return 0;
-        }
     }
 
     return -1;
@@ -2939,43 +2894,155 @@ static int x509_crt_check_san_uri(const mbedtls_x509_sequence *san,
 
 /*
  * Check for SAN match, see RFC 5280 Section 4.2.1.6
+ *
+ * If cn_type is IP, then cn must contain the binary representation of the
+ * address, and cn_len the number of bytes (4 for IPv4, 16 for IPv6).
+ * Otherwise, cn is what was passed by the user.
  */
 static int x509_crt_check_san(const mbedtls_x509_sequence *san,
-                              const char *cn, size_t cn_len)
+                              const char *cn, size_t cn_len, int cn_type)
 {
-    int san_ip = 0;
-    int san_uri = 0;
-    /* Prioritize DNS name over other subtypes due to popularity */
     for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        switch ((unsigned char) cur->buf.tag & MBEDTLS_ASN1_TAG_VALUE_MASK) {
+        /* Only consider SAN entries of the expected type */
+        int san_type = cur->buf.tag & MBEDTLS_ASN1_TAG_VALUE_MASK;
+        if (san_type != cn_type) {
+            continue;
+        }
+
+        /* Check according to type */
+        switch (cn_type) {
             case MBEDTLS_X509_SAN_DNS_NAME:
-                if (x509_crt_check_cn(&cur->buf, cn, cn_len) == 0) {
+                /* DNS: special rules */
+                if (x509_crt_check_dns_name(&cur->buf, cn, cn_len) == 0) {
                     return 0;
                 }
                 break;
             case MBEDTLS_X509_SAN_IP_ADDRESS:
-                san_ip = 1;
-                break;
             case MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER:
-                san_uri = 1;
+                /* IP: exact match according to RFC 9525 */
+                /* URL: exact match for now according to our documentation */
+                if (cur->buf.len == cn_len &&
+                    memcmp(cur->buf.p, cn, cn_len) == 0) {
+                    return 0;
+                }
                 break;
             /* (We may handle other types here later.) */
             default: /* Unrecognized type */
                 break;
         }
     }
-    if (san_ip) {
-        if (x509_crt_check_san_ip(san, cn, cn_len) == 0) {
-            return 0;
-        }
+
+    return -1;
+}
+
+/* Return 1 if the cn superficially looks like a URI, 0 if it doesn't.
+ *
+ * RFC 5280 4.2.1.6 URIs are as specified by RFC 3986, whose App. A says:
+ * URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+ * scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+ *
+ * For now, look for the presence of a colon, and that the scheme is non-empty
+ * and consists only of allowed characters.
+ */
+static int x509_cn_looks_like_uri(const char *cn)
+{
+    const char *end = strchr(cn, ':');
+    if (end == NULL || end == cn) {
+        return 0;
     }
-    if (san_uri) {
-        if (x509_crt_check_san_uri(san, cn, cn_len) == 0) {
+
+    for (const char *p = cn; p < end; p++) {
+        if (!((*p >= 'a' && *p <= 'z') ||
+              (*p >= 'A' && *p <= 'Z') ||
+              (*p >= '0' && *p <= '9') ||
+              *p == '+' || *p == '-' || *p == '.')) {
             return 0;
         }
     }
 
-    return -1;
+    return 1;
+}
+
+/* Return 1 if the cn superficially looks like a DNS, 0 if it doesn't.
+ *
+ * RFC 5280 4.2.1.6 says DNS names are as specified by Section 3.5 of
+ * RFC1034 and as modified by Section 2.1 of RFC1123, in particular they
+ * consist entirely of ASCII letters, digits, hyphen, and dot.
+ *
+ * In compatibility mode (only used in CN matching), also allow:
+ * - underscore as it might be used in private host names;
+ * - non-ASCII as people might not be using Punycode as they should;
+ * and both have always "worked" historically.
+ *
+ * For now, accept any non-empty string that only consists of the allowed
+ * characters.
+ */
+static int x509_cn_looks_like_dns(const char *cn, int compat_mode)
+{
+    if (*cn == '\0') {
+        return 0;
+    }
+
+    for (const char *p = cn; *p != '\0'; p++) {
+        /* ASCII letters, digits, hyphen and dot always acceptable */
+        if ((*p >= 'a' && *p <= 'z') ||
+            (*p >= 'A' && *p <= 'Z') ||
+            (*p >= '0' && *p <= '9') ||
+            *p == '-' || *p == '.') {
+            continue;
+        }
+
+        /* In compat mode, also accept underscore and non-ASCII */
+        if (compat_mode == 1 && (*p == '_' || (unsigned char) *p >= 0x80)) {
+            continue;
+        }
+
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Infer the type of CN (as MBEDTLS_X509_SAN_xxx macro) based on its value.
+ * Currently supported: IP (v4 or v6), URI, DNS (default).
+ *
+ * This takes advantage of the fact that the sets of permissible values for
+ * these types are almost disjoint (except IPv6 and URI intersect slightly,
+ * and there we choose to give IPv6 precedence). (Also, a dotted-quad IPv4 looks
+ * like a DNS name for the level of sanity checking we do, but can't be a valid
+ * FQDN as there is no purely-numeric TLD.)
+ *
+ * If the type is found to be IP, also return the IP as bytes.
+ * Otherwise, the values of ip and ip_len upon return are unspecified.
+ *
+ * Parameters:
+ * cn[in] must be a NUL-terminated string.
+ * ip[out] must point to a 4-byte-aligned 16-byte buffer
+ * iplen[out] must point to a size_t
+ *
+ * Return the type as a MBEDTLS_X509_SAN_XXX value if CN is one of the supported
+ * types, otherwise MBEDTLS_X509_SAN_NONE.
+ */
+static int x509_crt_infer_name_type(const char *cn, void *ip, size_t *ip_len)
+{
+    /* Check IP first, this avoids mistaking an IPv4 address for a DNS name,
+     * and is how we chose to resolve possible IPv6 vs URI ambiguities.
+     * It is also the only format for which we have an actual parser */
+    *ip_len = mbedtls_x509_crt_parse_cn_inet_pton(cn, ip);
+    if (*ip_len != 0) {
+        return MBEDTLS_X509_SAN_IP_ADDRESS;
+    }
+
+    if (x509_cn_looks_like_uri(cn)) {
+        return MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER;
+    }
+
+    if (x509_cn_looks_like_dns(cn, 0)) {
+        return MBEDTLS_X509_SAN_DNS_NAME;
+    }
+
+    return MBEDTLS_X509_SAN_NONE;
 }
 
 /*
@@ -2985,21 +3052,44 @@ static void x509_crt_verify_name(const mbedtls_x509_crt *crt,
                                  const char *cn,
                                  uint32_t *flags)
 {
-    const mbedtls_x509_name *name;
+    /* 16 bytes is enough for both IPv6 and IPv4. We also want the array
+     * 4-byte-aligned as the system's inet_pton() may require it. */
+    uint32_t ip[4];
+    size_t ip_len;
+
+    int name_type = x509_crt_infer_name_type(cn, ip, &ip_len);
     size_t cn_len = strlen(cn);
 
     if (crt->ext_types & MBEDTLS_X509_EXT_SUBJECT_ALT_NAME) {
-        if (x509_crt_check_san(&crt->subject_alt_names, cn, cn_len) == 0) {
+        if (name_type == MBEDTLS_X509_SAN_IP_ADDRESS) {
+            if (x509_crt_check_san(&crt->subject_alt_names,
+                                   (const char *) ip, ip_len, name_type) == 0) {
+                return;
+            }
+        } else if (x509_crt_check_san(&crt->subject_alt_names,
+                                      cn, cn_len, name_type) == 0) {
             return;
         }
-    } else {
+    } else if (name_type == MBEDTLS_X509_SAN_DNS_NAME ||
+               name_type == MBEDTLS_X509_SAN_NONE) {
+        const mbedtls_x509_name *name;
         for (name = &crt->subject; name != NULL; name = name->next) {
-            if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_CN, &name->oid) == 0 &&
-                x509_crt_check_cn(&name->val, cn, cn_len) == 0) {
+            if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_CN, &name->oid) != 0) {
+                continue;
+            }
+
+            /* Legacy path: be more lax in what we match using DNS rules */
+            if (x509_cn_looks_like_dns(cn, 1) &&
+                x509_crt_check_dns_name(&name->val, cn, cn_len) == 0) {
+                return;
+            }
+
+            /* Final compat fallback: exact byte match */
+            if (name->val.len == cn_len &&
+                memcmp(name->val.p, cn, cn_len) == 0) {
                 return;
             }
         }
-
     }
 
     *flags |= MBEDTLS_X509_BADCERT_CN_MISMATCH;
@@ -3088,7 +3178,7 @@ static int x509_crt_verify_restartable_ca_cb(mbedtls_x509_crt *crt,
     /* Check the type and size of the key */
     pk_type = mbedtls_pk_get_type(&crt->pk);
 
-    if (x509_profile_check_pk_alg(profile, pk_type) != 0) {
+    if (mbedtls_x509_profile_check_pk_alg(profile, (mbedtls_pk_sigalg_t) pk_type) != 0) {
         ee_flags |= MBEDTLS_X509_BADCERT_BAD_PK;
     }
 
@@ -3119,7 +3209,7 @@ exit:
     ver_chain.trust_ca_cb_result = NULL;
 #endif /* MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK */
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
     if (rs_ctx != NULL && ret != MBEDTLS_ERR_ECP_IN_PROGRESS) {
         mbedtls_x509_crt_restart_free(rs_ctx);
     }
@@ -3234,10 +3324,6 @@ void mbedtls_x509_crt_free(mbedtls_x509_crt *crt)
     while (cert_cur != NULL) {
         mbedtls_pk_free(&cert_cur->pk);
 
-#if defined(MBEDTLS_X509_RSASSA_PSS_SUPPORT)
-        mbedtls_free(cert_cur->sig_opts);
-#endif
-
         mbedtls_asn1_free_named_data_list_shallow(cert_cur->issuer.next);
         mbedtls_asn1_free_named_data_list_shallow(cert_cur->subject.next);
         mbedtls_asn1_sequence_free(cert_cur->ext_key_usage.next);
@@ -3259,7 +3345,7 @@ void mbedtls_x509_crt_free(mbedtls_x509_crt *crt)
     }
 }
 
-#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+#if defined(MBEDTLS_ECP_RESTARTABLE)
 /*
  * Initialize a restart context
  */
@@ -3290,7 +3376,7 @@ void mbedtls_x509_crt_restart_free(mbedtls_x509_crt_restart_ctx *ctx)
     mbedtls_pk_restart_free(&ctx->pk);
     mbedtls_x509_crt_restart_init(ctx);
 }
-#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+#endif /* MBEDTLS_ECP_RESTARTABLE */
 
 int mbedtls_x509_crt_get_ca_istrue(const mbedtls_x509_crt *crt)
 {

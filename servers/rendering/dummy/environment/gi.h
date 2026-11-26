@@ -30,6 +30,10 @@
 
 #pragma once
 
+#include "core/math/aabb.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3i.h"
+#include "core/templates/rid.h"
 #include "servers/rendering/environment/renderer_gi.h"
 
 namespace RendererDummy {

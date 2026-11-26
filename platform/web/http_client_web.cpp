@@ -30,6 +30,12 @@
 
 #include "http_client_web.h"
 
+#include "core/object/class_db.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/config/engine.h"
+#endif
+
 void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_ref) {
 	HTTPClientWeb *client = static_cast<HTTPClientWeb *>(p_ref);
 	for (int i = 0; i < p_len; i++) {
@@ -87,10 +93,7 @@ Error HTTPClientWeb::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
-	Error err = verify_headers(p_headers);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(verify_headers(p_headers));
 
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	Vector<CharString> keeper;

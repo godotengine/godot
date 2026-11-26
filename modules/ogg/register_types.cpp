@@ -32,6 +32,8 @@
 
 #include "ogg_packet_sequence.h"
 
+#include "core/object/class_db.h"
+
 void initialize_ogg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;

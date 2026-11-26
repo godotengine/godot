@@ -70,6 +70,6 @@ public:
 	static Ref<GLTFCamera> from_node(const Camera3D *p_camera);
 	Camera3D *to_node() const;
 
-	static Ref<GLTFCamera> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFCamera> from_dictionary(const Dictionary &p_dictionary);
 	virtual Dictionary to_dictionary() const;
 };

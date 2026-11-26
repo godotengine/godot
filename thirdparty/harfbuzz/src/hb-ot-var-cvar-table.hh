@@ -66,7 +66,7 @@ struct cvar
     if (!TupleVariationData<>::get_tuple_iterator (var_data_bytes, axis_count, this,
                                                  shared_indices, &iterator))
       return false;
-    
+
     return tupleVariationData.decompile_tuple_variations (point_count, is_gvar, iterator,
                                                           axes_old_index_tag_map,
                                                           shared_indices,
@@ -79,12 +79,12 @@ struct cvar
                                     unsigned num_cvt_item,
                                     const TupleVariationData<> *tuple_var_data,
                                     const void *base,
+                                    unsigned var_data_length,
                                     hb_vector_t<float>& cvt_deltas /* OUT */)
   {
     if (!coords) return true;
     hb_vector_t<unsigned> shared_indices;
     TupleVariationData<>::tuple_iterator_t iterator;
-    unsigned var_data_length = tuple_var_data->get_size (axis_count);
     hb_bytes_t var_data_bytes = hb_bytes_t (reinterpret_cast<const char*> (tuple_var_data), var_data_length);
     if (!TupleVariationData<>::get_tuple_iterator (var_data_bytes, axis_count, base,
                                                  shared_indices, &iterator))
@@ -113,7 +113,7 @@ struct cvar
 
       bool apply_to_all = (indices.length == 0);
       unsigned num_deltas = apply_to_all ? num_cvt_item : indices.length;
-      if (unlikely (!unpacked_deltas.resize (num_deltas, false))) return false;
+      if (unlikely (!unpacked_deltas.resize_dirty  (num_deltas))) return false;
       if (unlikely (!TupleVariationData<>::decompile_deltas (p, unpacked_deltas, end))) return false;
 
       for (unsigned int i = 0; i < num_deltas; i++)
@@ -158,7 +158,8 @@ struct cvar
                                      tuple_variations))
       return_trace (false);
 
-    if (!tuple_variations.instantiate (c->plan->axes_location, c->plan->axes_triple_distances))
+    optimize_scratch_t scratch;
+    if (!tuple_variations.instantiate (c->plan->axes_location, c->plan->axes_triple_distances, scratch))
       return_trace (false);
 
     if (!tuple_variations.compile_bytes (c->plan->axes_index_map, c->plan->axes_old_index_tag_map,
@@ -190,8 +191,17 @@ struct cvar
       return false;
     }
 
+    /* Bound the tuple variation data by the actual cvar table length rather
+     * than trusting tupleVarCount to walk the headers; an inflated count would
+     * otherwise run get_size() off the end of the table. */
+    hb_blob_t *cvar_blob = hb_face_reference_table (plan->source, cvar::tableTag);
+    unsigned cvar_length = hb_blob_get_length (cvar_blob);
+    hb_blob_destroy (cvar_blob);
+    unsigned var_data_offset = (unsigned) ((const char *) tuple_var_data - (const char *) base);
+    unsigned var_data_length = var_data_offset < cvar_length ? cvar_length - var_data_offset : 0;
+
     if (!calculate_cvt_deltas (plan->normalized_coords.length, plan->normalized_coords.as_array (),
-                               num_cvt_item, tuple_var_data, base, cvt_deltas))
+                               num_cvt_item, tuple_var_data, base, var_data_length, cvt_deltas))
     {
       hb_blob_destroy (cvt_prime_blob);
       return false;

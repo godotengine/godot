@@ -30,6 +30,11 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
+#include "core/io/file_access.h"
+#include "core/object/class_db.h"
+#include "core/templates/rb_map.h"
+#include "servers/audio/audio_server.h"
+
 #include <ogg/ogg.h>
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
@@ -424,10 +429,6 @@ Ref<AudioStreamPlayback> AudioStreamOggVorbis::instantiate_playback() {
 	return nullptr;
 }
 
-String AudioStreamOggVorbis::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
 void AudioStreamOggVorbis::maybe_update_info() {
 	ERR_FAIL_COND(packet_sequence.is_null());
 
@@ -457,14 +458,19 @@ void AudioStreamOggVorbis::maybe_update_info() {
 	}
 
 	Dictionary dictionary;
+	// Comments are required by the Vorbis spec to be structured like env vars, i.e. VAR=VALUE.
+	// This is how tags are stored (artist, album, etc.), and we parse them out for display.
+	// See https://xiph.org/vorbis/doc/v-comment.html
 	for (int i = 0; i < comment.comments; i++) {
 		String c = String::utf8(comment.user_comments[i]);
 		int equals = c.find_char('=');
 
+#ifdef TOOLS_ENABLED
 		if (equals == -1) {
 			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
 			continue;
 		}
+#endif
 
 		String tag = c.substr(0, equals);
 		String tag_value = c.substr(equals + 1);
@@ -558,13 +564,13 @@ void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
 }
 
 Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
+	const int mix_rate = AudioServer::get_singleton()->get_mix_rate();
 	Ref<AudioSample> sample;
 	sample.instantiate();
 	sample->stream = this;
-	sample->loop_mode = loop
-			? AudioSample::LoopMode::LOOP_FORWARD
-			: AudioSample::LoopMode::LOOP_DISABLED;
-	sample->loop_begin = loop_offset;
+	sample->loop_mode = loop ? AudioSample::LoopMode::LOOP_FORWARD : AudioSample::LoopMode::LOOP_DISABLED;
+	sample->sample_rate = mix_rate;
+	sample->loop_begin = Math::round(loop_offset * mix_rate);
 	sample->loop_end = 0;
 	return sample;
 }
@@ -728,7 +734,3 @@ void AudioStreamOggVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
-
-AudioStreamOggVorbis::AudioStreamOggVorbis() {}
-
-AudioStreamOggVorbis::~AudioStreamOggVorbis() {}

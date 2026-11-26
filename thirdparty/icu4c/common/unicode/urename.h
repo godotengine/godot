@@ -33,8 +33,9 @@
 
 #if !U_DISABLE_RENAMING
 
-// Disable Renaming for Visual Studio's IntelliSense feature, so that 'Go-to-Definition' (F12) will work.
-#if !(defined(_MSC_VER) && defined(__INTELLISENSE__))
+// Disable Renaming for Visual Studio's IntelliSense feature and for LLVM's Clang-Tidy tool, so that
+// 'Go-to-Definition' (F12) and 'include-cleaner' respectively will work.
+#if !(defined(_MSC_VER) && defined(__INTELLISENSE__)) && !defined(__clang_analyzer__)
 
 /* We need the U_ICU_ENTRY_POINT_RENAME definition. There's a default one in unicode/uvernum.h we can use, but we will give
    the platform a chance to define it first.
@@ -449,6 +450,7 @@
 #define ubidi_getLogicalIndex U_ICU_ENTRY_POINT_RENAME(ubidi_getLogicalIndex)
 #define ubidi_getLogicalMap U_ICU_ENTRY_POINT_RENAME(ubidi_getLogicalMap)
 #define ubidi_getLogicalRun U_ICU_ENTRY_POINT_RENAME(ubidi_getLogicalRun)
+#define ubidi_getMFOption U_ICU_ENTRY_POINT_RENAME(ubidi_getMFOption)
 #define ubidi_getMaxValue U_ICU_ENTRY_POINT_RENAME(ubidi_getMaxValue)
 #define ubidi_getMemory U_ICU_ENTRY_POINT_RENAME(ubidi_getMemory)
 #define ubidi_getMirror U_ICU_ENTRY_POINT_RENAME(ubidi_getMirror)
@@ -473,6 +475,7 @@
 #define ubidi_isJoinControl U_ICU_ENTRY_POINT_RENAME(ubidi_isJoinControl)
 #define ubidi_isMirrored U_ICU_ENTRY_POINT_RENAME(ubidi_isMirrored)
 #define ubidi_isOrderParagraphsLTR U_ICU_ENTRY_POINT_RENAME(ubidi_isOrderParagraphsLTR)
+#define ubidi_isolate U_ICU_ENTRY_POINT_RENAME(ubidi_isolate)
 #define ubidi_open U_ICU_ENTRY_POINT_RENAME(ubidi_open)
 #define ubidi_openSized U_ICU_ENTRY_POINT_RENAME(ubidi_openSized)
 #define ubidi_orderParagraphsLTR U_ICU_ENTRY_POINT_RENAME(ubidi_orderParagraphsLTR)
@@ -1392,6 +1395,7 @@
 #define uprops_getSource U_ICU_ENTRY_POINT_RENAME(uprops_getSource)
 #define upropsvec_addPropertyStarts U_ICU_ENTRY_POINT_RENAME(upropsvec_addPropertyStarts)
 #define uprv_add32_overflow U_ICU_ENTRY_POINT_RENAME(uprv_add32_overflow)
+#define uprv_addScriptExtensionsCodePoints U_ICU_ENTRY_POINT_RENAME(uprv_addScriptExtensionsCodePoints)
 #define uprv_aestrncpy U_ICU_ENTRY_POINT_RENAME(uprv_aestrncpy)
 #define uprv_asciiFromEbcdic U_ICU_ENTRY_POINT_RENAME(uprv_asciiFromEbcdic)
 #define uprv_asciitolower U_ICU_ENTRY_POINT_RENAME(uprv_asciitolower)
@@ -2037,7 +2041,7 @@
 #define ztrans_setTime U_ICU_ENTRY_POINT_RENAME(ztrans_setTime)
 #define ztrans_setTo U_ICU_ENTRY_POINT_RENAME(ztrans_setTo)
 
-#endif /* !(defined(_MSC_VER) && defined(__INTELLISENSE__)) */
+#endif /* !(defined(_MSC_VER) && defined(__INTELLISENSE__)) && !defined(__clang_analyzer__) */
 #endif /* U_DISABLE_RENAMING */
 #endif /* URENAME_H */
 

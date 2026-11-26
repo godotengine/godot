@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -603,7 +603,7 @@ void SDL_SYS_HapticClose(SDL_Haptic *haptic)
     }
 
     // Clear the rest.
-    SDL_memset(haptic, 0, sizeof(SDL_Haptic));
+    SDL_zerop(haptic);
 }
 
 /*
@@ -725,7 +725,7 @@ static bool SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *s
     const SDL_HapticLeftRight *leftright;
 
     // Clear up
-    SDL_memset(dest, 0, sizeof(struct ff_effect));
+    SDL_zerop(dest);
 
     switch (src->type) {
     case SDL_HAPTIC_CONSTANT:
@@ -1117,13 +1117,12 @@ bool SDL_SYS_HapticResume(SDL_Haptic *haptic)
  */
 bool SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
 {
-    int i, ret;
+    int i;
 
     // Linux does not support this natively so we have to loop.
     for (i = 0; i < haptic->neffects; i++) {
         if (haptic->effects[i].hweffect != NULL) {
-            ret = SDL_SYS_HapticStopEffect(haptic, &haptic->effects[i]);
-            if (ret < 0) {
+            if (!SDL_SYS_HapticStopEffect(haptic, &haptic->effects[i])) {
                 return SDL_SetError("Haptic: Error while trying to stop all playing effects.");
             }
         }

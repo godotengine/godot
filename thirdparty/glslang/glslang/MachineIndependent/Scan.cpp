@@ -322,502 +322,507 @@ struct str_hash
 };
 
 // A single global usable by all threads, by all versions, by all languages.
-// After a single process-level initialization, this is read only and thread safe
-std::unordered_map<const char*, int, str_hash, str_eq>* KeywordMap = nullptr;
-std::unordered_set<const char*, str_hash, str_eq>* ReservedSet = nullptr;
+const std::unordered_map<const char*, int, str_hash, str_eq> KeywordMap {
+    {"const",CONST},
+    {"uniform",UNIFORM},
+    {"tileImageEXT",TILEIMAGEEXT},
+    {"buffer",BUFFER},
+    {"in",IN},
+    {"out",OUT},
+    {"smooth",SMOOTH},
+    {"flat",FLAT},
+    {"centroid",CENTROID},
+    {"invariant",INVARIANT},
+    {"packed",PACKED},
+    {"resource",RESOURCE},
+    {"inout",INOUT},
+    {"struct",STRUCT},
+    {"break",BREAK},
+    {"continue",CONTINUE},
+    {"do",DO},
+    {"for",FOR},
+    {"while",WHILE},
+    {"switch",SWITCH},
+    {"case",CASE},
+    {"default",DEFAULT},
+    {"if",IF},
+    {"else",ELSE},
+    {"discard",DISCARD},
+    {"terminateInvocation",TERMINATE_INVOCATION},
+    {"terminateRayEXT",TERMINATE_RAY},
+    {"ignoreIntersectionEXT",IGNORE_INTERSECTION},
+    {"return",RETURN},
+    {"void",VOID},
+    {"bool",BOOL},
+    {"float",FLOAT},
+    {"int",INT},
+    {"bvec2",BVEC2},
+    {"bvec3",BVEC3},
+    {"bvec4",BVEC4},
+    {"vec2",VEC2},
+    {"vec3",VEC3},
+    {"vec4",VEC4},
+    {"ivec2",IVEC2},
+    {"ivec3",IVEC3},
+    {"ivec4",IVEC4},
+    {"mat2",MAT2},
+    {"mat3",MAT3},
+    {"mat4",MAT4},
+    {"true",BOOLCONSTANT},
+    {"false",BOOLCONSTANT},
+    {"layout",LAYOUT},
+    {"shared",SHARED},
+    {"highp",HIGH_PRECISION},
+    {"mediump",MEDIUM_PRECISION},
+    {"lowp",LOW_PRECISION},
+    {"superp",SUPERP},
+    {"precision",PRECISION},
+    {"mat2x2",MAT2X2},
+    {"mat2x3",MAT2X3},
+    {"mat2x4",MAT2X4},
+    {"mat3x2",MAT3X2},
+    {"mat3x3",MAT3X3},
+    {"mat3x4",MAT3X4},
+    {"mat4x2",MAT4X2},
+    {"mat4x3",MAT4X3},
+    {"mat4x4",MAT4X4},
+    {"uint",UINT},
+    {"uvec2",UVEC2},
+    {"uvec3",UVEC3},
+    {"uvec4",UVEC4},
+
+    {"nonuniformEXT",NONUNIFORM},
+    {"demote",DEMOTE},
+    {"attribute",ATTRIBUTE},
+    {"varying",VARYING},
+    {"noperspective",NOPERSPECTIVE},
+    {"coherent",COHERENT},
+    {"devicecoherent",DEVICECOHERENT},
+    {"queuefamilycoherent",QUEUEFAMILYCOHERENT},
+    {"workgroupcoherent",WORKGROUPCOHERENT},
+    {"subgroupcoherent",SUBGROUPCOHERENT},
+    {"shadercallcoherent",SHADERCALLCOHERENT},
+    {"nonprivate",NONPRIVATE},
+    {"restrict",RESTRICT},
+    {"readonly",READONLY},
+    {"writeonly",WRITEONLY},
+    {"atomic_uint",ATOMIC_UINT},
+    {"volatile",VOLATILE},
+    {"nontemporal",NONTEMPORAL},
+    {"patch",PATCH},
+    {"sample",SAMPLE},
+    {"subroutine",SUBROUTINE},
+    {"dmat2",DMAT2},
+    {"dmat3",DMAT3},
+    {"dmat4",DMAT4},
+    {"dmat2x2",DMAT2X2},
+    {"dmat2x3",DMAT2X3},
+    {"dmat2x4",DMAT2X4},
+    {"dmat3x2",DMAT3X2},
+    {"dmat3x3",DMAT3X3},
+    {"dmat3x4",DMAT3X4},
+    {"dmat4x2",DMAT4X2},
+    {"dmat4x3",DMAT4X3},
+    {"dmat4x4",DMAT4X4},
+    {"image1D",IMAGE1D},
+    {"iimage1D",IIMAGE1D},
+    {"uimage1D",UIMAGE1D},
+    {"image2D",IMAGE2D},
+    {"iimage2D",IIMAGE2D},
+    {"uimage2D",UIMAGE2D},
+    {"image3D",IMAGE3D},
+    {"iimage3D",IIMAGE3D},
+    {"uimage3D",UIMAGE3D},
+    {"image2DRect",IMAGE2DRECT},
+    {"iimage2DRect",IIMAGE2DRECT},
+    {"uimage2DRect",UIMAGE2DRECT},
+    {"imageCube",IMAGECUBE},
+    {"iimageCube",IIMAGECUBE},
+    {"uimageCube",UIMAGECUBE},
+    {"imageBuffer",IMAGEBUFFER},
+    {"iimageBuffer",IIMAGEBUFFER},
+    {"uimageBuffer",UIMAGEBUFFER},
+    {"image1DArray",IMAGE1DARRAY},
+    {"iimage1DArray",IIMAGE1DARRAY},
+    {"uimage1DArray",UIMAGE1DARRAY},
+    {"image2DArray",IMAGE2DARRAY},
+    {"iimage2DArray",IIMAGE2DARRAY},
+    {"uimage2DArray",UIMAGE2DARRAY},
+    {"imageCubeArray",IMAGECUBEARRAY},
+    {"iimageCubeArray",IIMAGECUBEARRAY},
+    {"uimageCubeArray",UIMAGECUBEARRAY},
+    {"image2DMS",IMAGE2DMS},
+    {"iimage2DMS",IIMAGE2DMS},
+    {"uimage2DMS",UIMAGE2DMS},
+    {"image2DMSArray",IMAGE2DMSARRAY},
+    {"iimage2DMSArray",IIMAGE2DMSARRAY},
+    {"uimage2DMSArray",UIMAGE2DMSARRAY},
+    {"i64image1D",I64IMAGE1D},
+    {"u64image1D",U64IMAGE1D},
+    {"i64image2D",I64IMAGE2D},
+    {"u64image2D",U64IMAGE2D},
+    {"i64image3D",I64IMAGE3D},
+    {"u64image3D",U64IMAGE3D},
+    {"i64image2DRect",I64IMAGE2DRECT},
+    {"u64image2DRect",U64IMAGE2DRECT},
+    {"i64imageCube",I64IMAGECUBE},
+    {"u64imageCube",U64IMAGECUBE},
+    {"i64imageBuffer",I64IMAGEBUFFER},
+    {"u64imageBuffer",U64IMAGEBUFFER},
+    {"i64image1DArray",I64IMAGE1DARRAY},
+    {"u64image1DArray",U64IMAGE1DARRAY},
+    {"i64image2DArray",I64IMAGE2DARRAY},
+    {"u64image2DArray",U64IMAGE2DARRAY},
+    {"i64imageCubeArray",I64IMAGECUBEARRAY},
+    {"u64imageCubeArray",U64IMAGECUBEARRAY},
+    {"i64image2DMS",I64IMAGE2DMS},
+    {"u64image2DMS",U64IMAGE2DMS},
+    {"i64image2DMSArray",I64IMAGE2DMSARRAY},
+    {"u64image2DMSArray",U64IMAGE2DMSARRAY},
+    {"double",DOUBLE},
+    {"dvec2",DVEC2},
+    {"dvec3",DVEC3},
+    {"dvec4",DVEC4},
+    {"int64_t",INT64_T},
+    {"uint64_t",UINT64_T},
+    {"i64vec2",I64VEC2},
+    {"i64vec3",I64VEC3},
+    {"i64vec4",I64VEC4},
+    {"u64vec2",U64VEC2},
+    {"u64vec3",U64VEC3},
+    {"u64vec4",U64VEC4},
+
+    // GL_EXT_shader_explicit_arithmetic_types
+    {"int8_t",INT8_T},
+    {"i8vec2",I8VEC2},
+    {"i8vec3",I8VEC3},
+    {"i8vec4",I8VEC4},
+    {"uint8_t",UINT8_T},
+    {"u8vec2",U8VEC2},
+    {"u8vec3",U8VEC3},
+    {"u8vec4",U8VEC4},
+
+    {"int16_t",INT16_T},
+    {"i16vec2",I16VEC2},
+    {"i16vec3",I16VEC3},
+    {"i16vec4",I16VEC4},
+    {"uint16_t",UINT16_T},
+    {"u16vec2",U16VEC2},
+    {"u16vec3",U16VEC3},
+    {"u16vec4",U16VEC4},
+
+    {"int32_t",INT32_T},
+    {"i32vec2",I32VEC2},
+    {"i32vec3",I32VEC3},
+    {"i32vec4",I32VEC4},
+    {"uint32_t",UINT32_T},
+    {"u32vec2",U32VEC2},
+    {"u32vec3",U32VEC3},
+    {"u32vec4",U32VEC4},
+
+    {"float16_t",FLOAT16_T},
+    {"f16vec2",F16VEC2},
+    {"f16vec3",F16VEC3},
+    {"f16vec4",F16VEC4},
+    {"f16mat2",F16MAT2},
+    {"f16mat3",F16MAT3},
+    {"f16mat4",F16MAT4},
+    {"f16mat2x2",F16MAT2X2},
+    {"f16mat2x3",F16MAT2X3},
+    {"f16mat2x4",F16MAT2X4},
+    {"f16mat3x2",F16MAT3X2},
+    {"f16mat3x3",F16MAT3X3},
+    {"f16mat3x4",F16MAT3X4},
+    {"f16mat4x2",F16MAT4X2},
+    {"f16mat4x3",F16MAT4X3},
+    {"f16mat4x4",F16MAT4X4},
+
+    {"bfloat16_t",BFLOAT16_T},
+    {"bf16vec2",BF16VEC2},
+    {"bf16vec3",BF16VEC3},
+    {"bf16vec4",BF16VEC4},
+
+    {"floate5m2_t",FLOATE5M2_T},
+    {"fe5m2vec2",FE5M2VEC2},
+    {"fe5m2vec3",FE5M2VEC3},
+    {"fe5m2vec4",FE5M2VEC4},
+
+    {"floate4m3_t",FLOATE4M3_T},
+    {"fe4m3vec2",FE4M3VEC2},
+    {"fe4m3vec3",FE4M3VEC3},
+    {"fe4m3vec4",FE4M3VEC4},
+
+    {"float32_t",FLOAT32_T},
+    {"f32vec2",F32VEC2},
+    {"f32vec3",F32VEC3},
+    {"f32vec4",F32VEC4},
+    {"f32mat2",F32MAT2},
+    {"f32mat3",F32MAT3},
+    {"f32mat4",F32MAT4},
+    {"f32mat2x2",F32MAT2X2},
+    {"f32mat2x3",F32MAT2X3},
+    {"f32mat2x4",F32MAT2X4},
+    {"f32mat3x2",F32MAT3X2},
+    {"f32mat3x3",F32MAT3X3},
+    {"f32mat3x4",F32MAT3X4},
+    {"f32mat4x2",F32MAT4X2},
+    {"f32mat4x3",F32MAT4X3},
+    {"f32mat4x4",F32MAT4X4},
+    {"float64_t",FLOAT64_T},
+    {"f64vec2",F64VEC2},
+    {"f64vec3",F64VEC3},
+    {"f64vec4",F64VEC4},
+    {"f64mat2",F64MAT2},
+    {"f64mat3",F64MAT3},
+    {"f64mat4",F64MAT4},
+    {"f64mat2x2",F64MAT2X2},
+    {"f64mat2x3",F64MAT2X3},
+    {"f64mat2x4",F64MAT2X4},
+    {"f64mat3x2",F64MAT3X2},
+    {"f64mat3x3",F64MAT3X3},
+    {"f64mat3x4",F64MAT3X4},
+    {"f64mat4x2",F64MAT4X2},
+    {"f64mat4x3",F64MAT4X3},
+    {"f64mat4x4",F64MAT4X4},
+
+    // GL_EXT_spirv_intrinsics
+    {"spirv_instruction",SPIRV_INSTRUCTION},
+    {"spirv_execution_mode",SPIRV_EXECUTION_MODE},
+    {"spirv_execution_mode_id",SPIRV_EXECUTION_MODE_ID},
+    {"spirv_decorate",SPIRV_DECORATE},
+    {"spirv_decorate_id",SPIRV_DECORATE_ID},
+    {"spirv_decorate_string",SPIRV_DECORATE_STRING},
+    {"spirv_type",SPIRV_TYPE},
+    {"spirv_storage_class",SPIRV_STORAGE_CLASS},
+    {"spirv_by_reference",SPIRV_BY_REFERENCE},
+    {"spirv_literal",SPIRV_LITERAL},
+
+    {"sampler2D",SAMPLER2D},
+    {"samplerCube",SAMPLERCUBE},
+    {"samplerCubeShadow",SAMPLERCUBESHADOW},
+    {"sampler2DArray",SAMPLER2DARRAY},
+    {"sampler2DArrayShadow",SAMPLER2DARRAYSHADOW},
+    {"isampler2D",ISAMPLER2D},
+    {"isampler3D",ISAMPLER3D},
+    {"isamplerCube",ISAMPLERCUBE},
+    {"isampler2DArray",ISAMPLER2DARRAY},
+    {"usampler2D",USAMPLER2D},
+    {"usampler3D",USAMPLER3D},
+    {"usamplerCube",USAMPLERCUBE},
+    {"usampler2DArray",USAMPLER2DARRAY},
+    {"sampler3D",SAMPLER3D},
+    {"sampler2DShadow",SAMPLER2DSHADOW},
+
+    {"texture2D",TEXTURE2D},
+    {"textureCube",TEXTURECUBE},
+    {"texture2DArray",TEXTURE2DARRAY},
+    {"itexture2D",ITEXTURE2D},
+    {"itexture3D",ITEXTURE3D},
+    {"itextureCube",ITEXTURECUBE},
+    {"itexture2DArray",ITEXTURE2DARRAY},
+    {"utexture2D",UTEXTURE2D},
+    {"utexture3D",UTEXTURE3D},
+    {"utextureCube",UTEXTURECUBE},
+    {"utexture2DArray",UTEXTURE2DARRAY},
+    {"texture3D",TEXTURE3D},
+
+    {"sampler",SAMPLER},
+    {"samplerShadow",SAMPLERSHADOW},
+
+    {"textureCubeArray",TEXTURECUBEARRAY},
+    {"itextureCubeArray",ITEXTURECUBEARRAY},
+    {"utextureCubeArray",UTEXTURECUBEARRAY},
+    {"samplerCubeArray",SAMPLERCUBEARRAY},
+    {"samplerCubeArrayShadow",SAMPLERCUBEARRAYSHADOW},
+    {"isamplerCubeArray",ISAMPLERCUBEARRAY},
+    {"usamplerCubeArray",USAMPLERCUBEARRAY},
+    {"sampler1DArrayShadow",SAMPLER1DARRAYSHADOW},
+    {"isampler1DArray",ISAMPLER1DARRAY},
+    {"usampler1D",USAMPLER1D},
+    {"isampler1D",ISAMPLER1D},
+    {"usampler1DArray",USAMPLER1DARRAY},
+    {"samplerBuffer",SAMPLERBUFFER},
+    {"isampler2DRect",ISAMPLER2DRECT},
+    {"usampler2DRect",USAMPLER2DRECT},
+    {"isamplerBuffer",ISAMPLERBUFFER},
+    {"usamplerBuffer",USAMPLERBUFFER},
+    {"sampler2DMS",SAMPLER2DMS},
+    {"isampler2DMS",ISAMPLER2DMS},
+    {"usampler2DMS",USAMPLER2DMS},
+    {"sampler2DMSArray",SAMPLER2DMSARRAY},
+    {"isampler2DMSArray",ISAMPLER2DMSARRAY},
+    {"usampler2DMSArray",USAMPLER2DMSARRAY},
+    {"sampler1D",SAMPLER1D},
+    {"sampler1DShadow",SAMPLER1DSHADOW},
+    {"sampler2DRect",SAMPLER2DRECT},
+    {"sampler2DRectShadow",SAMPLER2DRECTSHADOW},
+    {"sampler1DArray",SAMPLER1DARRAY},
+
+    {"samplerExternalOES",     SAMPLEREXTERNALOES}, // GL_OES_EGL_image_external
+    {"__samplerExternal2DY2YEXT", SAMPLEREXTERNAL2DY2YEXT}, // GL_EXT_YUV_target
+
+    {"itexture1DArray",ITEXTURE1DARRAY},
+    {"utexture1D",UTEXTURE1D},
+    {"itexture1D",ITEXTURE1D},
+    {"utexture1DArray",UTEXTURE1DARRAY},
+    {"textureBuffer",TEXTUREBUFFER},
+    {"itexture2DRect",ITEXTURE2DRECT},
+    {"utexture2DRect",UTEXTURE2DRECT},
+    {"itextureBuffer",ITEXTUREBUFFER},
+    {"utextureBuffer",UTEXTUREBUFFER},
+    {"texture2DMS",TEXTURE2DMS},
+    {"itexture2DMS",ITEXTURE2DMS},
+    {"utexture2DMS",UTEXTURE2DMS},
+    {"texture2DMSArray",TEXTURE2DMSARRAY},
+    {"itexture2DMSArray",ITEXTURE2DMSARRAY},
+    {"utexture2DMSArray",UTEXTURE2DMSARRAY},
+    {"texture1D",TEXTURE1D},
+    {"texture2DRect",TEXTURE2DRECT},
+    {"texture1DArray",TEXTURE1DARRAY},
+
+    {"attachmentEXT",ATTACHMENTEXT},
+    {"iattachmentEXT",IATTACHMENTEXT},
+    {"uattachmentEXT",UATTACHMENTEXT},
+
+    {"subpassInput",SUBPASSINPUT},
+    {"subpassInputMS",SUBPASSINPUTMS},
+    {"isubpassInput",ISUBPASSINPUT},
+    {"isubpassInputMS",ISUBPASSINPUTMS},
+    {"usubpassInput",USUBPASSINPUT},
+    {"usubpassInputMS",USUBPASSINPUTMS},
+
+    {"f16sampler1D",F16SAMPLER1D},
+    {"f16sampler2D",F16SAMPLER2D},
+    {"f16sampler3D",F16SAMPLER3D},
+    {"f16sampler2DRect",F16SAMPLER2DRECT},
+    {"f16samplerCube",F16SAMPLERCUBE},
+    {"f16sampler1DArray",F16SAMPLER1DARRAY},
+    {"f16sampler2DArray",F16SAMPLER2DARRAY},
+    {"f16samplerCubeArray",F16SAMPLERCUBEARRAY},
+    {"f16samplerBuffer",F16SAMPLERBUFFER},
+    {"f16sampler2DMS",F16SAMPLER2DMS},
+    {"f16sampler2DMSArray",F16SAMPLER2DMSARRAY},
+    {"f16sampler1DShadow",F16SAMPLER1DSHADOW},
+    {"f16sampler2DShadow",F16SAMPLER2DSHADOW},
+    {"f16sampler2DRectShadow",F16SAMPLER2DRECTSHADOW},
+    {"f16samplerCubeShadow",F16SAMPLERCUBESHADOW},
+    {"f16sampler1DArrayShadow",F16SAMPLER1DARRAYSHADOW},
+    {"f16sampler2DArrayShadow",F16SAMPLER2DARRAYSHADOW},
+    {"f16samplerCubeArrayShadow",F16SAMPLERCUBEARRAYSHADOW},
+
+    {"f16image1D",F16IMAGE1D},
+    {"f16image2D",F16IMAGE2D},
+    {"f16image3D",F16IMAGE3D},
+    {"f16image2DRect",F16IMAGE2DRECT},
+    {"f16imageCube",F16IMAGECUBE},
+    {"f16image1DArray",F16IMAGE1DARRAY},
+    {"f16image2DArray",F16IMAGE2DARRAY},
+    {"f16imageCubeArray",F16IMAGECUBEARRAY},
+    {"f16imageBuffer",F16IMAGEBUFFER},
+    {"f16image2DMS",F16IMAGE2DMS},
+    {"f16image2DMSArray",F16IMAGE2DMSARRAY},
+
+    {"f16texture1D",F16TEXTURE1D},
+    {"f16texture2D",F16TEXTURE2D},
+    {"f16texture3D",F16TEXTURE3D},
+    {"f16texture2DRect",F16TEXTURE2DRECT},
+    {"f16textureCube",F16TEXTURECUBE},
+    {"f16texture1DArray",F16TEXTURE1DARRAY},
+    {"f16texture2DArray",F16TEXTURE2DARRAY},
+    {"f16textureCubeArray",F16TEXTURECUBEARRAY},
+    {"f16textureBuffer",F16TEXTUREBUFFER},
+    {"f16texture2DMS",F16TEXTURE2DMS},
+    {"f16texture2DMSArray",F16TEXTURE2DMSARRAY},
+
+    {"f16subpassInput",F16SUBPASSINPUT},
+    {"f16subpassInputMS",F16SUBPASSINPUTMS},
+    {"__explicitInterpAMD",EXPLICITINTERPAMD},
+    {"pervertexNV",PERVERTEXNV},
+    {"pervertexEXT",PERVERTEXEXT},
+    {"precise",PRECISE},
+
+    {"rayPayloadNV",PAYLOADNV},
+    {"rayPayloadEXT",PAYLOADEXT},
+    {"rayPayloadInNV",PAYLOADINNV},
+    {"rayPayloadInEXT",PAYLOADINEXT},
+    {"hitAttributeNV",HITATTRNV},
+    {"hitAttributeEXT",HITATTREXT},
+    {"callableDataNV",CALLDATANV},
+    {"callableDataEXT",CALLDATAEXT},
+    {"callableDataInNV",CALLDATAINNV},
+    {"callableDataInEXT",CALLDATAINEXT},
+    {"accelerationStructureNV",ACCSTRUCTNV},
+    {"accelerationStructureEXT",ACCSTRUCTEXT},
+    {"rayQueryEXT",RAYQUERYEXT},
+    {"perprimitiveNV",PERPRIMITIVENV},
+    {"perviewNV",PERVIEWNV},
+    {"taskNV",PERTASKNV},
+    {"perprimitiveEXT",PERPRIMITIVEEXT},
+    {"taskPayloadSharedEXT",TASKPAYLOADWORKGROUPEXT},
+
+    {"fcoopmatNV",FCOOPMATNV},
+    {"icoopmatNV",ICOOPMATNV},
+    {"ucoopmatNV",UCOOPMATNV},
+
+    {"coopmat",COOPMAT},
+
+    {"hitObjectNV",HITOBJECTNV},
+    {"hitObjectAttributeNV",HITOBJECTATTRNV},
+
+    {"tensorARM",TENSORARM},
+
+    {"hitObjectEXT",HITOBJECTEXT},
+    {"hitObjectAttributeEXT",HITOBJECTATTREXT},
+
+    {"__function",FUNCTION},
+    {"tensorLayoutNV",TENSORLAYOUTNV},
+    {"tensorViewNV",TENSORVIEWNV},
+
+    {"coopvecNV",COOPVECNV},
+};
+const std::unordered_set<const char*, str_hash, str_eq> ReservedSet {
+    "common",
+    "partition",
+    "active",
+    "asm",
+    "class",
+    "union",
+    "enum",
+    "typedef",
+    "template",
+    "this",
+    "goto",
+    "inline",
+    "noinline",
+    "public",
+    "static",
+    "extern",
+    "external",
+    "interface",
+    "long",
+    "short",
+    "half",
+    "fixed",
+    "unsigned",
+    "input",
+    "output",
+    "hvec2",
+    "hvec3",
+    "hvec4",
+    "fvec2",
+    "fvec3",
+    "fvec4",
+    "sampler3DRect",
+    "filter",
+    "sizeof",
+    "cast",
+    "namespace",
+    "using",
+};
 
 }
 
 namespace glslang {
-
-void TScanContext::fillInKeywordMap()
-{
-    if (KeywordMap != nullptr) {
-        // this is really an error, as this should called only once per process
-        // but, the only risk is if two threads called simultaneously
-        return;
-    }
-    KeywordMap = new std::unordered_map<const char*, int, str_hash, str_eq>;
-
-    (*KeywordMap)["const"] =                   CONST;
-    (*KeywordMap)["uniform"] =                 UNIFORM;
-    (*KeywordMap)["tileImageEXT"] =            TILEIMAGEEXT;
-    (*KeywordMap)["buffer"] =                  BUFFER;
-    (*KeywordMap)["in"] =                      IN;
-    (*KeywordMap)["out"] =                     OUT;
-    (*KeywordMap)["smooth"] =                  SMOOTH;
-    (*KeywordMap)["flat"] =                    FLAT;
-    (*KeywordMap)["centroid"] =                CENTROID;
-    (*KeywordMap)["invariant"] =               INVARIANT;
-    (*KeywordMap)["packed"] =                  PACKED;
-    (*KeywordMap)["resource"] =                RESOURCE;
-    (*KeywordMap)["inout"] =                   INOUT;
-    (*KeywordMap)["struct"] =                  STRUCT;
-    (*KeywordMap)["break"] =                   BREAK;
-    (*KeywordMap)["continue"] =                CONTINUE;
-    (*KeywordMap)["do"] =                      DO;
-    (*KeywordMap)["for"] =                     FOR;
-    (*KeywordMap)["while"] =                   WHILE;
-    (*KeywordMap)["switch"] =                  SWITCH;
-    (*KeywordMap)["case"] =                    CASE;
-    (*KeywordMap)["default"] =                 DEFAULT;
-    (*KeywordMap)["if"] =                      IF;
-    (*KeywordMap)["else"] =                    ELSE;
-    (*KeywordMap)["discard"] =                 DISCARD;
-    (*KeywordMap)["terminateInvocation"] =     TERMINATE_INVOCATION;
-    (*KeywordMap)["terminateRayEXT"] =         TERMINATE_RAY;
-    (*KeywordMap)["ignoreIntersectionEXT"] =   IGNORE_INTERSECTION;
-    (*KeywordMap)["return"] =                  RETURN;
-    (*KeywordMap)["void"] =                    VOID;
-    (*KeywordMap)["bool"] =                    BOOL;
-    (*KeywordMap)["float"] =                   FLOAT;
-    (*KeywordMap)["int"] =                     INT;
-    (*KeywordMap)["bvec2"] =                   BVEC2;
-    (*KeywordMap)["bvec3"] =                   BVEC3;
-    (*KeywordMap)["bvec4"] =                   BVEC4;
-    (*KeywordMap)["vec2"] =                    VEC2;
-    (*KeywordMap)["vec3"] =                    VEC3;
-    (*KeywordMap)["vec4"] =                    VEC4;
-    (*KeywordMap)["ivec2"] =                   IVEC2;
-    (*KeywordMap)["ivec3"] =                   IVEC3;
-    (*KeywordMap)["ivec4"] =                   IVEC4;
-    (*KeywordMap)["mat2"] =                    MAT2;
-    (*KeywordMap)["mat3"] =                    MAT3;
-    (*KeywordMap)["mat4"] =                    MAT4;
-    (*KeywordMap)["true"] =                    BOOLCONSTANT;
-    (*KeywordMap)["false"] =                   BOOLCONSTANT;
-    (*KeywordMap)["layout"] =                  LAYOUT;
-    (*KeywordMap)["shared"] =                  SHARED;
-    (*KeywordMap)["highp"] =                   HIGH_PRECISION;
-    (*KeywordMap)["mediump"] =                 MEDIUM_PRECISION;
-    (*KeywordMap)["lowp"] =                    LOW_PRECISION;
-    (*KeywordMap)["superp"] =                  SUPERP;
-    (*KeywordMap)["precision"] =               PRECISION;
-    (*KeywordMap)["mat2x2"] =                  MAT2X2;
-    (*KeywordMap)["mat2x3"] =                  MAT2X3;
-    (*KeywordMap)["mat2x4"] =                  MAT2X4;
-    (*KeywordMap)["mat3x2"] =                  MAT3X2;
-    (*KeywordMap)["mat3x3"] =                  MAT3X3;
-    (*KeywordMap)["mat3x4"] =                  MAT3X4;
-    (*KeywordMap)["mat4x2"] =                  MAT4X2;
-    (*KeywordMap)["mat4x3"] =                  MAT4X3;
-    (*KeywordMap)["mat4x4"] =                  MAT4X4;
-    (*KeywordMap)["uint"] =                    UINT;
-    (*KeywordMap)["uvec2"] =                   UVEC2;
-    (*KeywordMap)["uvec3"] =                   UVEC3;
-    (*KeywordMap)["uvec4"] =                   UVEC4;
-
-    (*KeywordMap)["nonuniformEXT"] =           NONUNIFORM;
-    (*KeywordMap)["demote"] =                  DEMOTE;
-    (*KeywordMap)["attribute"] =               ATTRIBUTE;
-    (*KeywordMap)["varying"] =                 VARYING;
-    (*KeywordMap)["noperspective"] =           NOPERSPECTIVE;
-    (*KeywordMap)["coherent"] =                COHERENT;
-    (*KeywordMap)["devicecoherent"] =          DEVICECOHERENT;
-    (*KeywordMap)["queuefamilycoherent"] =     QUEUEFAMILYCOHERENT;
-    (*KeywordMap)["workgroupcoherent"] =       WORKGROUPCOHERENT;
-    (*KeywordMap)["subgroupcoherent"] =        SUBGROUPCOHERENT;
-    (*KeywordMap)["shadercallcoherent"] =      SHADERCALLCOHERENT;
-    (*KeywordMap)["nonprivate"] =              NONPRIVATE;
-    (*KeywordMap)["restrict"] =                RESTRICT;
-    (*KeywordMap)["readonly"] =                READONLY;
-    (*KeywordMap)["writeonly"] =               WRITEONLY;
-    (*KeywordMap)["atomic_uint"] =             ATOMIC_UINT;
-    (*KeywordMap)["volatile"] =                VOLATILE;
-    (*KeywordMap)["patch"] =                   PATCH;
-    (*KeywordMap)["sample"] =                  SAMPLE;
-    (*KeywordMap)["subroutine"] =              SUBROUTINE;
-    (*KeywordMap)["dmat2"] =                   DMAT2;
-    (*KeywordMap)["dmat3"] =                   DMAT3;
-    (*KeywordMap)["dmat4"] =                   DMAT4;
-    (*KeywordMap)["dmat2x2"] =                 DMAT2X2;
-    (*KeywordMap)["dmat2x3"] =                 DMAT2X3;
-    (*KeywordMap)["dmat2x4"] =                 DMAT2X4;
-    (*KeywordMap)["dmat3x2"] =                 DMAT3X2;
-    (*KeywordMap)["dmat3x3"] =                 DMAT3X3;
-    (*KeywordMap)["dmat3x4"] =                 DMAT3X4;
-    (*KeywordMap)["dmat4x2"] =                 DMAT4X2;
-    (*KeywordMap)["dmat4x3"] =                 DMAT4X3;
-    (*KeywordMap)["dmat4x4"] =                 DMAT4X4;
-    (*KeywordMap)["image1D"] =                 IMAGE1D;
-    (*KeywordMap)["iimage1D"] =                IIMAGE1D;
-    (*KeywordMap)["uimage1D"] =                UIMAGE1D;
-    (*KeywordMap)["image2D"] =                 IMAGE2D;
-    (*KeywordMap)["iimage2D"] =                IIMAGE2D;
-    (*KeywordMap)["uimage2D"] =                UIMAGE2D;
-    (*KeywordMap)["image3D"] =                 IMAGE3D;
-    (*KeywordMap)["iimage3D"] =                IIMAGE3D;
-    (*KeywordMap)["uimage3D"] =                UIMAGE3D;
-    (*KeywordMap)["image2DRect"] =             IMAGE2DRECT;
-    (*KeywordMap)["iimage2DRect"] =            IIMAGE2DRECT;
-    (*KeywordMap)["uimage2DRect"] =            UIMAGE2DRECT;
-    (*KeywordMap)["imageCube"] =               IMAGECUBE;
-    (*KeywordMap)["iimageCube"] =              IIMAGECUBE;
-    (*KeywordMap)["uimageCube"] =              UIMAGECUBE;
-    (*KeywordMap)["imageBuffer"] =             IMAGEBUFFER;
-    (*KeywordMap)["iimageBuffer"] =            IIMAGEBUFFER;
-    (*KeywordMap)["uimageBuffer"] =            UIMAGEBUFFER;
-    (*KeywordMap)["image1DArray"] =            IMAGE1DARRAY;
-    (*KeywordMap)["iimage1DArray"] =           IIMAGE1DARRAY;
-    (*KeywordMap)["uimage1DArray"] =           UIMAGE1DARRAY;
-    (*KeywordMap)["image2DArray"] =            IMAGE2DARRAY;
-    (*KeywordMap)["iimage2DArray"] =           IIMAGE2DARRAY;
-    (*KeywordMap)["uimage2DArray"] =           UIMAGE2DARRAY;
-    (*KeywordMap)["imageCubeArray"] =          IMAGECUBEARRAY;
-    (*KeywordMap)["iimageCubeArray"] =         IIMAGECUBEARRAY;
-    (*KeywordMap)["uimageCubeArray"] =         UIMAGECUBEARRAY;
-    (*KeywordMap)["image2DMS"] =               IMAGE2DMS;
-    (*KeywordMap)["iimage2DMS"] =              IIMAGE2DMS;
-    (*KeywordMap)["uimage2DMS"] =              UIMAGE2DMS;
-    (*KeywordMap)["image2DMSArray"] =          IMAGE2DMSARRAY;
-    (*KeywordMap)["iimage2DMSArray"] =         IIMAGE2DMSARRAY;
-    (*KeywordMap)["uimage2DMSArray"] =         UIMAGE2DMSARRAY;
-    (*KeywordMap)["i64image1D"] =              I64IMAGE1D;
-    (*KeywordMap)["u64image1D"] =              U64IMAGE1D;
-    (*KeywordMap)["i64image2D"] =              I64IMAGE2D;
-    (*KeywordMap)["u64image2D"] =              U64IMAGE2D;
-    (*KeywordMap)["i64image3D"] =              I64IMAGE3D;
-    (*KeywordMap)["u64image3D"] =              U64IMAGE3D;
-    (*KeywordMap)["i64image2DRect"] =          I64IMAGE2DRECT;
-    (*KeywordMap)["u64image2DRect"] =          U64IMAGE2DRECT;
-    (*KeywordMap)["i64imageCube"] =            I64IMAGECUBE;
-    (*KeywordMap)["u64imageCube"] =            U64IMAGECUBE;
-    (*KeywordMap)["i64imageBuffer"] =          I64IMAGEBUFFER;
-    (*KeywordMap)["u64imageBuffer"] =          U64IMAGEBUFFER;
-    (*KeywordMap)["i64image1DArray"] =         I64IMAGE1DARRAY;
-    (*KeywordMap)["u64image1DArray"] =         U64IMAGE1DARRAY;
-    (*KeywordMap)["i64image2DArray"] =         I64IMAGE2DARRAY;
-    (*KeywordMap)["u64image2DArray"] =         U64IMAGE2DARRAY;
-    (*KeywordMap)["i64imageCubeArray"] =       I64IMAGECUBEARRAY;
-    (*KeywordMap)["u64imageCubeArray"] =       U64IMAGECUBEARRAY;
-    (*KeywordMap)["i64image2DMS"] =            I64IMAGE2DMS;
-    (*KeywordMap)["u64image2DMS"] =            U64IMAGE2DMS;
-    (*KeywordMap)["i64image2DMSArray"] =       I64IMAGE2DMSARRAY;
-    (*KeywordMap)["u64image2DMSArray"] =       U64IMAGE2DMSARRAY;
-    (*KeywordMap)["double"] =                  DOUBLE;
-    (*KeywordMap)["dvec2"] =                   DVEC2;
-    (*KeywordMap)["dvec3"] =                   DVEC3;
-    (*KeywordMap)["dvec4"] =                   DVEC4;
-    (*KeywordMap)["int64_t"] =                 INT64_T;
-    (*KeywordMap)["uint64_t"] =                UINT64_T;
-    (*KeywordMap)["i64vec2"] =                 I64VEC2;
-    (*KeywordMap)["i64vec3"] =                 I64VEC3;
-    (*KeywordMap)["i64vec4"] =                 I64VEC4;
-    (*KeywordMap)["u64vec2"] =                 U64VEC2;
-    (*KeywordMap)["u64vec3"] =                 U64VEC3;
-    (*KeywordMap)["u64vec4"] =                 U64VEC4;
-
-    // GL_EXT_shader_explicit_arithmetic_types
-    (*KeywordMap)["int8_t"] =                  INT8_T;
-    (*KeywordMap)["i8vec2"] =                  I8VEC2;
-    (*KeywordMap)["i8vec3"] =                  I8VEC3;
-    (*KeywordMap)["i8vec4"] =                  I8VEC4;
-    (*KeywordMap)["uint8_t"] =                 UINT8_T;
-    (*KeywordMap)["u8vec2"] =                  U8VEC2;
-    (*KeywordMap)["u8vec3"] =                  U8VEC3;
-    (*KeywordMap)["u8vec4"] =                  U8VEC4;
-
-    (*KeywordMap)["int16_t"] =                 INT16_T;
-    (*KeywordMap)["i16vec2"] =                 I16VEC2;
-    (*KeywordMap)["i16vec3"] =                 I16VEC3;
-    (*KeywordMap)["i16vec4"] =                 I16VEC4;
-    (*KeywordMap)["uint16_t"] =                UINT16_T;
-    (*KeywordMap)["u16vec2"] =                 U16VEC2;
-    (*KeywordMap)["u16vec3"] =                 U16VEC3;
-    (*KeywordMap)["u16vec4"] =                 U16VEC4;
-
-    (*KeywordMap)["int32_t"] =                 INT32_T;
-    (*KeywordMap)["i32vec2"] =                 I32VEC2;
-    (*KeywordMap)["i32vec3"] =                 I32VEC3;
-    (*KeywordMap)["i32vec4"] =                 I32VEC4;
-    (*KeywordMap)["uint32_t"] =                UINT32_T;
-    (*KeywordMap)["u32vec2"] =                 U32VEC2;
-    (*KeywordMap)["u32vec3"] =                 U32VEC3;
-    (*KeywordMap)["u32vec4"] =                 U32VEC4;
-
-    (*KeywordMap)["float16_t"] =               FLOAT16_T;
-    (*KeywordMap)["f16vec2"] =                 F16VEC2;
-    (*KeywordMap)["f16vec3"] =                 F16VEC3;
-    (*KeywordMap)["f16vec4"] =                 F16VEC4;
-    (*KeywordMap)["f16mat2"] =                 F16MAT2;
-    (*KeywordMap)["f16mat3"] =                 F16MAT3;
-    (*KeywordMap)["f16mat4"] =                 F16MAT4;
-    (*KeywordMap)["f16mat2x2"] =               F16MAT2X2;
-    (*KeywordMap)["f16mat2x3"] =               F16MAT2X3;
-    (*KeywordMap)["f16mat2x4"] =               F16MAT2X4;
-    (*KeywordMap)["f16mat3x2"] =               F16MAT3X2;
-    (*KeywordMap)["f16mat3x3"] =               F16MAT3X3;
-    (*KeywordMap)["f16mat3x4"] =               F16MAT3X4;
-    (*KeywordMap)["f16mat4x2"] =               F16MAT4X2;
-    (*KeywordMap)["f16mat4x3"] =               F16MAT4X3;
-    (*KeywordMap)["f16mat4x4"] =               F16MAT4X4;
-
-    (*KeywordMap)["float32_t"] =               FLOAT32_T;
-    (*KeywordMap)["f32vec2"] =                 F32VEC2;
-    (*KeywordMap)["f32vec3"] =                 F32VEC3;
-    (*KeywordMap)["f32vec4"] =                 F32VEC4;
-    (*KeywordMap)["f32mat2"] =                 F32MAT2;
-    (*KeywordMap)["f32mat3"] =                 F32MAT3;
-    (*KeywordMap)["f32mat4"] =                 F32MAT4;
-    (*KeywordMap)["f32mat2x2"] =               F32MAT2X2;
-    (*KeywordMap)["f32mat2x3"] =               F32MAT2X3;
-    (*KeywordMap)["f32mat2x4"] =               F32MAT2X4;
-    (*KeywordMap)["f32mat3x2"] =               F32MAT3X2;
-    (*KeywordMap)["f32mat3x3"] =               F32MAT3X3;
-    (*KeywordMap)["f32mat3x4"] =               F32MAT3X4;
-    (*KeywordMap)["f32mat4x2"] =               F32MAT4X2;
-    (*KeywordMap)["f32mat4x3"] =               F32MAT4X3;
-    (*KeywordMap)["f32mat4x4"] =               F32MAT4X4;
-    (*KeywordMap)["float64_t"] =               FLOAT64_T;
-    (*KeywordMap)["f64vec2"] =                 F64VEC2;
-    (*KeywordMap)["f64vec3"] =                 F64VEC3;
-    (*KeywordMap)["f64vec4"] =                 F64VEC4;
-    (*KeywordMap)["f64mat2"] =                 F64MAT2;
-    (*KeywordMap)["f64mat3"] =                 F64MAT3;
-    (*KeywordMap)["f64mat4"] =                 F64MAT4;
-    (*KeywordMap)["f64mat2x2"] =               F64MAT2X2;
-    (*KeywordMap)["f64mat2x3"] =               F64MAT2X3;
-    (*KeywordMap)["f64mat2x4"] =               F64MAT2X4;
-    (*KeywordMap)["f64mat3x2"] =               F64MAT3X2;
-    (*KeywordMap)["f64mat3x3"] =               F64MAT3X3;
-    (*KeywordMap)["f64mat3x4"] =               F64MAT3X4;
-    (*KeywordMap)["f64mat4x2"] =               F64MAT4X2;
-    (*KeywordMap)["f64mat4x3"] =               F64MAT4X3;
-    (*KeywordMap)["f64mat4x4"] =               F64MAT4X4;
-
-    // GL_EXT_spirv_intrinsics
-    (*KeywordMap)["spirv_instruction"] =       SPIRV_INSTRUCTION;
-    (*KeywordMap)["spirv_execution_mode"] =    SPIRV_EXECUTION_MODE;
-    (*KeywordMap)["spirv_execution_mode_id"] = SPIRV_EXECUTION_MODE_ID;
-    (*KeywordMap)["spirv_decorate"] =          SPIRV_DECORATE;
-    (*KeywordMap)["spirv_decorate_id"] =       SPIRV_DECORATE_ID;
-    (*KeywordMap)["spirv_decorate_string"] =   SPIRV_DECORATE_STRING;
-    (*KeywordMap)["spirv_type"] =              SPIRV_TYPE;
-    (*KeywordMap)["spirv_storage_class"] =     SPIRV_STORAGE_CLASS;
-    (*KeywordMap)["spirv_by_reference"] =      SPIRV_BY_REFERENCE;
-    (*KeywordMap)["spirv_literal"] =           SPIRV_LITERAL;
-
-    (*KeywordMap)["sampler2D"] =               SAMPLER2D;
-    (*KeywordMap)["samplerCube"] =             SAMPLERCUBE;
-    (*KeywordMap)["samplerCubeShadow"] =       SAMPLERCUBESHADOW;
-    (*KeywordMap)["sampler2DArray"] =          SAMPLER2DARRAY;
-    (*KeywordMap)["sampler2DArrayShadow"] =    SAMPLER2DARRAYSHADOW;
-    (*KeywordMap)["isampler2D"] =              ISAMPLER2D;
-    (*KeywordMap)["isampler3D"] =              ISAMPLER3D;
-    (*KeywordMap)["isamplerCube"] =            ISAMPLERCUBE;
-    (*KeywordMap)["isampler2DArray"] =         ISAMPLER2DARRAY;
-    (*KeywordMap)["usampler2D"] =              USAMPLER2D;
-    (*KeywordMap)["usampler3D"] =              USAMPLER3D;
-    (*KeywordMap)["usamplerCube"] =            USAMPLERCUBE;
-    (*KeywordMap)["usampler2DArray"] =         USAMPLER2DARRAY;
-    (*KeywordMap)["sampler3D"] =               SAMPLER3D;
-    (*KeywordMap)["sampler2DShadow"] =         SAMPLER2DSHADOW;
-
-    (*KeywordMap)["texture2D"] =               TEXTURE2D;
-    (*KeywordMap)["textureCube"] =             TEXTURECUBE;
-    (*KeywordMap)["texture2DArray"] =          TEXTURE2DARRAY;
-    (*KeywordMap)["itexture2D"] =              ITEXTURE2D;
-    (*KeywordMap)["itexture3D"] =              ITEXTURE3D;
-    (*KeywordMap)["itextureCube"] =            ITEXTURECUBE;
-    (*KeywordMap)["itexture2DArray"] =         ITEXTURE2DARRAY;
-    (*KeywordMap)["utexture2D"] =              UTEXTURE2D;
-    (*KeywordMap)["utexture3D"] =              UTEXTURE3D;
-    (*KeywordMap)["utextureCube"] =            UTEXTURECUBE;
-    (*KeywordMap)["utexture2DArray"] =         UTEXTURE2DARRAY;
-    (*KeywordMap)["texture3D"] =               TEXTURE3D;
-
-    (*KeywordMap)["sampler"] =                 SAMPLER;
-    (*KeywordMap)["samplerShadow"] =           SAMPLERSHADOW;
-
-    (*KeywordMap)["textureCubeArray"] =        TEXTURECUBEARRAY;
-    (*KeywordMap)["itextureCubeArray"] =       ITEXTURECUBEARRAY;
-    (*KeywordMap)["utextureCubeArray"] =       UTEXTURECUBEARRAY;
-    (*KeywordMap)["samplerCubeArray"] =        SAMPLERCUBEARRAY;
-    (*KeywordMap)["samplerCubeArrayShadow"] =  SAMPLERCUBEARRAYSHADOW;
-    (*KeywordMap)["isamplerCubeArray"] =       ISAMPLERCUBEARRAY;
-    (*KeywordMap)["usamplerCubeArray"] =       USAMPLERCUBEARRAY;
-    (*KeywordMap)["sampler1DArrayShadow"] =    SAMPLER1DARRAYSHADOW;
-    (*KeywordMap)["isampler1DArray"] =         ISAMPLER1DARRAY;
-    (*KeywordMap)["usampler1D"] =              USAMPLER1D;
-    (*KeywordMap)["isampler1D"] =              ISAMPLER1D;
-    (*KeywordMap)["usampler1DArray"] =         USAMPLER1DARRAY;
-    (*KeywordMap)["samplerBuffer"] =           SAMPLERBUFFER;
-    (*KeywordMap)["isampler2DRect"] =          ISAMPLER2DRECT;
-    (*KeywordMap)["usampler2DRect"] =          USAMPLER2DRECT;
-    (*KeywordMap)["isamplerBuffer"] =          ISAMPLERBUFFER;
-    (*KeywordMap)["usamplerBuffer"] =          USAMPLERBUFFER;
-    (*KeywordMap)["sampler2DMS"] =             SAMPLER2DMS;
-    (*KeywordMap)["isampler2DMS"] =            ISAMPLER2DMS;
-    (*KeywordMap)["usampler2DMS"] =            USAMPLER2DMS;
-    (*KeywordMap)["sampler2DMSArray"] =        SAMPLER2DMSARRAY;
-    (*KeywordMap)["isampler2DMSArray"] =       ISAMPLER2DMSARRAY;
-    (*KeywordMap)["usampler2DMSArray"] =       USAMPLER2DMSARRAY;
-    (*KeywordMap)["sampler1D"] =               SAMPLER1D;
-    (*KeywordMap)["sampler1DShadow"] =         SAMPLER1DSHADOW;
-    (*KeywordMap)["sampler2DRect"] =           SAMPLER2DRECT;
-    (*KeywordMap)["sampler2DRectShadow"] =     SAMPLER2DRECTSHADOW;
-    (*KeywordMap)["sampler1DArray"] =          SAMPLER1DARRAY;
-
-    (*KeywordMap)["samplerExternalOES"] =      SAMPLEREXTERNALOES; // GL_OES_EGL_image_external
-
-    (*KeywordMap)["__samplerExternal2DY2YEXT"] = SAMPLEREXTERNAL2DY2YEXT; // GL_EXT_YUV_target
-
-    (*KeywordMap)["itexture1DArray"] =         ITEXTURE1DARRAY;
-    (*KeywordMap)["utexture1D"] =              UTEXTURE1D;
-    (*KeywordMap)["itexture1D"] =              ITEXTURE1D;
-    (*KeywordMap)["utexture1DArray"] =         UTEXTURE1DARRAY;
-    (*KeywordMap)["textureBuffer"] =           TEXTUREBUFFER;
-    (*KeywordMap)["itexture2DRect"] =          ITEXTURE2DRECT;
-    (*KeywordMap)["utexture2DRect"] =          UTEXTURE2DRECT;
-    (*KeywordMap)["itextureBuffer"] =          ITEXTUREBUFFER;
-    (*KeywordMap)["utextureBuffer"] =          UTEXTUREBUFFER;
-    (*KeywordMap)["texture2DMS"] =             TEXTURE2DMS;
-    (*KeywordMap)["itexture2DMS"] =            ITEXTURE2DMS;
-    (*KeywordMap)["utexture2DMS"] =            UTEXTURE2DMS;
-    (*KeywordMap)["texture2DMSArray"] =        TEXTURE2DMSARRAY;
-    (*KeywordMap)["itexture2DMSArray"] =       ITEXTURE2DMSARRAY;
-    (*KeywordMap)["utexture2DMSArray"] =       UTEXTURE2DMSARRAY;
-    (*KeywordMap)["texture1D"] =               TEXTURE1D;
-    (*KeywordMap)["texture2DRect"] =           TEXTURE2DRECT;
-    (*KeywordMap)["texture1DArray"] =          TEXTURE1DARRAY;
-
-    (*KeywordMap)["attachmentEXT"] =           ATTACHMENTEXT;
-    (*KeywordMap)["iattachmentEXT"] =          IATTACHMENTEXT;
-    (*KeywordMap)["uattachmentEXT"] =          UATTACHMENTEXT;
-
-    (*KeywordMap)["subpassInput"] =            SUBPASSINPUT;
-    (*KeywordMap)["subpassInputMS"] =          SUBPASSINPUTMS;
-    (*KeywordMap)["isubpassInput"] =           ISUBPASSINPUT;
-    (*KeywordMap)["isubpassInputMS"] =         ISUBPASSINPUTMS;
-    (*KeywordMap)["usubpassInput"] =           USUBPASSINPUT;
-    (*KeywordMap)["usubpassInputMS"] =         USUBPASSINPUTMS;
-
-    (*KeywordMap)["f16sampler1D"] =                 F16SAMPLER1D;
-    (*KeywordMap)["f16sampler2D"] =                 F16SAMPLER2D;
-    (*KeywordMap)["f16sampler3D"] =                 F16SAMPLER3D;
-    (*KeywordMap)["f16sampler2DRect"] =             F16SAMPLER2DRECT;
-    (*KeywordMap)["f16samplerCube"] =               F16SAMPLERCUBE;
-    (*KeywordMap)["f16sampler1DArray"] =            F16SAMPLER1DARRAY;
-    (*KeywordMap)["f16sampler2DArray"] =            F16SAMPLER2DARRAY;
-    (*KeywordMap)["f16samplerCubeArray"] =          F16SAMPLERCUBEARRAY;
-    (*KeywordMap)["f16samplerBuffer"] =             F16SAMPLERBUFFER;
-    (*KeywordMap)["f16sampler2DMS"] =               F16SAMPLER2DMS;
-    (*KeywordMap)["f16sampler2DMSArray"] =          F16SAMPLER2DMSARRAY;
-    (*KeywordMap)["f16sampler1DShadow"] =           F16SAMPLER1DSHADOW;
-    (*KeywordMap)["f16sampler2DShadow"] =           F16SAMPLER2DSHADOW;
-    (*KeywordMap)["f16sampler2DRectShadow"] =       F16SAMPLER2DRECTSHADOW;
-    (*KeywordMap)["f16samplerCubeShadow"] =         F16SAMPLERCUBESHADOW;
-    (*KeywordMap)["f16sampler1DArrayShadow"] =      F16SAMPLER1DARRAYSHADOW;
-    (*KeywordMap)["f16sampler2DArrayShadow"] =      F16SAMPLER2DARRAYSHADOW;
-    (*KeywordMap)["f16samplerCubeArrayShadow"] =    F16SAMPLERCUBEARRAYSHADOW;
-
-    (*KeywordMap)["f16image1D"] =                   F16IMAGE1D;
-    (*KeywordMap)["f16image2D"] =                   F16IMAGE2D;
-    (*KeywordMap)["f16image3D"] =                   F16IMAGE3D;
-    (*KeywordMap)["f16image2DRect"] =               F16IMAGE2DRECT;
-    (*KeywordMap)["f16imageCube"] =                 F16IMAGECUBE;
-    (*KeywordMap)["f16image1DArray"] =              F16IMAGE1DARRAY;
-    (*KeywordMap)["f16image2DArray"] =              F16IMAGE2DARRAY;
-    (*KeywordMap)["f16imageCubeArray"] =            F16IMAGECUBEARRAY;
-    (*KeywordMap)["f16imageBuffer"] =               F16IMAGEBUFFER;
-    (*KeywordMap)["f16image2DMS"] =                 F16IMAGE2DMS;
-    (*KeywordMap)["f16image2DMSArray"] =            F16IMAGE2DMSARRAY;
-
-    (*KeywordMap)["f16texture1D"] =                 F16TEXTURE1D;
-    (*KeywordMap)["f16texture2D"] =                 F16TEXTURE2D;
-    (*KeywordMap)["f16texture3D"] =                 F16TEXTURE3D;
-    (*KeywordMap)["f16texture2DRect"] =             F16TEXTURE2DRECT;
-    (*KeywordMap)["f16textureCube"] =               F16TEXTURECUBE;
-    (*KeywordMap)["f16texture1DArray"] =            F16TEXTURE1DARRAY;
-    (*KeywordMap)["f16texture2DArray"] =            F16TEXTURE2DARRAY;
-    (*KeywordMap)["f16textureCubeArray"] =          F16TEXTURECUBEARRAY;
-    (*KeywordMap)["f16textureBuffer"] =             F16TEXTUREBUFFER;
-    (*KeywordMap)["f16texture2DMS"] =               F16TEXTURE2DMS;
-    (*KeywordMap)["f16texture2DMSArray"] =          F16TEXTURE2DMSARRAY;
-
-    (*KeywordMap)["f16subpassInput"] =              F16SUBPASSINPUT;
-    (*KeywordMap)["f16subpassInputMS"] =            F16SUBPASSINPUTMS;
-    (*KeywordMap)["__explicitInterpAMD"] =     EXPLICITINTERPAMD;
-    (*KeywordMap)["pervertexNV"] =             PERVERTEXNV;
-    (*KeywordMap)["pervertexEXT"] =            PERVERTEXEXT;
-    (*KeywordMap)["precise"] =                 PRECISE;
-
-    (*KeywordMap)["rayPayloadNV"] =            PAYLOADNV;
-    (*KeywordMap)["rayPayloadEXT"] =           PAYLOADEXT;
-    (*KeywordMap)["rayPayloadInNV"] =          PAYLOADINNV;
-    (*KeywordMap)["rayPayloadInEXT"] =         PAYLOADINEXT;
-    (*KeywordMap)["hitAttributeNV"] =          HITATTRNV;
-    (*KeywordMap)["hitAttributeEXT"] =         HITATTREXT;
-    (*KeywordMap)["callableDataNV"] =          CALLDATANV;
-    (*KeywordMap)["callableDataEXT"] =         CALLDATAEXT;
-    (*KeywordMap)["callableDataInNV"] =        CALLDATAINNV;
-    (*KeywordMap)["callableDataInEXT"] =       CALLDATAINEXT;
-    (*KeywordMap)["accelerationStructureNV"] = ACCSTRUCTNV;
-    (*KeywordMap)["accelerationStructureEXT"]   = ACCSTRUCTEXT;
-    (*KeywordMap)["rayQueryEXT"] =              RAYQUERYEXT;
-    (*KeywordMap)["perprimitiveNV"] =          PERPRIMITIVENV;
-    (*KeywordMap)["perviewNV"] =               PERVIEWNV;
-    (*KeywordMap)["taskNV"] =                  PERTASKNV;
-    (*KeywordMap)["perprimitiveEXT"] =         PERPRIMITIVEEXT;
-    (*KeywordMap)["taskPayloadSharedEXT"] =    TASKPAYLOADWORKGROUPEXT;
-
-    (*KeywordMap)["fcoopmatNV"] =              FCOOPMATNV;
-    (*KeywordMap)["icoopmatNV"] =              ICOOPMATNV;
-    (*KeywordMap)["ucoopmatNV"] =              UCOOPMATNV;
-
-    (*KeywordMap)["coopmat"] =                 COOPMAT;
-
-    (*KeywordMap)["hitObjectNV"] =             HITOBJECTNV;
-    (*KeywordMap)["hitObjectAttributeNV"] =    HITOBJECTATTRNV;
-
-    ReservedSet = new std::unordered_set<const char*, str_hash, str_eq>;
-
-    ReservedSet->insert("common");
-    ReservedSet->insert("partition");
-    ReservedSet->insert("active");
-    ReservedSet->insert("asm");
-    ReservedSet->insert("class");
-    ReservedSet->insert("union");
-    ReservedSet->insert("enum");
-    ReservedSet->insert("typedef");
-    ReservedSet->insert("template");
-    ReservedSet->insert("this");
-    ReservedSet->insert("goto");
-    ReservedSet->insert("inline");
-    ReservedSet->insert("noinline");
-    ReservedSet->insert("public");
-    ReservedSet->insert("static");
-    ReservedSet->insert("extern");
-    ReservedSet->insert("external");
-    ReservedSet->insert("interface");
-    ReservedSet->insert("long");
-    ReservedSet->insert("short");
-    ReservedSet->insert("half");
-    ReservedSet->insert("fixed");
-    ReservedSet->insert("unsigned");
-    ReservedSet->insert("input");
-    ReservedSet->insert("output");
-    ReservedSet->insert("hvec2");
-    ReservedSet->insert("hvec3");
-    ReservedSet->insert("hvec4");
-    ReservedSet->insert("fvec2");
-    ReservedSet->insert("fvec3");
-    ReservedSet->insert("fvec4");
-    ReservedSet->insert("sampler3DRect");
-    ReservedSet->insert("filter");
-    ReservedSet->insert("sizeof");
-    ReservedSet->insert("cast");
-    ReservedSet->insert("namespace");
-    ReservedSet->insert("using");
-}
-
-void TScanContext::deleteKeywordMap()
-{
-    delete KeywordMap;
-    KeywordMap = nullptr;
-    delete ReservedSet;
-    ReservedSet = nullptr;
-}
 
 // Called by yylex to get the next token.
 // Returning 0 implies end of input.
@@ -834,12 +839,22 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
         loc = ppToken.loc;
         parserToken->sType.lex.loc = loc;
         switch (token) {
-        case ';':  afterType = false; afterBuffer = false; return SEMICOLON;
-        case ',':  afterType = false;   return COMMA;
+        case ';':  afterType = false; afterBuffer = false; inDeclaratorList = false; afterDeclarator = false; angleBracketDepth = 0; squareBracketDepth = 0; parenDepth = 0; return SEMICOLON;
+        case ',':
+            // If we just processed a declarator (identifier after a type), this comma
+            // indicates that we're in a declarator list. Note that 'afterDeclarator' is
+            // only set when we are not inside a template parameter list, array expression,
+            // or function parameter list.
+            if (afterDeclarator) {
+                inDeclaratorList = true;
+            }
+            afterType = false;
+            afterDeclarator = false;
+            return COMMA;
         case ':':                       return COLON;
-        case '=':  afterType = false;   return EQUAL;
-        case '(':  afterType = false;   return LEFT_PAREN;
-        case ')':  afterType = false;   return RIGHT_PAREN;
+        case '=':  afterType = false; inDeclaratorList = false; afterDeclarator = false; return EQUAL;
+        case '(':  afterType = false; inDeclaratorList = false; afterDeclarator = false; parenDepth++; return LEFT_PAREN;
+        case ')':  afterType = false; inDeclaratorList = false; afterDeclarator = false; if (parenDepth > 0) parenDepth--; return RIGHT_PAREN;
         case '.':  field = true;        return DOT;
         case '!':                       return BANG;
         case '-':                       return DASH;
@@ -848,16 +863,16 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
         case '*':                       return STAR;
         case '/':                       return SLASH;
         case '%':                       return PERCENT;
-        case '<':                       return LEFT_ANGLE;
-        case '>':                       return RIGHT_ANGLE;
+        case '<':                       angleBracketDepth++; return LEFT_ANGLE;
+        case '>':                       if (angleBracketDepth > 0) angleBracketDepth--; return RIGHT_ANGLE;
         case '|':                       return VERTICAL_BAR;
         case '^':                       return CARET;
         case '&':                       return AMPERSAND;
         case '?':                       return QUESTION;
-        case '[':                       return LEFT_BRACKET;
-        case ']':                       return RIGHT_BRACKET;
-        case '{':  afterStruct = false; afterBuffer = false; return LEFT_BRACE;
-        case '}':                       return RIGHT_BRACE;
+        case '[':                       squareBracketDepth++; return LEFT_BRACKET;
+        case ']':                       if (squareBracketDepth > 0) squareBracketDepth--; return RIGHT_BRACKET;
+        case '{':  afterStruct = false; afterBuffer = false; inDeclaratorList = false; afterDeclarator = false; angleBracketDepth = 0; squareBracketDepth = 0; parenDepth = 0; return LEFT_BRACE;
+        case '}':  inDeclaratorList = false; afterDeclarator = false; angleBracketDepth = 0; squareBracketDepth = 0; parenDepth = 0; return RIGHT_BRACE;
         case '\\':
             parseContext.error(loc, "illegal use of escape character", "\\", "");
             break;
@@ -924,11 +939,11 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
 
 int TScanContext::tokenizeIdentifier()
 {
-    if (ReservedSet->find(tokenText) != ReservedSet->end())
+    if (ReservedSet.find(tokenText) != ReservedSet.end())
         return reservedWord();
 
-    auto it = KeywordMap->find(tokenText);
-    if (it == KeywordMap->end()) {
+    auto it = KeywordMap.find(tokenText);
+    if (it == KeywordMap.end()) {
         // Should have an identifier of some sort
         return identifierOrType();
     }
@@ -1122,6 +1137,15 @@ int TScanContext::tokenizeIdentifier()
             (parseContext.version < 420 && ! parseContext.extensionTurnedOn(E_GL_ARB_shader_image_load_store))))
             reservedWord();
         return keyword;
+    case NONTEMPORAL:
+        if (parseContext.symbolTable.atBuiltInLevel())
+            return keyword;
+        if (parseContext.extensionTurnedOn(E_GL_EXT_nontemporal_keyword)) {
+            if (!parseContext.intermediate.usingVulkanMemoryModel())
+                parseContext.warn(loc, "Nontemporal without the Vulkan Memory Model is ignored", tokenText, "");
+            return keyword;
+        }
+        return identifierOrType();
     case PATCH:
         if (parseContext.symbolTable.atBuiltInLevel() ||
             (parseContext.isEsProfile() &&
@@ -1132,12 +1156,16 @@ int TScanContext::tokenizeIdentifier()
 
         return es30ReservedFromGLSL(400);
 
-    case SAMPLE:
+    case SAMPLE: 
+    {
+        const int numLayoutExts = 3;
+        const char* layoutExts[numLayoutExts] = {E_GL_OES_shader_multisample_interpolation, E_GL_ARB_gpu_shader5,
+                                                 E_GL_NV_gpu_shader5};
         if ((parseContext.isEsProfile() && parseContext.version >= 320) ||
-            parseContext.extensionsTurnedOn(1, &E_GL_OES_shader_multisample_interpolation))
+            parseContext.extensionsTurnedOn(numLayoutExts, layoutExts))
             return keyword;
         return es30ReservedFromGLSL(400);
-
+    }
     case SUBROUTINE:
         return es30ReservedFromGLSL(400);
 
@@ -1329,6 +1357,7 @@ int TScanContext::tokenizeIdentifier()
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_ARB_gpu_shader_int64) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_int64))
             return keyword;
         return identifierOrType();
@@ -1345,6 +1374,7 @@ int TScanContext::tokenizeIdentifier()
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_8bit_storage) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_int8))
             return keyword;
         return identifierOrType();
@@ -1362,6 +1392,7 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_AMD_gpu_shader_int16) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_16bit_storage) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_int16))
             return keyword;
         return identifierOrType();
@@ -1376,6 +1407,7 @@ int TScanContext::tokenizeIdentifier()
         afterType = true;
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_int32))
             return keyword;
         return identifierOrType();
@@ -1383,6 +1415,13 @@ int TScanContext::tokenizeIdentifier()
     case F32VEC2:
     case F32VEC3:
     case F32VEC4:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
+            parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_float32))
+            return keyword;
+        return identifierOrType();
     case F32MAT2:
     case F32MAT3:
     case F32MAT4:
@@ -1406,6 +1445,14 @@ int TScanContext::tokenizeIdentifier()
     case F64VEC2:
     case F64VEC3:
     case F64VEC4:
+    afterType = true;
+    if (parseContext.symbolTable.atBuiltInLevel() ||
+        parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+        (parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) && 
+         parseContext.extensionTurnedOn(E_GL_ARB_gpu_shader_fp64)) ||
+        parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_float64))
+        return keyword;
+    return identifierOrType();
     case F64MAT2:
     case F64MAT3:
     case F64MAT4:
@@ -1434,6 +1481,7 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_AMD_gpu_shader_half_float) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_16bit_storage) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types) ||
+            parseContext.extensionTurnedOn(E_GL_NV_gpu_shader5) ||
             parseContext.extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_float16))
             return keyword;
 
@@ -1460,6 +1508,39 @@ int TScanContext::tokenizeIdentifier()
 
         return identifierOrType();
 
+    case BFLOAT16_T:
+    case BF16VEC2:
+    case BF16VEC3:
+    case BF16VEC4:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_bfloat16))
+            return keyword;
+
+        return identifierOrType();
+
+    case FLOATE5M2_T:
+    case FE5M2VEC2:
+    case FE5M2VEC3:
+    case FE5M2VEC4:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_float_e5m2))
+            return keyword;
+
+        return identifierOrType();
+
+    case FLOATE4M3_T:
+    case FE4M3VEC2:
+    case FE4M3VEC3:
+    case FE4M3VEC4:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_float_e4m3))
+            return keyword;
+
+        return identifierOrType();
+
     case SAMPLERCUBEARRAY:
     case SAMPLERCUBEARRAYSHADOW:
     case ISAMPLERCUBEARRAY:
@@ -1468,7 +1549,9 @@ int TScanContext::tokenizeIdentifier()
         if ((parseContext.isEsProfile() && parseContext.version >= 320) ||
             parseContext.extensionsTurnedOn(Num_AEP_texture_cube_map_array, AEP_texture_cube_map_array))
             return keyword;
-        if (parseContext.isEsProfile() || (parseContext.version < 400 && ! parseContext.extensionTurnedOn(E_GL_ARB_texture_cube_map_array)))
+        if (parseContext.isEsProfile() || (parseContext.version < 400 &&
+            ! parseContext.extensionTurnedOn(E_GL_ARB_texture_cube_map_array)
+            && ! parseContext.extensionsTurnedOn(Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5)))
             reservedWord();
         return keyword;
 
@@ -1749,7 +1832,9 @@ int TScanContext::tokenizeIdentifier()
     case PRECISE:
         if ((parseContext.isEsProfile() &&
              (parseContext.version >= 320 || parseContext.extensionsTurnedOn(Num_AEP_gpu_shader5, AEP_gpu_shader5))) ||
-            (!parseContext.isEsProfile() && parseContext.version >= 400))
+            (!parseContext.isEsProfile() &&
+             (parseContext.version >= 400 
+             || parseContext.extensionsTurnedOn(Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5))))
             return keyword;
         if (parseContext.isEsProfile() && parseContext.version == 310) {
             reservedWord();
@@ -1786,11 +1871,24 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_NV_integer_cooperative_matrix))
             return keyword;
         return identifierOrType();
+    case TENSORARM:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_ARM_tensors))
+            return keyword;
+        return identifierOrType();
 
     case COOPMAT:
         afterType = true;
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_KHR_cooperative_matrix))
+            return keyword;
+        return identifierOrType();
+
+    case COOPVECNV:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_NV_cooperative_vector))
             return keyword;
         return identifierOrType();
 
@@ -1822,10 +1920,33 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         return identifierOrType();
 
+    case HITOBJECTEXT:
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            (!parseContext.isEsProfile() && parseContext.version >= 460
+                 && parseContext.extensionTurnedOn(E_GL_EXT_shader_invocation_reorder)))
+            return keyword;
+        return identifierOrType();
+
     case HITOBJECTATTRNV:
         if (parseContext.symbolTable.atBuiltInLevel() ||
             (!parseContext.isEsProfile() && parseContext.version >= 460
                  && parseContext.extensionTurnedOn(E_GL_NV_shader_invocation_reorder)))
+            return keyword;
+        return identifierOrType();
+
+    case HITOBJECTATTREXT:
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            (!parseContext.isEsProfile() && parseContext.version >= 460
+                 && parseContext.extensionTurnedOn(E_GL_EXT_shader_invocation_reorder)))
+            return keyword;
+        return identifierOrType();
+
+    case FUNCTION:
+    case TENSORLAYOUTNV:
+    case TENSORVIEWNV:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_NV_cooperative_matrix2))
             return keyword;
         return identifierOrType();
 
@@ -1841,14 +1962,29 @@ int TScanContext::identifierOrType()
     if (field)
         return IDENTIFIER;
 
+    // If we see an identifier right after a type, this might be a declarator.
+    // But not in template parameters (inside angle brackets), array expressions (inside square brackets),
+    // or function parameters (inside parentheses)
+    if (afterType && angleBracketDepth == 0 && squareBracketDepth == 0 && parenDepth == 0) {
+        afterDeclarator = true;
+        afterType = false;
+        return IDENTIFIER;
+    }
+
     parserToken->sType.lex.symbol = parseContext.symbolTable.find(*parserToken->sType.lex.string);
     if ((afterType == false && afterStruct == false) && parserToken->sType.lex.symbol != nullptr) {
         if (const TVariable* variable = parserToken->sType.lex.symbol->getAsVariable()) {
             if (variable->isUserType() &&
                 // treat redeclaration of forward-declared buffer/uniform reference as an identifier
                 !(variable->getType().isReference() && afterBuffer)) {
-                afterType = true;
 
+                // If we're in a declarator list (like "float a, B;"), treat struct names as IDENTIFIER
+                // to fix GitHub issue #3931
+                if (inDeclaratorList) {
+                    return IDENTIFIER;
+                }
+                
+                afterType = true;
                 return TYPE_NAME;
             }
         }

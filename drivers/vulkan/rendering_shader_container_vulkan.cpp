@@ -30,7 +30,7 @@
 
 #include "rendering_shader_container_vulkan.h"
 
-#include "thirdparty/misc/smolv.h"
+#include <thirdparty/misc/smolv.h>
 
 // RenderingShaderContainerVulkan
 
@@ -44,7 +44,9 @@ uint32_t RenderingShaderContainerVulkan::_format_version() const {
 	return FORMAT_VERSION;
 }
 
-bool RenderingShaderContainerVulkan::_set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) {
+bool RenderingShaderContainerVulkan::_set_code_from_spirv(const ReflectShader &p_shader) {
+	const LocalVector<ReflectShaderStage> &p_spirv = p_shader.shader_stages;
+
 	PackedByteArray code_bytes;
 	shaders.resize(p_spirv.size());
 	for (uint64_t i = 0; i < p_spirv.size(); i++) {
@@ -98,12 +100,20 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatVulk
 	return SHADER_LANGUAGE_VULKAN_VERSION_1_1;
 }
 
-RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_3;
+RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version(ShaderStage p_stage) const {
+	if (p_stage >= SHADER_STAGE_RAYGEN && p_stage <= SHADER_STAGE_INTERSECTION) {
+		return SHADER_SPIRV_VERSION_1_4;
+	} else {
+		return SHADER_SPIRV_VERSION_1_3;
+	}
 }
 
 void RenderingShaderContainerFormatVulkan::set_debug_info_enabled(bool p_debug_info_enabled) {
 	debug_info_enabled = p_debug_info_enabled;
+}
+
+bool RenderingShaderContainerFormatVulkan::get_debug_info_enabled() const {
+	return debug_info_enabled;
 }
 
 RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}

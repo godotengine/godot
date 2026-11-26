@@ -33,12 +33,21 @@
 
 #include "detect_prime_egl.h"
 
+#include "core/core_globals.h"
 #include "core/string/print_string.h"
-#include "core/variant/variant.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h" // IWYU pragma: keep. Needed for print_verbose.
+
+#ifdef GLAD_ENABLED
+#include <platform_gl.h>
+#else
+#include <GL/glcorearb.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cstdlib>
 
 // To prevent shadowing warnings.
@@ -80,6 +89,8 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 	eglBindAPI(EGL_OPENGL_API);
 
 	EGLint attribs[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		1,
 		EGL_BLUE_SIZE,
@@ -92,7 +103,13 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 	};
 
 	EGLint config_count = 0;
+	// Try desktop GL.
 	eglChooseConfig(egl_display, attribs, &egl_config, 1, &config_count);
+	if (config_count == 0) {
+		// Try GLES3.
+		attribs[1] = EGL_OPENGL_ES3_BIT;
+		eglChooseConfig(egl_display, attribs, &egl_config, 1, &config_count);
+	}
 
 	EGLint context_attribs[] = {
 		EGL_CONTEXT_MAJOR_VERSION, 3,

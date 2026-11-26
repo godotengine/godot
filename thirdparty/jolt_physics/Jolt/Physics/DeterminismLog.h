@@ -32,10 +32,29 @@ private:
 	}
 
 public:
-							DeterminismLog()
+	/// When base path is set, use it as the base path for the log file, otherwise use the current working directory
+	inline static const char *sBasePath = nullptr;
+
+	void					Open()
 	{
-		mLog.open("detlog.txt", std::ios::out | std::ios::trunc | std::ios::binary); // Binary because we don't want a difference between Unix and Windows line endings.
+		// Determine file name
+		char file_name[1024] = "detlog.txt";
+		if (sBasePath != nullptr)
+			snprintf(file_name, sizeof(file_name), "%s/detlog.txt", sBasePath);
+		Trace("Opening determinism log file: %s", file_name);
+#ifdef JPH_PLATFORM_ANDROID
+		Trace("Retrieve it using: adb pull %s detlog.txt", file_name);
+#endif
+
+		// Open the file
+		mLog.open(file_name, std::ios::out | std::ios::trunc | std::ios::binary); // Binary because we don't want a difference between Unix and Windows line endings.
 		mLog.fill('0');
+		JPH_ASSERT(mLog.is_open());
+	}
+
+	void					Close()
+	{
+		mLog.close();
 	}
 
 	DeterminismLog &		operator << (char inValue)
@@ -50,7 +69,7 @@ public:
 		return *this;
 	}
 
-	DeterminismLog &		operator << (const string &inValue)
+	DeterminismLog &		operator << (const String &inValue)
 	{
 		mLog << std::dec << inValue;
 		return *this;
@@ -142,7 +161,9 @@ private:
 };
 
 /// Will log something to the determinism log, usage: JPH_DET_LOG("label " << value);
-#define JPH_DET_LOG(...)	DeterminismLog::sLog << __VA_ARGS__ << '\n'
+#define JPH_DET_LOG_OPEN()		DeterminismLog::sLog.Open()
+#define JPH_DET_LOG(...)		DeterminismLog::sLog << __VA_ARGS__ << '\n'
+#define JPH_DET_LOG_CLOSE()		DeterminismLog::sLog.Close()
 
 JPH_NAMESPACE_END
 
@@ -152,7 +173,9 @@ JPH_SUPPRESS_WARNING_PUSH
 JPH_SUPPRESS_WARNINGS
 
 /// By default we log nothing
+#define JPH_DET_LOG_OPEN()
 #define JPH_DET_LOG(...)
+#define JPH_DET_LOG_CLOSE()
 
 JPH_SUPPRESS_WARNING_POP
 

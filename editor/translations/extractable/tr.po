@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Hepsi Tanındı"
-
 msgid "New Code Region"
 msgstr "Yeni Kod Bölgesi"
 
@@ -74,6 +71,9 @@ msgstr "Bu Klasörü Seç"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Bu klasörün içeriğine erişim izniniz yok."
+
+msgid "All Recognized"
+msgstr "Hepsi Tanındı"
 
 msgid "All Files"
 msgstr "Tüm Dosyalar"

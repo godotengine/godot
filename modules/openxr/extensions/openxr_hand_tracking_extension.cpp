@@ -55,7 +55,7 @@ OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	unobstructed_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_unobstructed_data_source");
@@ -281,12 +281,12 @@ void OpenXRHandTrackingExtension::on_process() {
 					if (location.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
 						flags.set_flag(XRHandTracker::HAND_JOINT_FLAG_POSITION_TRACKED);
 					}
-					if (location.locationFlags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+					if (velocity.velocityFlags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
 						flags.set_flag(XRHandTracker::HAND_JOINT_FLAG_LINEAR_VELOCITY_VALID);
 						linear_velocity = Vector3(velocity.linearVelocity.x, velocity.linearVelocity.y, velocity.linearVelocity.z);
 						godot_tracker->set_hand_joint_linear_velocity((XRHandTracker::HandJoint)joint, linear_velocity);
 					}
-					if (location.locationFlags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+					if (velocity.velocityFlags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
 						flags.set_flag(XRHandTracker::HAND_JOINT_FLAG_ANGULAR_VELOCITY_VALID);
 						angular_velocity = Vector3(velocity.angularVelocity.x, velocity.angularVelocity.y, velocity.angularVelocity.z);
 						godot_tracker->set_hand_joint_angular_velocity((XRHandTracker::HandJoint)joint, angular_velocity);

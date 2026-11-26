@@ -1197,7 +1197,6 @@ void Collada::_parse_skin_controller(XMLParser &p_parser, const String &p_id) {
 
 	/* STORE REST MATRICES */
 
-	Vector<Transform3D> rests;
 	ERR_FAIL_COND(!skindata.joints.sources.has("JOINT"));
 	ERR_FAIL_COND(!skindata.joints.sources.has("INV_BIND_MATRIX"));
 

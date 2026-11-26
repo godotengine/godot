@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "object.h"
+#include "object.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -65,162 +67,44 @@ struct _ObjectDebugLock {
 
 #endif
 
-struct _ObjectSignalLock {
-	Mutex *mutex;
-	_ObjectSignalLock(const Object *const p_obj) {
-		mutex = p_obj->signal_mutex;
-		if (mutex) {
-			mutex->lock();
+struct ObjectSignalLock {
+	Mutex *mutex1 = nullptr;
+	Mutex *mutex2 = nullptr;
+
+	ObjectSignalLock(const Object *p_obj1, const Object *p_obj2 = nullptr) {
+		mutex1 = p_obj1->signal_mutex;
+
+		if (p_obj2 != nullptr) {
+			mutex2 = p_obj2->signal_mutex;
+
+			if (mutex2 < mutex1) {
+				// We must always lock two locks in the same order.
+				SWAP(mutex1, mutex2);
+			} else if (unlikely(mutex2 == mutex1)) {
+				// No point locking the same lock twice.
+				mutex2 = nullptr;
+			}
+		}
+
+		if (mutex1) {
+			mutex1->lock();
+		}
+
+		if (mutex2) {
+			mutex2->lock();
 		}
 	}
-	~_ObjectSignalLock() {
-		if (mutex) {
-			mutex->unlock();
+
+	~ObjectSignalLock() {
+		if (mutex2) {
+			mutex2->unlock();
+		}
+
+		if (mutex1) {
+			mutex1->unlock();
 		}
 	}
 };
-
-#define OBJ_SIGNAL_LOCK _ObjectSignalLock _signal_lock(this);
-
-PropertyInfo::operator Dictionary() const {
-	Dictionary d;
-	d["name"] = name;
-	d["class_name"] = class_name;
-	d["type"] = type;
-	d["hint"] = hint;
-	d["hint_string"] = hint_string;
-	d["usage"] = usage;
-	return d;
-}
-
-PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
-	PropertyInfo pi;
-
-	if (p_dict.has("type")) {
-		pi.type = Variant::Type(int(p_dict["type"]));
-	}
-
-	if (p_dict.has("name")) {
-		pi.name = p_dict["name"];
-	}
-
-	if (p_dict.has("class_name")) {
-		pi.class_name = p_dict["class_name"];
-	}
-
-	if (p_dict.has("hint")) {
-		pi.hint = PropertyHint(int(p_dict["hint"]));
-	}
-
-	if (p_dict.has("hint_string")) {
-		pi.hint_string = p_dict["hint_string"];
-	}
-
-	if (p_dict.has("usage")) {
-		pi.usage = p_dict["usage"];
-	}
-
-	return pi;
-}
-
-TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
-	TypedArray<Dictionary> va;
-	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
-		va.push_back(Dictionary(E->get()));
-	}
-
-	return va;
-}
-
-TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector) {
-	TypedArray<Dictionary> va;
-	for (const PropertyInfo &E : p_vector) {
-		va.push_back(Dictionary(E));
-	}
-
-	return va;
-}
-
-MethodInfo::operator Dictionary() const {
-	Dictionary d;
-	d["name"] = name;
-	d["args"] = convert_property_list(arguments);
-	Array da;
-	for (int i = 0; i < default_arguments.size(); i++) {
-		da.push_back(default_arguments[i]);
-	}
-	d["default_args"] = da;
-	d["flags"] = flags;
-	d["id"] = id;
-	Dictionary r = return_val;
-	d["return"] = r;
-	return d;
-}
-
-MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
-	MethodInfo mi;
-
-	if (p_dict.has("name")) {
-		mi.name = p_dict["name"];
-	}
-	Array args;
-	if (p_dict.has("args")) {
-		args = p_dict["args"];
-	}
-
-	for (const Variant &arg : args) {
-		Dictionary d = arg;
-		mi.arguments.push_back(PropertyInfo::from_dict(d));
-	}
-	Array defargs;
-	if (p_dict.has("default_args")) {
-		defargs = p_dict["default_args"];
-	}
-	for (const Variant &defarg : defargs) {
-		mi.default_arguments.push_back(defarg);
-	}
-
-	if (p_dict.has("return")) {
-		mi.return_val = PropertyInfo::from_dict(p_dict["return"]);
-	}
-
-	if (p_dict.has("flags")) {
-		mi.flags = p_dict["flags"];
-	}
-
-	return mi;
-}
-
-uint32_t MethodInfo::get_compatibility_hash() const {
-	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
-
-	uint32_t hash = hash_murmur3_one_32(has_return);
-	hash = hash_murmur3_one_32(arguments.size(), hash);
-
-	if (has_return) {
-		hash = hash_murmur3_one_32(return_val.type, hash);
-		if (return_val.class_name != StringName()) {
-			hash = hash_murmur3_one_32(return_val.class_name.hash(), hash);
-		}
-	}
-
-	for (const PropertyInfo &arg : arguments) {
-		hash = hash_murmur3_one_32(arg.type, hash);
-		if (arg.class_name != StringName()) {
-			hash = hash_murmur3_one_32(arg.class_name.hash(), hash);
-		}
-	}
-
-	hash = hash_murmur3_one_32(default_arguments.size(), hash);
-	for (const Variant &v : default_arguments) {
-		hash = hash_murmur3_one_32(v.hash(), hash);
-	}
-
-	hash = hash_murmur3_one_32(flags & METHOD_FLAG_CONST ? 1 : 0, hash);
-	hash = hash_murmur3_one_32(flags & METHOD_FLAG_VARARG ? 1 : 0, hash);
-
-	return hash_fmix32(hash);
-}
 
 Object::Connection::operator Variant() const {
 	Dictionary d;
@@ -252,20 +136,18 @@ Object::Connection::Connection(const Variant &p_variant) {
 }
 
 bool Object::_predelete() {
-	_predelete_ok = 1;
+	_predelete_ok = true;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (!_predelete_ok) {
 		return false;
 	}
 
-	_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+	_gdtype_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
 	notification(NOTIFICATION_PREDELETE_CLEANUP, true);
 
 	// Destruction order starts with the most derived class, and progresses towards the base Object class:
 	// Script subclasses -> GDExtension subclasses -> C++ subclasses -> Object
-	if (script_instance) {
-		memdelete(script_instance);
-	}
+	memdelete(script_instance);
 	script_instance = nullptr;
 
 	if (_extension) {
@@ -279,6 +161,7 @@ bool Object::_predelete() {
 		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
+		// _gdtype_ptr = nullptr; // The pointer already set to nullptr above, no need to do it again.
 	}
 #ifdef TOOLS_ENABLED
 	else if (_instance_bindings != nullptr) {
@@ -301,7 +184,7 @@ void Object::cancel_free() {
 
 void Object::_initialize() {
 	// Cache the class name in the object for quick reference.
-	_class_name_ptr = _get_class_namev();
+	_gdtype_ptr = &_get_typev();
 	_initialize_classv();
 }
 
@@ -337,10 +220,8 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 
 	// Try built-in setter.
-	{
-		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
-			return;
-		}
+	if (set_native(p_name, p_value, r_valid)) {
+		return;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -351,16 +232,8 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else {
-		Variant **V = metadata_properties.getptr(p_name);
-		if (V) {
-			**V = p_value;
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return;
-		} else if (p_name.operator String().begins_with("metadata/")) {
-			// Must exist, otherwise duplicate() will not work.
-			set_meta(p_name.operator String().replace_first("metadata/", ""), p_value);
+		if (p_name.string().begins_with("metadata/")) {
+			set_meta(p_name.string().substr(strlen("metadata/")), p_value);
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -416,13 +289,8 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 
 	// Try built-in getter.
-	{
-		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return ret;
-		}
+	if (Variant value; get_native(p_name, value, r_valid)) {
+		return value;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -433,14 +301,21 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 	}
 
-	const Variant *const *V = metadata_properties.getptr(p_name);
-
-	if (V) {
-		ret = **V;
-		if (r_valid) {
-			*r_valid = true;
+	if (p_name.string().begins_with("metadata/")) {
+		const StringName meta_key = p_name.string().substr(strlen("metadata/"));
+		const Variant *V = metadata.getptr(meta_key);
+		if (V) {
+			ret = *V;
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return ret;
+		} else {
+			if (r_valid) {
+				*r_valid = false;
+			}
+			return Variant();
 		}
-		return ret;
 
 	} else {
 #ifdef TOOLS_ENABLED
@@ -469,6 +344,132 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 		return Variant();
 	}
+}
+
+bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
+				if (!psg.setter) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					return true;
+				}
+
+				Callable::CallError ce;
+
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[2] = { &index, &p_value };
+					//p_object->call(psg->setter,arg,2,ce);
+					psg.setter->call(this, arg, 2, ce);
+				} else {
+					const Variant *arg[1] = { &p_value };
+					psg.setter->call(this, arg, 1, ce);
+				}
+
+				if (r_valid) {
+					*r_valid = ce.error == Callable::CallError::CALL_OK;
+				}
+				return true;
+			}
+			case GDType::Member::Type::INTEGER_CONSTANT:
+			case GDType::Member::Type::METHOD:
+			case GDType::Member::Type::ENUM:
+			case GDType::Member::Type::SIGNAL: {
+				// All other properties are unsettable.
+				if (r_valid) {
+					*r_valid = false;
+				}
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_valid) const {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
+				if (!psg.getter) {
+					if (r_valid) {
+						*r_valid = true; // Set to true for compat reasons.
+					}
+					r_value = Variant();
+					return true;
+				}
+
+				Callable::CallError ce;
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[1] = { &index };
+					r_value = psg.getter->call(const_cast<Object *>(this), arg, 1, ce);
+				} else {
+					r_value = psg.getter->call(const_cast<Object *>(this), nullptr, 0, ce);
+				}
+
+				if (ce.error != Callable::CallError::CALL_OK) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					r_value = Variant();
+				} else if (r_valid) {
+					*r_valid = true;
+				}
+				return true;
+			}
+			case GDType::Member::Type::INTEGER_CONSTANT: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = member->payload.integer_constant.value;
+				return true;
+			}
+			case GDType::Member::Type::METHOD: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Callable(this, p_name);
+				return true;
+			}
+			case GDType::Member::Type::SIGNAL: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Signal(this, p_name);
+				return true;
+			}
+			case GDType::Member::Type::ENUM: {
+				if (r_valid) {
+					*r_valid = false;
+				}
+				r_value = Variant();
+				return true;
+			}
+		}
+	}
+
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_name == CoreStringName(free_)) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+
+		r_value = Callable(this, p_name);
+		return true;
+	}
+
+	if (r_valid) {
+		*r_valid = false;
+	}
+	return false;
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
@@ -596,24 +597,23 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
-	}
+	const uint32_t base_script_usage = is_class(Script::get_class_static()) ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static(), base_script_usage | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_NEVER_DUPLICATE));
 
 	if (script_instance && !p_reversed) {
 		script_instance->get_property_list(p_list);
 	}
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
-		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
+		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.string());
 		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
 			if (Object::cast_to<Script>(obj)) {
-				pi.hint_string = "Script";
+				pi.hint_string = Script::get_class_static();
 				pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
 			} else {
-				pi.hint_string = "Resource";
+				pi.hint_string = Resource::get_class_static();
 			}
 		}
 		p_list->push_back(pi);
@@ -744,8 +744,8 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-	if (method != nullptr) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (member != nullptr && member->type == GDType::Member::Type::METHOD) {
 		return true;
 	}
 
@@ -877,11 +877,10 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
 		// Force jump table.
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -900,15 +899,14 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	if (method) {
-		ret = method->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = member->payload.method;
+	return method->call(this, p_args, p_argcount, r_error);
 }
 
 Variant Object::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -920,11 +918,10 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
 		//force jumptable
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -944,19 +941,49 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	if (method) {
-		if (!method->is_const()) {
-			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
-			return ret;
-		}
-		ret = method->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = member->payload.method;
+
+	if (!method->is_const()) {
+		r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
+		return Variant();
+	}
+
+	return method->call(this, p_args, p_argcount, r_error);
+}
+
+void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
+	void *fn_ptr = nullptr;
+	if (_extension->get_virtual_call_data2 && _extension->call_virtual_with_data) {
+		fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+	} else if (_extension->get_virtual2) {
+		fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+#ifndef DISABLE_DEPRECATED
+	} else if (p_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_fn_name).size() == 0) {
+		if (_extension->get_virtual_call_data && _extension->call_virtual_with_data) {
+			fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
+		} else if (_extension->get_virtual) {
+			fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
+		}
+#endif
+	}
+#ifdef TOOLS_ENABLED
+	if (_extension->reloadable) {
+		VirtualMethodTracker *tracker = memnew(VirtualMethodTracker);
+		tracker->method = (void **)&r_fn_ptr;
+		tracker->next = virtual_method_list;
+		virtual_method_list = tracker;
+	}
+#endif
+	if (fn_ptr == nullptr) {
+		fn_ptr = reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR);
+	}
+	r_fn_ptr = fn_ptr;
 }
 
 void Object::_notification_forward(int p_notification) {
@@ -1016,21 +1043,11 @@ String Object::to_string() {
 			return ret;
 		}
 	}
-	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
-}
-
-void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
-	//this function is not meant to be used in any of these ways
-	ERR_FAIL_COND(p_script.is_null());
-	ERR_FAIL_NULL(p_instance);
-	ERR_FAIL_COND(script_instance != nullptr || !script.is_null());
-
-	script = p_script;
-	script_instance = p_instance;
+	return _to_string();
 }
 
 void Object::set_script(const Variant &p_script) {
-	if (script == p_script) {
+	if (get_script() == p_script) {
 		return;
 	}
 
@@ -1039,8 +1056,6 @@ void Object::set_script(const Variant &p_script) {
 		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
 	}
-
-	script = p_script;
 
 	if (script_instance) {
 		memdelete(script_instance);
@@ -1066,21 +1081,13 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 		return;
 	}
 
-	if (script_instance) {
-		memdelete(script_instance);
-	}
+	memdelete(script_instance);
 
 	script_instance = p_instance;
-
-	if (p_instance) {
-		script = p_instance->get_script();
-	} else {
-		script = Variant();
-	}
 }
 
 Variant Object::get_script() const {
-	return script;
+	return script_instance ? Variant(Ref<Script>(script_instance->get_script())) : Variant();
 }
 
 bool Object::has_meta(const StringName &p_name) const {
@@ -1093,7 +1100,6 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 			metadata.erase(p_name);
 
 			const String &sname = p_name;
-			metadata_properties.erase("metadata/" + sname);
 			if (!sname.begins_with("_")) {
 				// Metadata starting with _ don't show up in the inspector, so no need to update.
 				notify_property_list_changed();
@@ -1106,11 +1112,10 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
-		Variant *V = &metadata.insert(p_name, p_value)->value;
+		ERR_FAIL_COND_MSG(!p_name.string().is_valid_unicode_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
+		metadata.insert(p_name, p_value);
 
 		const String &sname = p_name;
-		metadata_properties["metadata/" + sname] = V;
 		if (!sname.begins_with("_")) {
 			notify_property_list_changed();
 		}
@@ -1178,9 +1183,9 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
+	ERR_FAIL_COND_MSG(get_gdtype().members().has(p_signal.name), vformat("User signal's name conflicts with a built-in member of '%s'.", get_class_name()));
 
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), vformat("Trying to add already existing signal '%s'.", p_signal.name));
 	SignalData s;
@@ -1189,7 +1194,7 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	if (!signal_map.has(p_name)) {
 		return false;
@@ -1198,19 +1203,26 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
-	OBJ_SIGNAL_LOCK
+	HashMap<Callable, Object::SignalData::Slot> slots_to_disconnect;
 
-	SignalData *s = signal_map.getptr(p_name);
-	ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
-	ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
-	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+	{
+		ObjectSignalLock signal_lock(this);
+
+		SignalData *s = signal_map.getptr(p_name);
+		ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
+		ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
+
+		slots_to_disconnect = std::move(s->slot_map);
+		signal_map.erase(p_name);
+	}
+
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : slots_to_disconnect) {
 		Object *target = slot_kv.key.get_object();
 		if (likely(target)) {
+			ObjectSignalLock signal_lock(target);
 			target->connections.erase(slot_kv.value.cE);
 		}
 	}
-
-	signal_map.erase(p_name);
 }
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1256,14 +1268,15 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	uint32_t slot_count = 0;
 
 	{
-		OBJ_SIGNAL_LOCK
+		ObjectSignalLock signal_lock(this);
 
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
 #ifdef DEBUG_ENABLED
-			bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
+			const GDType::Member *member = get_gdtype().members().getptr(p_name);
+			bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 			//check in script
-			ERR_FAIL_COND_V_MSG(!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
+			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
 			//not connected? just return
 			return ERR_UNAVAILABLE;
@@ -1283,32 +1296,30 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		}
 
 		DEV_ASSERT(slot_count == s->slot_map.size());
+	}
 
-		// Disconnect all one-shot connections before emitting to prevent recursion.
-		for (uint32_t i = 0; i < slot_count; ++i) {
-			bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
+	// Disconnect all one-shot connections before emitting to prevent recursion.
+	for (uint32_t i = 0; i < slot_count; ++i) {
+		bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
 #ifdef TOOLS_ENABLED
-			if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-				// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
-				disconnect = false;
-			}
+		if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+			// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
+			disconnect = false;
+		}
 #endif
-			if (disconnect) {
-				_disconnect(p_name, slot_callables[i]);
-			}
+		if (disconnect) {
+			_disconnect(p_name, slot_callables[i]);
 		}
 	}
 
 	OBJ_DEBUG_LOCK
 
-	// If this is a ref-counted object, prevent it from being destroyed during signal
-	// emission, which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
-	// Moreover, since signals can be emitted from constructors (classic example being
-	// notify_property_list_changed), we must be careful not to do the ref init ourselves,
-	// which would lead to the object being destroyed at the end of this function.
-	bool pending_unref = Object::cast_to<RefCounted>(this) ? ((RefCounted *)this)->reference() : false;
-
 	Error err = OK;
+
+	LocalVector<const Variant *> append_source_mem;
+	// If this is a ref-counted object, `source` also prevents it from being destroyed during
+	// signal emission, which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
+	Variant source = this;
 
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		const Callable &callable = slot_callables[i];
@@ -1322,6 +1333,31 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		const Variant **args = p_args;
 		int argc = p_argcount;
 
+		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			// Source is being appended regardless of unbinds.
+			// Implemented by inserting before the first to-be-unbinded arg.
+			int source_index = p_argcount - callable.get_unbound_arguments_count();
+			if (source_index >= 0) {
+				append_source_mem.resize(p_argcount + 1);
+				const Variant **args_mem = append_source_mem.ptr();
+
+				for (int j = 0; j < source_index; j++) {
+					args_mem[j] = p_args[j];
+				}
+				args_mem[source_index] = &source;
+				for (int j = source_index; j < p_argcount; j++) {
+					args_mem[j + 1] = p_args[j];
+				}
+
+				args = args_mem;
+				argc = p_argcount + 1;
+			} else {
+				// More args unbound than provided, call will fail.
+				// Since appended source is non-unbindable, the error
+				// about too many unbinds should be correct as is.
+			}
+		}
+
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
 		} else {
@@ -1332,14 +1368,18 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			_emitting = false;
 
 			if (ce.error != Callable::CallError::CALL_OK) {
+				Object *target = callable.get_object();
 #ifdef DEBUG_ENABLED
-				if (flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool())) {
-					continue;
+				if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
+					Ref<Script> other_scr = target->get_script();
+					if (other_scr.is_valid() && !other_scr->is_tool()) {
+						// Trying to call not-tool method in editor, just ignore it.
+						continue;
+					}
 				}
 #endif
-				Object *target = callable.get_object();
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
-					//most likely object is not initialized yet, do not throw error.
+					// Most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT(vformat("Error calling from signal '%s' to callable: %s.", String(p_name), Variant::get_callable_error_text(callable, args, argc, ce)));
 					err = ERR_METHOD_NOT_FOUND;
@@ -1357,16 +1397,23 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		memfree(slot_flags);
 	}
 
-	if (pending_unref) {
-		// We have to do the same Ref<T> would do. We can't just use Ref<T>
-		// because it would do the init ref logic, which is something this function
-		// shouldn't do, as explained above.
-		if (((RefCounted *)this)->unreference()) {
-			memdelete(this);
-		}
-	}
+	(void)source; // Ensure it's scoped to the function so it lives up to the end.
 
 	return err;
+}
+
+void Object::_reset_gdtype() const {
+	if (_extension) {
+		// Set to extension's type.
+		_gdtype_ptr = _extension->gdtype;
+	} else {
+		// Reset to internal type.
+		_gdtype_ptr = &_get_typev();
+	}
+}
+
+void Object::autorelease_gdtype(GDType **r_type) {
+	ClassDB::gdtype_autorelease_pool.push_back(r_type);
 }
 
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
@@ -1374,7 +1421,7 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// without access to ADD_SIGNAL in bind_methods
 	// added events are per instance, as opposed to the other ones, which are global
 
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	MethodInfo mi;
 	mi.name = p_name;
@@ -1428,6 +1475,8 @@ TypedArray<Dictionary> Object::_get_signal_connection_list(const StringName &p_s
 }
 
 TypedArray<Dictionary> Object::_get_incoming_connections() const {
+	ObjectSignalLock signal_lock(this);
+
 	TypedArray<Dictionary> ret;
 	for (const Object::Connection &connection : connections) {
 		ret.push_back(connection);
@@ -1437,14 +1486,12 @@ TypedArray<Dictionary> Object::_get_incoming_connections() const {
 }
 
 bool Object::has_signal(const StringName &p_name) const {
-	if (!script.is_null()) {
-		Ref<Script> scr = script;
-		if (scr.is_valid() && scr->has_script_signal(p_name)) {
-			return true;
-		}
+	if (script_instance && script_instance->get_script()->has_script_signal(p_name)) {
+		return true;
 	}
 
-	if (ClassDB::has_signal(get_class_name(), p_name)) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member && member->type == GDType::Member::Type::SIGNAL) {
 		return true;
 	}
 
@@ -1456,13 +1503,10 @@ bool Object::has_signal(const StringName &p_name) const {
 }
 
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
-	if (!script.is_null()) {
-		Ref<Script> scr = script;
-		if (scr.is_valid()) {
-			scr->get_script_signal_list(p_signals);
-		}
+	if (script_instance) {
+		script_instance->get_script()->get_script_signal_list(p_signals);
 	}
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
@@ -1477,7 +1521,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 }
 
 void Object::get_all_signal_connections(List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
@@ -1489,7 +1533,7 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 }
 
 void Object::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1502,7 +1546,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 }
 
 int Object::get_persistent_signal_connection_count() const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 	int count = 0;
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
@@ -1518,8 +1562,20 @@ int Object::get_persistent_signal_connection_count() const {
 	return count;
 }
 
+uint32_t Object::get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const {
+	ObjectSignalLock signal_lock(this);
+	const SignalData *signal_data = signal_map.getptr(p_name);
+	if (signal_data) {
+		const SignalData::Slot *slot = signal_data->slot_map.getptr(p_callable);
+		if (slot) {
+			return slot->conn.flags;
+		}
+	}
+	return 0;
+}
+
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	for (const Connection &E : connections) {
 		p_connections->push_back(E);
@@ -1528,29 +1584,31 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is null.", p_signal));
-	OBJ_SIGNAL_LOCK
+	Object *target_object = p_callable.get_object();
+	ObjectSignalLock signal_lock(this, target_object);
 
 	if (p_callable.is_standard()) {
 		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
 		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
 		// and registered soon enough this branch is needed to allow `connect()` to succeed.
-		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s' to callable '%s': the callable object is null.", p_signal, p_callable));
+		ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s' to callable '%s': the callable object is null.", p_signal, p_callable));
 	} else {
 		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is not valid: '%s'.", p_signal, p_callable));
 	}
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 		//check in script
-		if (!signal_is_valid && !script.is_null()) {
-			if (Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (!signal_is_valid && script_instance) {
+			if (script_instance->get_script()->has_script_signal(p_signal)) {
 				signal_is_valid = true;
 			}
 #ifdef TOOLS_ENABLED
 			else {
 				//allow connecting signals anyway if script is invalid, see issue #17070
-				if (!Ref<Script>(script)->is_valid()) {
+				if (!script_instance->get_script()->is_script_valid()) {
 					signal_is_valid = true;
 				}
 			}
@@ -1572,8 +1630,6 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Signal '%s' is already connected to given callable '%s' in that object.", p_signal, p_callable));
 		}
 	}
-
-	Object *target_object = p_callable.get_object();
 
 	SignalData::Slot slot;
 
@@ -1597,16 +1653,16 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, vformat("Cannot determine if connected to '%s': the provided callable is null.", p_signal)); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		if (signal_is_valid) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
-		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (script_instance && script_instance->get_script()->has_script_signal(p_signal)) {
 			return false;
 		}
 
@@ -1617,16 +1673,16 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 }
 
 bool Object::has_connections(const StringName &p_signal) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		if (signal_is_valid) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
-		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (script_instance && script_instance->get_script()->has_script_signal(p_signal)) {
 			return false;
 		}
 
@@ -1642,12 +1698,14 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, vformat("Cannot disconnect from '%s': the provided callable is null.", p_signal)); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
-	OBJ_SIGNAL_LOCK
+	Object *target_object = p_callable.get_object();
+	ObjectSignalLock signal_lock(this, target_object);
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = (member && member->type == GDType::Member::Type::SIGNAL) ||
+				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
 	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
@@ -1663,16 +1721,14 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	if (slot->cE) {
-		Object *target_object = p_callable.get_object();
-		if (target_object) {
-			target_object->connections.erase(slot->cE);
-		}
+	if (likely(target_object)) {
+		target_object->connections.erase(slot->cE);
 	}
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+	if (s->slot_map.is_empty() && member && member->type == GDType::Member::Type::SIGNAL) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
@@ -1682,6 +1738,19 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 bool Object::_uses_signal_mutex() const {
 	return true;
+}
+
+String Object::_get_locale() const {
+	TranslationServer *ts = TranslationServer::get_singleton();
+	const StringName domain_name = get_translation_domain();
+	if (ts->has_domain(domain_name)) {
+		const Ref<TranslationDomain> domain = ts->get_or_add_domain(domain_name);
+		const String &overridden = domain->get_locale_override();
+		if (!overridden.is_empty()) {
+			return overridden;
+		}
+	}
+	return ts->get_locale();
 }
 
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
@@ -1701,14 +1770,22 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
-	if (initialized) {
+	static SafeFlag initialized;
+	if (likely(initialized.is_set())) {
 		return;
 	}
-	_add_class_to_classdb(get_class_static(), StringName());
+
+	static BinaryMutex __init_mutex;
+	MutexLock lock(__init_mutex);
+	if (initialized.is_set()) {
+		// Initialized on another thread while we were waiting.
+		return;
+	}
+	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr);
+	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
-	initialized = true;
+	initialized.set();
 }
 
 StringName Object::get_translation_domain() const {
@@ -1781,8 +1858,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
-	ClassDB::_add_class(p_class, p_inherits);
+void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
+	ClassDB::_add_class(p_type, p_inherits);
 }
 
 void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -1820,6 +1897,10 @@ void Object::clear_internal_resource_paths() {
 
 void Object::notify_property_list_changed() {
 	emit_signal(CoreStringName(property_list_changed));
+}
+
+String Object::_to_string() {
+	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
 void Object::_bind_methods() {
@@ -1978,11 +2059,20 @@ void Object::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
 	BIND_CONSTANT(NOTIFICATION_EXTENSION_RELOADED);
 
-	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
-	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
-	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
-	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
-	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
+	BIND_BITFIELD_FLAG(CONNECT_DEFERRED);
+	BIND_BITFIELD_FLAG(CONNECT_PERSIST);
+	BIND_BITFIELD_FLAG(CONNECT_ONE_SHOT);
+	BIND_BITFIELD_FLAG(CONNECT_REFERENCE_COUNTED);
+	BIND_BITFIELD_FLAG(CONNECT_APPEND_SOURCE_OBJECT);
+}
+
+void Object::_get_property_list_inner(List<PropertyInfo> *p_list, const StringName &p_class_name) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, p_class_name, PROPERTY_HINT_NONE, p_class_name, PROPERTY_USAGE_CATEGORY));
+	_get_property_list_from_classdb(p_class_name, p_list, true, this);
+}
+
+void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	MessageQueue::get_singleton()->push_callp(this, p_method, p_args, p_argcount);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
@@ -2085,18 +2175,21 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
-const StringName &Object::get_class_name() const {
-	if (_extension) {
-		// Can't put inside the unlikely as constructor can run it.
-		return _extension->class_name;
-	}
-
-	if (unlikely(!_class_name_ptr)) {
+const GDType &Object::get_gdtype() const {
+	if (unlikely(!_gdtype_ptr)) {
 		// While class is initializing / deinitializing, constructors and destructors
-		// need access to the proper class at the proper stage.
-		return *_get_class_namev();
+		// need access to the proper type at the proper stage.
+		return _get_typev();
 	}
-	return *_class_name_ptr;
+	return *_gdtype_ptr;
+}
+
+bool Object::is_class(const StringName &p_class) const {
+	return get_gdtype().get_name_hierarchy().has(p_class);
+}
+
+const StringName &Object::get_class_name() const {
+	return get_gdtype().get_name();
 }
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
@@ -2105,8 +2198,7 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	// have to return the closest native parent's class name, so that it doesn't try to
 	// use this like the real object.
 	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
-		const StringName *class_name = _get_class_namev();
-		return *class_name;
+		return get_class_name();
 	}
 #endif
 
@@ -2116,13 +2208,13 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	}
 
 	// Extensions only have wrapper classes for classes exposed in ClassDB.
-	const StringName *class_name = _get_class_namev();
-	if (ClassDB::is_class_exposed(*class_name)) {
-		return *class_name;
+	const StringName &class_name = get_class_name();
+	if (ClassDB::is_class_exposed(class_name)) {
+		return class_name;
 	}
 
 	// Find the nearest parent class that's exposed.
-	StringName parent_class = ClassDB::get_parent_class(*class_name);
+	StringName parent_class = ClassDB::get_parent_class(class_name);
 	while (parent_class != StringName()) {
 		if (ClassDB::is_class_exposed(parent_class)) {
 			return parent_class;
@@ -2157,8 +2249,8 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		}
 	}
 	if (unlikely(!binding && p_callbacks)) {
-		uint32_t current_size = next_power_of_2(_instance_binding_count);
-		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
+		uint32_t current_size = Math::next_power_of_2(_instance_binding_count);
+		uint32_t new_size = Math::next_power_of_2(_instance_binding_count + 1);
 
 		if (current_size == 0 || new_size > current_size) {
 			_instance_bindings = (InstanceBinding *)memrealloc(_instance_bindings, new_size * sizeof(InstanceBinding));
@@ -2229,6 +2321,8 @@ void Object::clear_internal_extension() {
 	}
 	_extension = nullptr;
 	_extension_instance = nullptr;
+	// Reset GDType to internal type.
+	_gdtype_ptr = &_get_typev();
 
 	// Clear the instance bindings.
 	_instance_binding_mutex.lock();
@@ -2257,6 +2351,7 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
 		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
 		_extension = p_extension;
+		_gdtype_ptr = p_extension->gdtype;
 	}
 }
 #endif
@@ -2265,6 +2360,8 @@ void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
 	_can_translate = true;
 	_emitting = false;
+	_is_queued_for_deletion = false;
+	_predelete_ok = false;
 
 	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
 	// being already set in the case of references.
@@ -2296,52 +2393,36 @@ void Object::detach_from_objectdb() {
 	}
 }
 
-void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_target) {
-	static BinaryMutex _mutex;
-	MutexLock lock(_mutex);
-	if (r_target) {
-		// Already assigned while we were waiting for the mutex.
-		return;
-	}
-	r_target = StringName(p_name.ptr(), true);
-}
-
 Object::~Object() {
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
 		ERR_PRINT(vformat("Object '%s' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
 	}
 
-	{
-		OBJ_SIGNAL_LOCK
-		// Drop all connections to the signals of this object.
-		while (signal_map.size()) {
-			// Avoid regular iteration so erasing is safe.
-			KeyValue<StringName, SignalData> &E = *signal_map.begin();
-			SignalData *s = &E.value;
+	// Drop all connections to the signals of this object.
+	while (signal_map.size()) {
+		// Avoid regular iteration so erasing is safe.
+		KeyValue<StringName, SignalData> &E = *signal_map.begin();
+		SignalData *s = &E.value;
 
-			for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
-				Object *target = slot_kv.value.conn.callable.get_object();
-				if (likely(target)) {
-					target->connections.erase(slot_kv.value.cE);
-				}
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			Object *target = slot_kv.value.conn.callable.get_object();
+			if (likely(target)) {
+				ObjectSignalLock signal_lock(this, target);
+				target->connections.erase(slot_kv.value.cE);
 			}
-
-			signal_map.erase(E.key);
 		}
 
-		// Disconnect signals that connect to this object.
-		while (connections.size()) {
-			Connection c = connections.front()->get();
-			Object *obj = c.callable.get_object();
-			bool disconnected = false;
-			if (likely(obj)) {
-				disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
-			}
-			if (unlikely(!disconnected)) {
-				// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
-				connections.pop_front();
-			}
+		signal_map.erase(E.key);
+	}
+
+	// Disconnect signals that connect to this object.
+	while (connections.size()) {
+		Connection c = connections.front()->get();
+		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		if (unlikely(!disconnected)) {
+			// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
+			connections.pop_front();
 		}
 	}
 
@@ -2349,7 +2430,7 @@ Object::~Object() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
-	_predelete_ok = 2;
+	_predelete_ok = true;
 
 	if (_instance_bindings != nullptr) {
 		for (uint32_t i = 0; i < _instance_binding_count; i++) {
@@ -2360,9 +2441,7 @@ Object::~Object() {
 		memfree(_instance_bindings);
 	}
 
-	if (signal_mutex) {
-		memdelete(signal_mutex);
-	}
+	memdelete(signal_mutex);
 }
 
 bool predelete_handler(Object *p_object) {
@@ -2527,13 +2606,13 @@ void ObjectDB::cleanup() {
 	spin_lock.lock();
 
 	if (slot_count > 0) {
-		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
+		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", slot_count, slot_count == 1 ? "instance was" : "instances were"));
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
-			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
-			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
+			const MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
+			const MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
@@ -2564,7 +2643,9 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
-
+	slot_count = 0;
+	slot_max = 0;
 	spin_lock.unlock();
 }

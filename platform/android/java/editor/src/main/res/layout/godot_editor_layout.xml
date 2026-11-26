@@ -22,8 +22,10 @@
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:id="@+id/embedded_game_view_container"
-			android:layout_width="@dimen/embed_game_window_default_width"
-			android:layout_height="@dimen/embed_game_window_default_height"
+			android:maxWidth="@dimen/embed_game_window_default_width"
+			android:maxHeight="@dimen/embed_game_window_default_height"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
 			android:background="@drawable/game_menu_message_bg"
 			android:layout_gravity="bottom|end">
 

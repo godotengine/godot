@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -227,7 +227,9 @@
         /* ignore in general).                                            */
 
         if ( table.Tag == TTAG_hmtx ||
-             table.Tag == TTAG_vmtx )
+             table.Tag == TTAG_HMTX ||
+             table.Tag == TTAG_vmtx ||
+             table.Tag == TTAG_VMTX )
           valid_entries++;
         else
         {
@@ -439,7 +441,9 @@
       else if ( entry.Length > stream->size - entry.Offset )
       {
         if ( entry.Tag == TTAG_hmtx ||
-             entry.Tag == TTAG_vmtx )
+             entry.Tag == TTAG_HMTX ||
+             entry.Tag == TTAG_vmtx ||
+             entry.Tag == TTAG_VMTX )
         {
 #ifdef FT_DEBUG_LEVEL_TRACE
           FT_ULong  old_length = entry.Length;
@@ -535,7 +539,8 @@
    *     The tag of table to load.  Use the value 0 if you want
    *     to access the whole font file, else set this parameter
    *     to a valid TrueType table tag that you can forge with
-   *     the MAKE_TT_TAG macro.
+   *     the MAKE_TT_TAG macro.  Use value 1 to access the table
+   *     directory.
    *
    *   offset ::
    *     The starting offset in the table (or the file if
@@ -577,7 +582,29 @@
     FT_ULong   size;
 
 
-    if ( tag != 0 )
+    if ( tag == 0 )
+    {
+      /* The whole font file. */
+      size = face->root.stream->size;
+    }
+    else if ( tag == 1 )
+    {
+      /* The currently selected font's table directory.            */
+      /*                                                           */
+      /* Note that `face_index` is also used to enumerate elements */
+      /* of containers like a Mac Resource; this means we must     */
+      /* check whether we actually have a TTC (with multiple table */
+      /* directories).                                             */
+      FT_Long  idx = face->root.face_index & 0xFFFF;
+
+
+      if ( idx >= face->ttc_header.count )
+        idx = 0;
+
+      offset += face->ttc_header.offsets[idx];
+      size    = 4 + 8 + 16 * face->num_tables;
+    }
+    else
     {
       /* look for tag in font directory */
       table = tt_face_lookup_table( face, tag );
@@ -590,9 +617,6 @@
       offset += table->Offset;
       size    = table->Length;
     }
-    else
-      /* tag == 0 -- the user wants to access the font file directly */
-      size = face->root.stream->size;
 
     if ( length && *length == 0 )
     {
@@ -729,7 +753,8 @@
                      FT_Stream  stream )
   {
     FT_Error        error;
-    TT_MaxProfile*  maxProfile = &face->max_profile;
+    TT_MaxProfile*  maxProfile  = &face->max_profile;
+    FT_Bool         is_extended = FALSE;
 
     static const FT_Frame_Field  maxp_fields[] =
     {
@@ -762,12 +787,37 @@
     };
 
 
-    error = face->goto_table( face, TTAG_maxp, stream, 0 );
+    face->maxp_num_glyphs = 0;
+
+    error = face->goto_table( face, TTAG_MAXP, stream, 0 );
+    if ( !error )
+      is_extended = TRUE;
+    else if ( FT_ERR_EQ( error, Table_Missing ) )
+      error = face->goto_table( face, TTAG_maxp, stream, 0 );
+
     if ( error )
       goto Exit;
 
-    if ( FT_STREAM_READ_FIELDS( maxp_fields, maxProfile ) )
-      goto Exit;
+    if ( is_extended )
+    {
+      FT_UInt32  num_glyphs;
+
+
+      if ( FT_READ_LONG( maxProfile->version ) ||
+           FT_READ_UOFF3( num_glyphs )         )
+        goto Exit;
+
+      face->maxp_num_glyphs = num_glyphs;
+      maxProfile->numGlyphs = num_glyphs > 0xFFFFU ? 0xFFFFU
+                                                   : (FT_UShort)num_glyphs;
+    }
+    else
+    {
+      if ( FT_STREAM_READ_FIELDS( maxp_fields, maxProfile ) )
+        goto Exit;
+
+      face->maxp_num_glyphs = maxProfile->numGlyphs;
+    }
 
     maxProfile->maxPoints             = 0;
     maxProfile->maxContours           = 0;
@@ -809,7 +859,7 @@
       }
     }
 
-    FT_TRACE3(( "numGlyphs: %hu\n", maxProfile->numGlyphs ));
+    FT_TRACE3(( "numGlyphs: %u\n", face->maxp_num_glyphs ));
 
   Exit:
     return error;
@@ -1114,6 +1164,21 @@
 
     if ( FT_FRAME_EXTRACT( face->cmap_size, face->cmap_table ) )
       face->cmap_size = 0;
+
+    if ( error )
+      goto Exit;
+
+    error = face->goto_table( face, TTAG_DMAP, stream, &face->dmap_size );
+    if ( error )
+    {
+      face->dmap_size = 0;
+      if ( FT_ERR_EQ( error, Table_Missing ) )
+        error = FT_Err_Ok;
+      goto Exit;
+    }
+
+    if ( FT_FRAME_EXTRACT( face->dmap_size, face->dmap_table ) )
+      face->dmap_size = 0;
 
   Exit:
     return error;

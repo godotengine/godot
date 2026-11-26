@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
@@ -42,9 +43,14 @@ public:
 		// Version 2: Changed names for Basis, AABB, Vectors, etc.
 		// Version 3: New string ID for ext/subresources, breaks forward compat.
 		// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
-		FORMAT_VERSION = 4,
+		// Version 5: Added support for serializing embedded PackedScenes as node tags and embedded metadata.
+		FORMAT_VERSION = 5,
 		// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
 		FORMAT_VERSION_COMPAT = 3,
+		// For resources, or scenes without embedded metadata or other embedded PackedScenes, save as version 4.
+		FORMAT_VERSION_HAS_NEW_VARIANTS = 4,
+		// For scenes with embedded metadata or other embedded PackedScenes, save as version 5.
+		FORMAT_VERSION_WITH_SCENE_EMBED = 5,
 	};
 
 private:
@@ -74,6 +80,7 @@ private:
 
 	int resources_total = 0;
 	int resource_current = 0;
+
 	String resource_type;
 	String script_class;
 
@@ -96,6 +103,7 @@ private:
 
 	Error _parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	Error _parse_ext_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	void _count_resources();
 
 	struct DummyReadData {
 		bool no_placeholders = false;
@@ -110,7 +118,7 @@ private:
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
-	void _printerr();
+	String _get_error_string();
 
 	VariantParser::ResourceParser rp;
 
@@ -120,8 +128,9 @@ private:
 	Error error = OK;
 
 	Ref<Resource> resource;
+	Ref<PackedScene> packed_scene;
 
-	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
+	Ref<PackedScene> _parse_node_tag(const Ref<PackedScene> &p_current_scene, VariantParser::ResourceParser &p_parser);
 
 public:
 	Ref<Resource> get_resource();
@@ -185,7 +194,7 @@ class ResourceFormatSaverTextInstance {
 	List<Ref<Resource>> saved_resources;
 	HashMap<Ref<Resource>, String> external_resources;
 	HashMap<Ref<Resource>, String> internal_resources;
-	bool use_compat = true;
+	int save_format_version = ResourceLoaderText::FORMAT_VERSION_COMPAT;
 
 	struct ResourceSort {
 		Ref<Resource> resource;
@@ -195,7 +204,10 @@ class ResourceFormatSaverTextInstance {
 		}
 	};
 
+	_ALWAYS_INLINE_ bool use_compat() const { return save_format_version <= ResourceLoaderText::FORMAT_VERSION_COMPAT; }
+	bool get_serializable_resource_property_value(const Ref<Resource> &p_resource, const PropertyInfo &p_property, bool p_is_scene, const Dictionary &p_missing_resource_properties, Variant &r_value) const;
 	void _find_resources(const Variant &p_variant, bool p_main = false);
+	void _parse_nodes(const Ref<PackedScene> &curr_scene, const Ref<FileAccess> &p_file);
 
 	static String _write_resources(void *ud, const Ref<Resource> &p_resource);
 	String _write_resource(const Ref<Resource> &res);

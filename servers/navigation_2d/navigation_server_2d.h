@@ -30,13 +30,16 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
-#include "core/templates/rid.h"
+#include "core/object/ref_counted.h"
+#include "core/os/rw_lock.h"
+#include "core/templates/rid_owner.h"
+#include "core/variant/type_info.h"
 
-#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
-#include "servers/navigation_2d/navigation_path_query_result_2d.h"
+class Node;
+class NavigationPolygon;
+class NavigationMeshSourceGeometryData2D;
+class NavigationPathQueryParameters2D;
+class NavigationPathQueryResult2D;
 
 #ifdef CLIPPER2_ENABLED
 class NavMeshGenerator2D;
@@ -429,20 +432,6 @@ public:
 	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
 	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
 #endif // DEBUG_ENABLED
-};
-
-typedef NavigationServer2D *(*NavigationServer2DCallback)();
-
-/// Manager used for the server singleton registration
-class NavigationServer2DManager {
-	static NavigationServer2DCallback create_callback;
-
-public:
-	static void set_default_server(NavigationServer2DCallback p_callback);
-	static NavigationServer2D *new_default_server();
-
-	static void initialize_server();
-	static void finalize_server();
 };
 
 VARIANT_ENUM_CAST(NavigationServer2D::ProcessInfo);

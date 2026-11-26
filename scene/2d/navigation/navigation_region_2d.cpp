@@ -30,7 +30,12 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"
@@ -160,16 +165,11 @@ void NavigationRegion2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			set_physics_process_internal(true);
+			_region_update_transform();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			_region_exit_navigation_map();
-		} break;
-
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			set_physics_process_internal(false);
-			_region_update_transform();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -344,7 +344,7 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationRegion2D::get_bounds);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, NavigationPolygon::get_class_static()), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
@@ -416,9 +416,7 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 	}
 
-	current_global_transform = get_global_transform();
-	NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
-
+	NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
 	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 	queue_redraw();
@@ -433,11 +431,7 @@ void NavigationRegion2D::_region_update_transform() {
 		return;
 	}
 
-	Transform2D new_global_transform = get_global_transform();
-	if (current_global_transform != new_global_transform) {
-		current_global_transform = new_global_transform;
-		NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
-	}
+	NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
 
 	queue_redraw();
 }
@@ -451,6 +445,17 @@ void NavigationRegion2D::_update_debug_mesh() {
 		debug_mesh_rid = rs->mesh_create();
 	}
 
+	const Transform2D region_gt = get_global_transform();
+
+	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	rs->canvas_item_set_z_index(debug_instance_rid, RSE::CANVAS_ITEM_Z_MAX - 2);
+	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
+
+	if (!debug_mesh_dirty) {
+		return;
+	}
+
+	rs->canvas_item_clear(debug_instance_rid);
 	rs->mesh_clear(debug_mesh_rid);
 	debug_mesh_dirty = false;
 
@@ -561,7 +566,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
 
-	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 	if (enabled_edge_lines) {
 		Vector<Color> line_color_array;
@@ -573,7 +578,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
 		line_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
 
-		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 	}
 
 	rs->canvas_item_add_mesh(_get_debug_canvas_item(), debug_mesh_rid, Transform2D());

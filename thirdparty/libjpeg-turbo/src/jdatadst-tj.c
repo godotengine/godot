@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * Modified 2009-2012 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2011, 2014, 2016, 2019, 2022-2023, D. R. Commander.
+ * Copyright (C) 2011, 2014, 2016, 2019, 2022-2023, 2025, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -181,7 +181,7 @@ jpeg_mem_dest_tj(j_compress_ptr cinfo, unsigned char **outbuffer,
   dest->outsize = outsize;
   dest->alloc = alloc;
 
-  if (*outbuffer == NULL || *outsize == 0) {
+  if (*outbuffer == NULL || (*outsize == 0 && !reused)) {
     if (alloc) {
       /* Allocate initial buffer */
       dest->newbuffer = *outbuffer = (unsigned char *)MALLOC(OUTPUT_BUF_SIZE);

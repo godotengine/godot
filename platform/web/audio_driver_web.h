@@ -30,12 +30,11 @@
 
 #pragma once
 
-#include "godot_audio.h"
 #include "godot_js.h"
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_driver.h"
 
 class AudioDriverWeb : public AudioDriver {
 private:
@@ -91,7 +90,7 @@ public:
 	virtual bool is_stream_registered_as_sample(const Ref<AudioStream> &p_stream) const override;
 	virtual void register_sample(const Ref<AudioSample> &p_sample) override;
 	virtual void unregister_sample(const Ref<AudioSample> &p_sample) override;
-	virtual void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+	virtual void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused = false) override;
 	virtual void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 	virtual void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) override;
 	virtual bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) override;

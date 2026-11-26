@@ -33,7 +33,7 @@
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
 
-int GDScriptTokenizerBuffer::_token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t, VariantHasher, VariantComparator> &r_constants_map) {
+int GDScriptTokenizerBuffer::_token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t> &r_constants_map) {
 	int pos = p_start;
 
 	int token_type = p_token.type & TOKEN_MASK;
@@ -190,10 +190,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 	for (uint32_t i = 0; i < constant_count; i++) {
 		Variant v;
 		int len;
-		Error err = decode_variant(v, b, total_len, &len, false);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(decode_variant(v, b, total_len, &len, false));
 		b += len;
 		total_len -= len;
 		constants.write[i] = v;
@@ -239,7 +236,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 
 Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code, CompressMode p_compress_mode) {
 	HashMap<StringName, uint32_t> identifier_map;
-	HashMap<Variant, uint32_t, VariantHasher, VariantComparator> constant_map;
+	HashMap<Variant, uint32_t> constant_map;
 	Vector<uint8_t> token_buffer;
 	HashMap<uint32_t, uint32_t> token_lines;
 	HashMap<uint32_t, uint32_t> token_columns;
@@ -300,7 +297,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 
 	// Save identifiers.
 	for (const StringName &id : rev_identifier_map) {
-		String s = id.operator String();
+		String s = id.string();
 		int len = s.length();
 
 		contents.resize(buf_pos + (len + 1) * 4);
@@ -447,6 +444,8 @@ GDScriptTokenizer::Token GDScriptTokenizerBuffer::scan() {
 		}
 		Token eof;
 		eof.type = Token::TK_EOF;
+		eof.start_line = current_line;
+		eof.end_line = current_line;
 		return eof;
 	};
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,35 @@
 #include "tvgCommon.h"
 #include "tvgArray.h"
 #include "tvgLock.h"
+#include "tvgColor.h"
+#include "tvgMath.h"
 
 namespace tvg
 {
 
 using RenderData = void*;
+using RenderColor = tvg::RGBA;
 using pixel_t = uint32_t;
 
 #define DASH_PATTERN_THRESHOLD 0.001f
 
-enum RenderUpdateFlag : uint16_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, Clip = 256, All = 0xffff};
+//TODO: Separate Color & Opacity for more detailed conditional check
+enum RenderUpdateFlag : uint16_t
+{
+    None = 0,
+    Path = 1 << 0,
+    Color = 1 << 1,
+    Gradient = 1 << 2,
+    Stroke = 1 << 3,
+    Transform = 1 << 4,
+    Image = 1 << 5,
+    GradientStroke = 1 << 6,
+    Blend = 1 << 7,
+    Clip = 1 << 8,
+    Children = 1 << 9,  // Force update propagation to child paints
+    All = 0xffff
+};
+
 enum CompositionFlag : uint8_t {Invalid = 0, Opacity = 1, Blending = 2, Masking = 4, PostProcessing = 8};  //Composition Purpose
 
 static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
@@ -45,16 +64,15 @@ static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
     a = RenderUpdateFlag(uint16_t(a) | uint16_t(b));
 }
 
-//TODO: Move this in public header unifying with SwCanvas::Colorspace
-enum ColorSpace : uint8_t
+static inline RenderUpdateFlag operator|(const RenderUpdateFlag a, const RenderUpdateFlag b)
 {
-    ABGR8888 = 0,      //The channels are joined in the order: alpha, blue, green, red. Colors are alpha-premultiplied.
-    ARGB8888,          //The channels are joined in the order: alpha, red, green, blue. Colors are alpha-premultiplied.
-    ABGR8888S,         //The channels are joined in the order: alpha, blue, green, red. Colors are un-alpha-premultiplied.
-    ARGB8888S,         //The channels are joined in the order: alpha, red, green, blue. Colors are un-alpha-premultiplied.
-    Grayscale8,        //One single channel data.
-    Unsupported        //TODO: Change to the default, At the moment, we put it in the last to align with SwCanvas::Colorspace.
-};
+    return RenderUpdateFlag(uint16_t(a) | uint16_t(b));
+}
+
+static inline bool operator&(const EngineOption a, const EngineOption b)
+{
+    return (uint8_t(a) & uint8_t(b));
+}
 
 struct RenderSurface
 {
@@ -66,138 +84,341 @@ struct RenderSurface
     Key key;                        //a reserved lock for the thread safety
     uint32_t stride = 0;
     uint32_t w = 0, h = 0;
-    ColorSpace cs = ColorSpace::Unsupported;
+    ColorSpace cs = ColorSpace::Unknown;
     uint8_t channelSize = 0;
     bool premultiplied = false;         //Alpha-premultiplied
+    bool opaque = false;                // If true, the alpha channel can be ignored.
 
-    RenderSurface()
-    {
-    }
-
-    RenderSurface(const RenderSurface* rhs)
-    {
-        data = rhs->data;
-        stride = rhs->stride;
-        w = rhs->w;
-        h = rhs->h;
-        cs = rhs->cs;
-        channelSize = rhs->channelSize;
-        premultiplied = rhs->premultiplied;
-    }
-
-
+    RenderSurface() = default;
+    RenderSurface(const RenderSurface* rhs);
+    void setup(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, uint8_t channelSize, ColorSpace cs);
 };
 
 struct RenderCompositor
 {
-    CompositeMethod method;
+    MaskMethod method;
     uint8_t opacity;
 };
 
-struct RenderRegion
+struct RenderRegion : Region
 {
-    int32_t x, y, w, h;
+    RenderRegion() = default;
+    constexpr RenderRegion(int32_t xMin, int32_t yMin, int32_t xMax, int32_t yMax) : Region{xMin, yMin, xMax, yMax} {}
+
+    static constexpr RenderRegion intersect(const RenderRegion& lhs, const RenderRegion& rhs)
+    {
+        RenderRegion ret = {std::max(lhs.xMin, rhs.xMin), std::max(lhs.yMin, rhs.yMin), std::min(lhs.xMax, rhs.xMax), std::min(lhs.yMax, rhs.yMax)};
+        // Not intersected: collapse to zero-area region
+        if (ret.xMin > ret.xMax) ret.xMax = ret.xMin;
+        if (ret.yMin > ret.yMax) ret.yMax = ret.yMin;
+        return ret;
+    }
+
+    static constexpr RenderRegion add(const RenderRegion& lhs, const RenderRegion& rhs)
+    {
+        return {std::min(lhs.xMin, rhs.xMin), std::min(lhs.yMin, rhs.yMin), std::max(lhs.xMax, rhs.xMax), std::max(lhs.yMax, rhs.yMax)};
+    }
 
     void intersect(const RenderRegion& rhs);
-    void add(const RenderRegion& rhs);
+
+    void add(const RenderRegion& rhs)
+    {
+        if (rhs.xMin < xMin) xMin = rhs.xMin;
+        if (rhs.yMin < yMin) yMin = rhs.yMin;
+        if (rhs.xMax > xMax) xMax = rhs.xMax;
+        if (rhs.yMax > yMax) yMax = rhs.yMax;
+    }
+
+    bool inside(const Point& pt) const
+    {
+        return (pt.x >= xMin && pt.x < xMax && pt.y >= yMin && pt.y < yMax);
+    }
+
+    bool contained(const RenderRegion& rhs) const
+    {
+        return (xMin <= rhs.xMin && xMax >= rhs.xMax && yMin <= rhs.yMin && yMax >= rhs.yMax);
+    }
+
+    bool intersected(const RenderRegion& rhs) const
+    {
+        return (rhs.xMin < xMax && rhs.xMax > xMin && rhs.yMin < yMax && rhs.yMax > yMin);
+    }
 
     bool operator==(const RenderRegion& rhs) const
     {
-        if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
+        return (xMin == rhs.xMin && yMin == rhs.yMin && xMax == rhs.xMax && yMax == rhs.yMax);
+    }
+
+    void reset() { xMin = yMin = xMax = yMax = 0; }
+    bool valid() const { return (xMax > xMin && yMax > yMin); }
+    bool invalid() const { return !valid(); }
+
+    int32_t sx() const { return xMin; }
+    int32_t sy() const { return yMin; }
+    int32_t sw() const { return xMax - xMin; }
+    int32_t sh() const { return yMax - yMin; }
+
+    uint32_t x() const { return (uint32_t) sx(); }
+    uint32_t y() const { return (uint32_t) sy(); }
+    uint32_t w() const { return (uint32_t) sw(); }
+    uint32_t h() const { return (uint32_t) sh(); }
+};
+
+
+#ifdef THORVG_PARTIAL_RENDER_SUPPORT
+    struct RenderDirtyRegion
+    {
+    public:
+        static constexpr const int PARTITIONING = 16;   //must be N*N
+        bool support = true;
+
+        void init(uint32_t w, uint32_t h);
+        void commit();
+        bool add(const RenderRegion& bbox);
+        bool add(const RenderRegion& prv, const RenderRegion& cur);  //collect the old and new dirty regions together
+        void clear();
+
+        bool deactivate(bool on)
+        {
+            std::swap(on, disabled);
+            return on;
+        }
+
+        bool deactivated() const
+        {
+            return (!support || disabled);
+        }
+
+        const RenderRegion& partition(int idx)
+        {
+            return partitions[idx].region;
+        }
+
+        const Array<RenderRegion>& get(int idx) const
+        {
+            return partitions[idx].list[partitions[idx].current];
+        }
+
+        uint32_t count() const
+        {
+            uint32_t count = 0;
+            for (int idx = 0; idx < PARTITIONING; ++idx) {
+                count += get(idx).count;
+            }
+            return count;
+        }
+
+    private:
+        void subdivide(Array<RenderRegion>& targets, uint32_t idx, RenderRegion& lhs, RenderRegion& rhs);
+
+        struct Partition
+        {
+            RenderRegion region;
+            Array<RenderRegion> list[2];  //double buffer swapping
+            uint8_t current = 0;  //double buffer swapping list index. 0 or 1
+        };
+
+        Key key;
+        Partition partitions[PARTITIONING];
+        bool disabled = false;
+    };
+#else
+    struct RenderDirtyRegion
+    {
+        static constexpr const int PARTITIONING = 16;   //must be N*N
+        bool support = true;
+
+        void init(uint32_t w, uint32_t h) {}
+        void commit() {}
+        bool add(TVG_UNUSED const RenderRegion& bbox) { return true; }
+        bool add(TVG_UNUSED const RenderRegion& prv, TVG_UNUSED const RenderRegion& cur) { return true; }
+        void clear() {}
+        uint32_t count() const { return 0; }
+        bool deactivate(TVG_UNUSED bool on) { return true; }
+        bool deactivated() const { return true; }
+        const RenderRegion& partition(TVG_UNUSED int idx) { static RenderRegion tmp{}; return tmp; }
+        const Array<RenderRegion>& get(TVG_UNUSED int idx) const
+        {
+            static Array<RenderRegion> tmp;
+            return tmp;
+        }
+    };
+#endif
+
+
+struct RenderPath
+{
+    Array<PathCommand> cmds;
+    Array<Point> pts;
+
+    void dismiss()
+    {
+        // If you moved the data manually, destroy the RenderPath instance safely
+        cmds.data = nullptr;
+        pts.data = nullptr;
+    }
+
+    bool empty() const
+    {
+        return pts.empty();
+    }
+
+    void clear()
+    {
+        pts.clear();
+        cmds.clear();
+    }
+
+    void close()
+    {
+        //Don't close multiple times.
+        if (cmds.count > 0 && cmds.last() == PathCommand::Close) return;
+        cmds.push(PathCommand::Close);
+    }
+
+    void moveTo(const Point& pt)
+    {
+        pts.push(pt);
+        cmds.push(PathCommand::MoveTo);
+    }
+
+    void lineTo(const Point& pt)
+    {
+        pts.push(pt);
+        cmds.push(PathCommand::LineTo);
+    }
+
+    void cubicTo(const Point& cnt1, const Point& cnt2, const Point& end)
+    {
+        pts.push(cnt1);
+        pts.push(cnt2);
+        pts.push(end);
+        cmds.push(PathCommand::CubicTo);
+    }
+
+    Point point(float progress)
+    {
+        if (progress <= 0.0f) return pts.first();
+        else if (progress >= 1.0f) return pts.last();
+
+        auto pleng = tvg::length(cmds.data, cmds.count, pts.data, pts.count) * progress;
+        auto cleng = 0.0f;
+        auto p = pts.data;
+        auto c = cmds.data;
+        Point curr{}, start{}, next{};
+
+        while (c < cmds.data + cmds.count) {
+            switch (*c) {
+                case PathCommand::MoveTo: {
+                    curr = start = *p++;
+                    break;
+                }
+                case PathCommand::LineTo: {
+                    next = *p;
+                    auto segLen = tvg::length(curr, next);
+                    if (cleng + segLen >= pleng) return lerp(curr, next, (pleng - cleng) / segLen);
+                    cleng += segLen;
+                    curr = *p++;
+                    break;
+                }
+                case PathCommand::CubicTo: {
+                    Bezier bz = {curr, *p, *(p + 1), *(p + 2)};
+                    auto segLen = bz.length();
+                    if (cleng + segLen >= pleng) return bz.at((pleng - cleng) / segLen);
+                    cleng += segLen;
+                    curr = *(p + 2);
+                    p += 3;
+                    break;
+                }
+                case PathCommand::Close: {
+                    auto segLen = tvg::length(curr, start);
+                    if (cleng + segLen >= pleng) return lerp(curr, start, (pleng - cleng) / segLen);
+                    cleng += segLen;
+                    curr = start;
+                    break;
+                }
+            }
+            ++c;
+        }
+        return curr;
+    }
+
+    bool bounds(const Matrix* m, BBox& box);
+    void addCircle(float cx, float cy, float rx, float ry, bool cw);
+    void addRect(float x, float y, float w, float h, float rx, float ry, bool cw);
+
+    static RenderPath& scratch();
+};
+
+struct RenderTrimPath
+{
+    float begin = 0.0f;
+    float end = 1.0f;
+    bool simultaneous = true;
+
+    bool valid()
+    {
+        if (begin != 0.0f || end != 1.0f) return true;
         return false;
     }
+
+    bool trim(const RenderPath& in, RenderPath& out) const;
 };
 
 struct RenderStroke
 {
     float width = 0.0f;
-    uint8_t color[4] = {0, 0, 0, 0};
+    RenderColor color{};
     Fill *fill = nullptr;
-    float* dashPattern = nullptr;
-    uint32_t dashCnt = 0;
-    float dashOffset = 0.0f;
+    struct Dash {
+        float* pattern = nullptr;
+        uint32_t count = 0;
+        float offset = 0.0f;
+        float length = 0.0f;
+    } dash;
+    float miterlimit = 4.0f;
+    RenderTrimPath trim;
     StrokeCap cap = StrokeCap::Square;
     StrokeJoin join = StrokeJoin::Bevel;
-    float miterlimit = 4.0f;
-    bool strokeFirst = false;
-
-    struct {
-        float begin = 0.0f;
-        float end = 1.0f;
-        bool simultaneous = true;
-    } trim;
+    bool first = false;
 
     void operator=(const RenderStroke& rhs)
     {
         width = rhs.width;
-
-        memcpy(color, rhs.color, sizeof(color));
+        color = rhs.color;
 
         delete(fill);
         if (rhs.fill) fill = rhs.fill->duplicate();
         else fill = nullptr;
 
-        free(dashPattern);
-        if (rhs.dashCnt > 0) {
-            dashPattern = static_cast<float*>(malloc(sizeof(float) * rhs.dashCnt));
-            memcpy(dashPattern, rhs.dashPattern, sizeof(float) * rhs.dashCnt);
-        } else {
-            dashPattern = nullptr;
+        tvg::free(dash.pattern);
+        dash = rhs.dash;
+        if (rhs.dash.count > 0) {
+            dash.pattern = tvg::malloc<float>(sizeof(float) * rhs.dash.count);
+            memcpy(dash.pattern, rhs.dash.pattern, sizeof(float) * rhs.dash.count);
         }
-        dashCnt = rhs.dashCnt;
-        dashOffset = rhs.dashOffset;
+
         miterlimit = rhs.miterlimit;
+        trim = rhs.trim;
         cap = rhs.cap;
         join = rhs.join;
-        strokeFirst = rhs.strokeFirst;
-        trim = rhs.trim;
-    }
-
-    bool strokeTrim(float& begin, float& end) const
-    {
-        begin = trim.begin;
-        end = trim.end;
-
-        if (fabsf(end - begin) >= 1.0f) {
-            begin = 0.0f;
-            end = 1.0f;
-            return false;
-        }
-
-        auto loop = true;
-
-        if (begin > 1.0f && end > 1.0f) loop = false;
-        if (begin < 0.0f && end < 0.0f) loop = false;
-        if (begin >= 0.0f && begin <= 1.0f && end >= 0.0f  && end <= 1.0f) loop = false;
-
-        if (begin > 1.0f) begin -= 1.0f;
-        if (begin < 0.0f) begin += 1.0f;
-        if (end > 1.0f) end -= 1.0f;
-        if (end < 0.0f) end += 1.0f;
-
-        if ((loop && begin < end) || (!loop && begin > end)) std::swap(begin, end);
-        return true;
+        first = rhs.first;
     }
 
     ~RenderStroke()
     {
-        free(dashPattern);
+        tvg::free(dash.pattern);
         delete(fill);
     }
 };
 
 struct RenderShape
 {
-    struct
-    {
-        Array<PathCommand> cmds;
-        Array<Point> pts;
-    } path;
-
+    RenderPath path;
     Fill *fill = nullptr;
+    RenderColor color{};
     RenderStroke *stroke = nullptr;
-    uint8_t color[4] = {0, 0, 0, 0};    //r, g, b, a
-    FillRule rule = FillRule::Winding;
+    FillRule rule = FillRule::NonZero;
 
     ~RenderShape()
     {
@@ -207,82 +428,76 @@ struct RenderShape
 
     void fillColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const
     {
-        if (r) *r = color[0];
-        if (g) *g = color[1];
-        if (b) *b = color[2];
-        if (a) *a = color[3];
+        if (r) *r = color.r;
+        if (g) *g = color.g;
+        if (b) *b = color.b;
+        if (a) *a = color.a;
+    }
+
+    bool trimpath() const
+    {
+        return stroke ? stroke->trim.valid() : false;
+    }
+
+    bool strokeFirst() const
+    {
+        return (stroke && stroke->first) ? true : false;
     }
 
     float strokeWidth() const
     {
-        if (!stroke) return 0;
-        return stroke->width;
+        return stroke ? stroke->width : 0.0f;
     }
 
-    bool strokeTrim() const
-    {
-        if (!stroke) return false;
-        if (stroke->trim.begin == 0.0f && stroke->trim.end == 1.0f) return false;
-        if (fabsf(stroke->trim.end - stroke->trim.begin) >= 1.0f) return false;
-        return true;
-    }
-
-    bool strokeColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const
+    bool strokeFill(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const
     {
         if (!stroke) return false;
 
-        if (r) *r = stroke->color[0];
-        if (g) *g = stroke->color[1];
-        if (b) *b = stroke->color[2];
-        if (a) *a = stroke->color[3];
+        if (r) *r = stroke->color.r;
+        if (g) *g = stroke->color.g;
+        if (b) *b = stroke->color.b;
+        if (a) *a = stroke->color.a;
 
         return true;
     }
 
     const Fill* strokeFill() const
     {
-        if (!stroke) return nullptr;
-        return stroke->fill;
+        return stroke ? stroke->fill : nullptr;
     }
 
     uint32_t strokeDash(const float** dashPattern, float* offset) const
     {
         if (!stroke) return 0;
-        if (dashPattern) *dashPattern = stroke->dashPattern;
-        if (offset) *offset = stroke->dashOffset;
-        return stroke->dashCnt;
+        if (dashPattern) *dashPattern = stroke->dash.pattern;
+        if (offset) *offset = stroke->dash.offset;
+        return stroke->dash.count;
     }
 
     StrokeCap strokeCap() const
     {
-        if (!stroke) return StrokeCap::Square;
-        return stroke->cap;
+        return stroke ? stroke->cap : StrokeCap::Square;
     }
 
     StrokeJoin strokeJoin() const
     {
-        if (!stroke) return StrokeJoin::Bevel;
-        return stroke->join;
+        return stroke ? stroke->join : StrokeJoin::Bevel;
     }
 
     float strokeMiterlimit() const
     {
-        if (!stroke) return 4.0f;
-        return stroke->miterlimit;;
+        return stroke ? stroke->miterlimit : 4.0f;
     }
 };
 
 struct RenderEffect
 {
     RenderData rd = nullptr;
-    RenderRegion extend = {0, 0, 0, 0};
+    RenderRegion extend{};
     SceneEffect type;
     bool valid = false;
 
-    virtual ~RenderEffect()
-    {
-        free(rd);
-    }
+    virtual ~RenderEffect() {}
 };
 
 struct RenderEffectGaussianBlur : RenderEffect
@@ -296,10 +511,51 @@ struct RenderEffectGaussianBlur : RenderEffect
     {
         auto inst = new RenderEffectGaussianBlur;
         inst->sigma = std::max((float) va_arg(args, double), 0.0f);
-        inst->direction = std::min(va_arg(args, int), 2);
+        inst->direction = tvg::clamp(va_arg(args, int), 0, 2);
         inst->border = std::min(va_arg(args, int), 1);
         inst->quality = std::min(va_arg(args, int), 100);
         inst->type = SceneEffect::GaussianBlur;
+        return inst;
+    }
+};
+
+struct RenderEffectMotionBlur : RenderEffect
+{
+    float distance;
+    float angle;
+    uint8_t quality;
+
+    // computes the transformed blur offset and quality-based sample count
+    bool update(const Matrix& transform, Point& offset, int& samples)
+    {
+        valid = false;
+
+        // transform the local blur vector, without translating it.
+        auto radian = tvg::deg2rad(angle);
+        auto vx = distance * cosf(radian);
+        auto vy = distance * sinf(radian);
+        offset = {transform.e11 * vx + transform.e12 * vy, transform.e21 * vx + transform.e22 * vy};
+
+        // avoid spurious one-pixel expansion at exact cardinal angles.
+        if (fabsf(offset.x) < 0.001f) offset.x = 0.0f;
+        if (fabsf(offset.y) < 0.001f) offset.y = 0.0f;
+        auto length = std::max(fabsf(offset.x), fabsf(offset.y));
+        if (tvg::zero(length)) return false;
+
+        // confirm the samples count; Uniform midpoint samples, including the original position.
+        auto density = 0.25f + quality * 0.0075f;
+        samples = 2 * int(std::min(128.0f, ceilf(length * density * 0.5f))) + 1;
+        valid = true;
+        return true;
+    }
+
+    static RenderEffectMotionBlur* gen(va_list& args)
+    {
+        auto inst = new RenderEffectMotionBlur;
+        inst->distance = std::max(0.0f, float(va_arg(args, double)));
+        inst->angle = fmod((float)va_arg(args, double), 180.0f);
+        inst->quality = std::min(va_arg(args, int), 100);
+        inst->type = SceneEffect::MotionBlur;
         return inst;
     }
 };
@@ -311,6 +567,19 @@ struct RenderEffectDropShadow : RenderEffect
     float distance;
     float sigma;
     uint8_t quality;   //0 ~ 100  (optional)
+
+    bool update(const Matrix& transform, Point& offset)
+    {
+        valid = (color[3] != 0);
+        if (!valid) return false;
+
+        // Transform the offset as a direction, without translation.
+        const auto radian = tvg::deg2rad(90.0f - angle);
+        const auto x = distance * cosf(radian);
+        const auto y = -distance * sinf(radian);
+        offset = {transform.e11 * x + transform.e12 * y, transform.e21 * x + transform.e22 * y};
+        return true;
+    }
 
     static RenderEffectDropShadow* gen(va_list& args)
     {
@@ -359,7 +628,7 @@ struct RenderEffectTint : RenderEffect
         inst->white[0] = va_arg(args, int);
         inst->white[1] = va_arg(args, int);
         inst->white[2] = va_arg(args, int);
-        inst->intensity = (uint8_t)(va_arg(args, double) * 2.55);
+        inst->intensity = (uint8_t)(static_cast<float>(va_arg(args, double)) * 2.55f);
         inst->type = SceneEffect::Tint;
         return inst;
     }
@@ -370,6 +639,7 @@ struct RenderEffectTritone : RenderEffect
     uint8_t shadow[3];       //rgb
     uint8_t midtone[3];      //rgb
     uint8_t highlight[3];    //rgb
+    uint8_t blender = 0;     //0 ~ 255
 
     static RenderEffectTritone* gen(va_list& args)
     {
@@ -383,66 +653,85 @@ struct RenderEffectTritone : RenderEffect
         inst->highlight[0] = va_arg(args, int);
         inst->highlight[1] = va_arg(args, int);
         inst->highlight[2] = va_arg(args, int);
+        inst->blender = va_arg(args, int);
         inst->type = SceneEffect::Tritone;
         return inst;
     }
 };
 
-class RenderMethod
+struct RenderMethod
 {
 private:
-    uint32_t refCnt = 0;        //reference count
+    uint32_t refCnt = 0;
     Key key;
 
+protected:
+    RenderRegion vport;         //viewport
+
 public:
+    //common implementation
     uint32_t ref();
     uint32_t unref();
+    RenderRegion viewport();
+    bool viewport(const RenderRegion& vp);
 
+    //main features
     virtual ~RenderMethod() {}
-    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
-    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
+    virtual bool preUpdate() = 0;
+    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
+    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) = 0;
+    virtual bool postUpdate() = 0;
     virtual bool preRender() = 0;
     virtual bool renderShape(RenderData data) = 0;
     virtual bool renderImage(RenderData data) = 0;
     virtual bool postRender() = 0;
     virtual void dispose(RenderData data) = 0;
     virtual RenderRegion region(RenderData data) = 0;
-    virtual RenderRegion viewport() = 0;
-    virtual bool viewport(const RenderRegion& vp) = 0;
+    virtual bool bounds(RenderData data, Point* pt4, const Matrix& m) = 0;
     virtual bool blend(BlendMethod method) = 0;
     virtual ColorSpace colorSpace() = 0;
     virtual const RenderSurface* mainSurface() = 0;
-
     virtual bool clear() = 0;
     virtual bool sync() = 0;
+    virtual bool intersectsShape(RenderData data, const RenderRegion& region) = 0;
+    virtual bool intersectsImage(RenderData data, const RenderRegion& region) = 0;
 
+    //composition
     virtual RenderCompositor* target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags) = 0;
-    virtual bool beginComposite(RenderCompositor* cmp, CompositeMethod method, uint8_t opacity) = 0;
+    virtual bool beginComposite(RenderCompositor* cmp, MaskMethod method, uint8_t opacity) = 0;
     virtual bool endComposite(RenderCompositor* cmp) = 0;
 
+    //post effects
     virtual void prepare(RenderEffect* effect, const Matrix& transform) = 0;
     virtual bool region(RenderEffect* effect) = 0;
     virtual bool render(RenderCompositor* cmp, const RenderEffect* effect, bool direct) = 0;
+    virtual void dispose(RenderEffect* effect) = 0;
+
+    //partial rendering
+    virtual void damage(RenderData rd, const RenderRegion& region) = 0;
+    virtual bool partial(bool disable) = 0;
+    virtual uint32_t dirtyRegions() const = 0;
+    virtual Result dirtyRegions(Region* regions, uint32_t cnt) const = 0;
 };
 
-static inline bool MASK_REGION_MERGING(CompositeMethod method)
+static inline bool MASK_REGION_MERGING(MaskMethod method)
 {
     switch(method) {
-        case CompositeMethod::AlphaMask:
-        case CompositeMethod::InvAlphaMask:
-        case CompositeMethod::LumaMask:
-        case CompositeMethod::InvLumaMask:
-        case CompositeMethod::SubtractMask:
-        case CompositeMethod::IntersectMask:
+        case MaskMethod::Alpha:
+        case MaskMethod::InvAlpha:
+        case MaskMethod::Luma:
+        case MaskMethod::InvLuma:
+        case MaskMethod::Subtract:
+        case MaskMethod::Intersect:
             return false;
         //these might expand the rendering region
-        case CompositeMethod::AddMask:
-        case CompositeMethod::DifferenceMask:
-        case CompositeMethod::LightenMask:
-        case CompositeMethod::DarkenMask:
+        case MaskMethod::Add:
+        case MaskMethod::Difference:
+        case MaskMethod::Lighten:
+        case MaskMethod::Darken:
             return true;
         default:
-            TVGERR("RENDERER", "Unsupported Composite Method! = %d", (int)method);
+            TVGERR("RENDERER", "Unsupported Masking Method! = %d", (int)method);
             return false;
     }
 }
@@ -450,6 +739,8 @@ static inline bool MASK_REGION_MERGING(CompositeMethod method)
 static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
 {
     switch(cs) {
+        case ColorSpace::XBGR8888:
+        case ColorSpace::XRGB8888:
         case ColorSpace::ABGR8888:
         case ColorSpace::ABGR8888S:
         case ColorSpace::ARGB8888:
@@ -457,32 +748,32 @@ static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
             return sizeof(uint32_t);
         case ColorSpace::Grayscale8:
             return sizeof(uint8_t);
-        case ColorSpace::Unsupported:
+        case ColorSpace::Unknown:
         default:
             TVGERR("RENDERER", "Unsupported Channel Size! = %d", (int)cs);
             return 0;
     }
 }
 
-static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod* renderer, CompositeMethod method)
+static inline ColorSpace MASK_TO_COLORSPACE(RenderMethod* renderer, MaskMethod method)
 {
     switch(method) {
-        case CompositeMethod::AlphaMask:
-        case CompositeMethod::InvAlphaMask:
-        case CompositeMethod::AddMask:
-        case CompositeMethod::DifferenceMask:
-        case CompositeMethod::SubtractMask:
-        case CompositeMethod::IntersectMask:
-        case CompositeMethod::LightenMask:
-        case CompositeMethod::DarkenMask:
+        case MaskMethod::Alpha:
+        case MaskMethod::InvAlpha:
+        case MaskMethod::Add:
+        case MaskMethod::Difference:
+        case MaskMethod::Subtract:
+        case MaskMethod::Intersect:
+        case MaskMethod::Lighten:
+        case MaskMethod::Darken:
             return ColorSpace::Grayscale8;
         //TODO: Optimize Luma/InvLuma colorspace to Grayscale8
-        case CompositeMethod::LumaMask:
-        case CompositeMethod::InvLumaMask:
+        case MaskMethod::Luma:
+        case MaskMethod::InvLuma:
             return renderer->colorSpace();
         default:
-            TVGERR("RENDERER", "Unsupported Composite Size! = %d", (int)method);
-            return ColorSpace::Unsupported;
+            TVGERR("RENDERER", "Unsupported Masking Size! = %d", (int)method);
+            return ColorSpace::Unknown;
     }
 }
 

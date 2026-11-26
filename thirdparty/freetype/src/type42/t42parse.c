@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (body).
  *
- * Copyright (C) 2002-2024 by
+ * Copyright (C) 2002-2026 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -65,7 +65,7 @@
     T1_FIELD_STRING( "FullName",           full_name,           0 )
     T1_FIELD_STRING( "FamilyName",         family_name,         0 )
     T1_FIELD_STRING( "Weight",             weight,              0 )
-    T1_FIELD_NUM   ( "ItalicAngle",        italic_angle,        0 )
+    T1_FIELD_FIXED ( "ItalicAngle",        italic_angle,        0 )
     T1_FIELD_BOOL  ( "isFixedPitch",       is_fixed_pitch,      0 )
     T1_FIELD_NUM   ( "UnderlinePosition",  underline_position,  0 )
     T1_FIELD_NUM   ( "UnderlineThickness", underline_thickness, 0 )
@@ -310,7 +310,7 @@
     FT_Byte*    cur;
     FT_Byte*    limit   = parser->root.limit;
 
-    PSAux_Service  psaux  = (PSAux_Service)t42face->psaux;
+    PSAux_Service  psaux = (PSAux_Service)t42face->psaux;
 
 
     T1_Skip_Spaces( parser );
@@ -697,7 +697,7 @@
         goto Fail;
       }
 
-      FT_TRACE2(( "  PS string size %5lu bytes, offset 0x%08lx (%lu)\n",
+      FT_TRACE2(( "  PS string size %5lu bytes, offset 0x%08lx (%ld)\n",
                   string_size, ttf_count, ttf_count ));
 
       /* The whole TTF is now loaded into `string_buf'.  We are */

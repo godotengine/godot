@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/resources/mesh.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class MultiMesh : public Resource {
 	GDCLASS(MultiMesh, Resource);
@@ -39,8 +39,8 @@ class MultiMesh : public Resource {
 
 public:
 	enum TransformFormat {
-		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
-		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
+		TRANSFORM_2D = RSE::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = RSE::MULTIMESH_TRANSFORM_3D
 	};
 
 	enum PhysicsInterpolationQuality {
@@ -76,12 +76,13 @@ protected:
 	void _set_custom_data_array(const Vector<Color> &p_array);
 	Vector<Color> _get_custom_data_array() const;
 #endif
+
+public:
 	void set_buffer(const Vector<float> &p_buffer);
 	Vector<float> get_buffer() const;
 
 	void set_buffer_interpolated(const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev);
 
-public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
@@ -115,6 +116,7 @@ public:
 	Color get_instance_custom_data(int p_instance) const;
 
 	void reset_instance_physics_interpolation(int p_instance);
+	void reset_instances_physics_interpolation();
 
 	void set_physics_interpolated(bool p_interpolated);
 

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/2d/node_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationRegion2D : public Node2D {
@@ -44,8 +45,6 @@ class NavigationRegion2D : public Node2D {
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 	Ref<NavigationPolygon> navigation_polygon;
-
-	Transform2D current_global_transform;
 
 	void _navigation_polygon_changed();
 

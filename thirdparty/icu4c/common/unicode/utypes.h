@@ -384,6 +384,85 @@ typedef double UDate;
 #define U_TOOLUTIL_API U_IMPORT
 #endif
 
+#ifndef U_FORCE_HIDE_DRAFT_API
+
+/**
+ * \def U_DATA_API_CLASS
+ * Set to export library symbols from inside the stubdata library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_COMMON_API_CLASS
+ * Set to export library symbols from inside the common library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_I18N_API_CLASS
+ * Set to export library symbols from inside the i18n library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_LAYOUT_API_CLASS
+ * Set to export library symbols from inside the layout engine library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_LAYOUTEX_API_CLASS
+ * Set to export library symbols from inside the layout extensions library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_IO_API_CLASS
+ * Set to export library symbols from inside the ustdio library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+/**
+ * \def U_TOOLUTIL_API_CLASS
+ * Set to export library symbols from inside the toolutil library,
+ * and to import them from outside, to be used on a class.
+ * @draft ICU 78
+ */
+
+// When used on Windows, the U_..._API macros expand to __declspec(dllexport)
+// and __declspec(dllimport), which when used on a class results in all members
+// of the class being exported, including private members, which is problematic
+// for classes that have private members that can't be exported (such as
+// templates from the standard library):
+//
+// https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4251
+//
+#if U_PLATFORM_HAS_WIN32_API
+#define U_DATA_API_CLASS
+#define U_COMMON_API_CLASS
+#define U_I18N_API_CLASS
+#define U_LAYOUT_API_CLASS
+#define U_LAYOUTEX_API_CLASS
+#define U_IO_API_CLASS
+#define U_TOOLUTIL_API_CLASS
+#else
+#define U_DATA_API_CLASS     U_DATA_API
+#define U_COMMON_API_CLASS   U_COMMON_API
+#define U_I18N_API_CLASS     U_I18N_API
+#define U_LAYOUT_API_CLASS   U_LAYOUT_API
+#define U_LAYOUTEX_API_CLASS U_LAYOUTEX_API
+#define U_IO_API_CLASS       U_IO_API
+#define U_TOOLUTIL_API_CLASS U_TOOLUTIL_API
+#endif
+
+#endif  // U_FORCE_HIDE_DRAFT_API
+
 /**
  * \def U_STANDARD_CPP_NAMESPACE
  * Control of C++ Namespace
@@ -747,6 +826,34 @@ typedef enum UErrorCode {
      */
 #   define U_FAILURE(x) ((x)>U_ZERO_ERROR)
 #endif
+
+/* Distinguishing MessageFormat recoverable errors */
+#ifdef __cplusplus
+    /**
+     * Does the error code indicate a MessageFormat recoverable error?
+     *
+     * @internal ICU 79 technology preview
+     * @deprecated This API is for technology preview only.
+     */
+    static
+    inline UBool U_MF_RECOVERABLE_ERROR(UErrorCode code) {
+        return (code == U_MF_OPERAND_MISMATCH_ERROR)
+            || (code == U_MF_FORMATTING_ERROR)
+            || (code == U_MF_BAD_OPTION);
+    }
+#else
+    /**
+     * Does the error code indicate success?
+     *
+     * @internal ICU 79 technology preview
+     * @deprecated This API is for technology preview only.
+     */
+#   define U_MF_RECOVERABLE_ERROR(x) ((code == U_MF_OPERAND_MISMATCH_ERROR) \
+            || (code == U_MF_FORMATTING_ERROR) \
+            || (code == U_MF_BAD_OPTION))
+#endif
+
+
 
 /**
  * Return a string for a UErrorCode value.

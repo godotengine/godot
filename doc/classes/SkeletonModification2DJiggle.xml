@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonModification2DJiggle" inherits="SkeletonModification2D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonModification2DJiggle" inherits="SkeletonModification2D" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modification that jiggles [Bone2D] nodes as they move towards a target.
 	</brief_description>
@@ -77,6 +77,12 @@
 			<return type="bool" />
 			<description>
 				Returns whether the jiggle modifier is taking physics colliders into account when solving.
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+				Resets the internal jiggle simulation state to the current bone positions, clearing velocity, acceleration, and accumulated forces.
 			</description>
 		</method>
 		<method name="set_collision_mask">

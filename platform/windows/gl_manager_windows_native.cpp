@@ -33,11 +33,13 @@
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
-#include "thirdparty/misc/nvapi_minimal.h"
+#include <thirdparty/misc/nvapi_minimal.h>
 
 #include <dwmapi.h>
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -127,20 +129,31 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 		return;
 	}
 
-	// Setup NVAPI function pointers
-	NvAPI_Initialize_t NvAPI_Initialize = (NvAPI_Initialize_t)NvAPI_QueryInterface(0x0150E828);
-	NvAPI_GetErrorMessage__ = (NvAPI_GetErrorMessage_t)NvAPI_QueryInterface(0x6C2D048C);
-	NvAPI_DRS_CreateSession_t NvAPI_DRS_CreateSession = (NvAPI_DRS_CreateSession_t)NvAPI_QueryInterface(0x0694D52E);
-	NvAPI_DRS_DestroySession_t NvAPI_DRS_DestroySession = (NvAPI_DRS_DestroySession_t)NvAPI_QueryInterface(0xDAD9CFF8);
-	NvAPI_Unload_t NvAPI_Unload = (NvAPI_Unload_t)NvAPI_QueryInterface(0xD22BDD7E);
-	NvAPI_DRS_LoadSettings_t NvAPI_DRS_LoadSettings = (NvAPI_DRS_LoadSettings_t)NvAPI_QueryInterface(0x375DBD6B);
-	NvAPI_DRS_CreateProfile_t NvAPI_DRS_CreateProfile = (NvAPI_DRS_CreateProfile_t)NvAPI_QueryInterface(0xCC176068);
-	NvAPI_DRS_CreateApplication_t NvAPI_DRS_CreateApplication = (NvAPI_DRS_CreateApplication_t)NvAPI_QueryInterface(0x4347A9DE);
-	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
-	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
-	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
-	NvAPI_DRS_GetApplicationInfo_t NvAPI_DRS_GetApplicationInfo = (NvAPI_DRS_GetApplicationInfo_t)NvAPI_QueryInterface(0xED1F8C69);
-	NvAPI_DRS_DeleteProfile_t NvAPI_DRS_DeleteProfile = (NvAPI_DRS_DeleteProfile_t)NvAPI_QueryInterface(0x17093206);
+#define NVAPI_QUERY_IFACE_AND_CHECK(t, f, n) \
+	t f = (t)NvAPI_QueryInterface(n); \
+	if (f == nullptr) { \
+		print_verbose(vformat("Error getting NVAPI %s", _STR(f))); \
+		return; \
+	}
+
+	// Setup NVAPI function pointers.
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_Initialize_t, NvAPI_Initialize, 0x0150E828)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_GetErrorMessage_t, NvAPI_GetErrorMessage, 0x6C2D048C)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateSession_t, NvAPI_DRS_CreateSession, 0x0694D52E)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_DestroySession_t, NvAPI_DRS_DestroySession, 0xDAD9CFF8)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_Unload_t, NvAPI_Unload, 0xD22BDD7E)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_LoadSettings_t, NvAPI_DRS_LoadSettings, 0x375DBD6B)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateProfile_t, NvAPI_DRS_CreateProfile, 0xCC176068)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateApplication_t, NvAPI_DRS_CreateApplication, 0x4347A9DE)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_SaveSettings_t, NvAPI_DRS_SaveSettings, 0xFCBC7E14)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_SetSetting_t, NvAPI_DRS_SetSetting, 0x577DD202)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_FindProfileByName_t, NvAPI_DRS_FindProfileByName, 0x7E4A9A0B)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_GetApplicationInfo_t, NvAPI_DRS_GetApplicationInfo, 0xED1F8C69)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_DeleteProfile_t, NvAPI_DRS_DeleteProfile, 0x17093206)
+
+#undef NVAPI_QUERY_IFACE_AND_CHECK
+
+	NvAPI_GetErrorMessage__ = NvAPI_GetErrorMessage;
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;
@@ -350,10 +363,7 @@ PFNWGLDELETECONTEXT gd_wglDeleteContext;
 PFNWGLGETPROCADDRESS gd_wglGetProcAddress;
 
 Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
-	Error err = _configure_pixel_format(win.hDC);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_configure_pixel_format(win.hDC));
 
 	HMODULE module = LoadLibraryW(L"opengl32.dll");
 	if (!module) {
@@ -425,17 +435,14 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	return OK;
 }
 
-Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
+Error GLManagerNative_Windows::window_create(DisplayServerEnums::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
 	HDC hDC = GetDC(p_hwnd);
 	if (!hDC) {
 		return ERR_CANT_CREATE;
 	}
 
 	// configure the HDC to use a compatible pixel format
-	Error result = _configure_pixel_format(hDC);
-	if (result != OK) {
-		return result;
-	}
+	RETURN_IF_ERROR(_configure_pixel_format(hDC));
 
 	GLWindow win;
 	win.hwnd = p_hwnd;
@@ -457,7 +464,7 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 	return OK;
 }
 
-void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	if (_current_window == &win) {
 		_current_window = nullptr;
@@ -477,7 +484,7 @@ void GLManagerNative_Windows::release_current() {
 	_current_window = nullptr;
 }
 
-void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_make_current(DisplayServerEnums::WindowID p_window_id) {
 	if (p_window_id == -1) {
 		return;
 	}
@@ -507,7 +514,7 @@ Error GLManagerNative_Windows::initialize() {
 	return OK;
 }
 
-void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
+void GLManagerNative_Windows::set_use_vsync(DisplayServerEnums::WindowID p_window_id, bool p_use) {
 	GLWindow &win = get_window(p_window_id);
 
 	if (&win != _current_window) {
@@ -525,15 +532,15 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 	}
 }
 
-bool GLManagerNative_Windows::is_using_vsync(DisplayServer::WindowID p_window_id) const {
+bool GLManagerNative_Windows::is_using_vsync(DisplayServerEnums::WindowID p_window_id) const {
 	return get_window(p_window_id).use_vsync;
 }
 
-HDC GLManagerNative_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
+HDC GLManagerNative_Windows::get_hdc(DisplayServerEnums::WindowID p_window_id) {
 	return get_window(p_window_id).hDC;
 }
 
-HGLRC GLManagerNative_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
+HGLRC GLManagerNative_Windows::get_hglrc(DisplayServerEnums::WindowID p_window_id) {
 	const GLWindow &win = get_window(p_window_id);
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 	return disp.hRC;

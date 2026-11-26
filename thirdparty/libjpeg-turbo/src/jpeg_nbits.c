@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024, D. R. Commander.
+ * Copyright (C) 2024-2025, D. R. Commander.
  *
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -17,7 +17,7 @@
  * encoders can reuse jpeg_nbits_table from the SSE2 baseline Huffman encoder.
  */
 #if (defined(__x86_64__) || defined(__i386__) || defined(_M_IX86) || \
-     defined(_M_X64)) && defined(WITH_SIMD)
+     (defined(_M_X64) && !defined(_M_ARM64EC))) && defined(WITH_SIMD)
 #undef INCLUDE_JPEG_NBITS_TABLE
 #endif
 

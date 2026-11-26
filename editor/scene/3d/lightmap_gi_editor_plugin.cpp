@@ -30,9 +30,17 @@
 
 #include "lightmap_gi_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/3d/lightmap_gi.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -119,6 +127,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			case LightmapGI::BAKE_ERROR_ATLAS_TOO_SMALL: {
 				EditorNode::get_singleton()->show_warning(TTR("Failed fitting a lightmap image into an atlas. This should never happen and should be reported."));
 			} break;
+			case LightmapGI::BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT: {
+				EditorNode::get_singleton()->show_warning(TTR("The lightmap images exceed the maximum texture size supported by the rendering device used for baking.\nDecrease the supersampling factor or the texel scale, or split the scene into more objects."));
+			} break;
 			default: {
 			} break;
 		}
@@ -166,8 +177,8 @@ void LightmapGIEditorPlugin::bake_func_end(uint64_t p_time_started) {
 		tmp_progress = nullptr;
 	}
 
-	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
-	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+	const int time_taken = OS::get_singleton()->get_ticks_msec() - p_time_started;
+	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.%02d.", time_taken / 3'600'000, (time_taken % 3'600'000) / 60'000, (time_taken % 60'000) / 1000, (time_taken % 1000) / 10));
 	// Request attention in case the user was doing something else.
 	// Baking lightmaps is likely the editor task that can take the most time,
 	// so only request the attention for baking lightmaps.

@@ -101,7 +101,3 @@ void ScriptDebugger::send_error(const String &p_func, const String &p_file, int 
 Vector<ScriptLanguage::StackInfo> ScriptDebugger::get_error_stack_info() const {
 	return error_stack_info;
 }
-
-ScriptLanguage *ScriptDebugger::get_break_language() const {
-	return break_lang;
-}

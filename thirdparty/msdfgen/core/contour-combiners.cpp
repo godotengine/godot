@@ -32,7 +32,7 @@ static double resolveDistance(const MultiDistance &distance) {
 }
 
 template <class EdgeSelector>
-SimpleContourCombiner<EdgeSelector>::SimpleContourCombiner(const Shape &shape) { }
+SimpleContourCombiner<EdgeSelector>::SimpleContourCombiner(const Shape &) { }
 
 template <class EdgeSelector>
 void SimpleContourCombiner<EdgeSelector>::reset(const Point2 &p) {

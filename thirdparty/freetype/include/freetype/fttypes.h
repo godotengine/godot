@@ -4,7 +4,7 @@
  *
  *   FreeType simple types definitions (specification only).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -24,8 +24,6 @@
 #include FT_CONFIG_CONFIG_H
 #include <freetype/ftsystem.h>
 #include <freetype/ftimage.h>
-
-#include <stddef.h>
 
 
 FT_BEGIN_HEADER

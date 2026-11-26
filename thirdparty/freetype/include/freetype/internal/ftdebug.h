@@ -4,7 +4,7 @@
  *
  *   Debugging and logging component (specification).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -33,6 +33,7 @@
 
 #ifdef FT_DEBUG_LOGGING
 #define DLG_STATIC
+#define DLG_LOG_LEVEL  dlg_level_trace
 #include <dlg/output.h>
 #include <dlg/dlg.h>
 

@@ -40,6 +40,15 @@ struct hb_paint_extents_context_t
     transforms.clear ();
     clips.clear ();
     groups.clear ();
+    /* COLR scratch storage is zero-allocated and reused without running
+     * constructors.  Distinguish that state from an explicitly requested
+     * zero budget. */
+    if (unlikely (!budget_initialized))
+    {
+      budget = HB_BUDGET_DEFAULT;
+      budget_initialized = true;
+    }
+    recharge_budget ();
 
     transforms.push (hb_transform_t<>{});
     clips.push (hb_bounds_t<>{hb_bounds_t<>::UNBOUNDED});
@@ -129,6 +138,19 @@ struct hb_paint_extents_context_t
     hb_bounds_t<> &group = groups.tail ();
 
     group.union_ (clip);
+  }
+
+  /* Cumulative work budget for the current session; reset by clear().
+   * Outline traversal and consumed segments charge the same live
+   * counter. */
+  int64_t budget = HB_BUDGET_DEFAULT;
+  bool budget_initialized = true;
+  int64_t budget_remaining = HB_BUDGET_GLYPH;
+
+  void recharge_budget ()
+  {
+    budget_remaining = budget == HB_BUDGET_DEFAULT ?
+		       HB_BUDGET_GLYPH : budget;
   }
 
   protected:

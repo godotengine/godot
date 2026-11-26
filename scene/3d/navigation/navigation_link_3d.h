@@ -32,6 +32,8 @@
 
 #include "scene/3d/node_3d.h"
 
+class ArrayMesh;
+
 class NavigationLink3D : public Node3D {
 	GDCLASS(NavigationLink3D, Node3D);
 
@@ -44,8 +46,6 @@ class NavigationLink3D : public Node3D {
 	Vector3 start_position;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
-
-	Transform3D current_global_transform;
 
 #ifdef DEBUG_ENABLED
 	RID debug_instance;

@@ -54,6 +54,7 @@ class MenuBar : public Control {
 		bool hidden = false;
 		bool disabled = false;
 		RID submenu_rid;
+		NativeMenu::SystemMenus sysmenu_id = NativeMenu::INVALID_MENU_ID;
 
 		Menu(const String &p_name) {
 			name = p_name;
@@ -71,7 +72,6 @@ class MenuBar : public Control {
 	int active_menu = -1;
 
 	Vector2i old_mouse_pos;
-	ObjectID shortcut_context;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;

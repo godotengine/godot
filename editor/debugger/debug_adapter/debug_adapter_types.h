@@ -143,13 +143,13 @@ struct BreakpointLocation {
 
 struct Capabilities {
 	bool supportsConfigurationDoneRequest = true;
-	bool supportsEvaluateForHovers = true;
-	bool supportsSetVariable = true;
+	bool supportsEvaluateForHovers = false;
+	bool supportsSetVariable = false;
 	String supportedChecksumAlgorithms[2] = { "MD5", "SHA256" };
 	bool supportsRestartRequest = true;
-	bool supportsValueFormattingOptions = true;
-	bool supportTerminateDebuggee = true;
-	bool supportSuspendDebuggee = true;
+	bool supportsValueFormattingOptions = false;
+	bool supportTerminateDebuggee = false;
+	bool supportSuspendDebuggee = false;
 	bool supportsTerminateRequest = true;
 	bool supportsBreakpointLocationsRequest = true;
 
@@ -176,7 +176,7 @@ struct Message {
 	int id = 0;
 	String format;
 	bool sendTelemetry = false; // Just in case :)
-	bool showUser = false;
+	bool showUser = true;
 	Dictionary variables;
 
 	_FORCE_INLINE_ Dictionary to_json() const {

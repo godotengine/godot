@@ -30,9 +30,17 @@
 
 #include "camera_3d.h"
 
+#include "core/config/engine.h"
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -66,22 +74,28 @@ void Camera3D::fti_update_servers_property() {
 	if (camera.is_valid()) {
 		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
 
+		bool update_fov = fov.interpolate(f);
+		bool update_near = _near.interpolate(f);
+		bool update_far = _far.interpolate(f);
+		bool update_size = size.interpolate(f);
+		bool update_frustum_offset = frustum_offset.interpolate(f);
+
+		// If there have been changes due to interpolated values, OR we are forcing an update, update the servers.
 		switch (mode) {
 			default:
 				break;
 			case PROJECTION_PERSPECTIVE: {
-				// If there have been changes due to interpolation, update the servers.
-				if (fov.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_fov || update_near || update_far) {
 					RS::get_singleton()->camera_set_perspective(camera, fov.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_ORTHOGONAL: {
-				if (size.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_near || update_far) {
 					RS::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_FRUSTUM: {
-				if (size.interpolate(f) || frustum_offset.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_frustum_offset || update_near || update_far) {
 					RS::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
@@ -122,14 +136,17 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			if (mode != PROJECTION_PERSPECTIVE) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "size") {
 			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "frustum_offset") {
 			if (mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		}
 	}
 
@@ -466,27 +483,82 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	return points;
 }
 
-Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
-	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
+bool Camera3D::safe_unproject_position(const Vector3 &p_pos, Point2 &r_result) const {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	Projection cm = _get_camera_projection(_near);
 
+	// These are homogeneous coordinates.
+	// The 1.0 will later become w, the perspective divide.
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
 	p = cm.xform4(p);
 
-	// Prevent divide by zero.
-	// TODO: Investigate, this was causing NaNs.
-	ERR_FAIL_COND_V(p.d == 0, Point2());
+	// If p.d is zero, there is a potential divide by zero ahead.
+	// This can occur if the test point is exactly on the focal plane
+	// with a perspective camera matrix (i.e. behind the near plane).
 
+	// There are two possibilities here:
+	// Either the test point is exactly at the origin, in which case the unprojected
+	// point should theoretically be the center of the viewport, OR
+	// infinity distance from the center of the viewport.
+
+	// We should also handle the case where the test point is CLOSE
+	// to the focal plane.
+	// This can cause returned unprojected results near infinity.
+	// The epsilon chosen here must be small, but still allow for near planes quite close to zero.
+
+	// Here we return false and let the calling routine handle this error condition.
+	if (Math::abs(p.d) < CMP_EPSILON) {
+		// Establish the viewport center as our baseline
+		Point2 center = viewport_size * 0.5f;
+		r_result = center;
+
+		// The viewport size here is irrelevant, we just want a high number
+		// (representing infinity) but not actually close to infinity to prevent
+		// knock on bugs if later math later does something with these values.
+		// Suffice is for them to be WAY off the main viewport.
+		const float SOME_HIGH_VALUE = 100000.0f;
+		if (p.normal.x > 0) {
+			r_result.x += SOME_HIGH_VALUE;
+		} else if (p.normal.x < 0) {
+			r_result.x -= SOME_HIGH_VALUE;
+		}
+
+		// +y is down in 2D viewport,
+		// whereas in 3D, +y is up, so we need to flip here.
+		if (p.normal.y > 0) {
+			r_result.y -= SOME_HIGH_VALUE;
+		} else if (p.normal.y < 0) {
+			r_result.y += SOME_HIGH_VALUE;
+		}
+
+		return false;
+	}
 	p.normal /= p.d;
 
-	Point2 res;
-	res.x = (p.normal.x * 0.5 + 0.5) * viewport_size.x;
-	res.y = (-p.normal.y * 0.5 + 0.5) * viewport_size.y;
+	r_result.x = (p.normal.x * 0.5 + 0.5) * viewport_size.x;
+	r_result.y = (-p.normal.y * 0.5 + 0.5) * viewport_size.y;
 
+	return true;
+}
+
+Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Point2(), "Camera is not inside scene.");
+
+	Point2 res;
+
+	// Unproject can fail if the test point is on the camera matrix focal plane
+	// with a perspective transform.
+	// In this case, the unprojected point is potentially at infinity from the viewport
+	// center.
+	if (!safe_unproject_position(p_pos, res)) {
+#ifdef DEV_ENABLED
+		WARN_PRINT_ONCE("Camera::unproject_position() unprojecting points on the focal plane is unreliable.");
+#endif
+	}
 	return res;
 }
 
@@ -671,9 +743,9 @@ void Camera3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_attributes", "get_attributes");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, "Compositor"), "set_compositor", "get_compositor");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, Compositor::get_class_static()), "set_compositor", "get_compositor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
@@ -722,7 +794,7 @@ Camera3D::ProjectionType Camera3D::get_projection() const {
 }
 
 void Camera3D::set_fov(real_t p_fov) {
-	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
+	ERR_FAIL_COND(p_fov <= CMP_EPSILON || p_fov >= 180.0 - CMP_EPSILON);
 	fov = p_fov;
 	_update_camera_mode();
 }

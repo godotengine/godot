@@ -32,6 +32,8 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
+#include "scene/resources/font.h"
+#include "servers/text/text_server.h"
 
 String ResourceImporterImageFont::get_importer_name() const {
 	return "font_data_image";
@@ -287,7 +289,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 				list.push_back(end);
 			}
 
-			if (start == -1) {
+			if (start < 0 || start > 0x10FFFF || end < 0 || end > 0x10FFFF) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
 				continue;
 			}

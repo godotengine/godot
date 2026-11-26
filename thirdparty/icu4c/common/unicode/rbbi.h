@@ -122,7 +122,6 @@ class U_COMMON_API RuleBasedBreakIterator /*final*/ : public BreakIterator {
 private:
     /**
      * The UText through which this BreakIterator accesses the text
-     * @internal (private)
      */
     UText  fText = UTEXT_INITIALIZER;
 
@@ -172,7 +171,6 @@ private:
      * If present, UStack of LanguageBreakEngine objects that might handle
      * dictionary characters. Searched from top to bottom to find an object to
      * handle a given character.
-     * @internal (private)
      */
     UStack              *fLanguageBreakEngines = nullptr;
 
@@ -181,14 +179,12 @@ private:
      * If present, the special LanguageBreakEngine used for handling
      * characters that are in the dictionary set, but not handled by any
      * LanguageBreakEngine.
-     * @internal (private)
      */
     UnhandledEngine     *fUnhandledBreakEngine = nullptr;
 
     /**
      * Counter for the number of characters encountered with the "dictionary"
      *   flag set.
-     * @internal (private)
      */
     uint32_t            fDictionaryCharCount = 0;
 
@@ -233,7 +229,6 @@ private:
      *
      *             The break iterator adopts the memory, and will
      *             free it when done.
-     * @internal (private)
      */
     RuleBasedBreakIterator(RBBIDataHeader* data, UErrorCode &status);
 
@@ -248,20 +243,16 @@ private:
      * @param isPhraseBreaking true if phrase based breaking is required, otherwise false.
      * @see udata_open
      * @see #getBinaryRules
-     * @internal (private)
      */
     RuleBasedBreakIterator(UDataMemory* image, UBool isPhraseBreaking, UErrorCode &status);
 
-    /** @internal */
     friend class RBBIRuleBuilder;
-    /** @internal */
     friend class BreakIterator;
 
     /**
      * Default constructor with an error code parameter.
      * Aside from error handling, otherwise identical to the default constructor.
      * Internally, handles common initialization for other constructors.
-     * @internal (private)
      */
     RuleBasedBreakIterator(UErrorCode *status);
 
@@ -348,7 +339,7 @@ public:
      * @return the newly created RuleBasedBreakIterator
      *  @stable ICU 2.0
      */
-    RuleBasedBreakIterator& operator=(const RuleBasedBreakIterator& that);
+    RuleBasedBreakIterator& operator=(const RuleBasedBreakIterator& that) U_LIFETIME_BOUND;
 
     /**
      * Equality operator.  Returns true if both BreakIterators are of the
@@ -395,7 +386,7 @@ public:
      * @return the description used to create this iterator
      *  @stable ICU 2.0
      */
-    virtual const UnicodeString& getRules() const;
+    virtual const UnicodeString& getRules() const U_LIFETIME_BOUND;
 
     //=======================================================================
     // BreakIterator overrides
@@ -425,7 +416,7 @@ public:
      * @return An iterator over the text being analyzed.
      * @stable ICU 2.0
      */
-    virtual CharacterIterator& getText() const override;
+    virtual CharacterIterator& getText() const U_LIFETIME_BOUND override;
 
     /**
       *  Get a UText for the text being analyzed.
@@ -441,7 +432,7 @@ public:
       *           UText was provided, it will always be returned.
       * @stable ICU 3.4
       */
-     virtual UText *getUText(UText *fillIn, UErrorCode &status) const override;
+    virtual UText* getUText(UText* fillIn U_LIFETIME_BOUND, UErrorCode& status) const override;
 
     /**
      * Set the iterator to analyze a new piece of text.  This function resets
@@ -691,7 +682,7 @@ public:
      *           caller, and must not be modified or deleted.
      * @stable ICU 4.8
      */
-    virtual const uint8_t *getBinaryRules(uint32_t &length);
+    virtual const uint8_t* getBinaryRules(uint32_t& length) U_LIFETIME_BOUND;
 
     /**
      *  Set the subject text string upon which the break iterator is operating
@@ -718,24 +709,32 @@ public:
      *
      * @stable ICU 49
      */
-    virtual RuleBasedBreakIterator &refreshInputText(UText *input, UErrorCode &status) override;
+    virtual RuleBasedBreakIterator& refreshInputText(UText* input,
+                                                     UErrorCode& status) U_LIFETIME_BOUND override;
 
 
 private:
     //=======================================================================
     // implementation
     //=======================================================================
+
+#ifndef U_HIDE_INTERNAL_API
+public:
+#endif /* U_HIDE_INTERNAL_API */
     /**
      * Iterate backwards from an arbitrary position in the input text using the
      * synthesized Safe Reverse rules.
      * This locates a "Safe Position" from which the forward break rules
      * will operate correctly. A Safe Position is not necessarily a boundary itself.
      *
+     * Public only for testing (to avoid regressions like ICU-23478).
+     *
      * @param fromPosition the position in the input text to begin the iteration.
-     * @internal (private)
+     * @internal
      */
     int32_t handleSafePrevious(int32_t fromPosition);
 
+private:
     /**
      * Find a rule-based boundary by running the state machine.
      * Input
@@ -745,8 +744,6 @@ private:
      *    fDictionaryCharCount the number of dictionary characters encountered.
      *                         If > 0, the segment will be further subdivided
      *    fRuleStatusIndex     Info from the state table indicating which rules caused the boundary.
-     *
-     * @internal (private)
      */
     int32_t handleNext();
 
@@ -778,9 +775,9 @@ private:
      * given character c.
      * @param c         A character in the dictionary set
      * @param locale    The locale.
-     * @internal (private)
      */
-    const LanguageBreakEngine *getLanguageBreakEngine(UChar32 c, const char* locale);
+    const LanguageBreakEngine* getLanguageBreakEngine(UChar32 c,
+                                                      const char* locale) U_LIFETIME_BOUND;
 
   public:
 #ifndef U_HIDE_INTERNAL_API

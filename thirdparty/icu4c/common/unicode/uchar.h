@@ -61,7 +61,7 @@ U_CDECL_BEGIN
  * @see u_getUnicodeVersion
  * @stable ICU 2.0
  */
-#define U_UNICODE_VERSION "16.0"
+#define U_UNICODE_VERSION "18.0"
 
 /**
  * \file
@@ -552,14 +552,12 @@ typedef enum UProperty {
      * @stable ICU 74
      */
     UCHAR_ID_COMPAT_MATH_CONTINUE=74,
-#ifndef U_HIDE_DRAFT_API
     /**
      * Binary property Modifier_Combining_Mark.
      * Used by the AMTRA algorithm in UAX #53.
-     * @draft ICU 76
+     * @stable ICU 76
      */
     UCHAR_MODIFIER_COMBINING_MARK=75,
-#endif  // U_HIDE_DRAFT_API
 #ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the last constant for binary Unicode properties.
@@ -682,14 +680,12 @@ typedef enum UProperty {
      * @stable ICU 75
      */
     UCHAR_IDENTIFIER_STATUS=0x1019,
-#ifndef U_HIDE_DRAFT_API
     /**
      * Enumerated property Indic_Conjunct_Break.
      * Used in the grapheme cluster break algorithm in UAX #29.
-     * @draft ICU 76
+     * @stable ICU 76
      */
     UCHAR_INDIC_CONJUNCT_BREAK=0x101A,
-#endif  // U_HIDE_DRAFT_API
 #ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the last constant for enumerated/integer Unicode properties.
@@ -1985,6 +1981,42 @@ enum UBlockCode {
     /** @stable ICU 76 */
     UBLOCK_TULU_TIGALARI = 338, /*[11380]*/
 
+    // New blocks in Unicode 17.0.0
+
+    /** @stable ICU 78 */
+    UBLOCK_BERIA_ERFE = 339, /*[16EA0]*/
+    /** @stable ICU 78 */
+    UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_J = 340, /*[323B0]*/
+    /** @stable ICU 78 */
+    UBLOCK_MISCELLANEOUS_SYMBOLS_SUPPLEMENT = 341, /*[1CEC0]*/
+    /** @stable ICU 78 */
+    UBLOCK_SHARADA_SUPPLEMENT = 342, /*[11B60]*/
+    /** @stable ICU 78 */
+    UBLOCK_SIDETIC = 343, /*[10940]*/
+    /** @stable ICU 78 */
+    UBLOCK_TAI_YO = 344, /*[1E6C0]*/
+    /** @stable ICU 78 */
+    UBLOCK_TANGUT_COMPONENTS_SUPPLEMENT = 345, /*[18D80]*/
+    /** @stable ICU 78 */
+    UBLOCK_TOLONG_SIKI = 346, /*[11DB0]*/
+
+    // New blocks in Unicode 18.0.0
+
+    /** @stable ICU 79 */
+    UBLOCK_ARCHAIC_CUNEIFORM_NUMERALS = 347, /*[12550]*/
+    /** @stable ICU 79 */
+    UBLOCK_BENGALI_SUPPLEMENT = 348, /*[11DF0]*/
+    /** @stable ICU 79 */
+    UBLOCK_JURCHEN = 349, /*[18E00]*/
+    /** @stable ICU 79 */
+    UBLOCK_JURCHEN_RADICALS = 350, /*[191A0]*/
+    /** @stable ICU 79 */
+    UBLOCK_MISCELLANEOUS_SYMBOLS_AND_ARROWS_EXTENDED = 351, /*[1DB00]*/
+    /** @stable ICU 79 */
+    UBLOCK_MUSICAL_SYMBOLS_SUPPLEMENT = 352, /*[1D250]*/
+    /** @stable ICU 79 */
+    UBLOCK_SEAL = 353, /*[3D000]*/
+
 #ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the highest normal UBlockCode value.
@@ -1992,7 +2024,7 @@ enum UBlockCode {
      *
      * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
      */
-    UBLOCK_COUNT = 339,
+    UBLOCK_COUNT = 354,
 #endif  // U_HIDE_DEPRECATED_API
 
     /** @stable ICU 2.0 */
@@ -2289,6 +2321,19 @@ typedef enum UJoiningGroup {
 
     U_JG_KASHMIRI_YEH,  /**< @stable ICU 76 */
 
+    U_JG_THIN_NOON,  /**< @stable ICU 78 */
+
+    U_JG_CROWN_AIN,  /**< @stable ICU 79 */
+    U_JG_CROWN_BEH,  /**< @stable ICU 79 */
+    U_JG_CROWN_FEH,  /**< @stable ICU 79 */
+    U_JG_CROWN_HAH,  /**< @stable ICU 79 */
+    U_JG_CROWN_HEH,  /**< @stable ICU 79 */
+    U_JG_CROWN_KAF,  /**< @stable ICU 79 */
+    U_JG_CROWN_MEEM,  /**< @stable ICU 79 */
+    U_JG_CROWN_SAD,  /**< @stable ICU 79 */
+    U_JG_CROWN_SEEN,  /**< @stable ICU 79 */
+    U_JG_CROWN_TAH,  /**< @stable ICU 79 */
+
 #ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the highest normal UJoiningGroup value.
@@ -2536,6 +2581,8 @@ typedef enum ULineBreak {
     U_LB_VIRAMA_FINAL = 46,      /*[VF]*/
     /** @stable ICU 74 */
     U_LB_VIRAMA = 47,            /*[VI]*/
+    /** @stable ICU 78 */
+    U_LB_UNAMBIGUOUS_HYPHEN = 48,/*[HH]*/
 #ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the highest normal ULineBreak value.
@@ -2543,7 +2590,7 @@ typedef enum ULineBreak {
      *
      * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
      */
-    U_LB_COUNT = 48
+    U_LB_COUNT = 49
 #endif  // U_HIDE_DEPRECATED_API
 } ULineBreak;
 
@@ -2741,12 +2788,11 @@ typedef enum UIndicSyllabicCategory {
     U_INSC_REORDERING_KILLER,
 } UIndicSyllabicCategory;
 
-#ifndef U_HIDE_DRAFT_API
 /**
  * Indic Conjunct Break constants.
  *
  * @see UCHAR_INDIC_CONJUNCT_BREAK
- * @draft ICU 76
+ * @stable ICU 76
  */
 typedef enum UIndicConjunctBreak {
     /*
@@ -2755,16 +2801,24 @@ typedef enum UIndicConjunctBreak {
     *     U_INCB_<Unicode Indic_Conjunct_Break value name>
     */
 
-    /** @draft ICU 76 */
+    /** @stable ICU 76 */
     U_INCB_NONE,
-    /** @draft ICU 76 */
+    /** @stable ICU 76 */
     U_INCB_CONSONANT,
-    /** @draft ICU 76 */
+    /** @stable ICU 76 */
     U_INCB_EXTEND,
-    /** @draft ICU 76 */
+    /** @stable ICU 76 */
     U_INCB_LINKER,
+#ifndef U_HIDE_INTERNAL_API
+    /**
+     * One more than the highest normal UIndicConjunctBreak value.
+     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_INDIC_CONJUNCT_BREAK).
+     *
+     * @internal The numeric value may change over time, see ICU ticket #12420.
+     */
+    U_INTERNAL_INCB_COUNT
+#endif  // U_HIDE_INTERNAL_API
 } UIndicConjunctBreak;
-#endif  // U_HIDE_DRAFT_API
 
 /**
  * Vertical Orientation constants.
@@ -2918,7 +2972,7 @@ u_stringHasBinaryProperty(const UChar *s, int32_t length, UProperty which);
  * @return the property as a set
  * @see UProperty
  * @see u_hasBinaryProperty
- * @see Unicode::fromUSet
+ * @see UnicodeSet::fromUSet
  * @stable ICU 63
  */
 U_CAPI const USet * U_EXPORT2

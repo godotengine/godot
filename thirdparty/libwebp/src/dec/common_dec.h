@@ -51,4 +51,7 @@ enum { MB_FEATURE_TREE_PROBS = 3,
        NUM_PROBAS = 11
      };
 
+// Check that webp_csp_mode is within the bounds of WEBP_CSP_MODE.
+int IsValidColorspace(int webp_csp_mode);
+
 #endif  // WEBP_DEC_COMMON_DEC_H_

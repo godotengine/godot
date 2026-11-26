@@ -31,16 +31,19 @@
 #include "jolt_globals.h"
 
 #include "objects/jolt_group_filter.h"
-#include "shapes/jolt_custom_double_sided_shape.h"
+#include "shapes/jolt_custom_instance_overrides_shape.h"
 #include "shapes/jolt_custom_ray_shape.h"
-#include "shapes/jolt_custom_user_data_shape.h"
 
-#include "core/string/print_string.h"
+#include "core/os/memory.h"
+
+#ifdef JPH_ENABLE_ASSERTS
 #include "core/variant/variant.h"
+#endif
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/RegisterTypes.h"
+#include <Jolt/Core/Factory.h>
+#include <Jolt/RegisterTypes.h>
 
 #include <cstdarg>
 
@@ -53,6 +56,9 @@ void *jolt_realloc(void *p_mem, size_t p_old_size, size_t p_new_size) {
 }
 
 void jolt_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_static(p_mem);
 }
 
@@ -61,6 +67,9 @@ void *jolt_aligned_alloc(size_t p_size, size_t p_alignment) {
 }
 
 void jolt_aligned_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_aligned_static(p_mem);
 }
 
@@ -99,8 +108,7 @@ void jolt_initialize() {
 	JPH::RegisterTypes();
 
 	JoltCustomRayShape::register_type();
-	JoltCustomUserDataShape::register_type();
-	JoltCustomDoubleSidedShape::register_type();
+	JoltCustomInstanceOverridesShape::register_type();
 
 	JoltGroupFilter::instance = new JoltGroupFilter();
 	JoltGroupFilter::instance->SetEmbedded();

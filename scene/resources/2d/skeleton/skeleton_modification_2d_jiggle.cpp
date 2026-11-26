@@ -30,8 +30,13 @@
 
 #include "skeleton_modification_2d_jiggle.h"
 
+#include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/world_2d.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 bool SkeletonModification2DJiggle::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -122,7 +127,7 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 
 		if (jiggle_data_chain[i].override_defaults) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "stiffness", PROPERTY_HINT_RANGE, "0, 1000, 0.01", PROPERTY_USAGE_DEFAULT));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "mass", PROPERTY_HINT_RANGE, "0, 1000, 0.01", PROPERTY_USAGE_DEFAULT));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "mass", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,exp,suffix:kg", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "damping", PROPERTY_HINT_RANGE, "0, 1, 0.01", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "use_gravity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			if (jiggle_data_chain[i].use_gravity) {
@@ -196,9 +201,9 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 			Ref<World2D> world_2d = stack->skeleton->get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-			PhysicsDirectSpaceState2D::RayResult ray_result;
+			PS2DT::RayResult ray_result;
 
-			PhysicsDirectSpaceState2D::RayParameters ray_params;
+			PS2DT::RayParameters ray_params;
 			ray_params.from = operation_bone_trans.get_origin();
 			ray_params.to = jiggle_data_chain[p_joint_idx].dynamic_position;
 			ray_params.collision_mask = collision_mask;
@@ -218,14 +223,8 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 		}
 	}
 
-	// Rotate the bone using the dynamic position!
-	operation_bone_trans = operation_bone_trans.looking_at(jiggle_data_chain[p_joint_idx].dynamic_position);
-	operation_bone_trans.set_rotation(operation_bone_trans.get_rotation() - operation_bone->get_bone_angle());
-
-	// Reset scale
-	operation_bone_trans.set_scale(operation_bone->get_global_scale());
-
-	operation_bone->set_global_transform(operation_bone_trans);
+	operation_bone->look_at(jiggle_data_chain[p_joint_idx].dynamic_position);
+	operation_bone->rotate(-operation_bone->get_bone_angle());
 	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), stack->strength, true);
 }
 
@@ -532,6 +531,7 @@ void SkeletonModification2DJiggle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SkeletonModification2DJiggle::get_collision_mask);
 
 	// Jiggle joint data functions
+	ClassDB::bind_method(D_METHOD("reset"), &SkeletonModification2DJiggle::reset);
 	ClassDB::bind_method(D_METHOD("set_jiggle_joint_bone2d_node", "joint_idx", "bone2d_node"), &SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node);
 	ClassDB::bind_method(D_METHOD("get_jiggle_joint_bone2d_node", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_bone2d_node);
 	ClassDB::bind_method(D_METHOD("set_jiggle_joint_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DJiggle::set_jiggle_joint_bone_index);
@@ -571,6 +571,29 @@ SkeletonModification2DJiggle::SkeletonModification2DJiggle() {
 	gravity = Vector2(0, 6.0);
 	enabled = true;
 	editor_draw_gizmo = false; // Nothing to really show in a gizmo right now.
+}
+
+void SkeletonModification2DJiggle::reset() {
+	if (!is_setup || !stack || !stack->skeleton) {
+		return;
+	}
+
+	for (int i = 0; i < jiggle_data_chain.size(); i++) {
+		const int bone_idx = jiggle_data_chain[i].bone_idx;
+		if (bone_idx <= -1 || bone_idx >= stack->skeleton->get_bone_count()) {
+			continue;
+		}
+		Bone2D *bone = stack->skeleton->get_bone(bone_idx);
+		if (bone) {
+			Vector2 bone_pos = bone->get_global_position();
+			jiggle_data_chain.write[i].dynamic_position = bone_pos;
+			jiggle_data_chain.write[i].last_position = bone_pos;
+			jiggle_data_chain.write[i].last_noncollision_position = bone_pos;
+			jiggle_data_chain.write[i].velocity = Vector2(0, 0);
+			jiggle_data_chain.write[i].acceleration = Vector2(0, 0);
+			jiggle_data_chain.write[i].force = Vector2(0, 0);
+		}
+	}
 }
 
 SkeletonModification2DJiggle::~SkeletonModification2DJiggle() {

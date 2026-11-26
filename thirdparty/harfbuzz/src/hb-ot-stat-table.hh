@@ -63,9 +63,8 @@ static bool axis_value_is_outside_axis_range (hb_tag_t axis_tag, float axis_valu
   if (!user_axes_location->has (axis_tag))
     return false;
 
-  double axis_value_double = static_cast<double>(axis_value);
   Triple axis_range = user_axes_location->get (axis_tag);
-  return (axis_value_double < axis_range.minimum || axis_value_double > axis_range.maximum);
+  return (axis_value < axis_range.minimum || axis_value > axis_range.maximum);
 }
 
 struct StatAxisRecord
@@ -352,7 +351,7 @@ struct AxisValue
 {
   float get_value (unsigned int axis_index) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: hb_barrier (); return u.format1.get_value ();
     case 2: hb_barrier (); return u.format2.get_value ();
@@ -364,7 +363,7 @@ struct AxisValue
 
   unsigned int get_axis_index () const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: hb_barrier (); return u.format1.get_axis_index ();
     case 2: hb_barrier (); return u.format2.get_axis_index ();
@@ -376,7 +375,7 @@ struct AxisValue
 
   hb_ot_name_id_t get_value_name_id () const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: hb_barrier (); return u.format1.get_value_name_id ();
     case 2: hb_barrier (); return u.format2.get_value_name_id ();
@@ -389,9 +388,9 @@ struct AxisValue
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
@@ -403,7 +402,7 @@ struct AxisValue
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
                         hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: hb_barrier (); return u.format1.keep_axis_value (axis_records, user_axes_location);
     case 2: hb_barrier (); return u.format2.keep_axis_value (axis_records, user_axes_location);
@@ -420,7 +419,7 @@ struct AxisValue
       return_trace (false);
     hb_barrier ();
 
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
     case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
@@ -433,14 +432,14 @@ struct AxisValue
   protected:
   union
   {
-  HBUINT16		format;
+  struct { HBUINT16 v; }	format;
   AxisValueFormat1	format1;
   AxisValueFormat2	format2;
   AxisValueFormat3	format3;
   AxisValueFormat4	format4;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 struct AxisValueOffsetArray: UnsizedArrayOf<Offset16To<AxisValue>>

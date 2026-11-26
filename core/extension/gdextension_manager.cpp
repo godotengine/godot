@@ -30,11 +30,16 @@
 
 #include "gdextension_manager.h"
 
+#include "core/config/engine.h"
+#include "core/extension/gdextension_function_loader.h"
 #include "core/extension/gdextension_library_loader.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 
 GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load) {
 	if (level >= 0) { // Already initialized up to some level.
@@ -114,7 +119,14 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 
 	Ref<GDExtensionLibraryLoader> loader;
 	loader.instantiate();
-	return GDExtensionManager::get_singleton()->load_extension_with_loader(p_path, loader);
+	return load_extension_with_loader(p_path, loader);
+}
+
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionPtr<const GDExtensionInitializationFunction> p_init_func) {
+	Ref<GDExtensionFunctionLoader> func_loader;
+	func_loader.instantiate();
+	func_loader->set_initialization_function((GDExtensionInitializationFunction)*p_init_func.data);
+	return load_extension_with_loader(p_path, func_loader);
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader) {
@@ -128,6 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -180,6 +195,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -390,11 +408,19 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	}
 
 	bool needs_restart = false;
+#ifdef TOOLS_ENABLED
+	bool trigger_reload = false;
+#endif
 	for (const String &extension : extensions_added) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extension);
 		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
+#ifdef TOOLS_ENABLED
+		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+			trigger_reload = true;
+		}
+#endif
 	}
 
 	for (const String &extension : extensions_removed) {
@@ -402,10 +428,15 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
+#ifdef TOOLS_ENABLED
+		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+			trigger_reload = true;
+		}
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
-	if (extensions_added.size() || extensions_removed.size()) {
+	if (trigger_reload) {
 		// Emitting extensions_reloaded so EditorNode can reload Inspector and regenerate documentation.
 		emit_signal("extensions_reloaded");
 
@@ -454,6 +485,7 @@ GDExtensionManager *GDExtensionManager::get_singleton() {
 
 void GDExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
+	ClassDB::bind_method(D_METHOD("load_extension_from_function", "path", "init_func"), &GDExtensionManager::load_extension_from_function);
 	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
 	ClassDB::bind_method(D_METHOD("unload_extension", "path"), &GDExtensionManager::unload_extension);
 	ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &GDExtensionManager::is_extension_loaded);
@@ -468,8 +500,8 @@ void GDExtensionManager::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOAD_STATUS_NEEDS_RESTART);
 
 	ADD_SIGNAL(MethodInfo("extensions_reloaded"));
-	ADD_SIGNAL(MethodInfo("extension_loaded", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
-	ADD_SIGNAL(MethodInfo("extension_unloading", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
+	ADD_SIGNAL(MethodInfo("extension_loaded", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, GDExtension::get_class_static())));
+	ADD_SIGNAL(MethodInfo("extension_unloading", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, GDExtension::get_class_static())));
 }
 
 GDExtensionManager::GDExtensionManager() {

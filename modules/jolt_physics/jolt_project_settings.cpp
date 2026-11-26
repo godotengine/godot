@@ -31,6 +31,7 @@
 #include "jolt_project_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 
 void JoltProjectSettings::register_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/velocity_steps", PROPERTY_HINT_RANGE, U"2,16,or_greater"), 10);
@@ -111,7 +112,7 @@ void JoltProjectSettings::read_settings() {
 	joint_world_node = (JoltJointWorldNode)(int)GLOBAL_GET("physics/jolt_physics_3d/joints/world_node");
 
 	temp_memory_mib = GLOBAL_GET("physics/jolt_physics_3d/limits/temporary_memory_buffer_size");
-	temp_memory_b = temp_memory_mib * 1024 * 1024;
+	temp_memory_b = (int64_t)temp_memory_mib * 1024 * 1024;
 	world_boundary_shape_size = GLOBAL_GET("physics/jolt_physics_3d/limits/world_boundary_shape_size");
 	max_linear_velocity = GLOBAL_GET("physics/jolt_physics_3d/limits/max_linear_velocity");
 	max_angular_velocity = GLOBAL_GET("physics/jolt_physics_3d/limits/max_angular_velocity");

@@ -225,10 +225,6 @@ uint32 QuadTree::AllocateNode(bool inIsChanged)
 		// you could still be running out of nodes because the tree is not being maintained. If your application is paused,
 		// consider still calling PhysicsSystem::Update with a delta time of 0 to keep the tree in good shape.
 		//
-		// The system keeps track of a previous and a current tree, this allows for queries to continue using the old tree
-		// while the new tree is being built. If you completely clean the PhysicsSystem and rebuild it from scratch, you may
-		// want to call PhysicsSystem::OptimizeBroadPhase two times after clearing to completely get rid of any lingering nodes.
-		//
 		// The number of nodes that is allocated is related to the max number of bodies that is passed in PhysicsSystem::Init.
 		// For normal situations there are plenty of nodes available. If all else fails, you can increase the number of nodes
 		// by increasing the maximum number of bodies.
@@ -1004,8 +1000,6 @@ JPH_INLINE void QuadTree::WalkTree(const ObjectLayerFilter &inObjectLayerFilter,
 			ObjectLayer object_layer = inTracking[body_id.GetIndex()].mObjectLayer; // We're not taking a lock on the body, so it may be in the process of being removed so check if the object layer is invalid
 			if (object_layer != cObjectLayerInvalid && inObjectLayerFilter.ShouldCollide(object_layer))
 			{
-				JPH_PROFILE("VisitBody");
-
 				// Track amount of hits
 				JPH_IF_TRACK_BROADPHASE_STATS(++hits_collected;)
 
@@ -1456,6 +1450,10 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 		const Body &body1 = *inBodies[b1_id.GetIndex()];
 		JPH_ASSERT(!body1.IsStatic());
 
+	#ifdef JPH_TRACK_SIMULATION_STATS
+		uint64 start_tick = GetProcessorTickCount();
+	#endif
+
 		// Expand the bounding box by the speculative contact distance
 		AABox bounds1 = body1.GetWorldSpaceBounds();
 		bounds1.ExpandBy(Vec3::sReplicate(inSpeculativeContactDistance));
@@ -1525,6 +1523,11 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 			--top;
 		}
 		while (top >= 0);
+
+	#ifdef JPH_TRACK_SIMULATION_STATS
+		uint64 num_ticks = GetProcessorTickCount() - start_tick;
+		const_cast<MotionProperties::SimulationStats &>(body1.GetMotionPropertiesUnchecked()->GetSimulationStats()).mBroadPhaseTicks += num_ticks;
+	#endif
 	}
 
 	// Test that the root node was not swapped while finding collision pairs.

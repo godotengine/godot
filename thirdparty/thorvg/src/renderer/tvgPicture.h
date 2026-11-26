@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,184 +23,325 @@
 #ifndef _TVG_PICTURE_H_
 #define _TVG_PICTURE_H_
 
-#include <string>
 #include "tvgPaint.h"
-#include "tvgLoader.h"
+#include "tvgScene.h"
+#include "tvgAccessor.h"
+#include "tvgLoaderMgr.h"
 
-
-struct PictureIterator : Iterator
+namespace tvg
 {
-    Paint* paint = nullptr;
-    Paint* ptr = nullptr;
 
-    PictureIterator(Paint* p) : paint(p) {}
-
-    const Paint* next() override
-    {
-        if (!ptr) ptr = paint;
-        else ptr = nullptr;
-        return ptr;
-    }
-
-    uint32_t count() override
-    {
-        if (paint) return 1;
-        else return 0;
-    }
-
-    void begin() override
-    {
-        ptr = nullptr;
-    }
-};
-
-
-struct Picture::Impl
+struct PictureImpl : Picture
 {
+    Paint::Impl impl;
     ImageLoader* loader = nullptr;
-
-    Paint* paint = nullptr;           //vector picture uses
-    RenderSurface* surface = nullptr; //bitmap picture uses
-    RenderData rd = nullptr;          //engine data
+    Paint* vector = nullptr;          //vector picture uses
+    RenderSurface* bitmap = nullptr;  //bitmap picture uses
+    AssetResolver* resolver = nullptr;
+    Point origin = {};
     float w = 0, h = 0;
-    Picture* picture = nullptr;
-    uint8_t cFlag = CompositionFlag::Invalid;
+    FilterMethod filter = FilterMethod::Bilinear;
     bool resizing = false;
 
-    void queryComposition(uint8_t opacity);
-    bool render(RenderMethod* renderer);
-    bool size(float w, float h);
-    RenderRegion bounds(RenderMethod* renderer);
-    Result load(ImageLoader* ploader);
-
-    Impl(Picture* p) : picture(p)
+    PictureImpl() : impl(Paint::Impl(this))
     {
     }
 
-    ~Impl()
+    ~PictureImpl()
     {
         LoaderMgr::retrieve(loader);
-        if (surface) {
-            if (auto renderer = PP(picture)->renderer) {
-                renderer->dispose(rd);
-            }
-        }
-        delete(paint);
+        tvg::free(resolver);
+        if (vector) vector->unref();
     }
 
-    RenderData update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, TVG_UNUSED bool clipper)
+    bool skip(RenderUpdateFlag flag)
     {
-        auto flag = static_cast<RenderUpdateFlag>(pFlag | load());
+        // The media have its own playback update
+        return !loader || (flag == RenderUpdateFlag::None && loader->type != FileType::Media);
+    }
 
-        if (surface) {
-            if (flag == RenderUpdateFlag::None) return rd;
+    bool update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flag, TVG_UNUSED bool clipper)
+    {
+        flag |= load();
+        if (flag == RenderUpdateFlag::None) return true;
 
+        auto pivot = Point{-origin.x * float(w), -origin.y * float(h)};
+
+        if (bitmap) {
+            if (bitmap->cs == ColorSpace::Unknown) {
+                TVGERR("RENDERER", "Unknown colorspace picture data");
+                return false;
+            }
             //Overriding Transformation by the desired image size
             auto sx = w / loader->w;
             auto sy = h / loader->h;
             auto scale = sx < sy ? sx : sy;
-            auto m = transform * Matrix{scale, 0, 0, 0, scale, 0, 0, 0, 1};
-
-            rd = renderer->prepare(surface, rd, m, clips, opacity, flag);
-        } else if (paint) {
+            auto m = transform * Matrix{scale, 0, pivot.x, 0, scale, pivot.y, 0, 0, 1};
+            impl.rd = renderer->prepare(bitmap, impl.rd, m, clips, opacity, filter, flag);
+        } else if (vector) {
             if (resizing) {
-                loader->resize(paint, w, h);
+                loader->resize(vector, w, h);
                 resizing = false;
             }
-            queryComposition(opacity);
-            rd = paint->pImpl->update(renderer, transform, clips, opacity, flag, false);
+            needComposition(opacity);
+            vector->blend(pImpl->blendMethod); //propagate blend method to nested vector scene
+            translateR(const_cast<Matrix*>(&transform), pivot);
+            return vector->pImpl->update(renderer, transform, clips, opacity, flag, false);
         }
-        return rd;
-    }
-
-    bool bounds(float* x, float* y, float* w, float* h, bool stroking)
-    {
-        if (x) *x = 0;
-        if (y) *y = 0;
-        if (w) *w = this->w;
-        if (h) *h = this->h;
         return true;
     }
 
-    Result load(const string& path)
+    void size(float w, float h)
     {
-        if (paint || surface) return Result::InsufficientCondition;
+        this->w = w;
+        this->h = h;
+        resizing = true;
+    }
 
-        bool invalid;  //Invalid Path
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(path, &invalid));
-        if (!loader) {
-            if (invalid) return Result::InvalidArguments;
-            return Result::NonSupport;
+    Result filterMethod(FilterMethod method)
+    {
+        if (method != filter) {
+            impl.mark(RenderUpdateFlag::Image);
+            filter = method;
         }
-        return load(loader);
+        return Result::Success;
     }
 
-    Result load(const char* data, uint32_t size, const string& mimeType, bool copy)
+    Result size(float* w, float* h) const
     {
-        if (paint || surface) return Result::InsufficientCondition;
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, size, mimeType, copy));
-        if (!loader) return Result::NonSupport;
-        return load(loader);
+        if (!loader) return Result::InsufficientCondition;
+        if (w) *w = this->w;
+        if (h) *h = this->h;
+        return Result::Success;
     }
 
-    Result load(uint32_t* data, uint32_t w, uint32_t h, bool copy)
+    bool intersects(const RenderRegion& region, bool visibleOnly)
     {
-        if (paint || surface) return Result::InsufficientCondition;
+        if (!impl.renderer) return false;
+        impl.mark(load());
+        if (impl.rd) return impl.renderer->intersectsImage(impl.rd, region);
+        else if (vector) return PAINT(vector)->intersects(region, visibleOnly);
+        return false;
+    }
 
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, w, h, copy));
-        if (!loader) return Result::FailedAllocation;
+    bool bounds(Point* pt4, const Matrix& m, TVG_UNUSED bool obb)
+    {
+        pt4[0] = Point{0.0f, 0.0f} * m;
+        pt4[1] = Point{w, 0.0f} * m;
+        pt4[2] = Point{w, h} * m;
+        pt4[3] = Point{0.0f, h} * m;
+        return true;
+    }
 
-        return load(loader);
+    Result load(const char* filename)
+    {
+        if (vector || bitmap) return Result::InsufficientCondition;
+
+        PictureOps ops = {Ownership::Transfer, resolver, nullptr, accessible};
+        auto ret = Result::InvalidArguments;
+        auto loader = LoaderMgr::loader(filename, ops, ret);
+        return loader ? load(loader) : ret;
+    }
+
+    Result load(const char* data, uint32_t size, const char* mimeType, const char* rpath, const Ownership owner)
+    {
+        if (!data || size <= 0) return Result::InvalidArguments;
+        if (vector || bitmap) return Result::InsufficientCondition;
+
+        PictureOps ops = {owner, resolver, rpath, accessible};
+        auto ret = Result::InvalidArguments;
+        auto loader = LoaderMgr::loader(data, size, mimeType, ops, ret);
+        return loader ? load(loader) : ret;
+    }
+
+    Result load(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, Ownership owner)
+    {
+        if (!data || w <= 0 || h <= 0 || cs == ColorSpace::Unknown)  return Result::InvalidArguments;
+        if (vector) return Result::InsufficientCondition;
+        auto loader = LoaderMgr::loader(data, w, h, cs, owner);
+        return loader ? load(loader) : Result::NonSupport;
+    }
+
+    Result set(std::function<bool(Paint* paint, const char* src, void* data)> resolver, void* data)
+    {
+        if (loader) return Result::InsufficientCondition;
+
+        if (!resolver) {
+            tvg::free(this->resolver);
+            this->resolver = nullptr;
+            return Result::Success;
+        }
+
+        if (!this->resolver) this->resolver = tvg::calloc<AssetResolver>(1, sizeof(AssetResolver));
+        *(this->resolver) = {resolver, data};
+        return Result::Success;
     }
 
     Paint* duplicate(Paint* ret)
     {
         if (ret) TVGERR("RENDERER", "TODO: duplicate()");
 
-        load();
+        impl.mark(load());
 
-        auto picture = Picture::gen().release();
-        auto dup = picture->pImpl;
+        auto picture = Picture::gen();
+        auto dup = to<PictureImpl>(picture);
 
-        if (paint) dup->paint = paint->duplicate();
+        if (vector) {
+            dup->vector = vector->duplicate();
+            PAINT(dup->vector)->parent = picture;
+        }
 
         if (loader) {
             dup->loader = loader;
             ++dup->loader->sharing;
-            PP(picture)->renderFlag |= RenderUpdateFlag::Image;
+            PAINT(picture)->mark(RenderUpdateFlag::Image);
         }
 
-        dup->surface = surface;
+        dup->bitmap = bitmap;
+        dup->origin = origin;
         dup->w = w;
         dup->h = h;
+        dup->filter = filter;
         dup->resizing = resizing;
 
         return picture;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
-        load();
-        return new PictureIterator(paint);
+        impl.mark(load());
+
+        struct PictureIterator : AccessorIterator
+        {
+            Paint* ptr = nullptr;
+
+            PictureIterator(Paint* p) : ptr(p) {}
+
+            const Paint* next() override
+            {
+                auto ret = ptr;
+                ptr = nullptr;
+                return ret;
+            }
+        };
+
+        return new PictureIterator(vector);
     }
 
-    uint32_t* data(uint32_t* w, uint32_t* h)
+    RenderUpdateFlag load()
     {
-        //Try it, If not loaded yet.
-        load();
+        if (!loader) return RenderUpdateFlag::None;
 
-        if (loader) {
-            if (w) *w = static_cast<uint32_t>(loader->w);
-            if (h) *h = static_cast<uint32_t>(loader->h);
+        // reload the next frame if any
+        if (vector || bitmap) {
+            // sync call must be guaranteed.
+            if (loader->sync() && bitmap) return RenderUpdateFlag::Image;
+        // load the first frame
         } else {
-            if (w) *w = 0;
-            if (h) *h = 0;
+            if ((vector = loader->paint())) {
+                vector->ref();
+                PAINT(vector)->parent = this;
+                if (w != loader->w || h != loader->h) {
+                    if (!resizing) {
+                        w = loader->w;
+                        h = loader->h;
+                    }
+                    loader->resize(vector, w, h);
+                    resizing = false;
+                }
+            } else {
+                bitmap = loader->bitmap();
+                if (bitmap) return RenderUpdateFlag::Image;
+            }
         }
-        if (surface) return surface->buf32;
-        else return nullptr;
+        // animations updates the properties essentially. here update is not necessary.
+        return RenderUpdateFlag::None;
     }
 
-    RenderUpdateFlag load();
+    void needComposition(uint8_t opacity)
+    {
+        impl.cmpFlag = CompositionFlag::Invalid;  //must clear after the rendering
+
+        //In this case, paint(scene) would try composition itself.
+        if (opacity < 255) return;
+
+        //Composition test
+        const Paint* target;
+        PAINT(this)->mask(&target);
+        if (!target || target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return;
+        impl.mark(CompositionFlag::Opacity);
+    }
+
+    bool render(RenderMethod* renderer, TVG_UNUSED CompositionFlag flag)
+    {
+        auto ret = true;
+
+        if (bitmap) {
+            renderer->blend(impl.blendMethod);
+            return renderer->renderImage(impl.rd);
+        } else if (vector) {
+            RenderCompositor* cmp = nullptr;
+            if (impl.cmpFlag) {
+                cmp = renderer->target(bounds(), renderer->colorSpace(), impl.cmpFlag);
+                renderer->beginComposite(cmp, MaskMethod::None, 255);
+            }
+            ret = vector->pImpl->render(renderer);
+            if (cmp) renderer->endComposite(cmp);
+        }
+        return ret;
+    }
+
+    RenderRegion bounds()
+    {
+        if (vector) return vector->pImpl->bounds();
+        else if (impl.renderer) return impl.renderer->region(impl.rd);
+        return {};
+    }
+
+    Result load(Loader* loader)
+    {
+        //Same resource has been loaded.
+        if (this->loader == loader) {
+            this->loader->sharing--;  //make it sure the reference counting.
+            if (bitmap) impl.mark(RenderUpdateFlag::Image);  // force the bitmap updated
+            return Result::Success;
+        } else if (this->loader) {
+            LoaderMgr::retrieve(this->loader);
+        }
+
+        this->loader = static_cast<ImageLoader*>(loader);
+        if (!loader->read()) return Result::Unknown;
+
+        this->w = this->loader->w;
+        this->h = this->loader->h;
+
+        impl.mark(RenderUpdateFlag::All);
+
+        return Result::Success;
+    }
+
+    const AccessorEntity* access(uint32_t id)
+    {
+        if (loader) return loader->access(id);
+        return nullptr;
+    }
+
+    void access(AccessorCallback& cb)
+    {
+        if (loader) loader->access(cb);
+    }
+
+    template<class T>
+    T* fetch(FileType expect)
+    {
+        if (loader) {
+            if (loader->type == expect) return static_cast<T*>(loader);
+            TVGERR("RENDERER", "Invalid loaded data type (expected: %d, got: %d)", (int)expect, (int)loader->type);
+        }
+        return nullptr;
+    }
 };
+
+}
 
 #endif //_TVG_PICTURE_H_

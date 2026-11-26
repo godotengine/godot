@@ -32,6 +32,8 @@
 
 #include "mobile_vr_interface.h"
 
+#include "core/object/class_db.h"
+
 Ref<MobileVRInterface> mobile_vr;
 
 void initialize_mobile_vr_module(ModuleInitializationLevel p_level) {

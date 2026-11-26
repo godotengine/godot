@@ -31,8 +31,8 @@
 #pragma once
 
 #include "nav_rid_2d.h"
-#include "nav_utils_2d.h"
 
+#include "core/object/object_id.h"
 #include "servers/navigation_2d/navigation_constants_2d.h"
 
 class NavMap2D;

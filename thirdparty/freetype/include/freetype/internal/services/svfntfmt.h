@@ -4,7 +4,7 @@
  *
  *   The FreeType font format service (specification only).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -40,6 +40,7 @@ FT_BEGIN_HEADER
 #define FT_FONT_FORMAT_TYPE_42   "Type 42"
 #define FT_FONT_FORMAT_CID       "CID Type 1"
 #define FT_FONT_FORMAT_CFF       "CFF"
+#define FT_FONT_FORMAT_HVF       "HVF"
 #define FT_FONT_FORMAT_PFR       "PFR"
 #define FT_FONT_FORMAT_WINFNT    "Windows FNT"
 

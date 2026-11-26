@@ -67,7 +67,6 @@ private:
 
 public:
 	virtual String get_plugin_name() const override { return "Debugger"; }
-	bool has_main_screen() const override { return false; }
 
 	DebuggerEditorPlugin(PopupMenu *p_menu);
 	~DebuggerEditorPlugin();

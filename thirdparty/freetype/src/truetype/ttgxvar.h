@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader (specification)
  *
- * Copyright (C) 2004-2024 by
+ * Copyright (C) 2004-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -255,8 +255,16 @@ FT_BEGIN_HEADER
    *     A two-dimensional array that holds the shared tuple coordinates
    *     in the `gvar' table.
    *
+   *   tuplescalars ::
+   *     A one-dimensional array that holds the shared tuple
+   *     scalars in the `gvar' table for current face coordinates.
+   *
    *   gv_glyphcnt ::
    *     The number of glyphs handled in the `gvar' table.
+   *
+   *   gvar_is_extended ::
+   *     A boolean which is set when glyph variation data comes from the
+   *     'GVAR' table (instead of 'gvar').
    *
    *   glyphoffsets ::
    *     Offsets into the glyph variation data array.
@@ -293,11 +301,18 @@ FT_BEGIN_HEADER
 
     FT_UInt         tuplecount;
     FT_Fixed*       tuplecoords;      /* tuplecoords[tuplecount][num_axis] */
+    FT_Fixed*       tuplescalars;     /* tuplescalars[tuplecount]          */
 
     FT_UInt         gv_glyphcnt;
+    FT_Bool         gvar_is_extended;
     FT_ULong*       glyphoffsets;         /* glyphoffsets[gv_glyphcnt + 1] */
 
     FT_ULong        gvar_size;
+
+    /* Scratch pool reused across glyphs by `TT_Vary_Apply_Glyph_Deltas`, */
+    /* grown on demand, to avoid per-glyph/per-tuple heap allocations.    */
+    FT_Byte*        glyph_delta_pool;
+    FT_ULong        glyph_delta_pool_size;
 
   } GX_BlendRec;
 
@@ -437,6 +452,13 @@ FT_BEGIN_HEADER
                     FT_Fixed*   *coords,
                     FT_Fixed*   *normalizedcoords,
                     FT_MM_Var*  *mm_var );
+
+  FT_LOCAL( FT_Error )
+  tt_var_init_gvar( FT_Face  face );
+
+  FT_LOCAL( FT_Error )
+  tt_var_init_blend( FT_Face  face,
+                     FT_UInt  axis_count );
 
   FT_LOCAL( void )
   tt_done_blend( FT_Face  face );

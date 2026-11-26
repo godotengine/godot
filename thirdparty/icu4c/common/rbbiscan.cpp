@@ -1020,7 +1020,7 @@ void RBBIRuleScanner::parse() {
     // Main loop for the rule parsing state machine.
     //   Runs once per state transition.
     //   Each time through optionally performs, depending on the state table,
-    //      - an advance to the the next input char
+    //      - an advance to the next input char
     //      - an action to be performed.
     //      - pushing or popping a state to/from the local state return stack.
     //
@@ -1258,7 +1258,7 @@ void RBBIRuleScanner::scanSet() {
     // Use tempSet to handle the case that the UnicodeSet contains
     // only string element, such as [{ab}] and treat it as empty set.
     tempSet.removeAllStrings();
-    if (tempSet.isEmpty()) {
+    if (tempSet.isEmpty() && !uset->contains(UnicodeString::readOnlyAlias(u"eof"))) {
         // This set is empty.
         //  Make it an error, because it almost certainly is not what the user wanted.
         //  Also, avoids having to think about corner cases in the tree manipulation code

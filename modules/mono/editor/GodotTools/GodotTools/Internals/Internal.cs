@@ -50,9 +50,12 @@ namespace GodotTools.Internals
 
         public static bool IsAssembliesReloadingNeeded() => godot_icall_Internal_IsAssembliesReloadingNeeded();
 
-        public static void ReloadAssemblies(bool softReload) => godot_icall_Internal_ReloadAssemblies(softReload);
+        public static void ReloadAssemblies() => godot_icall_Internal_ReloadAssemblies();
 
         public static void EditorDebuggerNodeReloadScripts() => godot_icall_Internal_EditorDebuggerNodeReloadScripts();
+
+        public static void EditorTranslationParserAddParser(EditorTranslationParserPlugin translationParserPlugin) =>
+            godot_icall_EditorTranslationParser_AddParser(translationParserPlugin.NativeInstance);
 
         public static bool ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus = true) =>
             godot_icall_Internal_ScriptEditorEdit(resource.NativeInstance, line, col, grabFocus);
@@ -124,6 +127,8 @@ namespace GodotTools.Internals
             int step,
             bool forceRefresh);
 
+        public static partial void godot_icall_EditorTranslationParser_AddParser(IntPtr translationParserPlugin);
+
         private static partial void godot_icall_Internal_FullExportTemplatesDir(out godot_string dest);
 
         private static partial bool godot_icall_Internal_IsMacOSAppBundleInstalled(in godot_string bundleId);
@@ -138,7 +143,7 @@ namespace GodotTools.Internals
 
         private static partial bool godot_icall_Internal_IsAssembliesReloadingNeeded();
 
-        private static partial void godot_icall_Internal_ReloadAssemblies(bool softReload);
+        private static partial void godot_icall_Internal_ReloadAssemblies();
 
         private static partial void godot_icall_Internal_EditorDebuggerNodeReloadScripts();
 

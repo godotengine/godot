@@ -6,8 +6,6 @@
 
 size_t meshopt_optimizeVertexFetchRemap(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count)
 {
-	assert(index_count % 3 == 0);
-
 	memset(destination, -1, vertex_count * sizeof(unsigned int));
 
 	unsigned int next_vertex = 0;
@@ -30,7 +28,6 @@ size_t meshopt_optimizeVertexFetchRemap(unsigned int* destination, const unsigne
 
 size_t meshopt_optimizeVertexFetch(void* destination, unsigned int* indices, size_t index_count, const void* vertices, size_t vertex_count, size_t vertex_size)
 {
-	assert(index_count % 3 == 0);
 	assert(vertex_size > 0 && vertex_size <= 256);
 
 	meshopt_Allocator allocator;

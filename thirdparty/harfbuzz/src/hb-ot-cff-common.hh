@@ -79,7 +79,7 @@ struct Dict : UnsizedByteStr
   {
     TRACE_SERIALIZE (this);
     for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], std::forward<Ts> (ds)...)))
+      if (unlikely (!opszr.serialize (c, dictval[i], ds...)))
 	return_trace (false);
 
     return_trace (true);
@@ -183,13 +183,15 @@ struct FDArray : CFFIndex<COUNT>
 
 /* FDSelect */
 struct FDSelect0 {
-  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
+  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount,
+                 unsigned int glyph_count = HB_CODEPOINT_INVALID) const
   {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this))))
       return_trace (false);
     hb_barrier ();
-    if (unlikely (!c->check_array (fds, c->get_num_glyphs ())))
+    if (unlikely (!c->check_array (fds, glyph_count == HB_CODEPOINT_INVALID ?
+                                     c->get_num_glyphs () : glyph_count)))
       return_trace (false);
 
     return_trace (true);
@@ -201,8 +203,8 @@ struct FDSelect0 {
   hb_pair_t<unsigned, hb_codepoint_t> get_fd_range (hb_codepoint_t glyph) const
   { return {fds[glyph], glyph + 1}; }
 
-  unsigned int get_size (unsigned int num_glyphs) const
-  { return HBUINT8::static_size * num_glyphs; }
+  size_t get_size (unsigned int num_glyphs) const
+  { return hb_unsigned_mul_saturate (HBUINT8::static_size, num_glyphs); }
 
   HBUINT8     fds[HB_VAR_ARRAY];
 
@@ -229,10 +231,11 @@ struct FDSelect3_4_Range
 template <typename GID_TYPE, typename FD_TYPE>
 struct FDSelect3_4
 {
-  unsigned int get_size () const
-  { return GID_TYPE::static_size * 2 + ranges.get_size (); }
+  size_t get_size () const
+  { return hb_unsigned_add_saturate ((size_t) GID_TYPE::static_size * 2, ranges.get_size ()); }
 
-  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
+  bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount,
+                 unsigned int min_glyphs = HB_CODEPOINT_INVALID) const
   {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) &&
@@ -248,7 +251,10 @@ struct FDSelect3_4
 
     if (unlikely (!(sentinel().sanitize (c) &&
 		   hb_barrier () &&
-		   (sentinel() == c->get_num_glyphs ()))))
+                   sentinel() > ranges[nRanges () - 1].first &&
+                   sentinel() <= c->get_num_glyphs () &&
+                   sentinel() >= (min_glyphs == HB_CODEPOINT_INVALID ?
+                                  c->get_num_glyphs () : min_glyphs))))
       return_trace (false);
 
     return_trace (true);
@@ -304,12 +310,12 @@ struct FDSelect
     return_trace (true);
   }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   {
     switch (format)
     {
-    case 0: hb_barrier (); return format.static_size + u.format0.get_size (num_glyphs);
-    case 3: hb_barrier (); return format.static_size + u.format3.get_size ();
+    case 0: hb_barrier (); return hb_unsigned_add_saturate (format.static_size, u.format0.get_size (num_glyphs));
+    case 3: hb_barrier (); return hb_unsigned_add_saturate (format.static_size, u.format3.get_size ());
     default:return 0;
     }
   }

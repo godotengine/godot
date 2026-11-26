@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -930,8 +930,8 @@ FT_BEGIN_HEADER
    *   resolution and scaling independent parts of a TrueType font resource.
    *
    * @note:
-   *   The TT_Face structure is also used as a 'parent class' for the
-   *   OpenType-CFF class (T2_Face).
+   *   The TT_Face structure is also used for CFF support; see file
+   *   `cffotypes.h`.
    */
   typedef struct TT_FaceRec_*  TT_Face;
 
@@ -1130,10 +1130,28 @@ FT_BEGIN_HEADER
    *     The font's horizontal header ('hhea' table).  This field also
    *     contains the associated horizontal metrics table ('hmtx').
    *
+   *   horz_metrics_count ::
+   *     The number of horizontal metrics.  This can be larger than the
+   *     public `TT_HoriHeader.number_Of_HMetrics` field when the font uses
+   *     the 'HHEA table (instead of 'hhea').
+   *
+   *   horz_metrics_is_extended ::
+   *     A boolean which is set when the font uses 'HHEA' and 'HMTX' tables
+   *     (instead of 'hhea' and 'hmtx').
+   *
    *   max_profile ::
    *     The font's maximum profile table.  Read on font opening.  Note that
    *     some maximum values cannot be taken directly from this table.  We
    *     thus define additional fields below to hold the computed maxima.
+   *
+   *   maxp_num_glyphs ::
+   *     The glyph count from the font's maximum profile table.  This can be
+   *     larger than the public `TT_MaxProfile.numGlyphs` field when the font
+   *     uses the 24-bit 'MAXP' table.
+   *
+   *   is_extended_glyf ::
+   *     A boolean which is set when the font uses the 'GLYF' and 'LOCA'
+   *     tables (extending 'glyf' and 'loca', respectively).
    *
    *   vertical_info ::
    *     A boolean which is set when the font file contains vertical metrics.
@@ -1144,6 +1162,15 @@ FT_BEGIN_HEADER
    *     the associated vertical metrics table ('vmtx'), if found.
    *     IMPORTANT: The contents of this field is undefined if the
    *     `vertical_info` field is unset.
+   *
+   *   vert_metrics_count ::
+   *     The number of vertical metrics.  This can be larger than the public
+   *     `TT_VertHeader.number_Of_VMetrics` field when the font uses the
+   *     'VHEA' table (instead of 'vhea').
+   *
+   *   vert_metrics_is_extended ::
+   *     A boolean which is set when the font uses the 'VHEA' and 'VMTX'
+   *     tables (instead of 'vhea' and 'vmtx').
    *
    *   num_names ::
    *     The number of name records within this TrueType font.
@@ -1165,6 +1192,25 @@ FT_BEGIN_HEADER
    *
    *   cmap_size ::
    *     The size in bytes of the `cmap_table` described above.
+   *
+   *   dmap_table ::
+   *     Address of the face's 'DMAP' SFNT table in memory (it's an extracted
+   *     frame).
+   *
+   *   dmap_size ::
+   *     The size in bytes of the `dmap_table` described above.
+   *
+   *   dmap_charmaps ::
+   *     The array of 'DMAP' charmaps.
+   *
+   *   num_dmap_charmaps ::
+   *     The number of elements in `dmap_charmaps`.
+   *
+   *   dmap_results ::
+   *     An array used while merging a dmap with its corresponding cmap.
+   *
+   *   dmap_max_results ::
+   *     The current size of `dmap_results`.
    *
    *   goto_table ::
    *     A function called by each TrueType table loader to position a
@@ -1208,6 +1254,13 @@ FT_BEGIN_HEADER
    *   face_var ::
    *     A pointer to the Metrics Variations service for this `TT_Face`'s
    *     driver.
+   *
+   *   tt_varc ::
+   *     A pointer for sharing the VARC services provided by this
+   *     `TT_Face`'s driver.
+   *
+   *   face_varc ::
+   *     A pointer to handle VARC glyphs by this `TT_Face`'s driver.
    *
    *   psaux ::
    *     A pointer to the PostScript Auxiliary service.
@@ -1275,10 +1328,6 @@ FT_BEGIN_HEADER
    *     table.  Ignored for Type 2 fonts.
    *
    *     If varied by the `CVAR' table, non-integer values are possible.
-   *
-   *   interpreter ::
-   *     A pointer to the TrueType bytecode interpreters field is also used
-   *     to hook the debugger in 'ttdebug'.
    *
    *   extra ::
    *     Reserved for third-party font drivers.
@@ -1412,6 +1461,26 @@ FT_BEGIN_HEADER
    *   svg ::
    *     A pointer to data related to the 'SVG' table.  `NULL` if the table
    *     is not available.
+   *
+   *   gpos_table ::
+   *     A pointer to the 'GPOS' table.  `NULL` if the table is not
+   *     available.
+   *
+   *   gpos_lookups_kerning ::
+   *     An array of GPOS kerning lookups.
+   *
+   *   num_gpos_lookups_kerning ::
+   *     The number of GPOS kerning lookups.
+   *
+   *   varc ::
+   *     A pointer to data related to the 'VARC' table.  `NULL` if the table
+   *     is not available.
+   *
+   *   varc_context ::
+   *     A context to manage recursion in the 'VARC' table.
+   *
+   *   varc_loading_components ::
+   *     Set if component checks for 'VARC' table handling can be skipped.
    */
   typedef struct  TT_FaceRec_
   {
@@ -1425,11 +1494,17 @@ FT_BEGIN_HEADER
 
     TT_Header             header;       /* TrueType header table          */
     TT_HoriHeader         horizontal;   /* TrueType horizontal header     */
+    FT_UInt32             horz_metrics_count;
+    FT_Bool               horz_metrics_is_extended;
 
     TT_MaxProfile         max_profile;
+    FT_UInt               maxp_num_glyphs;
+    FT_Bool               is_extended_glyf;
 
     FT_Bool               vertical_info;
     TT_VertHeader         vertical;     /* TT Vertical header, if present */
+    FT_UInt32             vert_metrics_count;
+    FT_Bool               vert_metrics_is_extended;
 
     FT_UShort             num_names;    /* number of name records  */
     TT_NameTableRec       name_table;   /* name table              */
@@ -1439,6 +1514,13 @@ FT_BEGIN_HEADER
 
     FT_Byte*              cmap_table;   /* extracted `cmap' table */
     FT_ULong              cmap_size;
+
+    FT_Byte*              dmap_table;   /* extracted 'DMAP' table */
+    FT_ULong              dmap_size;
+    FT_CMap*              dmap_charmaps;
+    FT_UInt               num_dmap_charmaps;
+    FT_UInt32*            dmap_results;
+    FT_UInt32             dmap_max_results;
 
     TT_Loader_GotoTableFunc   goto_table;
 
@@ -1470,6 +1552,16 @@ FT_BEGIN_HEADER
     /* used to handle the HVAR, VVAR, and MVAR OpenType tables by this */
     /* TT_Face's driver                                                */
     void*                 face_var;             /* since 2.13.1 */
+#endif
+
+#ifdef TT_CONFIG_OPTION_VARC
+    /* a typeless pointer to the FT_Service_VARCRec table used to */
+    /* share VARC handling from the `truetype' driver             */
+    void*                 tt_varc;              /* since 2.15 */
+
+    /* a typeless pointer to the FT_Service_VARCRec table used to */
+    /* handle VARC glyphs by this TT_Face's driver                */
+    void*                 face_varc;            /* since 2.15 */
 #endif
 
     /* a typeless pointer to the PostScript Aux service */
@@ -1521,10 +1613,6 @@ FT_BEGIN_HEADER
     FT_ULong              cvt_size;
     FT_Int32*             cvt;
 
-    /* A pointer to the bytecode interpreter to use.  This is also */
-    /* used to hook the debugger for the `ttdebug' utility.        */
-    TT_Interpreter        interpreter;
-
 
     /************************************************************************
      *
@@ -1561,7 +1649,7 @@ FT_BEGIN_HEADER
     FT_ULong              horz_metrics_size;
     FT_ULong              vert_metrics_size;
 
-    FT_ULong              num_locations; /* up to 0xFFFF + 1 */
+    FT_ULong              num_locations; /* up to 0xFFFFFF + 1 */
     FT_Byte*              glyph_locations;
 
     FT_Byte*              hdmx_table;
@@ -1581,11 +1669,6 @@ FT_BEGIN_HEADER
     FT_UInt               num_kern_tables;
     FT_UInt32             kern_avail_bits;
     FT_UInt32             kern_order_bits;
-
-#ifdef TT_CONFIG_OPTION_GPOS_KERNING
-    FT_Byte*              gpos_table;
-    FT_Bool               gpos_kerning_available;
-#endif
 
 #ifdef TT_CONFIG_OPTION_BDF
     TT_BDFRec             bdf;
@@ -1608,6 +1691,24 @@ FT_BEGIN_HEADER
     /* since 2.12 */
     void*                 svg;
 
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+    /* since 2.13.3 */
+    FT_Byte*              gpos_table;
+    /* since 2.14 */
+    /* This is actually an array of GPOS lookup subtables. */
+    FT_UInt32*            gpos_lookups_kerning;
+    FT_UInt               num_gpos_lookups_kerning;
+#endif
+
+#ifdef TT_CONFIG_OPTION_VARC
+    /* since 2.15 */
+    void*                 varc;
+    /* Active recursion context. */
+    void*                 varc_context;
+    /* Whether to skip VARC check for components. */
+    FT_Bool               varc_loading_components;
+#endif
+
   } TT_FaceRec;
 
 
@@ -1621,15 +1722,6 @@ FT_BEGIN_HEADER
    *   coordinates.
    *
    * @fields:
-   *   memory ::
-   *     A handle to the memory manager.
-   *
-   *   max_points ::
-   *     The maximum size in points of the zone.
-   *
-   *   max_contours ::
-   *     Max size in links contours of the zone.
-   *
    *   n_points ::
    *     The current number of points in the zone.
    *
@@ -1653,9 +1745,6 @@ FT_BEGIN_HEADER
    */
   typedef struct  TT_GlyphZoneRec_
   {
-    FT_Memory   memory;
-    FT_UShort   max_points;
-    FT_UShort   max_contours;
     FT_UShort   n_points;    /* number of points in zone    */
     FT_UShort   n_contours;  /* number of contours          */
 
@@ -1714,7 +1803,6 @@ FT_BEGIN_HEADER
     TT_GlyphZoneRec  zone;
 
     TT_ExecContext   exec;
-    FT_Byte*         instructions;
     FT_ULong         ins_pos;
 
     /* for possible extensibility in other formats */

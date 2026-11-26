@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystem" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorFileSystem" inherits="Node" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Resource filesystem, as the editor sees it.
 	</brief_description>
@@ -34,6 +34,12 @@
 			<return type="float" />
 			<description>
 				Returns the scan progress for 0 to 1 if the FS is being scanned.
+			</description>
+		</method>
+		<method name="is_importing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if resources are currently being imported.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">

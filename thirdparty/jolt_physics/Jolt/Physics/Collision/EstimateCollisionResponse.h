@@ -16,19 +16,15 @@ struct CollisionEstimationResult
 	Vec3			mLinearVelocity2;				///< The estimated linear velocity of body 2 after collision
 	Vec3			mAngularVelocity2;				///< The estimated angular velocity of body 2 after collision
 
+	Vec3			mFrictionPoint;					///< Point at which friction was applied (relative to mBaseOffset of the manifold)
 	Vec3			mTangent1;						///< Normalized tangent of contact normal
 	Vec3			mTangent2;						///< Second normalized tangent of contact normal (forms a basis with mTangent1 and mWorldSpaceNormal)
 
-	struct Impulse
-	{
-		float		mContactImpulse;				///< Estimated contact impulses (kg m / s)
-		float		mFrictionImpulse1;				///< Estimated friction impulses in the direction of tangent 1 (kg m / s)
-		float		mFrictionImpulse2;				///< Estimated friction impulses in the direction of tangent 2 (kg m / s)
-	};
+	float			mFrictionImpulse1 = 0;			///< Estimated friction impulses in the direction of tangent 1 (kg m / s)
+	float			mFrictionImpulse2 = 0;			///< Estimated friction impulses in the direction of tangent 2 (kg m / s)
+	float			mAngularFrictionImpulse = 0;	///< Estimated angular friction impulse around the world space normal (kg m^2 / s)
 
-	using Impulses = StaticArray<Impulse, ContactPoints::Capacity>;
-
-	Impulses		mImpulses;
+	StaticArray<float, ContactPoints::Capacity> mContactImpulse; ///< Estimated contact impulses (kg m / s)
 };
 
 /// This function estimates the contact impulses and body velocity changes as a result of a collision.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MissingNode" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MissingNode" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An internal editor class intended for keeping the data of unrecognized nodes.
 	</brief_description>
@@ -18,6 +18,9 @@
 		</member>
 		<member name="recording_properties" type="bool" setter="set_recording_properties" getter="is_recording_properties">
 			If [code]true[/code], allows new properties to be set along with existing ones. If [code]false[/code], only existing properties' values can be set, and new properties cannot be added.
+		</member>
+		<member name="recording_signals" type="bool" setter="set_recording_signals" getter="is_recording_signals">
+			If [code]true[/code], allows new signals to be connected to along with existing ones. If [code]false[/code], only existing signals can be connected to, and new signals cannot be added.
 		</member>
 	</members>
 </class>

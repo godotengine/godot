@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMapEditorPlugin" inherits="EditorPlugin" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GridMapEditorPlugin" inherits="EditorPlugin" api_type="editor" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Editor for [GridMap] nodes.
 	</brief_description>

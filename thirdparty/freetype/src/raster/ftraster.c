@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph rasterizer (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -251,7 +251,11 @@
   /* On the other hand, SMulDiv means `Slow MulDiv', and is used typically */
   /* for clipping computations.  It simply uses the FT_MulDiv() function   */
   /* defined in `ftcalc.h'.                                                */
-#define SMulDiv_No_Round  FT_MulDiv_No_Round
+#ifdef FT_INT64
+#define SMulDiv( a, b, c )  (Long)( (FT_Int64)(a) * (b) / (c) )
+#else
+#define SMulDiv  FT_MulDiv_No_Round
+#endif
 
   /* The rasterizer is a very general purpose component; please leave */
   /* the following redefinitions there (you never know your target    */
@@ -542,7 +546,7 @@
      *
      */
 
-    if ( High )
+    if ( High && ras.bTop + ras.bRight < 256 )
     {
       ras.precision_bits   = 12;
       ras.precision_step   = 256;
@@ -653,7 +657,7 @@
       ras.cProfile->height = 0;
     }
 
-    ras.cProfile->flags  = ras.dropOutControl;
+    ras.cProfile->flags = ras.dropOutControl;
 
     switch ( aState )
     {
@@ -967,14 +971,14 @@
       goto Fin;
     }
 
-    Ix     = SMulDiv_No_Round( e - y1, Dx, Dy );
+    Ix     = SMulDiv( e - y1, Dx, Dy );
     x1    += Ix;
     *top++ = x1;
 
     if ( --size )
     {
       Ax = Dx * ( e - y1 )    - Dy * Ix;  /* remainder */
-      Ix = FMulDiv( ras.precision, Dx, Dy );
+      Ix = SMulDiv( ras.precision, Dx, Dy );
       Rx = Dx * ras.precision - Dy * Ix;  /* remainder */
       Dx = 1;
 
@@ -1090,8 +1094,8 @@
     PLong  top;
 
 
-    y1  = arc[degree].y;
-    y2  = arc[0].y;
+    y1 = arc[degree].y;
+    y2 = arc[0].y;
 
     if ( y2 < miny || y1 > maxy )
       return SUCCESS;
@@ -1347,17 +1351,9 @@
         /* this arc has no given direction, split it! */
         Split_Conic( arc );
         arc += 2;
+        continue;
       }
-      else if ( y1 == y3 )
-      {
-        /* this arc is flat, advance position */
-        /* and pop it from the Bezier stack   */
-        arc -= 2;
-
-        ras.lastX = x3;
-        ras.lastY = y3;
-      }
-      else
+      else if ( y1 != y3 )
       {
         /* the arc is y-monotonous, either ascending or descending */
         /* detect a change of direction                            */
@@ -1385,13 +1381,16 @@
           if ( Bezier_Down( RAS_VARS 2, arc, Split_Conic,
                                      ras.minY, ras.maxY ) )
             goto Fail;
-        arc -= 2;
-
-        ras.lastX = x3;
-        ras.lastY = y3;
       }
 
-    } while ( arc >= arcs );
+      ras.lastX = x3;
+      ras.lastY = y3;
+
+      if ( arc == arcs )
+        break;
+      arc -= 2;
+
+    } while ( 1 );
 
     return SUCCESS;
 
@@ -1494,17 +1493,9 @@
         /* this arc has no given direction, split it! */
         Split_Cubic( arc );
         arc += 3;
+        continue;
       }
-      else if ( y1 == y4 )
-      {
-        /* this arc is flat, advance position */
-        /* and pop it from the Bezier stack   */
-        arc -= 3;
-
-        ras.lastX = x4;
-        ras.lastY = y4;
-      }
-      else
+      else if ( y1 != y4 )
       {
         state_bez = y1 < y4 ? Ascending_State : Descending_State;
 
@@ -1531,13 +1522,16 @@
           if ( Bezier_Down( RAS_VARS 3, arc, Split_Cubic,
                                      ras.minY, ras.maxY ) )
             goto Fail;
-        arc -= 3;
-
-        ras.lastX = x4;
-        ras.lastY = y4;
       }
 
-    } while ( arc >= arcs );
+      ras.lastX = x4;
+      ras.lastY = y4;
+
+      if ( arc == arcs )
+        break;
+      arc -= 3;
+
+    } while ( 1 );
 
     return SUCCESS;
 
@@ -1628,15 +1622,14 @@
 
     tag = FT_CURVE_TAG( tags[0] );
 
-    /* A contour cannot start with a cubic control point! */
-    if ( tag == FT_CURVE_TAG_CUBIC )
-      goto Invalid_Outline;
-
     /* check first point to determine origin */
-    if ( tag == FT_CURVE_TAG_CONIC )
+    if ( tag != FT_CURVE_TAG_ON )
     {
-      /* first point is conic control.  Yes, this happens. */
-      if ( FT_CURVE_TAG( ras.outline.tags[last] ) == FT_CURVE_TAG_ON )
+      UInt  last_tag = FT_CURVE_TAG( ras.outline.tags[last] );
+
+
+      /* first point is a control point.  Yes, this happens. */
+      if ( last_tag == FT_CURVE_TAG_ON )
       {
         /* start at last point if it is on the curve */
         v_start = v_last;
@@ -1644,9 +1637,12 @@
       }
       else
       {
-        /* if both first and last points are conic,         */
-        /* start at their middle and record its position    */
-        /* for closure                                      */
+        if ( last_tag != tag )
+          goto Invalid_Outline;
+
+        /* if both first and last points are controls,   */
+        /* start at their middle and record its position */
+        /* for closure                                   */
         v_start.x = ( v_start.x + v_last.x ) / 2;
         v_start.y = ( v_start.y + v_last.y ) / 2;
 
@@ -1761,14 +1757,30 @@
 
           if ( point <= limit )
           {
+            tag = FT_CURVE_TAG( tags[0] );
+
             x3 = SCALED( point[0].x );
             y3 = SCALED( point[0].y );
 
             if ( flipped )
               SWAP_( x3, y3 );
 
+            if ( tag == FT_CURVE_TAG_CUBIC )
+            {
+              x3 = ( x2 + x3 ) / 2;
+              y3 = ( y2 + y3 ) / 2;
+            }
+            else if ( tag != FT_CURVE_TAG_ON )
+              goto Invalid_Outline;
+
             if ( Cubic_To( RAS_VARS x1, y1, x2, y2, x3, y3 ) )
               goto Fail;
+
+            if ( tag == FT_CURVE_TAG_CUBIC )
+            {
+              point--;
+              tags--;
+            }
             continue;
           }
 
@@ -2453,9 +2465,8 @@
                                Int   y_min,
                                Int   y_max )
   {
-    Int  y_mid;
-    Int  band_top = 0;
-    Int  band_stack[32];  /* enough to bisect 32-bit int bands */
+    Int   band_stack[32];  /* enough to bisect 32-bit int bands */
+    Int*  band = band_stack;
 
 
     FT_TRACE6(( "%s pass [%d..%d]\n",
@@ -2482,10 +2493,8 @@
         FT_TRACE6(( "band [%d..%d]: to be bisected\n",
                     y_min, y_max ));
 
-        y_mid = ( y_min + y_max ) >> 1;
-
-        band_stack[band_top++] = y_min;
-        y_min                  = y_mid + 1;
+        *band++ = y_min;
+        y_min   = ( y_min + y_max + 1 ) >> 1;
       }
       else
       {
@@ -2496,11 +2505,11 @@
         if ( ras.fProfile )
           Draw_Sweep( RAS_VAR );
 
-        if ( --band_top < 0 )
-          break;
+        if ( band == band_stack )
+          break;  /* done */
 
         y_max = y_min - 1;
-        y_min = band_stack[band_top];
+        y_min = *--band;
       }
     }
 
@@ -2523,11 +2532,7 @@
   Render_Glyph( RAS_ARG )
   {
     FT_Error  error;
-    Long      buffer[FT_MAX_BLACK_POOL];
 
-
-    ras.buff     = buffer;
-    ras.sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
 
     Set_High_Precision( RAS_VARS ras.outline.flags &
                                  FT_OUTLINE_HIGH_PRECISION );
@@ -2671,6 +2676,9 @@
     const FT_Outline*  outline    = (const FT_Outline*)params->source;
     const FT_Bitmap*   target_map = params->target;
 
+    FT_ULong  estimate;
+    int       ret;
+
 #ifndef FT_STATIC_RASTER
     black_TWorker  worker[1];
 #endif
@@ -2718,7 +2726,36 @@
     if ( ras.bPitch > 0 )
       ras.bOrigin += ras.bTop * ras.bPitch;
 
-    return Render_Glyph( RAS_VAR );
+    /* allocate memory based on empirical estimate from CJK fonts */
+    estimate = ( ras.bTop + ras.bRight ) * 8UL +
+               80UL * sizeof ( TProfile ) / sizeof ( Long );
+    if ( estimate > FT_MAX_BLACK_POOL )
+    {
+      FT_Error   error;
+      FT_Memory  memory = (FT_Memory)((black_PRaster)raster)->memory;
+
+
+      if ( FT_QNEW_ARRAY( ras.buff, estimate ) )
+        ret = error;
+      else
+      {
+        ras.sizeBuff = ras.buff + estimate;
+        ret = Render_Glyph( RAS_VAR );
+        FT_FREE( ras.buff );
+      }
+    }
+    else
+    {
+      Long  buffer[FT_MAX_BLACK_POOL];  /* stack allocation */
+
+
+      ras.buff     = buffer;
+      ras.sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
+
+      ret = Render_Glyph( RAS_VAR );
+    }
+
+    return ret;
   }
 
 

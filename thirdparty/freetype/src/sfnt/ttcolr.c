@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType colored glyph layer support (body).
  *
- * Copyright (C) 2018-2024 by
+ * Copyright (C) 2018-2026 by
  * David Turner, Robert Wilhelm, Dominik Röttsches, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.
@@ -51,7 +51,7 @@
 #define COLOR_STOP_SIZE                   6U
 #define VAR_IDX_BASE_SIZE                 4U
 #define LAYER_SIZE                        4U
-/* https://docs.microsoft.com/en-us/typography/opentype/spec/colr#colr-header */
+/* https://learn.microsoft.com/typography/opentype/spec/colr#colr-header */
 /* 3 * uint16 + 2 * Offset32 */
 #define COLRV0_HEADER_SIZE               14U
 /* COLRV0_HEADER_SIZE + 5 * Offset32 */
@@ -85,6 +85,7 @@
     FT_COLR_PAINTFORMAT_INTERNAL_VAR_SKEW                 = 29,
     FT_COLR_PAINTFORMAT_INTERNAL_SKEW_CENTER              = 30,
     FT_COLR_PAINTFORMAT_INTERNAL_VAR_SKEW_CENTER          = 31,
+    FT_COLR_PAINTFORMAT_INTERNAL_GLYPH2                   = 33,
 
   } FT_PaintFormat_Internal;
 
@@ -236,8 +237,10 @@
       p1                 = (FT_Byte*)( table + base_glyphs_offset_v1 );
       num_base_glyphs_v1 = FT_PEEK_ULONG( p1 );
 
-      if ( ( table_size - base_glyphs_offset_v1 ) / BASE_GLYPH_PAINT_RECORD_SIZE
-               < num_base_glyphs_v1 )
+      /* Account for 4 byte numBaseGlyphPaintRecords at the beginning of */
+      /* the BaseGlyphPaintRecord array.                                 */
+      if ( ( table_size - base_glyphs_offset_v1 - 4 ) /
+               BASE_GLYPH_PAINT_RECORD_SIZE < num_base_glyphs_v1 )
         goto InvalidTable;
 
       colr->num_base_glyphs_v1 = num_base_glyphs_v1;
@@ -451,20 +454,14 @@
                           FT_UInt           *acolor_index,
                           FT_LayerIterator*  iterator )
   {
-    Colr*            colr = (Colr*)face->colr;
-    BaseGlyphRecord  glyph_record;
-
-
-    if ( !colr )
-      return 0;
-
-    if ( !iterator->p )
+    if ( !iterator->p )  /* first call to function */
     {
-      FT_ULong  offset;
+      Colr*            colr = (Colr*)face->colr;
+      BaseGlyphRecord  glyph_record;
 
 
-      /* first call to function */
-      iterator->layer = 0;
+      if ( !colr )
+        return 0;
 
       if ( !find_base_glyph_record( colr->base_glyphs,
                                     colr->num_base_glyphs,
@@ -472,21 +469,18 @@
                                     &glyph_record ) )
         return 0;
 
-      if ( glyph_record.num_layers )
-        iterator->num_layers = glyph_record.num_layers;
-      else
+      if ( glyph_record.num_layers == 0                               ||
+           glyph_record.first_layer_index + glyph_record.num_layers >
+             colr->num_layers                                         )
         return 0;
 
-      offset = LAYER_SIZE * glyph_record.first_layer_index;
-      if ( offset + LAYER_SIZE * glyph_record.num_layers > colr->table_size )
-        return 0;
-
-      iterator->p = colr->layers + offset;
+      iterator->num_layers = glyph_record.num_layers;
+      iterator->layer      = 0;
+      iterator->p          = colr->layers +
+                               LAYER_SIZE * glyph_record.first_layer_index;
     }
 
-    if ( iterator->layer >= iterator->num_layers                     ||
-         iterator->p < colr->layers                                  ||
-         iterator->p >= ( (FT_Byte*)colr->table + colr->table_size ) )
+    if ( iterator->layer >= iterator->num_layers )
       return 0;
 
     *aglyph_index = FT_NEXT_USHORT( iterator->p );
@@ -652,7 +646,9 @@
 
     apaint->format = (FT_PaintFormat)FT_NEXT_BYTE( p );
 
-    if ( apaint->format >= FT_COLR_PAINT_FORMAT_MAX )
+    if ( apaint->format >= FT_COLR_PAINT_FORMAT_MAX &&
+         (FT_PaintFormat_Internal)apaint->format !=
+           FT_COLR_PAINTFORMAT_INTERNAL_GLYPH2      )
       return 0;
 
     if ( apaint->format == FT_COLR_PAINTFORMAT_COLR_LAYERS )
@@ -886,12 +882,21 @@
       return 1;
     }
 
-    if ( apaint->format == FT_COLR_PAINTFORMAT_GLYPH )
+    if ( apaint->format == FT_COLR_PAINTFORMAT_GLYPH ||
+         (FT_PaintFormat_Internal)apaint->format ==
+           FT_COLR_PAINTFORMAT_INTERNAL_GLYPH2       )
     {
-      ENSURE_READ_BYTES( 2 );
+      FT_Bool  is_glyph2 = (FT_PaintFormat_Internal)apaint->format ==
+                             FT_COLR_PAINTFORMAT_INTERNAL_GLYPH2;
+
+
+      ENSURE_READ_BYTES( ( is_glyph2 ? 3 : 2 ) );
       apaint->u.glyph.paint.p                     = child_table_p;
       apaint->u.glyph.paint.insert_root_transform = 0;
-      apaint->u.glyph.glyphID                     = FT_NEXT_USHORT( p );
+      apaint->u.glyph.glyphID = is_glyph2 ? FT_NEXT_UOFF3( p )
+                                          : FT_NEXT_USHORT( p );
+
+      apaint->format = FT_COLR_PAINTFORMAT_GLYPH;
 
       return 1;
     }
@@ -1749,7 +1754,6 @@
     FT_UInt  x, y;
     FT_Byte  b, g, r, alpha;
 
-    FT_ULong  size;
     FT_Byte*  src;
     FT_Byte*  dst;
 
@@ -1767,13 +1771,9 @@
       dstSlot->bitmap.pitch      = (int)dstSlot->bitmap.width * 4;
       dstSlot->bitmap.num_grays  = 256;
 
-      size = dstSlot->bitmap.rows * (unsigned int)dstSlot->bitmap.pitch;
-
-      error = ft_glyphslot_alloc_bitmap( dstSlot, size );
+      error = ft_glyphslot_alloc_bitmap( dstSlot );
       if ( error )
         return error;
-
-      FT_MEM_ZERO( dstSlot->bitmap.buffer, size );
     }
     else
     {
@@ -1805,8 +1805,7 @@
         FT_Byte*  q;
 
 
-        size  = rows * pitch;
-        if ( FT_ALLOC( buf, size ) )
+        if ( FT_ALLOC_MULT( buf, rows, pitch ) )
           return error;
 
         p = dstSlot->bitmap.buffer;
@@ -1875,39 +1874,78 @@
       alpha = face->palette[color_index].alpha;
     }
 
-    /* XXX Convert if srcSlot.bitmap is not grey? */
     src = srcSlot->bitmap.buffer;
     dst = dstSlot->bitmap.buffer +
           dstSlot->bitmap.pitch * ( dstSlot->bitmap_top - srcSlot->bitmap_top ) +
           4 * ( srcSlot->bitmap_left - dstSlot->bitmap_left );
 
-    for ( y = 0; y < srcSlot->bitmap.rows; y++ )
+    switch ( srcSlot->bitmap.pixel_mode )
     {
-      for ( x = 0; x < srcSlot->bitmap.width; x++ )
-      {
-        int  aa = src[x];
-        int  fa = alpha * aa / 255;
+      case FT_PIXEL_MODE_GRAY:
+        for ( y = 0; y < srcSlot->bitmap.rows; y++ )
+        {
+          for ( x = 0; x < srcSlot->bitmap.width; x++ )
+          {
+            int  aa = src[x];
+            int  fa = alpha * aa / 255;
 
-        int  fb = b * fa / 255;
-        int  fg = g * fa / 255;
-        int  fr = r * fa / 255;
+            int  fb = b * fa / 255;
+            int  fg = g * fa / 255;
+            int  fr = r * fa / 255;
 
-        int  ba2 = 255 - fa;
+            int  ba2 = 255 - fa;
 
-        int  bb = dst[4 * x + 0];
-        int  bg = dst[4 * x + 1];
-        int  br = dst[4 * x + 2];
-        int  ba = dst[4 * x + 3];
+            int  bb = dst[4 * x + 0];
+            int  bg = dst[4 * x + 1];
+            int  br = dst[4 * x + 2];
+            int  ba = dst[4 * x + 3];
 
+            dst[4 * x + 0] = (FT_Byte)( bb * ba2 / 255 + fb );
+            dst[4 * x + 1] = (FT_Byte)( bg * ba2 / 255 + fg );
+            dst[4 * x + 2] = (FT_Byte)( br * ba2 / 255 + fr );
+            dst[4 * x + 3] = (FT_Byte)( ba * ba2 / 255 + fa );
+          }
 
-        dst[4 * x + 0] = (FT_Byte)( bb * ba2 / 255 + fb );
-        dst[4 * x + 1] = (FT_Byte)( bg * ba2 / 255 + fg );
-        dst[4 * x + 2] = (FT_Byte)( br * ba2 / 255 + fr );
-        dst[4 * x + 3] = (FT_Byte)( ba * ba2 / 255 + fa );
-      }
+          src += srcSlot->bitmap.pitch;
+          dst += dstSlot->bitmap.pitch;
+        }
+        break;
 
-      src += srcSlot->bitmap.pitch;
-      dst += dstSlot->bitmap.pitch;
+      case FT_PIXEL_MODE_MONO:
+        {
+          int  fb = b * alpha / 255;
+          int  fg = g * alpha / 255;
+          int  fr = r * alpha / 255;
+
+          int  ba2 = 255 - alpha;
+
+          for ( y = 0; y < srcSlot->bitmap.rows; y++ )
+          {
+            for ( x = 0; x < srcSlot->bitmap.width; x++ )
+            {
+              if ( src[x >> 3] & ( 0x80 >> ( x & 7 ) ) )
+              {
+                int  bb = dst[4 * x + 0];
+                int  bg = dst[4 * x + 1];
+                int  br = dst[4 * x + 2];
+                int  ba = dst[4 * x + 3];
+
+                dst[4 * x + 0] = (FT_Byte)( bb * ba2 / 255 + fb );
+                dst[4 * x + 1] = (FT_Byte)( bg * ba2 / 255 + fg );
+                dst[4 * x + 2] = (FT_Byte)( br * ba2 / 255 + fr );
+                dst[4 * x + 3] = (FT_Byte)( ba * ba2 / 255 + alpha );
+              }
+            }
+
+            src += srcSlot->bitmap.pitch;
+            dst += dstSlot->bitmap.pitch;
+          }
+        }
+        break;
+
+      default:
+        /* Reject pixel modes other than GRAY/MONO. */
+        return FT_Err_Invalid_Glyph_Format;
     }
 
     return FT_Err_Ok;

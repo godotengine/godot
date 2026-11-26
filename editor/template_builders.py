@@ -62,8 +62,8 @@ def make_templates(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(f"""\
-#include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
 
 inline constexpr int TEMPLATES_ARRAY_SIZE = {len(parsed_templates)};
 static const struct ScriptLanguage::ScriptTemplate TEMPLATES[TEMPLATES_ARRAY_SIZE] = {{

@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains an internal function that is used to match a Unicode
 extended grapheme sequence. It is used by both pcre2_match() and
 pcre2_dfa_match(). However, it is called only when Unicode support is being
@@ -45,24 +46,20 @@ compiled. Nevertheless, we provide a dummy function when there is no Unicode
 support, because some compilers do not like functionless source files. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-
 #include "pcre2_internal.h"
+
 
 
 /* Dummy function */
 
 #ifndef SUPPORT_UNICODE
 PCRE2_SPTR
-PRIV(extuni)(uint32_t c, PCRE2_SPTR eptr, PCRE2_SPTR start_subject,
+PRIV(extuni)(uint32_t c, PCRE2_SPTR eptr, PCRE2_SPTR check_subject,
   PCRE2_SPTR end_subject, BOOL utf, int *xcount)
 {
 (void)c;
 (void)eptr;
-(void)start_subject;
+(void)check_subject;
 (void)end_subject;
 (void)utf;
 (void)xcount;
@@ -83,7 +80,7 @@ same behaviour.
 Arguments:
   c              the first character
   eptr           pointer to next character
-  start_subject  pointer to start of subject
+  check_subject  pointer to start of validated subject
   end_subject    pointer to end of subject
   utf            TRUE if in UTF mode
   xcount         pointer to count of additional characters,
@@ -93,7 +90,7 @@ Returns:         pointer after the end of the sequence
 */
 
 PCRE2_SPTR
-PRIV(extuni)(uint32_t c, PCRE2_SPTR eptr, PCRE2_SPTR start_subject,
+PRIV(extuni)(uint32_t c, PCRE2_SPTR eptr, PCRE2_SPTR check_subject,
   PCRE2_SPTR end_subject, BOOL utf, int *xcount)
 {
 BOOL was_ep_ZWJ = FALSE;
@@ -124,7 +121,7 @@ while (eptr < end_subject)
 
     /* bptr is pointing to the left-hand character */
 
-    while (bptr > start_subject)
+    while (bptr > check_subject)
       {
       bptr--;
       if (utf)

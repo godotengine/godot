@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "rendering_device_driver_d3d12.h"
+#include <drivers/d3d12/godot_d3dx12.h>
 
 class D3D12Hooks {
 private:

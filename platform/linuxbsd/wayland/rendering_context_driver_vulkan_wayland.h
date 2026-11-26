@@ -37,6 +37,9 @@
 class RenderingContextDriverVulkanWayland : public RenderingContextDriverVulkan {
 private:
 	virtual const char *_get_platform_surface_extension() const override final;
+	// If wp-color-management is supported, we will perform color management externally to the driver.
+	// If wp-color-management is not supported, the driver would not be able to perform color management anyway.
+	virtual bool is_colorspace_externally_managed() const override final { return true; }
 
 protected:
 	SurfaceID surface_create(const void *p_platform_data) override final;

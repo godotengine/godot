@@ -2,13 +2,18 @@
 
 import os.path
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+from methods import compress_buffer, format_buffer, generated_wrapper, print_error
 
 
 class GLES3HeaderStruct:
     def __init__(self):
         self.vertex_lines = []
         self.fragment_lines = []
+        self.raygen_lines = []
+        self.any_hit_lines = []
+        self.closest_hit_lines = []
+        self.miss_lines = []
+        self.intersection_lines = []
         self.uniforms = []
         self.fbos = []
         self.texunits = []
@@ -24,6 +29,11 @@ class GLES3HeaderStruct:
         self.line_offset = 0
         self.vertex_offset = 0
         self.fragment_offset = 0
+        self.raygen_offset = 0
+        self.any_hit_offset = 0
+        self.closest_hit_offset = 0
+        self.miss_offset = 0
+        self.intersection_offset = 0
         self.variant_defines = []
         self.variant_names = []
         self.specialization_names = []
@@ -85,6 +95,41 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                 line = fs.readline()
                 header_data.line_offset += 1
                 header_data.fragment_offset = header_data.line_offset
+                continue
+
+            if line.find("#[raygen]") != -1:
+                header_data.reading = "raygen"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.raygen_offset = header_data.line_offset
+                continue
+
+            if line.find("#[any_hit]") != -1:
+                header_data.reading = "any_hit"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.any_hit_offset = header_data.line_offset
+                continue
+
+            if line.find("#[closest_hit]") != -1:
+                header_data.reading = "closest_hit"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.closest_hit_offset = header_data.line_offset
+                continue
+
+            if line.find("#[miss]") != -1:
+                header_data.reading = "miss"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.miss_offset = header_data.line_offset
+                continue
+
+            if line.find("#[intersection]") != -1:
+                header_data.reading = "intersection"
+                line = fs.readline()
+                header_data.line_offset += 1
+                header_data.intersection_offset = header_data.line_offset
                 continue
 
             while line.find("#include ") != -1:
@@ -181,6 +226,16 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                 header_data.vertex_lines += [line]
             if header_data.reading == "fragment":
                 header_data.fragment_lines += [line]
+            if header_data.reading == "raygen":
+                header_data.raygen_lines += [line]
+            if header_data.reading == "any_hit":
+                header_data.any_hit_lines += [line]
+            if header_data.reading == "closest_hit":
+                header_data.closest_hit_lines += [line]
+            if header_data.reading == "miss":
+                header_data.miss_lines += [line]
+            if header_data.reading == "intersection":
+                header_data.intersection_lines += [line]
 
             line = fs.readline()
             header_data.line_offset += 1
@@ -231,7 +286,7 @@ public:
                 f"{name.upper()} = {1 << index}" for index, name in enumerate(header_data.specialization_names)
             )
             file.write(f"""\
-	enum Specializations {{
+	enum Specializations : uint64_t {{
 		{specialization_names},
 	}};
 
@@ -496,16 +551,19 @@ protected:
 		static const Feedback *_feedbacks = nullptr;
 """)
 
+        # Store the code of both stages in a single compressed buffer, as null-terminated strings.
+        vertex_code = "\n".join(header_data.vertex_lines).encode() + b"\n\0"
+        fragment_code = "\n".join(header_data.fragment_lines).encode() + b"\n\0"
+        buffer = vertex_code + fragment_code
+        compressed = compress_buffer(buffer)
+
         file.write(f"""\
-		static const char _vertex_code[] = {{
-{to_raw_cstring(header_data.vertex_lines)}
+		static const uint8_t _code_compressed[] = {{
+			{format_buffer(compressed, 3)}
 		}};
+		const CharString _code = _decompress_code(_code_compressed, {len(compressed)}, {len(buffer)});
 
-		static const char _fragment_code[] = {{
-{to_raw_cstring(header_data.fragment_lines)}
-		}};
-
-		_setup(_vertex_code, _fragment_code, "{out_file_class}",
+		_setup(_code.get_data(), _code.get_data() + {len(vertex_code)}, "{out_file_class}",
 				{len(header_data.uniforms)}, _uniform_strings, {len(header_data.ubos)}, _ubo_pairs,
 				{len(header_data.feedbacks)}, _feedbacks, {len(header_data.texunits)}, _texunit_pairs,
 				{len(header_data.specialization_names)}, _spec_pairs, {variant_count}, _variant_defines);

@@ -103,6 +103,9 @@ public:
     virtual void doubleCheck(const TSourceLoc&, const char* op);
     virtual void float16Check(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual void float16ScalarVectorCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void bfloat16ScalarVectorCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void floate5m2ScalarVectorCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void floate4m3ScalarVectorCheck(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual bool float16Arithmetic();
     virtual void requireFloat16Arithmetic(const TSourceLoc& loc, const char* op, const char* featureDesc);
     virtual void int16ScalarVectorCheck(const TSourceLoc&, const char* op, bool builtIn = false);
@@ -121,6 +124,11 @@ public:
     virtual void fcoopmatCheckNV(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual void intcoopmatCheckNV(const TSourceLoc&, const char *op, bool builtIn = false);
     virtual void coopmatCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void coopmatConverisonCheckQCOM(const TSourceLoc& loc, const char* op, bool builtIn = false);
+    virtual void tensorLayoutViewCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void coopvecCheck(const TSourceLoc&, const char* op, bool builtIn = false);
+    virtual void intattachmentCheck(const TSourceLoc&, const char *op, bool builtIn = false);
+    virtual void tensorCheckARM(const TSourceLoc&, const char *op, bool builtIn = false);
     bool relaxedErrors()    const { return (messages & EShMsgRelaxedErrors) != 0; }
     bool suppressWarnings() const { return (messages & EShMsgSuppressWarnings) != 0; }
     bool isForwardCompatible() const { return forwardCompatible; }

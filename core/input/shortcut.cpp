@@ -30,6 +30,8 @@
 
 #include "shortcut.h"
 
+#include "core/object/class_db.h"
+
 void Shortcut::set_events(const Array &p_events) {
 	for (int i = 0; i < p_events.size(); i++) {
 		Ref<InputEventShortcut> ies = p_events[i];
@@ -85,6 +87,17 @@ String Shortcut::get_as_text() const {
 	return "None";
 }
 
+Ref<Shortcut> Shortcut::make_from_action(const StringName &p_action) {
+	Ref<InputEventAction> event;
+	event.instantiate();
+	event->set_action(p_action);
+
+	Ref<Shortcut> shortcut;
+	shortcut.instantiate();
+	shortcut->set_events({ event });
+	return shortcut;
+}
+
 bool Shortcut::has_valid_event() const {
 	// Tests if there is ANY input event which is valid.
 	for (int i = 0; i < events.size(); i++) {
@@ -106,7 +119,7 @@ void Shortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("matches_event", "event"), &Shortcut::matches_event);
 	ClassDB::bind_method(D_METHOD("get_as_text"), &Shortcut::get_as_text);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("InputEvent")), "set_events", "get_events");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "events", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("InputEvent,-InputEventShortcut")), "set_events", "get_events");
 }
 
 bool Shortcut::is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2) {

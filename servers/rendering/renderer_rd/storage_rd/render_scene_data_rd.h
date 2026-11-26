@@ -48,7 +48,6 @@ public:
 	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
-	bool cam_frustum = false;
 	bool flip_y = false;
 
 	// For billboards to cast correct shadows.
@@ -80,6 +79,10 @@ public:
 	Size2 shadow_atlas_pixel_size;
 	Size2 directional_shadow_pixel_size;
 
+	float radiance_pixel_size;
+	float radiance_border_size;
+	Size2 reflection_atlas_border_size;
+
 	float time;
 	float time_step;
 
@@ -91,8 +94,10 @@ public:
 	virtual Projection get_view_projection(uint32_t p_view) const override;
 
 	RID create_uniform_buffer();
-	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
+	void update_ubo(RID p_uniform_buffer, RSE::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Size2 &p_viewport_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
 	virtual RID get_uniform_buffer() const override;
+
+	static uint32_t get_uniform_buffer_size_bytes() { return sizeof(UBODATA); }
 
 private:
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
@@ -100,12 +105,13 @@ private:
 	enum SceneDataFlags {
 		SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT = 1 << 0,
 		SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP = 1 << 1,
-		SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP = 1 << 2,
-		SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER = 1 << 3,
-		SCENE_DATA_FLAGS_USE_FOG = 1 << 4,
-		SCENE_DATA_FLAGS_USE_UV2_MATERIAL = 1 << 5,
-		SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS = 1 << 6,
-		SCENE_DATA_FLAGS_IN_SHADOW_PASS = 1 << 7, // Only used by Forward+ renderer.
+		SCENE_DATA_FLAGS_USE_REFLECTION_COLOR = 1 << 2,
+		SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP = 1 << 3,
+		SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER = 1 << 4,
+		SCENE_DATA_FLAGS_USE_FOG = 1 << 5,
+		SCENE_DATA_FLAGS_USE_UV2_MATERIAL = 1 << 6,
+		SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS = 1 << 7,
+		SCENE_DATA_FLAGS_IN_SHADOW_PASS = 1 << 8, // Only used by Forward+ renderer.
 		SCENE_DATA_FLAGS_MAX
 	};
 
@@ -137,6 +143,10 @@ private:
 		float shadow_atlas_pixel_size[2];
 		float directional_shadow_pixel_size[2];
 
+		float radiance_pixel_size;
+		float radiance_border_size;
+		float reflection_atlas_border_size[2];
+
 		uint32_t directional_light_count;
 		float dual_paraboloid_side;
 		float z_far;
@@ -150,6 +160,9 @@ private:
 		float radiance_inverse_xform[12];
 
 		float ambient_light_color_energy[4];
+
+		float reflection_color[3];
+		uint32_t pad;
 
 		float ambient_color_sky_mix;
 		float fog_density;

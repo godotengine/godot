@@ -30,9 +30,13 @@
 
 #include "navigation_region_3d.h"
 
+#include "core/config/engine.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 RID NavigationRegion3D::get_rid() const {
 	return region;
@@ -169,11 +173,6 @@ void NavigationRegion3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			set_physics_process_internal(true);
-		} break;
-
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			set_physics_process_internal(false);
 			_region_update_transform();
 		} break;
 
@@ -295,7 +294,7 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationRegion3D::get_bounds);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
@@ -382,9 +381,7 @@ void NavigationRegion3D::_region_enter_navigation_map() {
 		NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 	}
 
-	current_global_transform = get_global_transform();
-	NavigationServer3D::get_singleton()->region_set_transform(region, current_global_transform);
-
+	NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform());
 	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
@@ -411,16 +408,12 @@ void NavigationRegion3D::_region_update_transform() {
 		return;
 	}
 
-	Transform3D new_global_transform = get_global_transform();
-	if (current_global_transform != new_global_transform) {
-		current_global_transform = new_global_transform;
-		NavigationServer3D::get_singleton()->region_set_transform(region, current_global_transform);
+	NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform());
 #ifdef DEBUG_ENABLED
-		if (debug_instance.is_valid()) {
-			RS::get_singleton()->instance_set_transform(debug_instance, current_global_transform);
-		}
-#endif // DEBUG_ENABLED
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 	}
+#endif // DEBUG_ENABLED
 }
 
 NavigationRegion3D::NavigationRegion3D() {
@@ -614,7 +607,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
 	if (is_inside_tree()) {
 		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_transform(debug_instance, current_global_transform);
+		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 		RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
 	}
 	if (!is_enabled()) {

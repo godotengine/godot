@@ -41,6 +41,8 @@
 
 #if U_SHOW_CPLUSPLUS_API
 
+#include <type_traits>
+
 #include "unicode/uobject.h"
 #include "unicode/std_string.h"
 
@@ -147,8 +149,9 @@ public:
    */
   virtual char* GetAppendBuffer(int32_t min_capacity,
                                 int32_t desired_capacity_hint,
-                                char* scratch, int32_t scratch_capacity,
-                                int32_t* result_capacity);
+                                char* scratch U_LIFETIME_BOUND,
+                                int32_t scratch_capacity,
+                                int32_t* result_capacity) U_LIFETIME_BOUND;
 
   /**
    * Flush internal buffers.
@@ -199,7 +202,7 @@ public:
    * @return *this
    * @stable ICU 4.6
    */
-  virtual CheckedArrayByteSink& Reset();
+  virtual CheckedArrayByteSink& Reset() U_LIFETIME_BOUND;
   /**
    * Append "bytes[0,n-1]" to this.
    * @param bytes the pointer to the bytes
@@ -223,8 +226,9 @@ public:
    */
   virtual char* GetAppendBuffer(int32_t min_capacity,
                                 int32_t desired_capacity_hint,
-                                char* scratch, int32_t scratch_capacity,
-                                int32_t* result_capacity) override;
+                                char* scratch U_LIFETIME_BOUND,
+                                int32_t scratch_capacity,
+                                int32_t* result_capacity) U_LIFETIME_BOUND override;
   /**
    * Returns the number of bytes actually written to the sink.
    * @return number of bytes written to the buffer
@@ -258,13 +262,36 @@ private:
   CheckedArrayByteSink &operator=(const CheckedArrayByteSink &) = delete;
 };
 
+namespace prv {
+/** @internal */
+template<typename StringClass, typename = void>
+struct value_type_or_char {
+  /** @internal */
+  using type = char;
+};
+/** @internal */
+template<typename StringClass>
+struct value_type_or_char<StringClass, std::void_t<typename StringClass::value_type>> {
+  /** @internal */
+  using type = typename StringClass::value_type;
+};
+/** @internal */
+template<typename StringClass>
+using value_type_or_char_t = typename value_type_or_char<StringClass>::type;
+}
+
 /** 
  * Implementation of ByteSink that writes to a "string".
- * The StringClass is usually instantiated with a std::string.
+ * The StringClass is usually instantiated with a std::string or a std::u8string.
+ * StringClass must have public member functions reserve(integer type), capacity(), length(), and
+ * append(value type, integer type) with the same semantics as those of std::basic_string, and must
+ * have an 8-bit value type.  If the value type is not char, it must be a public member type
+ * StringClass::value_type.
  * @stable ICU 4.2
  */
 template<typename StringClass>
 class StringByteSink : public ByteSink {
+  using Unit = typename prv::value_type_or_char_t<StringClass>;
  public:
   /**
    * Constructs a ByteSink that will append bytes to the dest string.
@@ -291,7 +318,13 @@ class StringByteSink : public ByteSink {
    * @param n the number of bytes; must be non-negative
    * @stable ICU 4.2
    */
-  virtual void Append(const char* data, int32_t n) override { dest_->append(data, n); }
+  virtual void Append(const char* data, int32_t n) override {
+    if constexpr (std::is_same_v<Unit, char>) {
+      dest_->append(data, n);
+    } else {
+      dest_->append(reinterpret_cast<const Unit*>(data), n);
+    }
+  }
  private:
   StringClass* dest_;
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/speed_1_16" android:title="1/16x" />
+	<item android:id="@+id/speed_1_8" android:title="1/8x" />
+	<item android:id="@+id/speed_1_4" android:title="1/4x" />
+	<item android:id="@+id/speed_1_2" android:title="1/2x" />
+	<item android:id="@+id/speed_3_4" android:title="3/4x" />
+	<item android:id="@+id/speed_1_0" android:title="1.0x" />
+	<item android:id="@+id/speed_1_25" android:title="1.25x" />
+	<item android:id="@+id/speed_1_5" android:title="1.5x" />
+	<item android:id="@+id/speed_1_75" android:title="1.75x" />
+	<item android:id="@+id/speed_2_0" android:title="2.0x" />
+	<item android:id="@+id/speed_4_0" android:title="4.0x" />
+	<item android:id="@+id/speed_8_0" android:title="8.0x" />
+	<item android:id="@+id/speed_16_0" android:title="16.0x" />
+</menu>

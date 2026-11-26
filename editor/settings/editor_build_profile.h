@@ -40,13 +40,18 @@ class EditorBuildProfile : public RefCounted {
 
 public:
 	enum BuildOption {
+		BUILD_OPTION_2D,
 		BUILD_OPTION_3D,
 		BUILD_OPTION_NAVIGATION_2D,
 		BUILD_OPTION_NAVIGATION_3D,
+		BUILD_OPTION_ACCESSKIT,
+		BUILD_OPTION_SDL,
 		BUILD_OPTION_XR,
 		BUILD_OPTION_OPENXR,
 		BUILD_OPTION_WAYLAND,
 		BUILD_OPTION_X11,
+		BUILD_OPTION_PULSEAUDIO,
+		BUILD_OPTION_ALSA,
 		BUILD_OPTION_RENDERING_DEVICE,
 		BUILD_OPTION_FORWARD_RENDERER,
 		BUILD_OPTION_MOBILE_RENDERER,
@@ -149,6 +154,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 		ACTION_SAVE,
 		ACTION_SAVE_AS,
 		ACTION_DETECT,
+		ACTION_CLEAR_CACHE,
 		ACTION_MAX
 	};
 
@@ -163,7 +169,8 @@ class EditorBuildProfileManager : public AcceptDialog {
 	EditorFileDialog *import_profile = nullptr;
 	EditorFileDialog *export_profile = nullptr;
 
-	LineEdit *profile_path = nullptr;
+	Label *profile_label = nullptr;
+	String profile_path;
 
 	LineEdit *force_detect_classes = nullptr;
 
@@ -176,7 +183,9 @@ class EditorBuildProfileManager : public AcceptDialog {
 
 	Ref<EditorBuildProfile> edited;
 
-	void _import_profile(const String &p_path);
+	void _set_profile_path(const String &p_path);
+
+	bool _import_profile(const String &p_path);
 	void _export_profile(const String &p_path);
 
 	bool updating_build_options = false;

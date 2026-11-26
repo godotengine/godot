@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,8 @@
  * SOFTWARE.
  */
 
-#include <cstring>
+#include "tvgMath.h"
+#include "tvgStr.h"
 #include "tvgSvgUtil.h"
 
 /************************************************************************/
@@ -39,6 +40,41 @@ static uint8_t _hexCharToDec(const char c)
 /* External Class Implementation                                        */
 /************************************************************************/
 
+void svgUtilReplace(char** dst, const char* src)
+{
+    if (!src) return;
+    tvg::free(*dst);
+    *dst = tvg::duplicate(src);
+}
+
+const char* svgUtilSkipWhiteSpace(const char* itr, const char* itrEnd)
+{
+    while ((itrEnd && itr < itrEnd) || (!itrEnd && *itr != '\0')) {
+        if (!isspace((unsigned char)*itr)) break;
+        itr++;
+    }
+    return itr;
+}
+
+
+const char* svgUtilUnskipWhiteSpace(const char* itr, const char* itrStart)
+{
+    if (itr == itrStart) return itr;
+    for (itr--; itr > itrStart; itr--) {
+        if (!isspace((unsigned char)*itr)) break;
+    }
+    return itr + 1;
+}
+
+
+const char* svgUtilSkipWhiteSpaceAndComma(const char* content)
+{
+    content = svgUtilSkipWhiteSpace(content, nullptr);
+    if (*content == ',') return content + 1;
+    return content;
+}
+
+
 size_t svgUtilURLDecode(const char *src, char** dst)
 {
     if (!src) return 0;
@@ -46,7 +82,7 @@ size_t svgUtilURLDecode(const char *src, char** dst)
     auto length = strlen(src);
     if (length == 0) return 0;
 
-    char* decoded = (char*)malloc(sizeof(char) * length + 1);
+    char* decoded = tvg::malloc<char>(sizeof(char) * length + 1);
 
     char a, b;
     int idx =0;
@@ -69,3 +105,41 @@ size_t svgUtilURLDecode(const char *src, char** dst)
     return idx + 1;
 }
 
+void svgUtilHslToRgb(float h, float s, float l, uint8_t& r, uint8_t& g, uint8_t& b)
+{
+    if (tvg::zero(s)) {
+        r = g = b = (uint8_t)nearbyint(l * 255.0f);
+        return;
+    }
+
+    if (tvg::equal(h, 360.0f)) {
+        h = 0.0f;
+    } else {
+        h = fmod(h, 360.0f);
+        if (h < 0.0f) h += 360.0f;
+        h /= 60.0f;
+    }
+
+    auto v = (l <= 0.5f) ? (l * (1.0f + s)) : (l + s - (l * s));
+    auto p = l + l - v;
+    auto sv = tvg::zero(v) ? 0.0f : (v - p) / v;
+    auto i = static_cast<uint8_t>(h);
+    auto f = h - i;
+    auto vsf = v * sv * f;
+    auto t = p + vsf;
+    auto q = v - vsf;
+    float tr, tg, tb;
+
+    switch (i) {
+        case 0: tr = v; tg = t; tb = p; break;
+        case 1: tr = q; tg = v; tb = p; break;
+        case 2: tr = p; tg = v; tb = t; break;
+        case 3: tr = p; tg = q; tb = v; break;
+        case 4: tr = t; tg = p; tb = v; break;
+        case 5: tr = v; tg = p; tb = q; break;
+        default: tr = tg = tb = 0.0f; break;
+    }
+    r = (uint8_t)nearbyint(tr * 255.0f);
+    g = (uint8_t)nearbyint(tg * 255.0f);
+    b = (uint8_t)nearbyint(tb * 255.0f);
+}

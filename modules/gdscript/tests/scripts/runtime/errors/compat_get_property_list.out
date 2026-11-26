@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR: "_get_property_list()" should return "Array[Dictionary]", not "Array". The old behavior is supported for compatibility and may be removed in the future. This message is printed once and will not be repeated for similar errors.
+true
+true
+>> SCRIPT ERROR at runtime/errors/compat_get_property_list.gd:23 on Test3._get_property_list(): Trying to return a value of type "Array" from a function whose return type is "Array[Dictionary]".
+false

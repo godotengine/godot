@@ -47,17 +47,66 @@ if env["brotli"] and env["builtin_brotli"]:
         "dec/bit_reader.c",
         "dec/decode.c",
         "dec/huffman.c",
+        "dec/prefix.c",
         "dec/state.c",
+        "dec/static_init.c",
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_brotli_dir + "include"])
-    env.Prepend(CPPEXTPATH=[thirdparty_brotli_dir + "include"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+    env.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
 
     if env.get("use_ubsan") or env.get("use_asan") or env.get("use_tsan") or env.get("use_lsan") or env.get("use_msan"):
         env_thirdparty.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)
+
+# PCRE2
+if env["builtin_pcre2"]:
+    thirdparty_pcre2_dir = "#thirdparty/pcre2/src/"
+    thirdparty_pcre2_sources = [
+        "pcre2_auto_possess.c",
+        "pcre2_chartables.c",
+        "pcre2_chkdint.c",
+        "pcre2_compile.c",
+        "pcre2_compile_cgroup.c",
+        "pcre2_compile_class.c",
+        "pcre2_config.c",
+        "pcre2_context.c",
+        "pcre2_convert.c",
+        "pcre2_dfa_match.c",
+        "pcre2_error.c",
+        "pcre2_extuni.c",
+        "pcre2_find_bracket.c",
+        "pcre2_jit_compile.c",
+        "pcre2_maketables.c",
+        "pcre2_match.c",
+        "pcre2_match_data.c",
+        "pcre2_match_next.c",
+        "pcre2_newline.c",
+        "pcre2_ord2utf.c",
+        "pcre2_pattern_info.c",
+        "pcre2_script_run.c",
+        "pcre2_serialize.c",
+        "pcre2_string_utils.c",
+        "pcre2_study.c",
+        "pcre2_substitute.c",
+        "pcre2_substring.c",
+        "pcre2_tables.c",
+        "pcre2_ucd.c",
+        "pcre2_valid_utf.c",
+        "pcre2_xclass.c",
+    ]
+
+    thirdparty_pcre2_sources = [thirdparty_pcre2_dir + file for file in thirdparty_pcre2_sources]
+
+    thirdparty_pcre2_flags = ["PCRE2_STATIC", "HAVE_CONFIG_H", "SUPPORT_UNICODE", ("PCRE2_CODE_UNIT_WIDTH", 32)]
+    if env["builtin_pcre2_with_jit"]:
+        thirdparty_pcre2_flags.append("SUPPORT_JIT")
+    env_thirdparty.Append(CPPDEFINES=thirdparty_pcre2_flags)
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_pcre2_dir])
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_pcre2_sources)
 
 # Clipper2 Thirdparty source files used for polygon and polyline boolean operations.
 if env["builtin_clipper2"]:
@@ -69,8 +118,8 @@ if env["builtin_clipper2"]:
     ]
     thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
 
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_clipper_dir + "include"])
-    env.Prepend(CPPEXTPATH=[thirdparty_clipper_dir + "include"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+    env.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
 
     env_thirdparty.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
     env.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
@@ -94,9 +143,9 @@ if env["builtin_zlib"]:
     ]
     thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
 
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_zlib_dir])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
     # Needs to be available in main env too
-    env.Prepend(CPPEXTPATH=[thirdparty_zlib_dir])
+    env.Prepend(CPPPATH=[thirdparty_zlib_dir])
     if env.dev_build:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
         # Affects headers so it should also be defined for Godot code
@@ -151,9 +200,9 @@ if env["builtin_zstd"]:
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
     env_thirdparty.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
-    env.Prepend(CPPEXTPATH=thirdparty_zstd_dir)
+    env.Prepend(CPPPATH=thirdparty_zstd_dir)
     # Also needed in main env includes will trigger warnings
     env.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
 
@@ -186,9 +235,15 @@ env.add_source_files(env.core_sources, gen_hash)
 
 # Generate AES256 script encryption key
 encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+encryption_key_var = "SCRIPT_AES256_ENCRYPTION_KEY"
+if encryption_key is None:
+    # Fallback to the environment variable used by Godot on export.
+    # This allows setting only one environment variable for both compiling and exporting.
+    encryption_key = os.environ.get("GODOT_SCRIPT_ENCRYPTION_KEY")
+    encryption_key_var = "GODOT_SCRIPT_ENCRYPTION_KEY"
 if encryption_key:
     print(
-        "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
+        f"\n*** IMPORTANT: Compiling Godot with custom `{encryption_key_var}` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
 gen_encrypt = env.CommandNoCache(
@@ -201,7 +256,7 @@ env.add_source_files(env.core_sources, gen_encrypt)
 # Certificates
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
+    ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
     env.Run(core_builders.make_certs_header),
 )
 
@@ -217,6 +272,7 @@ env.CommandNoCache(
 )
 
 # Chain load SCsubs
+SConscript("profiling/SCsub")
 SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")

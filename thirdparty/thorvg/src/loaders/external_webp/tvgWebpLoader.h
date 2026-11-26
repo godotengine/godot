@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,13 @@
 #include "tvgLoader.h"
 #include "tvgTaskScheduler.h"
 
-class WebpLoader : public ImageLoader, public Task
+struct WebpLoader : BitmapLoader, Task
 {
-public:
-    WebpLoader();
+    WebpLoader() : BitmapLoader(FileType::Webp) {}
     ~WebpLoader();
 
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
+    Result open(const char* path, const LoaderOps& ops) override;
+    Result open(const char* data, uint32_t size, const LoaderOps& ops) override;
     bool read() override;
 
     RenderSurface* bitmap() override;
@@ -42,8 +41,7 @@ private:
     void run(unsigned tid) override;
 
     unsigned char* data = nullptr;
-    unsigned long size = 0;
-    bool freeData = false;
+    uint32_t size = 0;
 };
 
 #endif //_TVG_WEBP_LOADER_H_

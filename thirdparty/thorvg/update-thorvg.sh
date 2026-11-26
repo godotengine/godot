@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
-VERSION=0.15.13
+VERSION=1.1.3
 # Uncomment and set a git hash to use specific commit instead of tag.
 #GIT_COMMIT=
 
 pushd "$(dirname "$0")"
-rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
+rm -rf CONTRIBUTORS.md LICENSE inc/ src/ *.zip *.tar.gz tmp/
 
 mkdir tmp/ && pushd tmp/
 
@@ -24,7 +24,7 @@ rm *.tar.gz
 # Install from local git checkout "thorvg-git" in the same directory
 # as godot git checkout.
 #d="../../../../thorvg-git"
-#cp -r ${d}/AUTHORS ${d}/inc ${d}/LICENSE ${d}/src .
+#cp -r ${d}/CONTRIBUTORS.md ${d}/inc ${d}/LICENSE ${d}/src .
 
 find . -type f -name 'meson.build' -delete
 
@@ -33,14 +33,14 @@ for source in $(find ./ -type f \( -iname \*.h -o -iname \*.cpp \)); do
     sed -i -e '$a\' $source
 done
 
-cp -v AUTHORS LICENSE ..
+cp -v CONTRIBUTORS.md LICENSE ..
 cp -rv inc ../
 
 cat << EOF > ../inc/config.h
 #ifndef THORVG_CONFIG_H
 #define THORVG_CONFIG_H
 
-#define THORVG_SW_RASTER_SUPPORT
+#define THORVG_CPU_ENGINE_SUPPORT
 #define THORVG_SVG_LOADER_SUPPORT
 #define THORVG_PNG_LOADER_SUPPORT
 #ifndef WEB_ENABLED
@@ -62,9 +62,8 @@ mkdir ../src
 cp -rv src/common ../src
 cp -rv src/renderer ../src/
 
-# Only sw_engine is enabled.
-rm -rfv ../src/renderer/gl_engine
-rm -rfv ../src/renderer/wg_engine
+# Only cpu_engine is enabled.
+rm -rfv ../src/renderer/gpu_engine
 
 # Enabled embedded loaders: raw, JPEG, PNG, WebP.
 mkdir ../src/loaders

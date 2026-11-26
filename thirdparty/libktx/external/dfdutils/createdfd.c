@@ -603,7 +603,7 @@ static uint32_t compBytes[] = {
  * @param bwidth Block width in texel coordinates.
  * @param bheight Block height in texel coordinates.
  * @param bdepth Block depth in texel coordinates.
- * @author Mark Callow, Edgewise Consulting.
+ * @author Mark Callow, github.com/MarkCallow.
  * @param suffix Indicates the format suffix for the type.
  *
  * @return A data format descriptor in malloc'd data. The caller is responsible

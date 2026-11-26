@@ -31,12 +31,12 @@
 #include "camera_2d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
@@ -111,7 +111,7 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(pos);
-		pos = CanvasItemEditor::get_singleton()->snap_point(pos);
+		pos = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->snap_point(pos);
 
 		switch (drag_type) {
 			case Drag::LEFT: {
@@ -211,7 +211,7 @@ void Camera2DEditor::_update_overlays_if_needed(Camera2D *p_camera) {
 }
 
 void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		hover_type = Drag::NONE;
 		CanvasItemEditor::get_singleton()->set_cursor_shape_override();
 		return;
@@ -304,6 +304,8 @@ Camera2DEditor::Camera2DEditor(EditorPlugin *p_plugin) {
 
 	options = memnew(MenuButton);
 	options->set_text(TTRC("Camera2D"));
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 	options->get_popup()->add_item(TTRC("Snap the Limits to the Viewport"), MENU_SNAP_LIMITS_TO_VIEWPORT);
 	options->set_switch_on_hover(true);
 	options->hide();

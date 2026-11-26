@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "skeleton_modification_stack_2d.h"
+
+#include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 
 void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list) const {

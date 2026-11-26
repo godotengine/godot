@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SoftBody3D" inherits="MeshInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SoftBody3D" inherits="MeshInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A deformable 3D physics mesh.
 	</brief_description>
 	<description>
 		A deformable 3D physics mesh. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
 		Additionally, [SoftBody3D] is subject to wind forces defined in [Area3D] (see [member Area3D.wind_source_path], [member Area3D.wind_force_magnitude], and [member Area3D.wind_attenuation_factor]).
-		[b]Note:[/b] It's recommended to use Jolt Physics when using [SoftBody3D] instead of the default GodotPhysics3D, as Jolt Physics' soft body implementation is faster and more reliable. You can switch the physics engine using the [member ProjectSettings.physics/3d/physics_engine] project setting.
+		[b]Note:[/b] It's recommended to use Jolt Physics when using [SoftBody3D] instead of GodotPhysics3D, as Jolt Physics' soft body implementation is faster and more reliable. Jolt Physics is the default for projects created with Godot 4.6 or later. For projects created with older Godot versions, you can switch the physics engine using the [member ProjectSettings.physics/3d/physics_engine] project setting.
 	</description>
 	<tutorials>
 		<link title="SoftBody">$DOCS_URL/tutorials/physics/soft_body.html</link>
@@ -149,6 +149,9 @@
 		</member>
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
+		</member>
+		<member name="point_count" type="int" setter="" getter="get_point_count">
+			The number of vertices (points) on the soft body mesh.
 		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
 			The pressure coefficient of this soft body. Simulate pressure build-up from inside this body. Higher values increase the strength of this effect.

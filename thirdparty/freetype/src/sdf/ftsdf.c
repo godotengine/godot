@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2024 by
+ * Copyright (C) 2020-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -655,12 +655,6 @@
     FT_Memory  memory = shape->memory;
 
 
-    if ( !to || !user )
-    {
-      error = FT_THROW( Invalid_Argument );
-      goto Exit;
-    }
-
     FT_CALL( sdf_contour_new( memory, &contour ) );
 
     contour->last_pos = *to;
@@ -679,21 +673,14 @@
   sdf_line_to( const FT_26D6_Vec*  to,
                void*               user )
   {
-    SDF_Shape*    shape    = ( SDF_Shape* )user;
-    SDF_Edge*     edge     = NULL;
-    SDF_Contour*  contour  = NULL;
+    SDF_Shape*    shape   = ( SDF_Shape* )user;
+    SDF_Edge*     edge    = NULL;
+    SDF_Contour*  contour = shape->contours;
 
-    FT_Error      error    = FT_Err_Ok;
-    FT_Memory     memory   = shape->memory;
+    FT_Error   error  = FT_Err_Ok;
+    FT_Memory  memory = shape->memory;
 
 
-    if ( !to || !user )
-    {
-      error = FT_THROW( Invalid_Argument );
-      goto Exit;
-    }
-
-    contour = shape->contours;
 
     if ( contour->last_pos.x == to->x &&
          contour->last_pos.y == to->y )
@@ -722,21 +709,13 @@
                 const FT_26D6_Vec*  to,
                 void*               user )
   {
-    SDF_Shape*    shape    = ( SDF_Shape* )user;
-    SDF_Edge*     edge     = NULL;
-    SDF_Contour*  contour  = NULL;
+    SDF_Shape*    shape   = ( SDF_Shape* )user;
+    SDF_Edge*     edge    = NULL;
+    SDF_Contour*  contour = shape->contours;
 
     FT_Error   error  = FT_Err_Ok;
     FT_Memory  memory = shape->memory;
 
-
-    if ( !control_1 || !to || !user )
-    {
-      error = FT_THROW( Invalid_Argument );
-      goto Exit;
-    }
-
-    contour = shape->contours;
 
     /* If the control point coincides with any of the end points */
     /* then it is a line and should be treated as one to avoid   */
@@ -778,19 +757,11 @@
   {
     SDF_Shape*    shape   = ( SDF_Shape* )user;
     SDF_Edge*     edge    = NULL;
-    SDF_Contour*  contour = NULL;
+    SDF_Contour*  contour = shape->contours;
 
     FT_Error   error  = FT_Err_Ok;
     FT_Memory  memory = shape->memory;
 
-
-    if ( !control_2 || !control_1 || !to || !user )
-    {
-      error = FT_THROW( Invalid_Argument );
-      goto Exit;
-    }
-
-    contour = shape->contours;
 
     FT_CALL( sdf_edge_new( memory, &edge ) );
 
@@ -1391,7 +1362,7 @@
       SDF_Contour*  contour = contour_list;
 
 
-      FT_TRACE5(( "  Contour %d\n", num_contours ));
+      FT_TRACE5(( "  Contour %u\n", num_contours ));
 
       edge_list = contour->edges;
 
@@ -1400,7 +1371,7 @@
         SDF_Edge*  edge = edge_list;
 
 
-        FT_TRACE5(( "  %3d: ", num_edges ));
+        FT_TRACE5(( "  %3u: ", num_edges ));
 
         switch ( edge->edge_type )
         {
@@ -1443,11 +1414,11 @@
     }
 
     FT_TRACE5(( "\n" ));
-    FT_TRACE5(( "  total number of contours = %d\n", num_contours ));
-    FT_TRACE5(( "  total number of edges    = %d\n", total_edges ));
-    FT_TRACE5(( "    |__lines = %d\n", total_lines ));
-    FT_TRACE5(( "    |__conic = %d\n", total_conic ));
-    FT_TRACE5(( "    |__cubic = %d\n", total_cubic ));
+    FT_TRACE5(( "  total number of contours = %u\n", num_contours ));
+    FT_TRACE5(( "  total number of edges    = %u\n", total_edges ));
+    FT_TRACE5(( "    |__lines = %u\n", total_lines ));
+    FT_TRACE5(( "    |__conic = %u\n", total_conic ));
+    FT_TRACE5(( "    |__cubic = %u\n", total_cubic ));
   }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -3281,8 +3252,12 @@
       goto Exit;
     }
 
-    if ( FT_ALLOC( dists,
-                   bitmap->width * bitmap->rows * sizeof ( *dists ) ) )
+    if ( bitmap->rows > FT_INT_MAX / bitmap->width )
+    {
+      error = FT_THROW( Array_Too_Large );
+      goto Exit;
+    }
+    if ( FT_NEW_ARRAY( dists, bitmap->rows * bitmap->width ) )
       goto Exit;
 
     contours = shape->contours;
@@ -3456,7 +3431,7 @@
    *     A complete shape which is used to generate SDF.
    *
    *   spread ::
-   *     Maximum distances to be allowed inthe output bitmap.
+   *     Maximum distances to be allowed in the output bitmap.
    *
    * @Output:
    *   bitmap ::
@@ -3597,13 +3572,11 @@
     }
 
     /* allocate the bitmaps to generate SDF for separate contours */
-    if ( FT_ALLOC( bitmaps,
-                   (FT_UInt)num_contours * sizeof ( *bitmaps ) ) )
+    if ( FT_NEW_ARRAY( bitmaps, num_contours ) )
       goto Exit;
 
     /* allocate array to hold orientation for all contours */
-    if ( FT_ALLOC( orientations,
-                   (FT_UInt)num_contours * sizeof ( *orientations ) ) )
+    if ( FT_NEW_ARRAY( orientations, num_contours ) )
       goto Exit;
 
     contour = shape->contours;
@@ -3621,8 +3594,7 @@
       bitmaps[i].pixel_mode = bitmap->pixel_mode;
 
       /* allocate memory for the buffer */
-      if ( FT_ALLOC( bitmaps[i].buffer,
-                     bitmap->rows * (FT_UInt)bitmap->pitch ) )
+      if ( FT_ALLOC_MULT( bitmaps[i].buffer, bitmap->rows, bitmap->pitch ) )
         goto Exit;
 
       /* determine the orientation */
@@ -3642,10 +3614,13 @@
       else
         internal_params.overload_sign = 0;
 
-      /* Make `contour->next` NULL so that there is   */
-      /* one contour in the list.  Also hold the next */
-      /* contour in a temporary variable so as to     */
-      /* restore the original value.                  */
+      /* Make `contour->next` NULL so that there is one    */
+      /* contour in the list.  Also hold the next contour  */
+      /* in a temporary variable to continue the iteration */
+      /* afterwards, since the `sdf_generate_subdivision`  */
+      /* call below frees the current `contour` (through   */
+      /* `split_sdf_shape`) and it must no longer be       */
+      /* dereferenced.                                     */
       temp_contour  = contour->next;
       contour->next = NULL;
 
@@ -3658,9 +3633,6 @@
                                          &temp_shape,
                                          spread,
                                          &bitmaps[i] ) );
-
-      /* Restore the original `next` variable. */
-      contour->next = temp_contour;
 
       /* Since `split_sdf_shape` deallocated the original */
       /* contours list we need to assign the new value to */
@@ -3678,7 +3650,10 @@
           orientations[i] = SDF_ORIENTATION_CW;
       }
 
-      contour = contour->next;
+      /* Advance using the saved pointer; `contour` itself */
+      /* has been freed by `split_sdf_shape` and must not  */
+      /* be dereferenced.                                  */
+      contour = temp_contour;
     }
 
     /* assign the new contour list to `shape->contours` */

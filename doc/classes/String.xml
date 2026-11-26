@@ -92,17 +92,19 @@
 		<method name="capitalize" qualifiers="const">
 			<return type="String" />
 			<description>
-				Changes the appearance of the string: replaces underscores ([code]_[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
+				Returns a copy of the string with changed appearance. Replaces underscores ([code]_[/code]) and hyphens ([code]-[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
 				[codeblocks]
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
 				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
+				"example-name".capitalize()   # Returns "Example Name"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
 				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
+				"example-name".Capitalize();   // Returns "Example Name"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -782,7 +784,7 @@
 			<return type="String" />
 			<param index="0" name="chars" type="String" />
 			<description>
-				Removes any occurrence of the characters in [param chars]. See also [method remove_char].
+				Removes all occurrences of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">

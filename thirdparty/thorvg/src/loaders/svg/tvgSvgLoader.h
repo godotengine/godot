@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,27 @@
 #define _TVG_SVG_LOADER_H_
 
 #include "tvgTaskScheduler.h"
-#include "tvgSvgLoaderCommon.h"
+#include "tvgSvgCommon.h"
 
-class SvgLoader : public ImageLoader, public Task
+struct SvgLoader : ImageLoader, Task
 {
-public:
-    string filePath;
+    SvgParserContext ctx;
     string svgPath = "";
     char* content = nullptr;
     uint32_t size = 0;
-
-    SvgLoaderData loaderData;
     Scene* root = nullptr;
 
-    bool copy = false;
-
-    SvgLoader();
+    SvgLoader() : ImageLoader(FileType::Svg) {}
     ~SvgLoader();
 
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
+    Result open(const char* path, const LoaderOps& ops) override;
+    Result open(const char* data, uint32_t size, const LoaderOps& ops) override;
     bool resize(Paint* paint, float w, float h) override;
     bool read() override;
     bool close() override;
+
+    const AccessorEntity* access(uint32_t id) override;
+    void access(AccessorCallback& cb) override;
 
     Paint* paint() override;
 
@@ -54,12 +52,9 @@ private:
     SvgViewFlag viewFlag = SvgViewFlag::None;
     AspectRatioAlign align = AspectRatioAlign::XMidYMid;
     AspectRatioMeetOrSlice meetOrSlice = AspectRatioMeetOrSlice::Meet;
-    float vx = 0;
-    float vy = 0;
-    float vw = 0;
-    float vh = 0;
+    Box vbox{};
 
-    bool header();
+    Result header();
     void clear(bool all = true);
     void run(unsigned tid) override;
 };

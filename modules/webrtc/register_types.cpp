@@ -37,6 +37,7 @@
 #include "webrtc_peer_connection_extension.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -48,7 +49,7 @@ void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(WebRTCPeerConnectionExtension);
 
 	GDREGISTER_ABSTRACT_CLASS(WebRTCDataChannel);
-	GDREGISTER_CLASS(WebRTCDataChannelExtension);
+	GDREGISTER_VIRTUAL_CLASS(WebRTCDataChannelExtension);
 
 	GDREGISTER_CLASS(WebRTCMultiplayerPeer);
 }

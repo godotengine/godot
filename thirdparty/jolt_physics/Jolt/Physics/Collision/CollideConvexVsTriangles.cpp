@@ -40,8 +40,6 @@ CollideConvexVsTriangles::CollideConvexVsTriangles(const ConvexShape *inShape1, 
 
 void CollideConvexVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and transform it to the space of 1
 	Vec3 v0 = mTransform2To1 * (mScale2 * inV0);
 	Vec3 v1 = mTransform2To1 * (mScale2 * inV1);
@@ -147,6 +145,10 @@ void CollideConvexVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2,
 		result.mShape2Face[0] = mTransform1 * v0;
 		result.mShape2Face[1] = mTransform1 * v1;
 		result.mShape2Face[2] = mTransform1 * v2;
+
+		// When inside out, we need to swap the triangle winding
+		if (mScaleSign2 < 0.0f)
+			std::swap(result.mShape2Face[1], result.mShape2Face[2]);
 	}
 
 	// Notify the collector

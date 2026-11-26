@@ -31,6 +31,7 @@
 #include "spring_arm_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/spring_arm_3d.h"
+#include "scene/main/scene_tree.h"
 
 void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	SpringArm3D *spring_arm = Object::cast_to<SpringArm3D>(p_gizmo->get_node_3d());

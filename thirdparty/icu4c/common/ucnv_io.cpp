@@ -40,6 +40,7 @@
 #include "uarrsort.h"
 #include "uassert.h"
 #include "udataswp.h"
+#include "udatamem.h"
 #include "cstring.h"
 #include "cmemory.h"
 #include "ucnv_io.h"
@@ -235,23 +236,30 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
     const uint32_t *sectionSizes;
     uint32_t tableStart;
     uint32_t currOffset;
+    int32_t sizeOfData;
+    int32_t sizeOfTOC;
 
     ucln_common_registerCleanup(UCLN_COMMON_UCNV_IO, ucnv_io_cleanup);
 
     U_ASSERT(gAliasData == nullptr);
     data = udata_openChoice(nullptr, DATA_TYPE, DATA_NAME, isAcceptable, nullptr, &errCode);
-    if(U_FAILURE(errCode)) {
+    if (U_FAILURE(errCode)) {
         return;
     }
 
     sectionSizes = static_cast<const uint32_t*>(udata_getMemory(data));
+    int32_t dataLength = udata_getLength(data); // This is the length minus the UDataInfo size
+    UBool isDataLengthKnown = dataLength >= 0; // Only false when using a pointer table of contents (not files nor a common data archive)
+    if (isDataLengthKnown && dataLength <= int32_t(sizeof(sectionSizes[0]))) {
+        // We don't even have a TOC!
+        goto invalidFormat;
+    }
     table = reinterpret_cast<const uint16_t*>(sectionSizes);
-
-    tableStart      = sectionSizes[0];
-    if (tableStart < minTocLength) {
-        errCode = U_INVALID_FORMAT_ERROR;
-        udata_close(data);
-        return;
+    tableStart = sectionSizes[0];
+    sizeOfTOC = int32_t((tableStart + 1) * sizeof(sectionSizes[0]));
+    if (tableStart < minTocLength || (isDataLengthKnown && dataLength <= sizeOfTOC)) {
+        // We don't have a whole TOC!
+        goto invalidFormat;
     }
     gAliasData = data;
 
@@ -264,11 +272,21 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
     gMainTable.optionTableSize        = sectionSizes[7];
     gMainTable.stringTableSize        = sectionSizes[8];
 
-    if (tableStart > 8) {
+    if (tableStart > minTocLength) {
         gMainTable.normalizedStringTableSize = sectionSizes[9];
     }
 
-    currOffset = tableStart * (sizeof(uint32_t)/sizeof(uint16_t)) + (sizeof(uint32_t)/sizeof(uint16_t));
+    sizeOfData = sizeOfTOC;
+    for (uint32_t section = 1; section <= tableStart; section++) {
+        sizeOfData += sectionSizes[section] * sizeof(table[0]);
+    }
+    if (isDataLengthKnown && dataLength < sizeOfData) {
+        // Truncated file!
+        goto invalidFormat;
+    }
+    // There may be some extra padding at the end, or this is a new file format with extra data that we can't read yet.
+
+    currOffset = (tableStart + 1) * (sizeof(uint32_t)/sizeof(uint16_t));
     gMainTable.converterList = table + currOffset;
 
     currOffset += gMainTable.converterListSize;
@@ -306,6 +324,12 @@ static void U_CALLCONV initAliasData(UErrorCode &errCode) {
     currOffset += gMainTable.stringTableSize;
     gMainTable.normalizedStringTable = ((gMainTable.optionTable->stringNormalizationType == UCNV_IO_UNNORMALIZED)
         ? gMainTable.stringTable : (table + currOffset));
+
+    return;
+
+invalidFormat:
+    errCode = U_INVALID_FORMAT_ERROR;
+    udata_close(data);
 }
 
 
@@ -383,8 +407,8 @@ static const uint8_t ebcdicTypes[128] = {
 
 
 /* @see ucnv_compareNames */
-U_CAPI char * U_CALLCONV
-ucnv_io_stripASCIIForCompare(char *dst, const char *name) {
+U_CAPI char* U_CALLCONV
+ucnv_io_stripASCIIForCompare(char* dst U_LIFETIME_BOUND, const char* name) {
     char *dstItr = dst;
     uint8_t type, nextType;
     char c1;
@@ -418,8 +442,8 @@ ucnv_io_stripASCIIForCompare(char *dst, const char *name) {
     return dst;
 }
 
-U_CAPI char * U_CALLCONV
-ucnv_io_stripEBCDICForCompare(char *dst, const char *name) {
+U_CAPI char* U_CALLCONV
+ucnv_io_stripEBCDICForCompare(char* dst U_LIFETIME_BOUND, const char* name) {
     char *dstItr = dst;
     uint8_t type, nextType;
     char c1;

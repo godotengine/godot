@@ -8,6 +8,60 @@ namespace Layout {
 namespace GPOS_impl {
 
 
+/* Pair records vary in glyph width; their value traversal need not. */
+struct pair_set_values_t
+{
+  const ValueBase *base;
+  glyph_data_t glyphs;
+  const Value *values;
+  unsigned count;
+  unsigned record_size;
+
+  unsigned get_glyph (unsigned i) const
+  {
+    glyph_data_t glyph = glyphs;
+    glyph.data = (const char *) glyph.data + i * record_size;
+    return glyph[0];
+  }
+
+  const Value *get_values (unsigned i) const
+  { return reinterpret_cast<const Value *> ((const char *) values + i * record_size); }
+
+  hb_pair_t<unsigned, unsigned>
+  compute_effective_value_formats (const hb_set_t &glyphset,
+                                   const ValueFormat valueFormats[2],
+                                   bool strip_hints, bool strip_empty,
+                                   const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map) const
+  {
+    unsigned len1 = valueFormats[0].get_len ();
+    unsigned format1 = 0, format2 = 0;
+    for (unsigned i = 0; i < count; i++)
+    {
+      if (!glyphset.has (get_glyph (i))) continue;
+      const Value *v = get_values (i);
+      format1 |= valueFormats[0].get_effective_format (v, strip_hints, strip_empty, base, varidx_delta_map);
+      format2 |= valueFormats[1].get_effective_format (v + len1, strip_hints, strip_empty, base, varidx_delta_map);
+    }
+    return hb_pair (format1, format2);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c,
+                                  const ValueFormat valueFormats[2]) const
+  {
+    unsigned len1 = valueFormats[0].get_len ();
+    unsigned len2 = valueFormats[1].get_len ();
+    for (unsigned i = 0; i < count; i++)
+    {
+      if (!c->glyph_set->has (get_glyph (i))) continue;
+      const hb_array_t<const Value> v = hb_array (get_values (i), len1 + len2);
+      if (valueFormats[0].has_device ())
+        valueFormats[0].collect_variation_indices (c, base, v.sub_array (0, len1));
+      if (valueFormats[1].has_device ())
+        valueFormats[1].collect_variation_indices (c, base, v.sub_array (len1, len2));
+    }
+  }
+};
+
 template <typename Types>
 struct PairSet : ValueBase
 {
@@ -17,18 +71,19 @@ struct PairSet : ValueBase
   using PairValueRecord = GPOS_impl::PairValueRecord<Types>;
 
   protected:
-  HBUINT16              len;    /* Number of PairValueRecords */
+  typename Types::HBUINT
+                        len;    /* Number of PairValueRecords */
   PairValueRecord       firstPairValueRecord;
                                 /* Array of PairValueRecords--ordered
                                  * by GlyphID of the second glyph */
   public:
-  DEFINE_SIZE_MIN (2);
+  DEFINE_SIZE_MIN (Types::HBUINT::static_size);
 
-  static unsigned get_size (unsigned len1, unsigned len2)
+  static size_t get_size (unsigned len1, unsigned len2)
   {
     return Types::HBGlyphID::static_size + Value::static_size * (len1 + len2);
   }
-  static unsigned get_size (const ValueFormat valueFormats[2])
+  static size_t get_size (const ValueFormat valueFormats[2])
   {
     unsigned len1 = valueFormats[0].get_len ();
     unsigned len2 = valueFormats[1].get_len ();
@@ -39,7 +94,7 @@ struct PairSet : ValueBase
   {
     const ValueFormat *valueFormats;
     unsigned int len1; /* valueFormats[0].get_len() */
-    unsigned int stride; /* bytes */
+    size_t stride; /* bytes */
   };
 
   bool sanitize (hb_sanitize_context_t *c, const sanitize_closure_t *closure) const
@@ -84,20 +139,25 @@ struct PairSet : ValueBase
     c->input->add_array (&record->secondGlyph, len, record_size);
   }
 
+  template <typename set_t>
+  void collect_second_glyphs (set_t *glyphs,
+			      const ValueFormat *valueFormats) const
+  {
+    unsigned record_size = get_size (valueFormats);
+    const PairValueRecord *record = &firstPairValueRecord;
+    glyphs->add_array (&record->secondGlyph, len, record_size);
+  }
+
+  pair_set_values_t get_values_view (const ValueFormat valueFormats[2]) const
+  {
+    return {this, &firstPairValueRecord.secondGlyph, &firstPairValueRecord.values[0],
+            (unsigned) len, (unsigned) get_size (valueFormats)};
+  }
+
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
                                   const ValueFormat *valueFormats) const
   {
-    unsigned record_size = get_size (valueFormats);
-
-    const PairValueRecord *record = &firstPairValueRecord;
-    unsigned count = len;
-    for (unsigned i = 0; i < count; i++)
-    {
-      if (c->glyph_set->has (record->secondGlyph))
-      { record->collect_variation_indices (c, valueFormats, this); }
-
-      record = &StructAtOffset<const PairValueRecord> (record, record_size);
-    }
+    get_values_view (valueFormats).collect_variation_indices (c, valueFormats);
   }
 
   bool apply (hb_ot_apply_context_t *c,
@@ -112,7 +172,7 @@ struct PairSet : ValueBase
 
     const PairValueRecord *record = hb_bsearch (buffer->info[pos].codepoint,
                                                 &firstPairValueRecord,
-                                                len,
+                                                (unsigned) len,
                                                 record_size);
     if (record)
     {
@@ -143,6 +203,9 @@ struct PairSet : ValueBase
 
       if (applied_first || applied_second)
         buffer->unsafe_to_break (buffer->idx, pos + 1);
+      else
+        /* Even a zero-valued pair record is a concat hazard. */
+        buffer->unsafe_to_concat (buffer->idx, pos + 1);
 
       if (len2)
       {
@@ -177,7 +240,7 @@ struct PairSet : ValueBase
     unsigned len2 = valueFormats[1].get_len ();
     unsigned record_size = get_size (len1, len2);
 
-    typename PairValueRecord::context_t context =
+    pair_value_record_context_t context =
     {
       this,
       valueFormats,

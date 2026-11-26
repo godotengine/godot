@@ -30,7 +30,7 @@ CastSphereVsTriangles::CastSphereVsTriangles(const ShapeCast &inShapeCast, const
 	const SphereShape *sphere = static_cast<const SphereShape *>(inShapeCast.mShape);
 
 	// Scale the radius
-	mRadius = sphere->GetRadius() * abs(inShapeCast.mScale.GetX());
+	mRadius = sphere->GetRadius() * abs(inShapeCast.mScale.GetX()) + inShapeCastSettings.mExtraConvexRadius;
 
 	// Determine if shape is inside out or not
 	mScaleSign = ScaleHelpers::IsInsideOut(inScale)? -1.0f : 1.0f;
@@ -102,12 +102,12 @@ float CastSphereVsTriangles::RayCylinder(Vec3Arg inRayDirection, Vec3Arg inCylin
 		return FLT_MAX; // Segment runs parallel to cylinder axis, stop processing, we will either hit at fraction = 0 or we'll hit a vertex
 	float b = axis_len_sq * start.Dot(inRayDirection) - direction_dot_axis * start_dot_axis; // should be multiplied by 2, instead we'll divide a and c by 2 when we solve the quadratic equation
 	float c = axis_len_sq * (start.LengthSq() - Square(inRadius)) - Square(start_dot_axis);
-	float det = Square(b) - a * c; // normally 4 * a * c but since both a and c need to be divided by 2 we lose the 4
+	float det = DifferenceOfProducts(b, b, a, c); // normally 4 * a * c but since both a and c need to be divided by 2 we lose the 4
 	if (det < 0.0f)
 		return FLT_MAX; // No solution to quadratic equation
 
 	// Solve fraction t where the ray hits the cylinder
-	float t = -(b + sqrt(det)) / a; // normally divided by 2 * a but since a should be divided by 2 we lose the 2
+	float t = -(b + Sqrt(det)) / a; // normally divided by 2 * a but since a should be divided by 2 we lose the 2
 	if (t < 0.0f || t > 1.0f)
 		return FLT_MAX; // Intersection lies outside segment
 	if (start_dot_axis + t * direction_dot_axis < 0.0f || start_dot_axis + t * direction_dot_axis > axis_len_sq)
@@ -117,8 +117,6 @@ float CastSphereVsTriangles::RayCylinder(Vec3Arg inRayDirection, Vec3Arg inCylin
 
 void CastSphereVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and make it relative to the start of the cast
 	Vec3 v0 = mScale * inV0 - mStart;
 	Vec3 v1 = mScale * inV1 - mStart;
@@ -147,7 +145,7 @@ void CastSphereVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8
 		if (q_len_sq <= Square(mRadius))
 		{
 			// Early out if this hit is deeper than the collector's early out value
-			float q_len = sqrt(q_len_sq);
+			float q_len = Sqrt(q_len_sq);
 			float penetration_depth = mRadius - q_len;
 			if (-penetration_depth >= mCollector.GetEarlyOutFraction())
 				return;
@@ -214,7 +212,9 @@ void CastSphereVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8
 		// Get contact point and normal
 		uint32 closest_feature;
 		Vec3 q = ClosestPoint::GetClosestPointOnTriangle(v0 - p, v1 - p, v2 - p, closest_feature);
-		Vec3 contact_normal = q.Normalized();
+		// The distance between p and the triangle should be mRadius, but for very long casts,
+		// floating point accuracy can become low enough so that p is on the plane and q is zero
+		Vec3 contact_normal = q.NormalizedOr(back_facing? triangle_normal : -triangle_normal);
 		Vec3 contact_point_ab = p + q;
 		AddHitWithActiveEdgeDetection(v0, v1, v2, back_facing, triangle_normal, inActiveEdges, inSubShapeID2, fraction, contact_point_ab, contact_point_ab, contact_normal);
 	}

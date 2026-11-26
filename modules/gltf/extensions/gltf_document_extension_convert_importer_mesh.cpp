@@ -52,6 +52,13 @@ MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_
 	mesh_instance_node_3d->set_skin(p_importer_mesh_instance_3d->get_skin());
 	mesh_instance_node_3d->set_skeleton_path(p_importer_mesh_instance_3d->get_skeleton_path());
 	mesh_instance_node_3d->set_visible(p_importer_mesh_instance_3d->is_visible());
+	mesh_instance_node_3d->set_layer_mask(p_importer_mesh_instance_3d->get_layer_mask());
+	mesh_instance_node_3d->set_cast_shadows_setting(p_importer_mesh_instance_3d->get_cast_shadows_setting());
+	mesh_instance_node_3d->set_visibility_range_begin(p_importer_mesh_instance_3d->get_visibility_range_begin());
+	mesh_instance_node_3d->set_visibility_range_begin_margin(p_importer_mesh_instance_3d->get_visibility_range_begin_margin());
+	mesh_instance_node_3d->set_visibility_range_end(p_importer_mesh_instance_3d->get_visibility_range_end());
+	mesh_instance_node_3d->set_visibility_range_end_margin(p_importer_mesh_instance_3d->get_visibility_range_end_margin());
+	mesh_instance_node_3d->set_visibility_range_fade_mode(p_importer_mesh_instance_3d->get_visibility_range_fade_mode());
 	p_importer_mesh_instance_3d->replace_by(mesh_instance_node_3d);
 	_copy_meta(p_importer_mesh_instance_3d, mesh_instance_node_3d);
 	// Convert the mesh data in the mesh resource.
@@ -66,11 +73,10 @@ MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_
 	return mesh_instance_node_3d;
 }
 
-Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
-	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+Node *GLTFDocumentExtensionConvertImporterMesh::convert_importer_meshes_recursively(Node *p_root_node) {
+	ERR_FAIL_NULL_V(p_root_node, nullptr);
 	List<Node *> queue;
-	queue.push_back(p_root);
+	queue.push_back(p_root_node);
 	List<Node *> delete_queue;
 	while (!queue.is_empty()) {
 		List<Node *>::Element *E = queue.front();
@@ -79,6 +85,9 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		if (importer_mesh_3d) {
 			delete_queue.push_back(importer_mesh_3d);
 			node = convert_importer_mesh_instance_3d(importer_mesh_3d);
+			if (p_root_node == importer_mesh_3d) {
+				p_root_node = node;
+			}
 		}
 		int child_count = node->get_child_count();
 		for (int i = 0; i < child_count; i++) {
@@ -92,5 +101,13 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		memdelete(node);
 		delete_queue.pop_front();
 	}
+	return p_root_node;
+}
+
+Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
+	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	Node *converted_root = convert_importer_meshes_recursively(p_root);
+	ERR_FAIL_COND_V_MSG(converted_root != p_root, ERR_INVALID_PARAMETER, "GLTFDocumentExtensionConvertImporterMesh cannot handle converting a scene root node importer mesh.");
 	return OK;
 }
