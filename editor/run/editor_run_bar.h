@@ -88,6 +88,7 @@ class EditorRunBar : public MarginContainer {
 	PanelContainer *write_movie_panel = nullptr;
 	MenuButton *write_movie_button = nullptr;
 	bool movie_maker_enabled = false;
+	bool playing_enabled = true;
 
 	RunMode current_mode = RunMode::STOPPED;
 	String run_custom_filename;
@@ -138,6 +139,9 @@ public:
 
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
+
+	void set_playing_enabled(bool p_enabled);
+	bool is_playing_enabled() const;
 
 	void update_profiler_autostart_indicator();
 
