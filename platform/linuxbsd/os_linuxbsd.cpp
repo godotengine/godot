@@ -96,6 +96,10 @@
 #endif
 #endif
 
+#ifdef DBUS_ENABLED
+#include "freedesktop_portal_desktop.h"
+#endif
+
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
 // In <unistd.h>.
 // One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
@@ -268,6 +272,10 @@ void OS_LinuxBSD::finalize() {
 
 #ifdef SDL_ENABLED
 	memdelete(joypad_sdl);
+#endif
+
+#ifdef DBUS_ENABLED
+	memdelete(portal_desktop);
 #endif
 }
 
@@ -1243,6 +1251,15 @@ Error OS_LinuxBSD::get_entropy(uint8_t *r_buffer, int p_bytes) {
 #endif
 	return OK;
 }
+
+#ifdef DBUS_ENABLED
+FreeDesktopPortalDesktop *OS_LinuxBSD::get_portal_desktop() {
+	if (portal_desktop == nullptr) {
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+	}
+	return portal_desktop;
+}
+#endif // DBUS_ENABLED
 
 #ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
