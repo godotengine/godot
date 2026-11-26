@@ -85,6 +85,7 @@ private:
 	void _find_next_peer();
 	Ref<ConnectedPeer> _get_next_peer();
 	Error _initialize(int p_self_id, NetworkMode p_mode, const Array &p_channels_config = Array());
+	void _close();
 
 public:
 	WebRTCMultiplayerPeer() {}
