@@ -994,8 +994,11 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 #endif
 		} break;
 		case FileDialog::FileMode::FILE_MODE_SAVE_FILE: {
-			Ref<ColorPalette> palette;
-			palette.instantiate();
+			// Update the cached instance, if any, so existing holders see the new colors and get `changed`.
+			Ref<ColorPalette> palette = ResourceCache::get_ref(p_path);
+			if (palette.is_null()) {
+				palette.instantiate();
+			}
 			palette->set_colors(get_presets());
 			Error error = ResourceSaver::save(palette, p_path);
 			ERR_FAIL_COND_MSG(error != Error::OK, vformat("Cannot open color palette file for writing at: %s", p_path));
