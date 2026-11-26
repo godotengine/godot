@@ -674,20 +674,28 @@ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i
 	if (p_font_data->face) {
 		FT_Int32 flags = FT_LOAD_DEFAULT;
 
-		bool outline = p_size.y > 0;
-		switch (p_font_data->hinting) {
-			case TextServer::HINTING_NONE:
-				flags |= FT_LOAD_NO_HINTING;
-				break;
-			case TextServer::HINTING_LIGHT:
-				flags |= FT_LOAD_TARGET_LIGHT;
-				break;
-			default:
-				flags |= FT_LOAD_TARGET_NORMAL;
-				break;
+		bool disable_hinting = false;
+		if (String(FT_Get_Font_Format(p_font_data->face)) == String("HVF")) {
+			disable_hinting = true;
 		}
-		if (p_font_data->force_autohinter) {
-			flags |= FT_LOAD_FORCE_AUTOHINT;
+		bool outline = p_size.y > 0;
+		if (disable_hinting) {
+			flags |= FT_LOAD_NO_HINTING;
+		} else {
+			switch (p_font_data->hinting) {
+				case TextServer::HINTING_NONE:
+					flags |= FT_LOAD_NO_HINTING;
+					break;
+				case TextServer::HINTING_LIGHT:
+					flags |= FT_LOAD_TARGET_LIGHT;
+					break;
+				default:
+					flags |= FT_LOAD_TARGET_NORMAL;
+					break;
+			}
+			if (p_font_data->force_autohinter) {
+				flags |= FT_LOAD_FORCE_AUTOHINT;
+			}
 		}
 		if (outline || (p_font_data->disable_embedded_bitmaps && !FT_HAS_COLOR(p_font_data->face))) {
 			flags |= FT_LOAD_NO_BITMAP;

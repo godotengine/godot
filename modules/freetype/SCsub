@@ -71,6 +71,8 @@ if env["builtin_freetype"]:
     env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
 
     env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
+    if env["platform"] in ["macos", "ios", "visionos"]:
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_HVF", "HVF_RUNTIME_AVAILABLE"])
 
     # Also requires libpng headers
     if env["builtin_libpng"]:
