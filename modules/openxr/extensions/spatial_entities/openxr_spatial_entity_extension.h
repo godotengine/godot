@@ -37,8 +37,29 @@
 
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/typed_dictionary.h"
 
 // Spatial entity extension
+class OpenXrSpatialFilterArchetype : public OpenXRStructureBase {
+	GDCLASS(OpenXrSpatialFilterArchetype, OpenXRStructureBase);
+
+public:
+	virtual void *get_header(void *p_next) override;
+	virtual XrStructureType get_structure_type() override;
+
+	XrSpatialArchetypeIdEXT get_archetype_id() const;
+	void set_archetype_id(XrSpatialArchetypeIdEXT p_id);
+
+protected:
+	static void _bind_methods();
+
+	uint64_t _get_archetype_id() const;
+	void _set_archetype_id(uint64_t p_id);
+
+private:
+	XrSpatialFilterArchetypeEXT filter = { XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT, nullptr, 0 };
+};
+
 class OpenXRSpatialEntityExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRSpatialEntityExtension, OpenXRExtensionWrapper);
 
@@ -75,6 +96,11 @@ public:
 		TRACKING_ENABLED = 2,
 	};
 
+	struct Archetype {
+		XrSpatialArchetypeIdEXT archetype_id = 0;
+		LocalVector<XrSpatialComponentTypeEXT> component_types;
+	};
+
 	static OpenXRSpatialEntityExtension *get_singleton();
 
 	OpenXRSpatialEntityExtension();
@@ -89,6 +115,7 @@ public:
 	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 	bool get_active() const;
+	bool supports_archetypes() const;
 	bool supports_capability(XrSpatialCapabilityEXT p_capability);
 	bool supports_component_type(XrSpatialCapabilityEXT p_capability, XrSpatialComponentTypeEXT p_component_type);
 
@@ -110,6 +137,7 @@ public:
 	XrSpatialSnapshotEXT get_spatial_snapshot_handle(RID p_spatial_snapshot) const;
 	RID get_spatial_snapshot_context(RID p_spatial_snapshot) const;
 
+	LocalVector<Archetype> get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next = Ref<OpenXRStructureBase>());
 	bool query_snapshot(RID p_spatial_snapshot, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next);
 
 	// Buffers from snapshot
@@ -144,6 +172,7 @@ private:
 	static OpenXRSpatialEntityExtension *singleton;
 
 	bool spatial_entity_ext = false;
+	bool archetypes_ext = false;
 
 	// Capabilities
 	struct SpatialEntityCapabality {
@@ -181,6 +210,7 @@ private:
 	mutable RID_Owner<SpatialSnapshotData> spatial_snapshot_owner;
 
 	uint64_t _get_spatial_snapshot_handle(RID p_spatial_snapshot) const;
+	TypedDictionary<uint64_t, TypedArray<ComponentType>> _get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next);
 
 	// Buffers from snapshot
 	String _get_string(RID p_spatial_snapshot, uint64_t p_buffer_id) const;
@@ -227,6 +257,10 @@ private:
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferFloatEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (float *), buffer);
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferVector2fEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (XrVector2f *), buffer);
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferVector3fEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (XrVector3f *), buffer);
+
+	// Archetypes
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSpatialArchetypesEXT, (XrSpatialSnapshotEXT), snapshot, (uint32_t), archetype_capacity_input, (uint32_t *), archetype_count_output, (XrSpatialArchetypeIdEXT *), archetypes);
+	EXT_PROTO_XRRESULT_FUNC5(xrEnumerateSpatialArchetypeComponentTypesEXT, (XrSpatialSnapshotEXT), snapshot, (XrSpatialArchetypeIdEXT), archetype, (uint32_t), component_type_capacity_input, (uint32_t *), component_type_count_output, (XrSpatialComponentTypeEXT *), component_types);
 };
 
 VARIANT_ENUM_CAST(OpenXRSpatialEntityExtension::Capability);

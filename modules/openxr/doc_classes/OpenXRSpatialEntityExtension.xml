@@ -90,6 +90,14 @@
 				Returns a buffer with floats from a buffer that was retrieved when taking a snapshot.
 			</description>
 		</method>
+		<method name="get_snapshot_archetypes">
+			<return type="Dictionary[int, Array]" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="next" type="OpenXRStructureBase" default="null" />
+			<description>
+				Returns the unique combinations of component types within our snapshot.
+			</description>
+		</method>
 		<method name="get_spatial_context_handle" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="spatial_context" type="RID" />
@@ -198,6 +206,12 @@
 			<description>
 				Queries the snapshot data. This will find all entities in the snapshot that contain all requested components in [param component_data]. The objects held within [param component_data] will then be populated with the queried data. [param component_data] must always have an object of [OpenXRSpatialQueryResultData] as the first entry.
 				[param next] is an optional parameter that can contain additional information passed when setting our query conditions.
+			</description>
+		</method>
+		<method name="supports_archetypes" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if spatial archetypes are supported.
 			</description>
 		</method>
 		<method name="supports_capability">
