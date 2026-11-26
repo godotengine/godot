@@ -178,6 +178,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (err != OK) {
+		pipeline_hash_map.clear_pipelines();
 		if (version.is_valid()) {
 			SceneShaderForwardClustered::singleton->shader.version_free(version);
 			version = RID();
