@@ -139,6 +139,22 @@ Rect2 AtlasTexture::_get_region_rect() const {
 	return rc;
 }
 
+Ref<Texture2D> AtlasTexture::get_base_texture_and_region(Rect2 &r_region) const {
+	r_region = _get_region_rect();
+
+	Ref<Texture2D> current = atlas;
+	Ref<AtlasTexture> parent = current;
+	while (parent.is_valid()) {
+		Rect2 parent_region = parent->_get_region_rect();
+		r_region.position += parent_region.position - parent->margin.position;
+
+		current = parent->atlas;
+		parent = current;
+	}
+
+	return current;
+}
+
 void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_atlas", "atlas"), &AtlasTexture::set_atlas);
 	ClassDB::bind_method(D_METHOD("get_atlas"), &AtlasTexture::get_atlas);
