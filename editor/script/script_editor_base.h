@@ -64,7 +64,7 @@ public:
 
 	String get_document_name() const;
 	virtual String get_doc_url_path() { return "/"; }
-	virtual Ref<Texture2D> get_theme_icon();
+	virtual Ref<Texture2D> get_document_icon();
 
 	virtual bool show_members_overview() { return false; }
 
@@ -205,7 +205,7 @@ public:
 	virtual void tag_saved_version() override;
 
 	virtual void reload_text();
-	virtual void enable_editor();
+	void enable_editor();
 
 	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) = 0;
 
@@ -230,9 +230,9 @@ public:
 	virtual void set_executing_line(int p_line) { code_editor->set_executing_line(p_line); }
 	virtual void clear_executing_line() { code_editor->clear_executing_line(); }
 
-	virtual Variant get_edit_state() { return code_editor->get_edit_state(); }
-	virtual void set_edit_state(const Variant &p_state, bool p_grab_focus = true);
-	virtual Variant get_navigation_state() { return code_editor->get_navigation_state(); }
+	Variant get_edit_state() { return code_editor->get_edit_state(); }
+	void set_edit_state(const Variant &p_state, bool p_grab_focus = true);
+	Variant get_navigation_state() { return code_editor->get_navigation_state(); }
 
 	virtual void update_settings() { code_editor->update_editor_settings(); }
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) { code_editor->set_find_replace_bar(p_bar); }
