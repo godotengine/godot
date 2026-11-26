@@ -381,7 +381,7 @@ void EditorVCSInterface::set_singleton(EditorVCSInterface *p_singleton) {
 	singleton = p_singleton;
 }
 
-void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir) {
+void EditorVCSInterface::create_vcs_metadata_files(const VCSMetadata p_vcs_metadata_type, const String &p_dir) {
 	if (p_vcs_metadata_type == VCSMetadata::GIT) {
 		Ref<FileAccess> f = FileAccess::open(p_dir.path_join(".gitignore"), FileAccess::WRITE);
 		if (f.is_null()) {
