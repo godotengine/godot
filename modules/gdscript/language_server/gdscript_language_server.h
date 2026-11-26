@@ -54,6 +54,7 @@ private:
 
 public:
 	static int port_override;
+	static bool use_stdio;
 	GDScriptLanguageServer();
 	void start();
 	void stop();
