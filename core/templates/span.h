@@ -35,7 +35,7 @@
 
 template <typename LHS, typename RHS>
 bool are_spans_equal(const LHS *p_lhs, const RHS *p_rhs, size_t p_size) {
-	if constexpr (std::is_same_v<LHS, RHS> && std::is_fundamental_v<LHS>) {
+	if constexpr (std::is_same_v<LHS, RHS> && std::is_integral_v<LHS> && std::has_unique_object_representations_v<LHS>) {
 		// Optimize trivial type comparison.
 		// is_trivially_equality_comparable would help, but it doesn't exist.
 		// memcmp requires pointer argument to be valid even on size = 0 (C11 §7.24.1(2)).

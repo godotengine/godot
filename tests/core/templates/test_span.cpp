@@ -34,6 +34,8 @@ TEST_FORCE_LINK(test_span)
 
 #include "core/templates/span.h"
 
+#include <limits>
+
 namespace TestSpan {
 
 TEST_CASE("[Span] Constexpr Validators") {
@@ -69,6 +71,15 @@ TEST_CASE("[Span] Constexpr Validators") {
 	for (const char32_t &chr : span_string) {
 		CHECK_EQ(chr, span_string[idx++]);
 	}
+}
+
+TEST_CASE_TEMPLATE("[Span] Floating-point equality", T, float, double) {
+	const T positive_zero[] = { 0.0 };
+	const T negative_zero[] = { -0.0 };
+	CHECK_EQ(Span<T>(positive_zero), Span<T>(negative_zero));
+
+	const T nan[] = { std::numeric_limits<T>::quiet_NaN() };
+	CHECK_NE(Span<T>(nan), Span<T>(nan));
 }
 
 } // namespace TestSpan
