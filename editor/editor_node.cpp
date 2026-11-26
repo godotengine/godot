@@ -1966,7 +1966,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		file->set_current_file(new_resource_name_snake_case);
 		file->set_current_path(new_resource_name_snake_case);
 	}
-	file->set_title(TTR("Save Resource As..."));
+	file->set_title(TTRC("Save Resource As..."));
 	file->popup_file_dialog();
 }
 
@@ -2660,7 +2660,7 @@ void EditorNode::save_scene_list(const HashSet<String> &p_scene_paths) {
 void EditorNode::save_before_run() {
 	current_menu_option = SAVE_AND_RUN;
 	_menu_option_confirm(SCENE_SAVE_AS_SCENE, true);
-	file->set_title(TTR("Save scene before running..."));
+	file->set_title(TTRC("Save scene before running..."));
 }
 
 void EditorNode::try_autosave() {
@@ -2844,8 +2844,8 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case FILE_EXPORT_MESH_LIBRARY: {
 			const Dictionary &fd_options = file_export_lib->get_selected_options();
-			bool merge_with_existing_library = fd_options.get(TTR("Merge With Existing"), true);
-			bool apply_mesh_instance_transforms = fd_options.get(TTR("Apply MeshInstance Transforms"), false);
+			bool merge_with_existing_library = fd_options.get(TTRC("Merge With Existing"), true);
+			bool apply_mesh_instance_transforms = fd_options.get(TTRC("Apply MeshInstance Transforms"), false);
 
 			Ref<MeshLibrary> ml;
 			if (merge_with_existing_library && FileAccess::exists(p_file)) {
@@ -3509,7 +3509,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_scene_file_path());
 			};
-			file->set_title(p_option == SCENE_OPEN_SCENE ? TTR("Open Scene") : TTR("Open Base Scene"));
+			file->set_title(p_option == SCENE_OPEN_SCENE ? TTRC("Open Scene") : TTRC("Open Base Scene"));
 			file->popup_file_dialog();
 
 		} break;
@@ -3650,7 +3650,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				root_name = EditorNode::adjust_scene_name_casing(root_name);
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
-			file->set_title(TTR("Save Scene As..."));
+			file->set_title(TTRC("Save Scene As..."));
 			file->popup_file_dialog();
 
 		} break;
@@ -3660,7 +3660,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene_path.is_empty()) {
 				_menu_option_confirm(EditorSceneTabs::SCENE_SAVE_AS_SCENE, true);
 				current_menu_option = SCENE_TAB_SAVE_AS_MAIN_SCENE; // Overwrites SCENE_TAB_SAVE_SCENE.
-				file->set_title(TTR("Save new main scene..."));
+				file->set_title(TTRC("Save new main scene..."));
 			} else {
 				ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(scene_path));
 				ProjectSettings::get_singleton()->save();
@@ -3680,7 +3680,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene_path.is_empty()) {
 				_menu_option_confirm(EditorSceneTabs::SCENE_SAVE_AS_SCENE, true);
 				current_menu_option = SCENE_TAB_SAVE_AS_AND_RUN; // Overwrites SCENE_TAB_SAVE_SCENE.
-				file->set_title(TTR("Save scene before running..."));
+				file->set_title(TTRC("Save scene before running..."));
 			} else {
 				project_run_bar->play_custom_scene(scene_path);
 			}
@@ -3855,11 +3855,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!p_confirmed) {
 				if (!stop_project_confirmation && project_run_bar->is_playing()) {
 					if (is_restart) {
-						confirmation->set_text(TTR("Stop running project before reloading the current project?"));
-						confirmation->set_ok_button_text(TTR("Stop & Reload"));
+						confirmation->set_text(TTRC("Stop running project before reloading the current project?"));
+						confirmation->set_ok_button_text(TTRC("Stop & Reload"));
 					} else {
-						confirmation->set_text(TTR("Stop running project before exiting the editor?"));
-						confirmation->set_ok_button_text(TTR("Stop & Quit"));
+						confirmation->set_text(TTRC("Stop running project before exiting the editor?"));
+						confirmation->set_ok_button_text(TTRC("Stop & Quit"));
 					}
 					confirmation_button->hide();
 					confirmation->reset_size();
@@ -3869,11 +3869,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 
 				if (!stop_download_confirmation && export_template_manager->is_downloading()) {
-					confirmation->set_text(TTR("The export templates are still being downloaded."));
+					confirmation->set_text(TTRC("The export templates are still being downloaded."));
 					if (is_restart) {
-						confirmation->set_ok_button_text(TTR("Stop & Reload"));
+						confirmation->set_ok_button_text(TTRC("Stop & Reload"));
 					} else {
-						confirmation->set_ok_button_text(TTR("Stop & Quit"));
+						confirmation->set_ok_button_text(TTRC("Stop & Quit"));
 					}
 					confirmation_button->hide();
 					confirmation->reset_size();
@@ -3886,11 +3886,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (_next_unsaved_scene(!save_each) == -1) {
 					if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY)) {
 						if (is_restart) {
-							save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-							save_confirmation->set_text(TTR("Save modified resources before reloading?"));
+							save_confirmation->set_ok_button_text(TTRC("Save & Reload"));
+							save_confirmation->set_text(TTRC("Save modified resources before reloading?"));
 						} else {
-							save_confirmation->set_ok_button_text(TTR("Save & Quit"));
-							save_confirmation->set_text(TTR("Save modified resources before closing?"));
+							save_confirmation->set_ok_button_text(TTRC("Save & Quit"));
+							save_confirmation->set_text(TTRC("Save modified resources before closing?"));
 						}
 						save_confirmation->reset_size();
 						save_confirmation->popup_centered();
@@ -3902,10 +3902,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						const String unsaved_status = editor_data.get_editor_plugin(i)->get_unsaved_status();
 						if (!unsaved_status.is_empty()) {
 							if (is_restart) {
-								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
+								save_confirmation->set_ok_button_text(TTRC("Save & Reload"));
 								save_confirmation->set_text(unsaved_status);
 							} else {
-								save_confirmation->set_ok_button_text(TTR("Save & Quit"));
+								save_confirmation->set_ok_button_text(TTRC("Save & Quit"));
 								save_confirmation->set_text(unsaved_status);
 							}
 							save_confirmation->reset_size();
@@ -3937,10 +3937,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						i = _next_unsaved_scene(true, ++i);
 					}
 					if (is_restart) {
-						save_confirmation->set_ok_button_text(TTR("Save & Reload"));
+						save_confirmation->set_ok_button_text(TTRC("Save & Reload"));
 						save_confirmation->set_text(TTR("Save changes to the following scene(s) before reloading?") + unsaved_scenes);
 					} else {
-						save_confirmation->set_ok_button_text(TTR("Save & Quit"));
+						save_confirmation->set_ok_button_text(TTRC("Save & Quit"));
 						save_confirmation->set_text((p_option == SCENE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
 					}
 					save_confirmation->reset_size();
@@ -4019,7 +4019,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_scene_file_path());
 			}
-			file->set_title(TTR("Pick a Main Scene"));
+			file->set_title(TTRC("Pick a Main Scene"));
 			file->popup_file_dialog();
 
 		} break;
@@ -4263,7 +4263,7 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 			file_export_lib->add_filter("*." + E);
 		}
 
-		file_export_lib->set_title(TTR("Export Mesh Library"));
+		file_export_lib->set_title(TTRC("Export Mesh Library"));
 		file_export_lib->popup_file_dialog();
 	} else { // Custom menu options added by plugins
 		if (export_as_menu->get_item_submenu(p_idx).is_empty()) { // If not a submenu
@@ -4401,7 +4401,7 @@ void EditorNode::_update_file_menu_opened() {
 		file_menu->set_item_tooltip(file_menu->get_item_index(SCENE_SAVE_ALL_SCENES), String());
 	} else {
 		file_menu->set_item_disabled(file_menu->get_item_index(SCENE_SAVE_ALL_SCENES), true);
-		file_menu->set_item_tooltip(file_menu->get_item_index(SCENE_SAVE_ALL_SCENES), TTR("All scenes are already saved."));
+		file_menu->set_item_tooltip(file_menu->get_item_index(SCENE_SAVE_ALL_SCENES), TTRC("All scenes are already saved."));
 	}
 	_update_undo_redo_allowed();
 }
@@ -5574,15 +5574,15 @@ void EditorNode::request_instantiate_scenes(const Vector<String> &p_files) {
 String EditorNode::get_multiwindow_support_tooltip_text() const {
 	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows()) {
 		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
-			return TTR("Multi-window support is not available because the `--single-window` command line argument was used to start the editor.");
+			return TTRC("Multi-window support is not available because the `--single-window` command line argument was used to start the editor.");
 		} else {
-			return TTR("Multi-window support is not available because the current platform doesn't support multiple windows.");
+			return TTRC("Multi-window support is not available because the current platform doesn't support multiple windows.");
 		}
 	} else if (EDITOR_GET("interface/editor/display/single_window_mode")) {
-		return TTR("Multi-window support is not available because Interface > Editor > Single Window Mode is enabled in the editor settings.");
+		return TTRC("Multi-window support is not available because Interface > Editor > Single Window Mode is enabled in the editor settings.");
 	}
 
-	return TTR("Multi-window support is not available because Interface > Multi Window > Enable is disabled in the editor settings.");
+	return TTRC("Multi-window support is not available because Interface > Multi Window > Enable is disabled in the editor settings.");
 }
 
 void EditorNode::_inherit_request(String p_file) {
@@ -5933,7 +5933,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 		if (!FileAccess::exists(scene->get_scene_file_path())) {
 			current_menu_option = SAVE_AND_RUN_MAIN_SCENE;
 			_menu_option_confirm(SCENE_SAVE_AS_SCENE, true);
-			file->set_title(TTR("Save scene before running..."));
+			file->set_title(TTRC("Save scene before running..."));
 		} else {
 			current_menu_option = SETTINGS_PICK_MAIN_SCENE;
 			_dialog_action(scene->get_scene_file_path());
@@ -6694,7 +6694,7 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 
 	if (main_scene.is_empty()) {
 		current_menu_option = -1;
-		pick_main_scene->set_text(TTR("No main scene has ever been defined. Select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
+		pick_main_scene->set_text(TTRC("No main scene has ever been defined. Select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
 		pick_main_scene->popup_centered();
 
 		if (editor_data.get_edited_scene_root()) {
@@ -7012,7 +7012,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	}
 
 	if (!unsaved_message.is_empty()) {
-		save_confirmation->set_ok_button_text(TTR("Save & Close"));
+		save_confirmation->set_ok_button_text(TTRC("Save & Close"));
 		save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before closing?"));
 		save_confirmation->reset_size();
 		save_confirmation->popup_centered();
@@ -9204,7 +9204,7 @@ EditorNode::EditorNode() {
 
 	// Command palette and editor shortcuts.
 	command_palette = EditorCommandPalette::get_singleton();
-	command_palette->set_title(TTR("Command Palette"));
+	command_palette->set_title(TTRC("Command Palette"));
 	gui_base->add_child(command_palette);
 
 	ED_SHORTCUT("editor/next_tab", TTRC("Next Scene Tab"), KeyModifierMask::CTRL + Key::TAB);
@@ -9509,14 +9509,14 @@ EditorNode::EditorNode() {
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
 	gradle_build_manage_templates->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
-	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
-	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
+	gradle_build_manage_templates->set_text(TTRC("Android build template is missing, please install relevant templates."));
+	gradle_build_manage_templates->set_ok_button_text(TTRC("Manage Templates"));
+	gradle_build_manage_templates->add_button(TTRC("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
 	gradle_build_manage_templates->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(EDITOR_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(gradle_build_manage_templates);
 
 	file_android_build_source = memnew(EditorFileDialog);
-	file_android_build_source->set_title(TTR("Select Android sources file"));
+	file_android_build_source->set_title(TTRC("Select Android sources file"));
 	file_android_build_source->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_android_build_source->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_android_build_source->add_filter("*.zip");
@@ -9537,7 +9537,7 @@ EditorNode::EditorNode() {
 
 		install_android_build_template = memnew(ConfirmationDialog);
 		install_android_build_template->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-		install_android_build_template->set_ok_button_text(TTR("Install"));
+		install_android_build_template->set_ok_button_text(TTRC("Install"));
 		install_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 		install_android_build_template->add_child(vbox);
 		install_android_build_template->set_min_size(Vector2(500.0 * EDSCALE, 0));
@@ -9551,13 +9551,13 @@ EditorNode::EditorNode() {
 	gui_base->add_child(remove_android_build_template);
 
 	file_templates = memnew(EditorFileDialog);
-	file_templates->set_title(TTR("Import Templates From ZIP File"));
+	file_templates->set_title(TTRC("Import Templates From ZIP File"));
 
 	gui_base->add_child(file_templates);
 	file_templates->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.tpz", TTR("Template Package"));
+	file_templates->add_filter("*.tpz", TTRC("Template Package"));
 
 	file = memnew(EditorFileDialog);
 	gui_base->add_child(file);
@@ -9565,11 +9565,11 @@ EditorNode::EditorNode() {
 	file->set_transient_to_focused(true);
 
 	file_export_lib = memnew(EditorFileDialog);
-	file_export_lib->set_title(TTR("Export Library"));
+	file_export_lib->set_title(TTRC("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
-	file_export_lib->add_option(TTR("Merge With Existing"), Vector<String>(), true);
-	file_export_lib->add_option(TTR("Apply MeshInstance Transforms"), Vector<String>(), false);
+	file_export_lib->add_option(TTRC("Merge With Existing"), Vector<String>(), true);
+	file_export_lib->add_option(TTRC("Apply MeshInstance Transforms"), Vector<String>(), false);
 	gui_base->add_child(file_export_lib);
 
 	file_pack_zip = memnew(EditorFileDialog);
@@ -9577,7 +9577,7 @@ EditorNode::EditorNode() {
 	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_pack_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_pack_zip->add_filter("*.zip", "ZIP Archive");
-	file_pack_zip->set_title(TTR("Pack Project as ZIP..."));
+	file_pack_zip->set_title(TTRC("Pack Project as ZIP..."));
 	gui_base->add_child(file_pack_zip);
 
 	file->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
@@ -9590,13 +9590,13 @@ EditorNode::EditorNode() {
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
-		disk_changed->set_title(TTR("Files have been modified outside Godot"));
+		disk_changed->set_title(TTRC("Files have been modified outside Godot"));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
 
 		Label *dl = memnew(Label);
-		dl->set_text(TTR("The following files are newer on disk:"));
+		dl->set_text(TTRC("The following files are newer on disk:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew(Tree);
@@ -9605,14 +9605,14 @@ EditorNode::EditorNode() {
 		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 		Label *what_action_label = memnew(Label);
-		what_action_label->set_text(TTR("What action should be taken?"));
+		what_action_label->set_text(TTRC("What action should be taken?"));
 		vbc->add_child(what_action_label);
 
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_modified_scenes));
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_project_settings));
-		disk_changed->set_ok_button_text(TTR("Reload from disk"));
+		disk_changed->set_ok_button_text(TTRC("Reload from disk"));
 
-		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTRC("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
 	}
 
@@ -9771,8 +9771,8 @@ EditorNode::EditorNode() {
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	open_imported->set_ok_button_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
+	open_imported->set_ok_button_text(TTRC("Open Anyway"));
+	new_inherited_button = open_imported->add_button(TTRC("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);
@@ -9791,7 +9791,7 @@ EditorNode::EditorNode() {
 	load_error_dialog = memnew(AcceptDialog);
 	load_error_dialog->set_unparent_when_invisible(true);
 	load_error_dialog->add_child(load_errors);
-	load_error_dialog->set_title(TTR("Load Errors"));
+	load_error_dialog->set_title(TTRC("Load Errors"));
 	load_error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_load_error_dialog_visibility_changed));
 
 	execute_outputs = memnew(RichTextLabel);
@@ -9812,9 +9812,9 @@ EditorNode::EditorNode() {
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);
-	pick_main_scene->set_ok_button_text(TTR("Select"));
+	pick_main_scene->set_ok_button_text(TTRC("Select"));
 	pick_main_scene->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_PICK_MAIN_SCENE));
-	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
+	select_current_scene_button = pick_main_scene->add_button(TTRC("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
 
 	open_project_settings = memnew(ConfirmationDialog);
