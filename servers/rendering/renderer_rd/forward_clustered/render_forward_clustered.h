@@ -306,10 +306,15 @@ private:
 	struct SceneState {
 		// This struct is loaded into Set 1 - Binding 1, populated at start of rendering a frame, must match with shader code
 		struct UBO {
-			uint32_t cluster_shift;
-			uint32_t cluster_width;
-			uint32_t cluster_type_size;
-			uint32_t max_cluster_element_count_div_32;
+			uint32_t tile_shift;
+			uint32_t tiles_per_row;
+			uint32_t bitmasks_per_type_count;
+			uint32_t bitmasks_per_tile_count;
+
+			uint32_t cluster_z_bin_offset;
+			uint32_t cluster_z_bin_count;
+			float cluster_z_bin_scale;
+			uint32_t pad0;
 
 			uint32_t ss_effects_flags;
 			float ssao_light_affect;

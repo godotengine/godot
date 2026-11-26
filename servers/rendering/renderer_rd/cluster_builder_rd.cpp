@@ -96,14 +96,6 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	{
 		Vector<String> versions;
 		versions.push_back("");
-		cluster_store.cluster_store_shader.initialize(versions);
-		cluster_store.shader_version = cluster_store.cluster_store_shader.version_create();
-		cluster_store.shader = cluster_store.cluster_store_shader.version_get_shader(cluster_store.shader_version, 0);
-		cluster_store.shader_pipeline = RD::get_singleton()->compute_pipeline_create(cluster_store.shader);
-	}
-	{
-		Vector<String> versions;
-		versions.push_back("");
 		cluster_debug.cluster_debug_shader.initialize(versions);
 		cluster_debug.shader_version = cluster_debug.cluster_debug_shader.version_create();
 		cluster_debug.shader = cluster_debug.cluster_debug_shader.version_get_shader(cluster_debug.shader_version, 0);
@@ -247,7 +239,6 @@ ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
 	RD::get_singleton()->free_rid(box_index_buffer);
 
 	cluster_render.cluster_render_shader.version_free(cluster_render.shader_version);
-	cluster_store.cluster_store_shader.version_free(cluster_store.shader_version);
 	cluster_debug.cluster_debug_shader.version_free(cluster_debug.shader_version);
 }
 
@@ -259,10 +250,8 @@ void ClusterBuilderRD::_clear() {
 	}
 
 	RD::get_singleton()->free_rid(cluster_buffer);
-	RD::get_singleton()->free_rid(cluster_render_buffer);
 	RD::get_singleton()->free_rid(element_buffer);
 	cluster_buffer = RID();
-	cluster_render_buffer = RID();
 	element_buffer = RID();
 
 	memfree(render_elements);
@@ -275,7 +264,45 @@ void ClusterBuilderRD::_clear() {
 	framebuffer = RID();
 
 	cluster_render_uniform_set = RID();
-	cluster_store_uniform_set = RID();
+}
+
+void ClusterBuilderRD::_add_to_z_bins(ElementType p_type, uint32_t p_index, const Vector2 &p_depth_range) {
+	const float last_bin = z_bin_count - 1;
+	const uint32_t from = (uint32_t)CLAMP((p_depth_range.x - z_near) * z_bin_scale, 0.0f, last_bin);
+	const uint32_t to = (uint32_t)CLAMP((p_depth_range.y - z_near) * z_bin_scale, 0.0f, last_bin);
+
+	const uint32_t type_offset = p_type * z_bin_count;
+	for (uint32_t i = from; i <= to; i++) {
+		uint32_t &bin = z_bins[type_offset + i];
+		// Elements are added in order, so no min/max operations are needed
+		const uint32_t lowest_index = bin != 0 ? (bin & 0xFFFF) : p_index;
+		bin = lowest_index | ((p_index + 1) << 16);
+	}
+}
+
+Vector2 ClusterBuilderRD::get_light_depth_range(LightType p_type, const Transform3D &p_view_space_transform, float p_radius, float p_spot_aperture, const Vector2 &p_area_size) {
+	const Vector3 z_axis = p_view_space_transform.basis.get_column(Vector3::AXIS_Z);
+
+	if (p_type == LIGHT_TYPE_AREA) {
+		const Vector3 half_size = _get_area_light_half_size(p_radius, p_area_size);
+		Transform3D box_transform = p_view_space_transform;
+		box_transform.origin -= z_axis * half_size.z;
+		return get_box_depth_range(box_transform, half_size);
+	}
+
+	const real_t depth = -p_view_space_transform.origin.z;
+
+	if (p_type == LIGHT_TYPE_OMNI || p_spot_aperture > WIDE_SPOT_ANGLE_THRESHOLD_DEG) {
+		// omni or spot with wide angle
+		return Vector2(depth - p_radius, depth + p_radius);
+	}
+
+	// spot
+	const real_t cone_axis_z = -z_axis.normalized().z;
+	const real_t base_depth = depth - cone_axis_z * p_radius;
+	const real_t base_radius = Math::tan(Math::deg_to_rad(p_spot_aperture)) * p_radius;
+	const real_t base_half_depth = base_radius * Math::sqrt(MAX(1.0 - cone_axis_z * cone_axis_z, 0.0));
+	return Vector2(MIN(depth, base_depth - base_half_depth), MAX(depth, base_depth + base_half_depth));
 }
 
 void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer) {
@@ -287,24 +314,20 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	screen_size = p_screen_size;
 
-	cluster_screen_size.width = Math::division_round_up((uint32_t)p_screen_size.width, cluster_size);
-	cluster_screen_size.height = Math::division_round_up((uint32_t)p_screen_size.height, cluster_size);
+	screen_size_in_tiles.width = Math::division_round_up((uint32_t)p_screen_size.width, tile_size);
+	screen_size_in_tiles.height = Math::division_round_up((uint32_t)p_screen_size.height, tile_size);
 
 	max_elements_by_type = p_max_elements;
 	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
 		max_elements_by_type += 32 - (max_elements_by_type % 32);
 	}
 
-	cluster_buffer_size = cluster_screen_size.x * cluster_screen_size.y * (max_elements_by_type / 32 + 32) * ELEMENT_TYPE_MAX * 4;
+	bitmasks_per_type_count = screen_size_in_tiles.x * screen_size_in_tiles.y * (max_elements_by_type / 32);
+	z_bin_offset = bitmasks_per_type_count * ELEMENT_TYPE_MAX;
+	cluster_buffer_size = (z_bin_offset + MAX_Z_BINS * ELEMENT_TYPE_MAX) * sizeof(uint32_t);
 
 	render_element_max = max_elements_by_type * ELEMENT_TYPE_MAX;
 
-	uint32_t element_tag_bits_size = render_element_max / 32;
-	uint32_t element_tag_depth_bits_size = render_element_max;
-
-	cluster_render_buffer_size = cluster_screen_size.x * cluster_screen_size.y * (element_tag_bits_size + element_tag_depth_bits_size) * 4; // Tag bits (element was used) and tag depth (depth range in which it was used).
-
-	cluster_render_buffer = RD::get_singleton()->storage_buffer_create(cluster_render_buffer_size);
 	cluster_buffer = RD::get_singleton()->storage_buffer_create(cluster_buffer_size);
 
 	render_elements = static_cast<RenderElementData *>(memalloc(sizeof(RenderElementData) * render_element_max));
@@ -339,39 +362,11 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.append_id(cluster_render_buffer);
-			uniforms.push_back(u);
-		}
-
-		cluster_render_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shared->cluster_render.shader, 0);
-	}
-
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 1;
-			u.append_id(cluster_render_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 2;
 			u.append_id(cluster_buffer);
 			uniforms.push_back(u);
 		}
 
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 3;
-			u.append_id(element_buffer);
-			uniforms.push_back(u);
-		}
-
-		cluster_store_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shared->cluster_store.shader, 0);
+		cluster_render_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shared->cluster_render.shader, 0);
 	}
 
 	if (p_color_buffer.is_valid()) {
@@ -428,11 +423,15 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projecti
 	projection = correction * projection;
 	adjusted_projection = correction * adjusted_projection;
 
+	z_bin_count = get_z_bin_count(z_near, z_far);
+	z_bin_scale = get_z_bin_scale(z_near, z_far);
+
 	// Reset counts.
 	render_element_count = 0;
 	for (uint32_t i = 0; i < ELEMENT_TYPE_MAX; i++) {
 		cluster_count_by_type[i] = 0;
 	}
+	memset(z_bins.ptr(), 0, z_bin_count * ELEMENT_TYPE_MAX * sizeof(uint32_t));
 }
 
 void ClusterBuilderRD::bake_cluster() {
@@ -444,21 +443,19 @@ void ClusterBuilderRD::bake_cluster() {
 	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
 
 	if (render_element_count > 0) {
-		// Clear render buffer.
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
+		RD::get_singleton()->buffer_update(cluster_buffer, z_bin_offset * sizeof(uint32_t), z_bin_count * ELEMENT_TYPE_MAX * sizeof(uint32_t), z_bins.ptr());
 
 		{ // Fill state uniform.
 
 			StateUniform state;
 
 			RendererRD::MaterialStorage::store_camera(adjusted_projection, state.projection);
-			state.inv_z_far = 1.0 / z_far;
-			state.screen_to_clusters_shift = Math::get_shift_from_power_of_2(cluster_size);
-			state.screen_to_clusters_shift -= divisor; //screen is smaller, shift one less
+			state.screen_to_tiles_shift = Math::get_shift_from_power_of_2(tile_size);
+			state.screen_to_tiles_shift -= divisor; //screen is smaller, shift one less
 
-			state.cluster_screen_width = cluster_screen_size.x;
-			state.cluster_depth_offset = (render_element_max / 32);
-			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
+			state.tiles_per_row = screen_size_in_tiles.x;
+			state.bitmasks_per_tile_count = max_elements_by_type / 32;
+			state.bitmasks_per_type_count = bitmasks_per_type_count;
 
 			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
 		}
@@ -515,31 +512,6 @@ void ClusterBuilderRD::bake_cluster() {
 			}
 			RD::get_singleton()->draw_list_end();
 		}
-		// Store elements.
-		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
-
-		{
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shared->cluster_store.shader_pipeline);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cluster_store_uniform_set, 0);
-
-			ClusterBuilderSharedDataRD::ClusterStore::PushConstant push_constant;
-			push_constant.cluster_render_data_size = render_element_max / 32 + render_element_max;
-			push_constant.max_render_element_count_div_32 = render_element_max / 32;
-			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
-			push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-
-			push_constant.render_element_count_div_32 = Math::division_round_up(render_element_count, 32U);
-			push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
-			push_constant.pad1 = 0;
-			push_constant.pad2 = 0;
-
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterStore::PushConstant));
-
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1);
-
-			RD::get_singleton()->compute_list_end();
-		}
 	}
 	RENDER_TIMESTAMP("< Bake 3D Cluster");
 	RD::get_singleton()->draw_command_end_label();
@@ -554,14 +526,17 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	ClusterBuilderSharedDataRD::ClusterDebug::PushConstant push_constant;
 	push_constant.screen_size[0] = screen_size.x;
 	push_constant.screen_size[1] = screen_size.y;
-	push_constant.cluster_screen_size[0] = cluster_screen_size.x;
-	push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-	push_constant.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
+	push_constant.screen_size_in_tiles[0] = screen_size_in_tiles.x;
+	push_constant.screen_size_in_tiles[1] = screen_size_in_tiles.y;
+	push_constant.tile_shift = Math::get_shift_from_power_of_2(tile_size);
 	push_constant.cluster_type = p_element;
 	push_constant.orthogonal = camera_orthogonal;
 	push_constant.z_far = z_far;
 	push_constant.z_near = z_near;
-	push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
+	push_constant.bitmasks_per_tile_count = max_elements_by_type / 32;
+	push_constant.z_bin_offset = z_bin_offset;
+	push_constant.z_bin_count = z_bin_count;
+	push_constant.z_bin_scale = z_bin_scale;
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterDebug::PushConstant));
 
@@ -574,8 +549,8 @@ RID ClusterBuilderRD::get_cluster_buffer() const {
 	return cluster_buffer;
 }
 
-uint32_t ClusterBuilderRD::get_cluster_size() const {
-	return cluster_size;
+uint32_t ClusterBuilderRD::get_tile_size() const {
+	return tile_size;
 }
 
 uint32_t ClusterBuilderRD::get_max_cluster_elements() const {
@@ -588,6 +563,7 @@ void ClusterBuilderRD::set_shared(ClusterBuilderSharedDataRD *p_shared) {
 
 ClusterBuilderRD::ClusterBuilderRD() {
 	state_uniform = RD::get_singleton()->uniform_buffer_create(sizeof(StateUniform));
+	z_bins.resize(MAX_Z_BINS * ELEMENT_TYPE_MAX);
 }
 
 ClusterBuilderRD::~ClusterBuilderRD() {

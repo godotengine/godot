@@ -1088,7 +1088,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	params.fog_frustum_size_end[1] = fog_far_size.y;
 
 	params.ambient_inject = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_ambient_inject(p_settings.env) * RendererSceneRenderRD::get_singleton()->environment_get_ambient_light_energy(p_settings.env);
-	params.z_far = z_far;
+	params.z_near = z_near;
 
 	params.fog_frustum_end = fog_end;
 
@@ -1149,14 +1149,17 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	}
 
 	{
-		uint32_t cluster_size = p_settings.cluster_builder->get_cluster_size();
-		params.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
+		uint32_t tile_size = p_settings.cluster_builder->get_tile_size();
+		params.tile_shift = Math::get_shift_from_power_of_2(tile_size);
 
-		uint32_t cluster_screen_width = Math::division_round_up((uint32_t)p_settings.rb_size.x, cluster_size);
-		uint32_t cluster_screen_height = Math::division_round_up((uint32_t)p_settings.rb_size.y, cluster_size);
-		params.max_cluster_element_count_div_32 = p_settings.max_cluster_elements / 32;
-		params.cluster_type_size = cluster_screen_width * cluster_screen_height * (params.max_cluster_element_count_div_32 + 32);
-		params.cluster_width = cluster_screen_width;
+		uint32_t tiles_per_row = Math::division_round_up((uint32_t)p_settings.rb_size.x, tile_size);
+		uint32_t tiles_per_column = Math::division_round_up((uint32_t)p_settings.rb_size.y, tile_size);
+		params.bitmasks_per_tile_count = p_settings.cluster_builder->get_max_cluster_elements() / 32;
+		params.bitmasks_per_type_count = tiles_per_row * tiles_per_column * params.bitmasks_per_tile_count;
+		params.tiles_per_row = tiles_per_row;
+		params.cluster_z_bin_offset = params.bitmasks_per_type_count * ClusterBuilderRD::ELEMENT_TYPE_MAX;
+		params.cluster_z_bin_count = ClusterBuilderRD::get_z_bin_count(z_near, z_far);
+		params.cluster_z_bin_scale = ClusterBuilderRD::get_z_bin_scale(z_near, z_far);
 
 		params.screen_size[0] = p_settings.rb_size.x;
 		params.screen_size[1] = p_settings.rb_size.y;

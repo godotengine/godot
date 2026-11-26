@@ -905,7 +905,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				omni_light_sort[omni_light_count].light_instance = light_instance;
 				omni_light_sort[omni_light_count].light = light;
-				omni_light_sort[omni_light_count].depth = distance;
+				omni_light_sort[omni_light_count].nearest_depth = ClusterBuilderRD::get_light_depth_range(ClusterBuilderRD::LIGHT_TYPE_OMNI, inverse_transform * light_transform, light->param[RSE::LIGHT_PARAM_RANGE], 0.0, Vector2()).x;
+				omni_light_sort[omni_light_count].center_distance = distance;
 				omni_light_count++;
 			} break;
 			case RSE::LIGHT_SPOT: {
@@ -930,7 +931,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				spot_light_sort[spot_light_count].light_instance = light_instance;
 				spot_light_sort[spot_light_count].light = light;
-				spot_light_sort[spot_light_count].depth = distance;
+				spot_light_sort[spot_light_count].nearest_depth = ClusterBuilderRD::get_light_depth_range(ClusterBuilderRD::LIGHT_TYPE_SPOT, inverse_transform * light_transform, light->param[RSE::LIGHT_PARAM_RANGE], light->param[RSE::LIGHT_PARAM_SPOT_ANGLE], Vector2()).x;
+				spot_light_sort[spot_light_count].center_distance = distance;
 				spot_light_count++;
 			} break;
 			case RSE::LIGHT_AREA: {
@@ -955,7 +957,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				area_light_sort[area_light_count].light_instance = light_instance;
 				area_light_sort[area_light_count].light = light;
-				area_light_sort[area_light_count].depth = distance;
+				area_light_sort[area_light_count].nearest_depth = ClusterBuilderRD::get_light_depth_range(ClusterBuilderRD::LIGHT_TYPE_AREA, inverse_transform * light_transform, light->param[RSE::LIGHT_PARAM_RANGE], 0.0, light->area_size).x;
+				area_light_sort[area_light_count].center_distance = distance;
 				area_light_count++;
 			}
 		}
@@ -994,21 +997,21 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			type = RSE::LIGHT_AREA;
 			light_instance = area_light_sort[index].light_instance;
 			light = area_light_sort[index].light;
-			distance = area_light_sort[index].depth;
+			distance = area_light_sort[index].center_distance;
 		} else if (i >= omni_light_count) {
 			index = i - (omni_light_count);
 			light_data_ptr = &spot_lights[index];
 			type = RSE::LIGHT_SPOT;
 			light_instance = spot_light_sort[index].light_instance;
 			light = spot_light_sort[index].light;
-			distance = spot_light_sort[index].depth;
+			distance = spot_light_sort[index].center_distance;
 		} else {
 			index = i;
 			light_data_ptr = &omni_lights[index];
 			type = RSE::LIGHT_OMNI;
 			light_instance = omni_light_sort[index].light_instance;
 			light = omni_light_sort[index].light;
-			distance = omni_light_sort[index].depth;
+			distance = omni_light_sort[index].center_distance;
 		}
 
 		if (using_forward_ids) {
