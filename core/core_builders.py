@@ -9,7 +9,7 @@ import methods
 # Generate disabled classes
 def disabled_class_builder(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
-        for c in source[0].read():
+        for c in source[0]:
             if cs := c.strip():
                 file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
@@ -30,7 +30,7 @@ def version_info_builder(target, source, env):
 #define GODOT_VERSION_WEBSITE "{website}"
 #define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
 #define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
-""".format(**source[0].read())
+""".format(**source[0])
         )
 
 
@@ -42,12 +42,12 @@ def version_hash_builder(target, source, env):
 
 const char *const GODOT_VERSION_HASH = "{git_hash}";
 const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
-""".format(**source[0].read())
+""".format(**source[0])
         )
 
 
 def encryption_key_builder(target, source, env):
-    src = source[0].read() or "0" * 64
+    src = source[0] or "0" * 64
     try:
         buffer = bytes.fromhex(src)
         if len(buffer) != 32:
@@ -78,8 +78,8 @@ def make_certs_header(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
-        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2].read() or ""))
-        if source[1].read():
+        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2] or ""))
+        if source[1]:
             # Defined here and not in env so changing it does not trigger a full rebuild.
             file.write(f"""\
 #define BUILTIN_CERTS_ENABLED

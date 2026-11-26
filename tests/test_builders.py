@@ -25,7 +25,7 @@ void ForceLink::force_link_tests() {{
 
 
 def force_link_builder(target, source, env):
-    names = [RE_PATH_SPLIT.search(str(path)).group() for path in source[0].read()]
+    names = [RE_PATH_SPLIT.search(str(path)).group() for path in source[0]]
     declares = [f"TEST_DLL_PRIVATE void force_link_{name}();" for name in names]
     calls = [f"force_link_{name}();" for name in names]
 

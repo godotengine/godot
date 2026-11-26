@@ -4,6 +4,8 @@ import methods
 
 
 def profiler_gen_builder(target, source, env):
+    keys = ["profiler", "profiler_sample_callstack", "profiler_track_memory", "profiler_record_on_demand"]
+    env = dict(zip(keys, source))
     with methods.generated_wrapper(str(target[0])) as file:
         if env["profiler"] == "tracy":
             file.write("#define GODOT_USE_TRACY\n")

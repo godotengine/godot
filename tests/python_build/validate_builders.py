@@ -13,6 +13,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../
 from gles3_builders import build_gles3_header
 from glsl_builders import build_raw_header, build_rd_header
 
+# Builders run without SCons in the Ninja build, so their modules must not import it.
+if "SCons" in sys.modules:
+    raise ImportError("Builder scripts and `methods` must be importable without SCons.")
+
 FUNC_PATH_KWARGS: list[tuple[Callable[..., None], str, dict[str, Any]]] = [
     (
         build_gles3_header,

@@ -165,8 +165,12 @@ if env["d3d12"]:
 
 if not env.msvc:
     if env["debug_symbols"]:
-        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
+        make_debug_mingw = env.Run(
+            platform_windows_builders.make_debug_mingw,
+            source=[env["OBJCOPY"], env["STRIP"], env["separate_debug_symbols"]],
+        )
+        env.AddPostAction(prog, make_debug_mingw)
         if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
+            env.AddPostAction(prog_wrap, make_debug_mingw)
 
 env.platform_sources += sources
