@@ -2,22 +2,19 @@
 #[modes]
 
 mode_color =
-mode_color_instancing = \n#define USE_INSTANCING
-mode_depth = #define MODE_RENDER_DEPTH
-mode_depth_instancing = #define MODE_RENDER_DEPTH \n#define USE_INSTANCING
 
 #[specializations]
 
-DISABLE_LIGHTMAP = false
-DISABLE_LIGHT_DIRECTIONAL = false
-DISABLE_LIGHT_OMNI = false
-DISABLE_LIGHT_SPOT = false
-DISABLE_LIGHT_AREA = false
+DISABLE_LIGHTMAP = true
+DISABLE_LIGHT_DIRECTIONAL = true
+DISABLE_LIGHT_OMNI = true
+DISABLE_LIGHT_SPOT = true
+DISABLE_LIGHT_AREA = true
 DISABLE_REFLECTION_PROBE = true
-DISABLE_FOG = false
+DISABLE_FOG = true
 USE_DEPTH_FOG = false
 USE_SUN_SCATTER = false
-USE_RADIANCE_MAP = true
+USE_RADIANCE_MAP = false
 USE_LIGHTMAP = false
 USE_SH_LIGHTMAP = false
 USE_LIGHTMAP_CAPTURE = false
@@ -33,7 +30,7 @@ LIGHT_USE_PSSM4 = false
 LIGHT_USE_PSSM_BLEND = false
 BASE_PASS = true
 USE_ADDITIVE_LIGHTING = false
-APPLY_TONEMAPPING = true
+APPLY_TONEMAPPING = false
 // We can only use one type of light per additive pass. This means that if USE_ADDITIVE_LIGHTING is defined, and
 // these are false, we are doing a directional light pass.
 ADDITIVE_OMNI = false
@@ -43,6 +40,8 @@ SECOND_REFLECTION_PROBE = false
 LIGHTMAP_BICUBIC_FILTER = false
 RENDER_MOTION_VECTORS = false
 USE_LIGHTMAP_SPECULAR = false
+USE_INSTANCING = false
+MODE_RENDER_DEPTH = false
 
 
 #[vertex]
