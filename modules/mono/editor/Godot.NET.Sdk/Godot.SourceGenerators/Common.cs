@@ -37,6 +37,16 @@ namespace Godot.SourceGenerators
                 "Found multiple classes with the same name in the same script file. A script file must only contain one class with a name that matches the file name.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0003"));
 
+        internal static readonly DiagnosticDescriptor ClassParameterlessConstructorRule =
+            new DiagnosticDescriptor(id: "GD0004",
+                title: $"Missing parameterless constructor on declaration of type that derives from '{GodotClasses.GodotObject}'",
+                messageFormat: $"Missing parameterless constructor on declaration of type '{{0}}' that derives from '{GodotClasses.GodotObject}'",
+                category: "Usage",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                $"Classes that derive from '{GodotClasses.GodotObject}' must declare a parameterless constructor.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0004"));
+
         public static readonly DiagnosticDescriptor ExportedMemberIsStaticRule =
             new DiagnosticDescriptor(id: "GD0101",
                 title: "The exported member is static",
