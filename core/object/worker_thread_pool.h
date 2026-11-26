@@ -170,7 +170,9 @@ private:
 	uint32_t notify_index = 0; // For rotating across threads, no help distributing load.
 
 	uint64_t last_task = 1;
-	int pump_task_count = 0;
+	uint32_t pump_task_count = 0;
+	uint32_t base_thread_count = 0; // Threads requested in init(); each pump task gets one more.
+	static constexpr uint32_t MAX_PUMP_TASKS = 4; // 2D physics, 3D physics, rendering, GPU texture compression.
 
 	static HashMap<StringName, WorkerThreadPool *> named_pools;
 
