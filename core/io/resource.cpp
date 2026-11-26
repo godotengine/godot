@@ -112,6 +112,8 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		}
 	}
 
+	emit_changed();
+
 	_resource_path_changed();
 }
 

@@ -111,6 +111,13 @@ void TexturePreview::_notification(int p_what) {
 				break;
 			}
 
+			if (filename_label) {
+				Ref<Font> filename_label_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				filename_label->add_theme_font_override(SceneStringName(font), filename_label_font);
+				filename_label->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
+				filename_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+			}
+
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
@@ -186,6 +193,20 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		return image->get_mipmap_count();
 	}
 	return -1;
+}
+
+void TexturePreview::_update_filename_label_text() {
+	const Ref<Texture2D> texture = texture_display->get_texture();
+	ERR_FAIL_COND(texture.is_null());
+
+	filename_label->set_tooltip_text(texture->get_path());
+	if (texture->get_path().is_empty()) {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		filename_label->set_text(TTRC("(Unsaved)"));
+	} else {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		filename_label->set_text(texture->get_path().get_file());
+	}
 }
 
 void TexturePreview::_update_metadata_label_text() {
@@ -298,6 +319,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 
 	// Creating a separate control so it is not affected by the filtering shader.
 	outline_overlay = memnew(Control);
+	outline_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	centering_container->add_child(outline_overlay);
 
 	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_draw_outline));
@@ -336,6 +358,16 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		add_child(channel_selector);
 	}
 
+	HBoxContainer *footer = memnew(HBoxContainer);
+	footer->set_v_size_flags(SIZE_SHRINK_END);
+	add_child(footer);
+
+	VBoxContainer *info_container = memnew(VBoxContainer);
+	info_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	info_container->set_v_size_flags(SIZE_SHRINK_END);
+	info_container->add_theme_constant_override(SNAME("separation"), 0);
+	footer->add_child(info_container);
+
 	if (p_show_metadata) {
 		metadata_label = memnew(Label);
 		metadata_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -354,19 +386,37 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
 
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
-		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
+		metadata_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
-		add_child(metadata_label);
+		info_container->add_child(metadata_label);
 
 		metadata_toggle = memnew(Button);
 		metadata_toggle->set_flat(true);
 		metadata_toggle->set_tooltip_text(TTRC("Toggle metadata overlay."));
 		metadata_toggle->set_theme_type_variation("PreviewLightButton");
 		metadata_toggle->set_modulate(Color(1, 1, 1, 0.8));
-		metadata_toggle->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		metadata_toggle->set_v_size_flags(Control::SIZE_SHRINK_END);
 		metadata_toggle->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_toggle_metadata_label));
-		add_child(metadata_toggle);
+		footer->add_child(metadata_toggle);
+		footer->move_child(metadata_toggle, 0);
+	}
+
+	if (p_texture.is_valid()) {
+		filename_label = memnew(Label);
+		filename_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		filename_label->set_mouse_filter(MOUSE_FILTER_PASS);
+		filename_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE);
+		filename_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
+
+		// It's okay that these colors are static since the grid color is static too.
+		filename_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		filename_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+		filename_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+
+		info_container->add_child(filename_label);
+
+		_update_filename_label_text();
+		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_filename_label_text));
 	}
 }
 
