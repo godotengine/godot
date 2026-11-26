@@ -253,8 +253,9 @@ mat4 get_bone_transform(uint idx) {
 	return t;
 }
 
-void get_skinned_position(uint point, uint point_count, out vec3 position) {
+void get_skinned_position(uint point, out vec3 position) {
 	int tex_size = 2048;
+	uint point_count = frame_history.data[0].emission_points_count;
 	int rows = int(point_count) / 2048 + 1;
 	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
 
@@ -272,15 +273,14 @@ void get_skinned_position(uint point, uint point_count, out vec3 position) {
 	position = pos.xyz;
 }
 
-/*
-void get_skinned_position_and_normal(out vec3 position, out vec3 normal, uint point, uint point_count, sampler2D skin_texture, sampler2D emission_texture, sampler2D normal_texture){
-
+void get_skinned_position_and_normal(uint point, out vec3 position, out vec3 normal) {
 	int tex_size = 2048;
-	int rows = int(point_count)/2048 + 1;
-	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count)/tex_size);
-	ivec2 normal_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count)/tex_size + rows)
-	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point)/tex_size + rows * 2);
-	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u)/tex_size + rows * 2);
+	uint point_count = frame_history.data[0].emission_points_count;
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+	ivec2 normal_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size + rows);
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
 	vec4 pos = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), point_uv, 0);
 	pos.w = 1.0;
 	vec4 nor = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), normal_uv, 0);
@@ -296,7 +296,6 @@ void get_skinned_position_and_normal(out vec3 position, out vec3 normal, uint po
 	position = pos.xyz;
 	normal = nor.xyz;
 }
-*/
 
 #GLOBALS
 
@@ -516,6 +515,7 @@ void main() {
 	bool particle_active = bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE);
 
 	uint particle_number = (PARTICLE.flags >> PARTICLE_FRAME_SHIFT) * uint(params.total_particles) + index;
+	uint emission_points_count = frame_history.data[0].emission_points_count;
 
 	if (restart && particle_active) {
 #CODE : START

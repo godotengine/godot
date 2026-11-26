@@ -126,7 +126,7 @@ private:
 
 		float particle_size;
 		float amount_ratio;
-		float pad1;
+		uint32_t emission_points_count;
 		float pad2;
 
 		uint32_t random_seed;
@@ -174,6 +174,8 @@ private:
 
 		RID skeleton;
 		GLuint bones_texture = 0;
+		uint32_t emission_points_count = 512u;
+		GLuint emission_points_texture = 0;
 
 		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 		RSE::ParticlesTransformAlignAxis transform_align_axis = RSE::PARTICLES_ALIGN_AXIS_Y;

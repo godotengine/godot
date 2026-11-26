@@ -150,8 +150,8 @@ void Particles3DEditorPlugin::_add_menu_options(PopupMenu *p_menu) {
 }
 
 bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, Vector<int> &r_bones, Vector<real_t> &r_weights) {
-	bool use_normals = emission_fill->get_selected() == 1;
-	bool use_skin = true;
+	bool use_normals = emission_fill->get_selected() == 1 || emission_fill->get_selected() == 3;
+	bool use_skin = emission_fill->get_selected() == 3;
 
 	// TODO
 	// If we have a triangle strip primitive, the best way is to convert that to a base triangle
@@ -182,7 +182,7 @@ bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector
 				vertex_array[idx3]));
 	}
 
-	if (emission_fill->get_selected() < 2) {
+	if (emission_fill->get_selected() != 2) {
 		float area_accum = 0;
 		RBMap<float, int> triangle_area_map;
 
@@ -389,6 +389,7 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));
+	emission_fill->add_item(TTR("Animated Mesh"));
 	emd_vb->add_margin_child(TTR("Emission Source:"), emission_fill);
 
 	emission_dialog->set_ok_button_text(TTR("Create"));
@@ -430,53 +431,85 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	if (!_generate(points, normals, bones, weights)) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(bones.size() != points.size() * 4u, "Bone array has the wrong size");
-	ERR_FAIL_COND_MSG(weights.size() != points.size() * 4u, "Weight array has the wrong size");
 	int point_count = points.size();
 
 	int w = 2048;
 	int h = (point_count / 2048) + 1;
 
-	//TODO
-	// dump all the skinning stuff in the texture
-
-	Vector<uint8_t> point_img;
-	//int skin_size = 2; // Todot zero if skinning is off, for now it's always on
-	point_img.resize(w * h * 3 * sizeof(float));
-
-	{
-		uint8_t *iw = point_img.ptrw();
-		memset(iw, 0, w * h * 3 * sizeof(float));
-		const Vector3 *r = points.ptr();
-		float *wf = reinterpret_cast<float *>(iw);
-		for (int i = 0; i < point_count; i++) {
-			wf[i * 3 + 0] = r[i].x;
-			wf[i * 3 + 1] = r[i].y;
-			wf[i * 3 + 2] = r[i].z;
-		}
-	}
-
-	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
-	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
-
-	Ref<ParticleProcessMaterial> mat = particles->get_process_material();
-	//ERR_FAIL_COND(mat.is_null());
-
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Emission Points"));
-	ParticleProcessMaterial *matptr = mat.ptr();
 
-	if (!normals.is_empty()) {
-		undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
-		undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
+	if (emission_fill->get_selected() == 3) {
+		// pos + normal + bones (2x point cont because we need 2 pixel per point)
+		ERR_FAIL_COND_MSG(bones.size() != points.size() * 4u, "Bone array has the wrong size");
+		ERR_FAIL_COND_MSG(weights.size() != points.size() * 4u, "Weight array has the wrong size");
+		h = ((point_count / 2048) + 1) * 2;
+		h += (point_count * 2) / 2048 + 1;
+		int bw_texture_size = w * h * 4 * sizeof(float);
 
-		Vector<uint8_t> point_img2;
-		point_img2.resize(w * h * 3 * sizeof(float));
+		Vector<uint8_t> point_img3;
+		point_img3.resize(bw_texture_size);
+		{
+			uint8_t *iw = point_img3.ptrw();
+			memset(iw, 0, bw_texture_size);
+			float *wf = reinterpret_cast<float *>(iw);
+			int offset = 0;
+
+			const Vector3 *r = points.ptr();
+			for (int i = 0; i < point_count; i++) {
+				wf[i * 4 + 0 + offset] = r[i].x;
+				wf[i * 4 + 1 + offset] = r[i].y;
+				wf[i * 4 + 2 + offset] = r[i].z;
+				wf[i * 4 + 3 + offset] = 1.0;
+			}
+
+			if (!normals.is_empty()) {
+				offset = (point_count / 2048 + 1) * 2048 * 4;
+				const Vector3 *n = normals.ptr();
+				for (int i = 0; i < point_count; i++) {
+					wf[i * 4 + 0 + offset] = n[i].x;
+					wf[i * 4 + 1 + offset] = n[i].y;
+					wf[i * 4 + 2 + offset] = n[i].z;
+				}
+			}
+
+			offset = (point_count / 2048 + 1) * 2 * 2048 * 4;
+			const int *b = bones.ptr();
+			const real_t *we = weights.ptr();
+			for (int i = 0; i < point_count; i++) {
+				//make good use of memory and pack 2 bones per RGBA
+				wf[i * 8 + 0 + offset] = float(b[i * 4]);
+				wf[i * 8 + 1 + offset] = float(we[i * 4]);
+				wf[i * 8 + 2 + offset] = float(b[i * 4 + 1]);
+				wf[i * 8 + 3 + offset] = float(we[i * 4 + 1]);
+				wf[i * 8 + 4 + offset] = float(b[i * 4 + 2]);
+				wf[i * 8 + 5 + offset] = float(we[i * 4 + 2]);
+				wf[i * 8 + 6 + offset] = float(b[i * 4 + 3]);
+				wf[i * 8 + 7 + offset] = float(we[i * 4 + 3]);
+			}
+		}
+		// account for points, normals and skinning.
+		// we do all 3 because the overhead of doing it is marginal compared to the complexity of
+		// handling 2 separate cases, especially since this is passed via the rendering server and not
+		// via a shader uniform
+
+		Ref<Image> skinning_image = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
+
+		undo_redo->add_do_property(particles, "emission_texture", ImageTexture::create_from_image(skinning_image));
+		undo_redo->add_undo_property(particles, "emission_texture", particles->get_emission_texture());
+		undo_redo->add_do_property(particles, "emission_texture_points_count", point_count);
+		undo_redo->add_undo_property(particles, "emission_texture_points_count", particles->get_emission_texture_points_count());
+		undo_redo->add_do_property(particles, "skeletal_mesh", particles->get_path_to(selected_instance));
+		undo_redo->add_undo_property(particles, "skeletal_mesh", particles->get_skeletal_mesh());
+
+	} else {
+		Vector<uint8_t> point_img;
+		point_img.resize(w * h * 3 * sizeof(float));
 
 		{
-			uint8_t *iw = point_img2.ptrw();
+			uint8_t *iw = point_img.ptrw();
 			memset(iw, 0, w * h * 3 * sizeof(float));
-			const Vector3 *r = normals.ptr();
+			const Vector3 *r = points.ptr();
 			float *wf = reinterpret_cast<float *>(iw);
 			for (int i = 0; i < point_count; i++) {
 				wf[i * 3 + 0] = r[i].x;
@@ -485,68 +518,47 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 			}
 		}
 
-		//Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-		//undo_redo->add_do_property(matptr, "emission_normal_texture", ImageTexture::create_from_image(image2));
-		//undo_redo->add_undo_property(matptr, "emission_normal_texture", matptr->get_emission_normal_texture());
-	} else {
-		//undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
-		//undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
-	}
-	Vector<uint8_t> point_img3;
-	// account for points, normals and skinning.
-	// we do all 3 because the overhead of doing it is marginal compared to the complexity of
-	// handling 2 separate cases, especially since this is passed via the rendering server and not
-	// via a shader uniform
+		Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
+		Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
-	// pos + normal + bones (2x point cont because we need 2 pixel per point)
-	h = ((point_count / 2048) + 1) * 2;
-	h += (point_count * 2) / 2048 + 1;
-	int bw_texture_size = w * h * 4 * sizeof(float);
-	point_img3.resize(bw_texture_size);
-	{
-		uint8_t *iw = point_img3.ptrw();
-		memset(iw, 0, bw_texture_size);
-		float *wf = reinterpret_cast<float *>(iw);
-		int offset = 0;
+		Ref<ParticleProcessMaterial> mat = particles->get_process_material();
+		ERR_FAIL_COND(mat.is_null());
 
-		const Vector3 *r = points.ptr();
-		for (int i = 0; i < point_count; i++) {
-			wf[i * 4 + 0 + offset] = r[i].x;
-			wf[i * 4 + 1 + offset] = r[i].y;
-			wf[i * 4 + 2 + offset] = r[i].z;
-			wf[i * 4 + 3 + offset] = 1.0;
-		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Create Emission Points"));
+		ParticleProcessMaterial *matptr = mat.ptr();
+
+		undo_redo->add_do_property(matptr, "emission_point_count", point_count);
+		undo_redo->add_undo_property(matptr, "emission_point_count", matptr->get_emission_point_count());
 
 		if (!normals.is_empty()) {
-			offset = (point_count / 2048 + 1) * 2048 * 4;
-			const Vector3 *n = normals.ptr();
-			for (int i = 0; i < point_count; i++) {
-				wf[i * 4 + 0 + offset] = n[i].x;
-				wf[i * 4 + 1 + offset] = n[i].y;
-				wf[i * 4 + 2 + offset] = n[i].z;
-			}
-		}
+			undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+			undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 
-		offset = (point_count / 2048 + 1) * 2 * 2048 * 4;
-		const int *b = bones.ptr();
-		const real_t *we = weights.ptr();
-		for (int i = 0; i < point_count; i++) {
-			//make good use of memory and pack 2 bones per RGBA
-			wf[i * 8 + 0 + offset] = float(b[i * 4]);
-			wf[i * 8 + 1 + offset] = float(we[i * 4]);
-			wf[i * 8 + 2 + offset] = float(b[i * 4 + 1]);
-			wf[i * 8 + 3 + offset] = float(we[i * 4 + 1]);
-			wf[i * 8 + 4 + offset] = float(b[i * 4 + 2]);
-			wf[i * 8 + 5 + offset] = float(we[i * 4 + 2]);
-			wf[i * 8 + 6 + offset] = float(b[i * 4 + 3]);
-			wf[i * 8 + 7 + offset] = float(we[i * 4 + 3]);
+			Vector<uint8_t> point_img2;
+			point_img2.resize(w * h * 3 * sizeof(float));
+
+			{
+				uint8_t *iw = point_img2.ptrw();
+				memset(iw, 0, w * h * 3 * sizeof(float));
+				const Vector3 *r = normals.ptr();
+				float *wf = reinterpret_cast<float *>(iw);
+				for (int i = 0; i < point_count; i++) {
+					wf[i * 3 + 0] = r[i].x;
+					wf[i * 3 + 1] = r[i].y;
+					wf[i * 3 + 2] = r[i].z;
+				}
+			}
+
+			Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
+			undo_redo->add_do_property(matptr, "emission_normal_texture", ImageTexture::create_from_image(image2));
+			undo_redo->add_undo_property(matptr, "emission_normal_texture", matptr->get_emission_normal_texture());
+		} else {
+			undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
+			undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 		}
 	}
-	Ref<Image> image3 = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
-	// TODO
-	// Add emission texture to the node instead
-	particles->set_emission_texture(ImageTexture::create_from_image(image3));
-	particles->set_emission_point_count(point_count);
+
 	undo_redo->commit_action();
 }
 

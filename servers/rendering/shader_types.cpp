@@ -404,6 +404,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["RESTART_COLOR"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["RESTART_CUSTOM"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["AMOUNT_RATIO"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["EMISSION_POINTS_COUNT"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].main_function = true;
 
 	shader_modes[RSE::SHADER_PARTICLES].functions["process"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
@@ -437,6 +438,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_PARTICLES].functions["process"].built_ins["COLLISION_DEPTH"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RSE::SHADER_PARTICLES].functions["process"].built_ins["ATTRACTOR_FORCE"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RSE::SHADER_PARTICLES].functions["process"].built_ins["AMOUNT_RATIO"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_PARTICLES].functions["process"].built_ins["EMISSION_POINTS_COUNT"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RSE::SHADER_PARTICLES].functions["process"].main_function = true;
 
 	{
@@ -461,11 +463,19 @@ ShaderTypes::ShaderTypes() {
 	{
 		ShaderLanguage::StageFunctionInfo get_skinned_position_vertex_func;
 		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("point", ShaderLanguage::TYPE_UINT));
-		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("point_count", ShaderLanguage::TYPE_UINT));
 		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("out_position", ShaderLanguage::TYPE_VEC3));
 		get_skinned_position_vertex_func.return_type = ShaderLanguage::TYPE_VOID;
 		shader_modes[RSE::SHADER_PARTICLES].functions["start"].stage_functions["get_skinned_position"] = get_skinned_position_vertex_func;
 		shader_modes[RSE::SHADER_PARTICLES].functions["process"].stage_functions["get_skinned_position"] = get_skinned_position_vertex_func;
+	}
+	{
+		ShaderLanguage::StageFunctionInfo get_skinned_position_and_normal_vertex_func;
+		get_skinned_position_and_normal_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("point", ShaderLanguage::TYPE_UINT));
+		get_skinned_position_and_normal_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("out_position", ShaderLanguage::TYPE_VEC3));
+		get_skinned_position_and_normal_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("out_normal", ShaderLanguage::TYPE_VEC3));
+		get_skinned_position_and_normal_vertex_func.return_type = ShaderLanguage::TYPE_VOID;
+		shader_modes[RSE::SHADER_PARTICLES].functions["start"].stage_functions["get_skinned_position_and_normal"] = get_skinned_position_and_normal_vertex_func;
+		shader_modes[RSE::SHADER_PARTICLES].functions["process"].stage_functions["get_skinned_position_and_normal"] = get_skinned_position_and_normal_vertex_func;
 	}
 
 	// particles render modes

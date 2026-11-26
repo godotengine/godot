@@ -47,7 +47,6 @@ class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 	SceneTreeDialog *emission_tree_dialog = nullptr;
 	ConfirmationDialog *emission_dialog = nullptr;
 	SpinBox *emission_amount = nullptr;
-	OptionButton *emission_fill = nullptr;
 
 	void _generate_aabb();
 	void _node_selected(const NodePath &p_path);
@@ -55,6 +54,8 @@ class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 protected:
 	Vector<Face3> geometry;
 	MeshInstance3D *selected_instance;
+
+	OptionButton *emission_fill = nullptr;
 
 	virtual void _menu_callback(int p_idx) override;
 	virtual void _add_menu_options(PopupMenu *p_menu) override;

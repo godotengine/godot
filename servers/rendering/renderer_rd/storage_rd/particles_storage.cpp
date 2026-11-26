@@ -107,10 +107,12 @@ ParticlesStorage::ParticlesStorage() {
 		actions.renames["emit_subparticle"] = "emit_subparticle";
 		actions.renames["get_bone_transform"] = "get_bone_transform";
 		actions.renames["get_skinned_position"] = "get_skinned_position";
+		actions.renames["get_skinned_position_and_normal"] = "get_skinned_position_and_normal";
 		actions.renames["COLLIDED"] = "collided";
 		actions.renames["COLLISION_NORMAL"] = "collision_normal";
 		actions.renames["COLLISION_DEPTH"] = "collision_depth";
 		actions.renames["ATTRACTOR_FORCE"] = "attractor_force";
+		actions.renames["EMISSION_POINTS_COUNT"] = "emission_points_count";
 
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
