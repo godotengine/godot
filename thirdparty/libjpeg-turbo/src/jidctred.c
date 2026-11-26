@@ -4,12 +4,12 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2022, D. R. Commander.
+ * Copyright (C) 2015, 2022, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
  * This file contains inverse-DCT routines that produce reduced-size output:
- * either 4x4, 2x2, or 1x1 pixels from an 8x8 DCT block.
+ * either 4x4, 2x2, or 1x1 samples from an 8x8 DCT block.
  *
  * The implementation is based on the Loeffler, Ligtenberg and Moschytz (LL&M)
  * algorithm used in jidctint.c.  We simply replace each 8-to-8 1-D IDCT step
@@ -397,7 +397,7 @@ _jpeg_idct_1x1(j_decompress_ptr cinfo, jpeg_component_info *compptr,
   SHIFT_TEMPS
 
   /* We hardly need an inverse DCT routine for this: just take the
-   * average pixel value, which is one-eighth of the DC coefficient.
+   * average sample value, which is one-eighth of the DC coefficient.
    */
   quantptr = (ISLOW_MULT_TYPE *)compptr->dct_table;
   dcval = DEQUANTIZE(coef_block[0], quantptr[0]);

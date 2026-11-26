@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2016, 2019, 2022-2024, D. R. Commander.
+ * Copyright (C) 2009-2011, 2016, 2019, 2022-2024, 2026, D. R. Commander.
  * Copyright (C) 2013, Linaro Limited.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -675,6 +675,8 @@ master_selection(j_decompress_ptr cinfo)
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
+#if defined(DCT_ISLOW_SUPPORTED) || defined(DCT_IFAST_SUPPORTED) || \
+    defined(DCT_FLOAT_SUPPORTED)
     /* Inverse DCT */
     if (cinfo->data_precision == 8)
       jinit_inverse_dct(cinfo);
@@ -707,6 +709,9 @@ master_selection(j_decompress_ptr cinfo)
       j12init_d_coef_controller(cinfo, use_c_buffer);
     else
       jinit_d_coef_controller(cinfo, use_c_buffer);
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
   }
 
   if (!cinfo->raw_data_out) {

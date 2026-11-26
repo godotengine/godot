@@ -217,7 +217,7 @@ start_pass_phuff(j_compress_ptr cinfo, boolean gather_statistics)
       if (entropy->bit_buffer == NULL)
         entropy->bit_buffer = (char *)
           (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
-                                      MAX_CORR_BITS * sizeof(char));
+                                      MAX_CORR_BITS);
     }
   }
   if (gather_statistics)

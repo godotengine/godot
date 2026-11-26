@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, 2022, 2024-2025, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2022, 2024-2026, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2019-2020, Arm Limited.
@@ -14,11 +14,11 @@
  *
  * This file contains upsampling routines.
  *
- * Upsampling input data is counted in "row groups".  A row group
- * is defined to be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size)
- * sample rows of each component.  Upsampling will normally produce
- * max_v_samp_factor pixel rows from each row group (but this could vary
- * if the upsampler is applying a scale factor of its own).
+ * Upsampling input data is counted in "row groups".  A row group is defined to
+ * be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size) sample rows of
+ * each component.  Upsampling will normally produce max_v_samp_factor rows of
+ * each component from each row group (but this could vary if the upsampler is
+ * applying a scale factor of its own).
  *
  * An excellent reference for image resampling is
  *   Digital Image Warping, George Wolberg, 1990.
@@ -113,8 +113,8 @@ sep_upsample(j_decompress_ptr cinfo, _JSAMPIMAGE input_buf,
 
 
 /*
- * These are the routines invoked by sep_upsample to upsample pixel values
- * of a single component.  One row group is processed per call.
+ * These are the routines invoked by sep_upsample to upsample values of a
+ * single component.  One row group is processed per call.
  */
 
 
@@ -148,13 +148,13 @@ noop_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
 
 /*
  * This version handles any integral sampling ratios.
- * This is not used for typical JPEG files, so it need not be fast.
- * Nor, for that matter, is it particularly accurate: the algorithm is
- * simple replication of the input pixel onto the corresponding output
- * pixels.  The hi-falutin sampling literature refers to this as a
- * "box filter".  A box filter tends to introduce visible artifacts,
- * so if you are actually going to use 3:1 or 4:1 sampling ratios
- * you would be well advised to improve this code.
+ * This is not used for typical JPEG files, so it need not be fast.  Nor, for
+ * that matter, is it particularly accurate: the algorithm is simple
+ * replication of the input sample onto the corresponding output components.
+ * The hi-falutin sampling literature refers to this as a "box filter".  A box
+ * filter tends to introduce visible artifacts, so if you are actually going to
+ * use 3:1 or 4:1 sampling ratios you would be well advised to improve this
+ * code.
  */
 
 METHODDEF(void)
@@ -260,10 +260,10 @@ h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
 /*
  * Fancy processing for the common case of 2:1 horizontal and 1:1 vertical.
  *
- * The upsampling algorithm is linear interpolation between pixel centers,
- * also known as a "triangle filter".  This is a good compromise between
- * speed and visual quality.  The centers of the output pixels are 1/4 and 3/4
- * of the way between input pixel centers.
+ * The upsampling algorithm is linear interpolation between component centers,
+ * also known as a "triangle filter".  This is a good compromise between speed
+ * and visual quality.  The centers of the output components are 1/4 and 3/4 of
+ * the way between input component centers.
  *
  * A note about the "bias" calculations: when rounding fractional values to
  * integer, we do not want to always round 0.5 up to the next integer.
@@ -291,7 +291,7 @@ h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     *outptr++ = (_JSAMPLE)((invalue * 3 + inptr[0] + 2) >> 2);
 
     for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
-      /* General case: 3/4 * nearer pixel + 1/4 * further pixel */
+      /* General case: 3/4 * nearer component + 1/4 * further component */
       invalue = (*inptr++) * 3;
       *outptr++ = (_JSAMPLE)((invalue + inptr[-2] + 1) >> 2);
       *outptr++ = (_JSAMPLE)((invalue + inptr[0] + 2) >> 2);
@@ -391,8 +391,9 @@ h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
       lastcolsum = thiscolsum;  thiscolsum = nextcolsum;
 
       for (colctr = compptr->downsampled_width - 2; colctr > 0; colctr--) {
-        /* General case: 3/4 * nearer pixel + 1/4 * further pixel in each */
-        /* dimension, thus 9/16, 3/16, 3/16, 1/16 overall */
+        /* General case: 3/4 * nearer component + 1/4 * further component in
+         * each dimension, thus 9/16, 3/16, 3/16, 1/16 overall
+         */
         nextcolsum = (*inptr0++) * 3 + (*inptr1++);
         *outptr++ = (_JSAMPLE)((thiscolsum * 3 + lastcolsum + 8) >> 4);
         *outptr++ = (_JSAMPLE)((thiscolsum * 3 + nextcolsum + 7) >> 4);
@@ -462,7 +463,7 @@ _jinit_upsampler(j_decompress_ptr cinfo)
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     /* Compute size of an "input group" after IDCT scaling.  This many samples
-     * are to be converted to max_h_samp_factor * max_v_samp_factor pixels.
+     * are to be converted to max_h_samp_factor * max_v_samp_factor components.
      */
     h_in_group = (compptr->h_samp_factor * compptr->_DCT_scaled_size) /
                  cinfo->_min_DCT_scaled_size;

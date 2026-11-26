@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2020, 2022, 2024, D. R. Commander.
+ * Copyright (C) 2020, 2022, 2024, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -91,6 +91,8 @@ jinit_compress_master(j_compress_ptr cinfo)
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
+#if defined(DCT_ISLOW_SUPPORTED) || defined(DCT_IFAST_SUPPORTED) || \
+    defined(DCT_FLOAT_SUPPORTED)
     /* Forward DCT */
     if (cinfo->data_precision == 8)
       jinit_forward_dct(cinfo);
@@ -123,6 +125,9 @@ jinit_compress_master(j_compress_ptr cinfo)
     else
       jinit_c_coef_controller(cinfo, (boolean)(cinfo->num_scans > 1 ||
                                                cinfo->optimize_coding));
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
   }
 
   if (cinfo->data_precision <= 8)
