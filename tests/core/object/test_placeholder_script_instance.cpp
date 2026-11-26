@@ -43,6 +43,7 @@ TEST_FORCE_LINK(test_placeholder_script_instance)
 #include "core/object/script_language.h"
 #include "core/os/memory.h"
 #include "core/string/string_name.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/pair.h"
 #include "core/variant/variant.h"
 
@@ -53,6 +54,8 @@ public:
 	List<PropertyInfo> property_infos;
 	HashMap<StringName, Variant> default_values;
 	HashMap<StringName, Variant> constants;
+	List<MethodInfo> method_infos;
+	HashSet<StringName> method_names;
 	bool valid = true;
 
 	virtual bool can_instantiate() const override {
@@ -104,7 +107,7 @@ public:
 	}
 
 	virtual bool has_method(const StringName &p_method) const override {
-		return false;
+		return method_names.has(p_method);
 	}
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
@@ -142,7 +145,11 @@ public:
 		return true;
 	}
 
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const override {}
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override {
+		for (const MethodInfo &E : method_infos) {
+			p_list->push_back(E);
+		}
+	}
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override {
 		for (const PropertyInfo &E : property_infos) {
@@ -258,6 +265,101 @@ TEST_SUITE("[PlaceholderScriptInstance]") {
 
 			CHECK_EQ(obj->get("prop_a"), Variant(2));
 		}
+	}
+
+	TEST_CASE("Property list must reflect the properties passed on update.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_a"));
+		scr->default_values.insert("prop_a", 0);
+		MAKE_INSTANCE(scr);
+
+		List<PropertyInfo> props;
+		inst->get_property_list(&props);
+		REQUIRE_EQ(props.size(), 1);
+		CHECK_EQ(props.front()->get().name, "prop_a");
+	}
+
+	TEST_CASE("Property type must be retrievable for values and constants, and invalid for unknown names.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_a"));
+		scr->default_values.insert("prop_a", 0);
+		scr->constants.insert("const_a", "hello");
+		MAKE_INSTANCE(scr);
+
+		// A property matching its default value is not stored, so it must first be changed
+		// to a non-default value to show up as a known value.
+		REQUIRE(inst->set("prop_a", 1));
+
+		bool r_valid = false;
+		CHECK_EQ(inst->get_property_type("prop_a", &r_valid), Variant::INT);
+		CHECK_EQ(r_valid, true);
+
+		r_valid = false;
+		CHECK_EQ(inst->get_property_type("const_a", &r_valid), Variant::STRING);
+		CHECK_EQ(r_valid, true);
+
+		r_valid = true;
+		CHECK_EQ(inst->get_property_type("prop_absent", &r_valid), Variant::NIL);
+		CHECK_EQ(r_valid, false);
+	}
+
+	TEST_CASE("Method list and has_method must reflect the script's methods when not in fallback mode.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->method_infos.push_back(MethodInfo("do_something"));
+		scr->method_names.insert("do_something");
+		MAKE_INSTANCE(scr);
+
+		CHECK_EQ(inst->has_method("do_something"), true);
+		CHECK_EQ(inst->has_method("does_not_exist"), false);
+
+		List<MethodInfo> methods;
+		inst->get_method_list(&methods);
+		REQUIRE_EQ(methods.size(), 1);
+		CHECK_EQ(methods.front()->get().name, "do_something");
+	}
+
+	TEST_CASE("Method list and has_method must be empty for an invalid (fallback) script.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->valid = false;
+		scr->method_infos.push_back(MethodInfo("do_something"));
+		scr->method_names.insert("do_something");
+		MAKE_INSTANCE(scr);
+
+		CHECK_EQ(inst->has_method("do_something"), false);
+
+		List<MethodInfo> methods;
+		inst->get_method_list(&methods);
+		CHECK_EQ(methods.size(), 0);
+	}
+
+	TEST_CASE("Calling a method on a placeholder instance must always fail.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->method_infos.push_back(MethodInfo("do_something"));
+		scr->method_names.insert("do_something");
+		MAKE_INSTANCE(scr);
+
+		Callable::CallError err;
+		inst->callp("do_something", nullptr, 0, err);
+		CHECK_EQ(err.error, Callable::CallError::CALL_ERROR_INVALID_METHOD);
+	}
+
+	TEST_CASE("Setting an unregistered property on an invalid script must fall back and register a new property.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->valid = false;
+		MAKE_INSTANCE(scr);
+
+		obj->set("dynamic_prop", 5);
+		CHECK_EQ(obj->get("dynamic_prop"), Variant(5));
+
+		List<PropertyInfo> props;
+		inst->get_property_list(&props);
+		bool found = false;
+		for (const PropertyInfo &p : props) {
+			if (p.name == "dynamic_prop") {
+				found = true;
+			}
+		}
+		CHECK_EQ(found, true);
 	}
 }
 
