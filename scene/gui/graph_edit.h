@@ -244,6 +244,7 @@ private:
 	bool right_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
+	bool update_top_connection_layer_queued = false;
 
 	Vector<Ref<Connection>> connections;
 	HashMap<StringName, List<Ref<Connection>>> connection_map;
@@ -343,6 +344,7 @@ private:
 	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color);
 	void _invalidate_connection_line_cache();
 	void _update_top_connection_layer();
+	void _queue_update_top_connection_layer();
 	void _update_connections();
 
 	void _top_layer_draw();
