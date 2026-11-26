@@ -129,6 +129,12 @@
 				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
 			</description>
 		</method>
+		<method name="move_and_push">
+			<return type="bool" />
+			<description>
+				Calls [method move_and_slide]. After [method move_and_slide] is called, it checks to see if CharacterBody3D is colliding with a [RigidBody3D]. If the CharacterBody3D collides with a RigidBody3D, it applies an impulse to the RigidBody3D. Scales with [member collision_push_multiplier], the CharacterBody3D's velocity and RigidBody3D's [member PhysicsMaterial.bounce] property.
+			</description>
+		</method>
 		<method name="move_and_slide">
 			<return type="bool" />
 			<description>
@@ -141,6 +147,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="collision_push_multiplier" type="float" setter="set_collision_push_multiplier" getter="get_collision_push_multiplier" default="1.0">
+			Scales the amount of force imparted onto a RigidBody2D when [method move_and_push] is called.
+		</member>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
 			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
 		</member>
