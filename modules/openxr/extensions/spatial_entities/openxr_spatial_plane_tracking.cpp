@@ -83,7 +83,11 @@ XrSpatialCapabilityConfigurationBaseHeaderEXT *OpenXRSpatialCapabilityConfigurat
 			plane_enabled_components.push_back(XR_SPATIAL_COMPONENT_TYPE_POLYGON_2D_EXT);
 		}
 		if (get_supports_labels()) {
-			plane_enabled_components.push_back(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT);
+			if (capability->is_semantics_label2_supported()) {
+				plane_enabled_components.push_back(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL2_EXT);
+			} else {
+				plane_enabled_components.push_back(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT);
+			}
 		}
 
 		// Set up our enabled components.
@@ -124,7 +128,10 @@ bool OpenXRSpatialCapabilityConfigurationPlaneTracking::get_supports_labels() {
 		OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 		ERR_FAIL_NULL_V(se_extension, false);
 
-		supports_labels = se_extension->supports_component_type(XR_SPATIAL_CAPABILITY_PLANE_TRACKING_EXT, XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT) ? 1 : 0;
+		OpenXRSpatialPlaneTrackingCapability *capability = OpenXRSpatialPlaneTrackingCapability::get_singleton();
+		ERR_FAIL_NULL_V(capability, false);
+
+		supports_labels = se_extension->supports_component_type(XR_SPATIAL_CAPABILITY_PLANE_TRACKING_EXT, capability->is_semantics_label2_supported() ? XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL2_EXT : XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT) ? 1 : 0;
 	}
 
 	return supports_labels == 1;
@@ -245,6 +252,8 @@ void OpenXRSpatialComponentPlaneSemanticLabelList::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLANE_SEMANTIC_LABEL_WALL);
 	BIND_ENUM_CONSTANT(PLANE_SEMANTIC_LABEL_CEILING);
 	BIND_ENUM_CONSTANT(PLANE_SEMANTIC_LABEL_TABLE);
+	BIND_ENUM_CONSTANT(PLANE_SEMANTIC_LABEL_DOOR);
+	BIND_ENUM_CONSTANT(PLANE_SEMANTIC_LABEL_WINDOW);
 }
 
 void OpenXRSpatialComponentPlaneSemanticLabelList::set_capacity(uint32_t p_capacity) {
@@ -255,16 +264,32 @@ void OpenXRSpatialComponentPlaneSemanticLabelList::set_capacity(uint32_t p_capac
 }
 
 XrSpatialComponentTypeEXT OpenXRSpatialComponentPlaneSemanticLabelList::get_component_type() const {
-	return XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT;
+	OpenXRSpatialPlaneTrackingCapability *capability = OpenXRSpatialPlaneTrackingCapability::get_singleton();
+	ERR_FAIL_NULL_V(capability, XR_SPATIAL_COMPONENT_TYPE_MAX_ENUM_EXT);
+
+	if (capability->is_semantics_label2_supported()) {
+		return XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL2_EXT;
+	} else {
+		return XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT;
+	}
 }
 
 void *OpenXRSpatialComponentPlaneSemanticLabelList::get_structure_data(void *p_next) {
+	OpenXRSpatialPlaneTrackingCapability *capability = OpenXRSpatialPlaneTrackingCapability::get_singleton();
+	ERR_FAIL_NULL_V(capability, nullptr);
+
+	if (capability->is_semantics_label2_supported()) {
+		plane_semantic_label_list.type = XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL2_LIST_EXT;
+	} else {
+		plane_semantic_label_list.type = XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT;
+	}
+
 	plane_semantic_label_list.next = p_next;
 	return &plane_semantic_label_list;
 }
 
-XrSpatialPlaneSemanticLabelEXT OpenXRSpatialComponentPlaneSemanticLabelList::get_plane_semantic_label(int64_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, plane_semantic_label_data.size(), XR_SPATIAL_PLANE_SEMANTIC_LABEL_MAX_ENUM_EXT);
+XrSpatialPlaneSemanticLabel2EXT OpenXRSpatialComponentPlaneSemanticLabelList::get_plane_semantic_label(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, plane_semantic_label_data.size(), XR_SPATIAL_PLANE_SEMANTIC_LABEL_2EXT_MAX_ENUM_EXT);
 
 	return plane_semantic_label_data[p_index];
 }
@@ -632,6 +657,7 @@ HashMap<String, bool *> OpenXRSpatialPlaneTrackingCapability::get_requested_exte
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled") && GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_plane_tracking")) {
 		request_extensions[XR_EXT_SPATIAL_PLANE_TRACKING_EXTENSION_NAME] = &spatial_plane_tracking_ext;
+		request_extensions[XR_EXT_SPATIAL_PLANE_SEMANTIC_LABEL2_EXTENSION_NAME] = &spatial_plane_semantics_label2_supported;
 	}
 
 	return request_extensions;
@@ -752,6 +778,10 @@ Ref<OpenXRFutureResult> OpenXRSpatialPlaneTrackingCapability::start_entity_disco
 
 bool OpenXRSpatialPlaneTrackingCapability::is_supported() {
 	return spatial_plane_tracking_supported;
+}
+
+bool OpenXRSpatialPlaneTrackingCapability::is_semantics_label2_supported() {
+	return spatial_plane_tracking_supported && spatial_plane_semantics_label2_supported;
 }
 
 bool OpenXRSpatialPlaneTrackingCapability::start_built_in_tracking() {
@@ -991,20 +1021,26 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot, RID
 
 					if (label_list.is_valid()) {
 						switch (label_list->get_plane_semantic_label(i)) {
-							case XR_SPATIAL_PLANE_SEMANTIC_LABEL_UNCATEGORIZED_EXT: {
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_UNCATEGORIZED_EXT: {
 								plane_tracker->set_plane_label("Uncategorized plane");
 							} break;
-							case XR_SPATIAL_PLANE_SEMANTIC_LABEL_FLOOR_EXT: {
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_FLOOR_EXT: {
 								plane_tracker->set_plane_label("Floor plane");
 							} break;
-							case XR_SPATIAL_PLANE_SEMANTIC_LABEL_WALL_EXT: {
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WALL_EXT: {
 								plane_tracker->set_plane_label("Wall plane");
 							} break;
-							case XR_SPATIAL_PLANE_SEMANTIC_LABEL_CEILING_EXT: {
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_CEILING_EXT: {
 								plane_tracker->set_plane_label("Ceiling plane");
 							} break;
-							case XR_SPATIAL_PLANE_SEMANTIC_LABEL_TABLE_EXT: {
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_TABLE_EXT: {
 								plane_tracker->set_plane_label("Table plane");
+							} break;
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_DOOR_EXT: {
+								plane_tracker->set_plane_label("Door plane");
+							} break;
+							case XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WINDOW_EXT: {
+								plane_tracker->set_plane_label("Window plane");
 							} break;
 							default: {
 								plane_tracker->set_plane_label("Unknown plane");

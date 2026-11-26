@@ -33,5 +33,11 @@
 		<constant name="PLANE_SEMANTIC_LABEL_TABLE" value="5" enum="PlaneSemanticLabel">
 			Plane represents the surface of a table.
 		</constant>
+		<constant name="PLANE_SEMANTIC_LABEL_DOOR" value="6" enum="PlaneSemanticLabel">
+			Plane represents a door.
+		</constant>
+		<constant name="PLANE_SEMANTIC_LABEL_WINDOW" value="7" enum="PlaneSemanticLabel">
+			Plane represents a windows.
+		</constant>
 	</constants>
 </class>
