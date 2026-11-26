@@ -414,11 +414,20 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options to convert existing resource to another type of resource.
 	if (is_editable() && edited_resource.is_valid()) {
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
-		if (!conversions.is_empty()) {
-			edit_menu->add_separator();
-		}
+		bool separator_added = false;
 		int relative_id = 0;
 		for (const Ref<EditorResourceConversionPlugin> &conversion : conversions) {
+			if (!conversion->replaces_source()) {
+				// Conversions that create a new resource can't replace the edited one.
+				// Still increment the ID to keep it aligned with the index in `conversions`.
+				relative_id++;
+				continue;
+			}
+			if (!separator_added) {
+				edit_menu->add_separator();
+				separator_added = true;
+			}
+
 			String what = conversion->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
