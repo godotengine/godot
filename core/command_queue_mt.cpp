@@ -72,7 +72,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
 bool CommandQueueMT::dealloc_one() {
 tryagain:
-	if (dealloc_ptr == (write_ptr_and_epoch >> 1)) {
+	if (dealloc_ptr == (write_ptr_and_epoch.load(std::memory_order_relaxed) >> 1)) {
 		// The queue is empty
 		return false;
 	}
@@ -94,9 +94,10 @@ tryagain:
 	return true;
 }
 
-CommandQueueMT::CommandQueueMT(bool p_sync) {
-	read_ptr_and_epoch = 0;
-	write_ptr_and_epoch = 0;
+CommandQueueMT::CommandQueueMT(bool p_sync, bool (*p_is_bypass_enabled_for_thread)()) :
+		is_bypass_enabled_for_thread(p_is_bypass_enabled_for_thread) {
+	read_ptr_and_epoch.store(0, std::memory_order_relaxed);
+	write_ptr_and_epoch.store(0, std::memory_order_relaxed);
 	dealloc_ptr = 0;
 
 	command_mem_size = GLOBAL_DEF_RST("memory/limits/command_queue/multithreading_queue_size_kb", DEFAULT_COMMAND_MEM_SIZE_KB);
@@ -110,6 +111,7 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	if (p_sync) {
 		sync = memnew(Semaphore);
 	} else {
+		DEV_ASSERT(!p_is_bypass_enabled_for_thread);
 		sync = nullptr;
 	}
 }
