@@ -1524,12 +1524,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(src, 1);
 
 #ifdef DEBUG_ENABLED
-				GET_VARIANT_PTR(type, 2);
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
-				GD_ERR_BREAK(!nc);
+				GD_ERR_BREAK(_code_ptr[ip + 3] < 0 || _code_ptr[ip + 3] >= _global_names_count);
+				const StringName &type = _global_names_ptr[_code_ptr[ip + 3]];
+
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							"' to a variable of type '" + nc->get_name() + "'.";
+							"' to a variable of type '" + type + "'.";
 					OPCODE_BREAK;
 				}
 
@@ -1541,9 +1541,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					if (src_obj && !src_obj->is_class(nc->get_name())) {
+					if (src_obj && !src_obj->is_class(type)) {
 						err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
-								"' to a variable of type '" + nc->get_name() + "'.";
+								"' to a variable of type '" + type + "'.";
 						OPCODE_BREAK;
 					}
 				}
@@ -1645,10 +1645,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				CHECK_SPACE(4);
 				GET_VARIANT_PTR(src, 0);
 				GET_VARIANT_PTR(dst, 1);
-				GET_VARIANT_PTR(to_type, 2);
 
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(to_type->operator Object *());
-				GD_ERR_BREAK(!nc);
+				GD_ERR_BREAK(_code_ptr[ip + 3] < 0 || _code_ptr[ip + 3] >= _global_names_count);
+				const StringName &to_type = _global_names_ptr[_code_ptr[ip + 3]];
 
 #ifdef DEBUG_ENABLED
 				if (src->operator Object *() && !src->get_validated_object()) {
@@ -1662,7 +1661,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				Object *src_obj = src->operator Object *();
 
-				if (src_obj && !src_obj->is_class(nc->get_name())) {
+				if (src_obj && !src_obj->is_class(to_type)) {
 					*dst = Variant(); // invalid cast, assign NULL
 				} else {
 					*dst = *src;
@@ -2926,14 +2925,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				CHECK_SPACE(3);
 				GET_VARIANT_PTR(r, 0);
 
-				GET_VARIANT_PTR(type, 1);
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
-				GD_ERR_BREAK(!nc);
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _global_names_count);
+				const StringName &type = _global_names_ptr[_code_ptr[ip + 2]];
 
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
-							_get_var_type(r), nc->get_name());
+							_get_var_type(r), type);
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -2949,10 +2947,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #else
 				Object *ret_obj = r->operator Object *();
 #endif // DEBUG_ENABLED
-				if (ret_obj && !ret_obj->is_class(nc->get_name())) {
+				if (ret_obj && !ret_obj->is_class(type)) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
-							_get_var_type(r), nc->get_name());
+							_get_var_type(r), type);
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
