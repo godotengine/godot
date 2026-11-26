@@ -407,7 +407,7 @@
 			If [code]true[/code], enables vertical scrolling.
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode" default="0">
-			Allows single or multiple selection. See the [enum SelectMode] constants.
+			Allows single or multiple selection.
 		</member>
 		<member name="tile_scroll_hint" type="bool" setter="set_tile_scroll_hint" getter="is_scroll_hint_tiled" default="false">
 			If [code]true[/code], the scroll hint texture will be tiled instead of stretched. See [member scroll_hint_mode].
