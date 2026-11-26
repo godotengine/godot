@@ -54,7 +54,7 @@ class _WARN_UNUSED_ FixedVector {
 	uint32_t _size = 0;
 	alignas(T) uint8_t _data[CAPACITY * sizeof(T)];
 
-	constexpr static uint32_t DATA_PADDING = MAX(alignof(T), alignof(uint32_t)) - alignof(uint32_t);
+	constexpr static uint32_t DATA_PADDING = (alignof(T) > alignof(uint32_t) ? alignof(T) : alignof(uint32_t)) - alignof(uint32_t);
 
 public:
 	_FORCE_INLINE_ constexpr FixedVector() = default;
