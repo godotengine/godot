@@ -829,6 +829,11 @@ int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn)
     p = buf;
     n = size;
 
+    if (size == 0) {
+        return MBEDTLS_ERR_X509_BUFFER_TOO_SMALL;
+    }
+    buf[0] = 0;
+
     while (name != NULL) {
         if (!name->oid.p) {
             name = name->next;

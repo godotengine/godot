@@ -95,6 +95,10 @@ mbedtls_x509_crl;
 /**
  * \brief          Parse a DER-encoded CRL and append it to the chained list
  *
+ * \note           Issuer names in CRL entries must have the same encoding
+ *                 as in the certificate. See the warning on
+ *                 mbedtls_x509_crt_is_revoked() for details.
+ *
  * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
  *                 subsystem must have been initialized by calling
  *                 psa_crypto_init() before calling this function.
@@ -110,6 +114,10 @@ int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
                                const unsigned char *buf, size_t buflen);
 /**
  * \brief          Parse one or more CRLs and append them to the chained list
+ *
+ * \note           Issuer names in CRL entries must have the same encoding
+ *                 as in the certificate. See the warning on
+ *                 mbedtls_x509_crt_is_revoked() for details.
  *
  * \note           Multiple CRLs are accepted only if using PEM format
  *
@@ -129,6 +137,10 @@ int mbedtls_x509_crl_parse(mbedtls_x509_crl *chain, const unsigned char *buf, si
 #if defined(MBEDTLS_FS_IO)
 /**
  * \brief          Load one or more CRLs and append them to the chained list
+ *
+ * \note           Issuer names in CRL entries must have the same encoding
+ *                 as in the certificate. See the warning on
+ *                 mbedtls_x509_crt_is_revoked() for details.
  *
  * \note           Multiple CRLs are accepted only if using PEM format
  *

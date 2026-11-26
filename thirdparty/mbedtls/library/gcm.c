@@ -34,10 +34,10 @@
 #if defined(MBEDTLS_AESNI_C)
 #include "aesni.h"
 #endif
-
 #if defined(MBEDTLS_AESCE_C)
 #include "aesce.h"
 #endif
+#include "constant_time_internal.h"
 
 #if !defined(MBEDTLS_GCM_ALT)
 
@@ -46,6 +46,34 @@
 #define MBEDTLS_GCM_ACC_LARGETABLE  1
 #define MBEDTLS_GCM_ACC_AESNI       2
 #define MBEDTLS_GCM_ACC_AESCE       3
+
+/* 1 if hardware support is present at runtime, 0 otherwise.
+ * Undefined macro if no hardware support code is enabled.
+ *
+ * This macro is only used for re-checking, so it can directly
+ * reference a variable, it doesn't need to call the checking code.
+ */
+#if defined(MBEDTLS_AESNI_HAVE_CODE)
+#define MBEDTLS_GCM_HAVE_HARDWARE                       \
+    mbedtls_aesni_has_support(MBEDTLS_AESNI_CLMUL)
+#endif
+#if defined(MBEDTLS_AESCE_HAVE_CODE)
+#define MBEDTLS_GCM_HAVE_HARDWARE MBEDTLS_AESCE_HAS_SUPPORT_RECHECK
+#endif
+
+/* Similar to mbedtls_aes_block_speculation_of_no_hardware() in aes.c.
+ * See the documentation of that function. */
+static void mbedtls_gcm_block_speculation_of_no_hardware(
+    mbedtls_gcm_context **pctx)
+{
+#if defined(MBEDTLS_SPECTRE_V1_COUNTERMEASURES) && \
+    defined(MBEDTLS_GCM_HAVE_HARDWARE)
+    MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(*pctx, MBEDTLS_GCM_HAVE_HARDWARE, 0);
+#else
+    (void) pctx;
+#endif
+
+}
 
 /*
  * Initialize a context
@@ -130,6 +158,8 @@ static int gcm_gen_table(mbedtls_gcm_context *ctx)
 #endif
 
         default:
+            mbedtls_gcm_block_speculation_of_no_hardware(&ctx);
+
             /* 0 corresponds to 0 in GF(2^128) */
             ctx->H[0][0] = 0;
             ctx->H[0][1] = 0;
@@ -362,10 +392,12 @@ static void gcm_mult(mbedtls_gcm_context *ctx, const unsigned char x[16],
 
 #if defined(MBEDTLS_GCM_LARGE_TABLE)
         case MBEDTLS_GCM_ACC_LARGETABLE:
+            mbedtls_gcm_block_speculation_of_no_hardware(&ctx);
             gcm_mult_largetable(output, x, ctx->H);
             break;
 #else
         case MBEDTLS_GCM_ACC_SMALLTABLE:
+            mbedtls_gcm_block_speculation_of_no_hardware(&ctx);
             gcm_mult_smalltable(output, x, ctx->H);
             break;
 #endif

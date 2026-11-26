@@ -123,7 +123,10 @@
  *      uniformResourceIdentifier       [6]     IA5String,
  *      iPAddress                       [7]     OCTET STRING,
  *      registeredID                    [8]     OBJECT IDENTIFIER
+ *
+ * Add NONE for the benefit of x509_crt_infer_name_type().
  */
+#define MBEDTLS_X509_SAN_NONE                           -1
 #define MBEDTLS_X509_SAN_OTHER_NAME                      0
 #define MBEDTLS_X509_SAN_RFC822_NAME                     1
 #define MBEDTLS_X509_SAN_DNS_NAME                        2
@@ -310,15 +313,18 @@ mbedtls_x509_san_list;
 /** \} addtogroup x509_module */
 
 /**
- * \brief          Store the certificate DN in printable form into buf;
- *                 no more than size characters will be written.
+ * \brief          Store the certificate DN in printable form into buf.
  *
- * \param buf      Buffer to write to
- * \param size     Maximum size of buffer
- * \param dn       The X509 name to represent
+ * \param buf      Buffer to write to.
+ *                 On success, it contains the printable form of the name
+ *                 plus a terminating null byte.
+ * \param size     Size of \p buf, in bytes.
+ *                 It should have enough room for the name plus a
+ *                 terminating null byte.
+ * \param dn       The X509 name to represent.
  *
  * \return         The length of the string written (not including the
- *                 terminated nul byte), or a negative error code.
+ *                 terminating null byte), or a negative error code.
  */
 int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn);
 

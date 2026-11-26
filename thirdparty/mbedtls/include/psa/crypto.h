@@ -119,7 +119,9 @@ psa_status_t psa_crypto_init(void);
 
 /** Return an initial value for a key attributes structure.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_attributes_t psa_key_attributes_init(void);
+#endif
 
 /** Declare a key as persistent and set its key identifier.
  *
@@ -348,7 +350,9 @@ static void psa_set_key_bits(psa_key_attributes_t *attributes,
  *
  * \return The key type stored in the attribute structure.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_type_t psa_get_key_type(const psa_key_attributes_t *attributes);
+#endif
 
 /** Retrieve the key size from key attributes.
  *
@@ -951,7 +955,9 @@ typedef struct psa_hash_operation_s psa_hash_operation_t;
 
 /** Return an initial value for a hash operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_hash_operation_t psa_hash_operation_init(void);
+#endif
 
 /** Set up a multipart hash operation.
  *
@@ -1310,7 +1316,9 @@ typedef struct psa_mac_operation_s psa_mac_operation_t;
 
 /** Return an initial value for a MAC operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_mac_operation_t psa_mac_operation_init(void);
+#endif
 
 /** Set up a multipart MAC calculation operation.
  *
@@ -1723,7 +1731,9 @@ typedef struct psa_cipher_operation_s psa_cipher_operation_t;
 
 /** Return an initial value for a cipher operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_cipher_operation_t psa_cipher_operation_init(void);
+#endif
 
 /** Set the key for a multipart symmetric encryption operation.
  *
@@ -2249,7 +2259,9 @@ typedef struct psa_aead_operation_s psa_aead_operation_t;
 
 /** Return an initial value for an AEAD operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_aead_operation_t psa_aead_operation_init(void);
+#endif
 
 /** Set the key for a multipart authenticated encryption operation.
  *
@@ -3249,7 +3261,9 @@ typedef struct psa_key_derivation_s psa_key_derivation_operation_t;
 
 /** Return an initial value for a key derivation operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_derivation_operation_t psa_key_derivation_operation_init(void);
+#endif
 
 /** Set up a key derivation operation.
  *

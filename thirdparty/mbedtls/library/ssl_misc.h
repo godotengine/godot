@@ -732,6 +732,35 @@ typedef struct {
     unsigned char server_handshake_traffic_secret[MBEDTLS_TLS1_3_MD_MAX_SIZE];
 } mbedtls_ssl_tls13_handshake_secrets;
 
+typedef enum {
+    MBEDTLS_SSL_TLS1_2_KEY_SCHEDULING_STAGE_NONE = 0,
+    MBEDTLS_SSL_TLS1_2_KEY_SCHEDULING_STAGE_TRAFFIC_KEYS,
+} mbedtls_ssl_tls12_key_scheduling_stage;
+
+typedef enum {
+    MBEDTLS_SSL_TLS1_2_KEY_SCHEDULE_INPUT_NONE = 0,
+    MBEDTLS_SSL_TLS1_2_KEY_SCHEDULE_INPUT_KEY_EXCHANGE = 1 << 0,
+    MBEDTLS_SSL_TLS1_2_KEY_SCHEDULE_INPUT_RESUMPTION = 1 << 1,
+} mbedtls_ssl_tls12_key_schedule_input;
+
+typedef enum {
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULING_STAGE_NONE = 0,
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULING_STAGE_EARLY_SECRET,
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULING_STAGE_EARLY_DATA,
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULING_STAGE_HANDSHAKE,
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULING_STAGE_APPLICATION,
+} mbedtls_ssl_tls13_key_scheduling_stage;
+
+typedef enum {
+    MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_NONE = 0,
+    MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_PSK  = 1 << 0,
+    MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PRIVATE = 1 << 1,
+    MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PEER = 1 << 2,
+    MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_BOTH =
+        MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PRIVATE |
+        MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PEER,
+} mbedtls_ssl_tls13_key_exchange_input;
+
 /*
  * This structure contains the parameters only needed during handshake.
  */
@@ -850,6 +879,11 @@ struct mbedtls_ssl_handshake_params {
 #endif
     /** selected_group of key_share extension in HelloRetryRequest message. */
     uint16_t hrr_selected_group;
+#if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+    uint8_t ch1_sni_name_present;
+    unsigned char *ch1_sni_name;
+    size_t ch1_sni_name_len;
+#endif
 #if defined(MBEDTLS_SSL_SESSION_TICKETS)
     uint16_t new_session_tickets_count;         /*!< number of session tickets */
 #endif
@@ -928,6 +962,13 @@ struct mbedtls_ssl_handshake_params {
     mbedtls_x509_crl *sni_ca_crl;       /*!< trusted CAs CRLs from SNI      */
 #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
+
+#if defined(MBEDTLS_SSL_SRV_C) && defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+    void *sni_p_cache;                    /*!< context for cache callbacks    */
+#if defined(MBEDTLS_SSL_SESSION_TICKETS)
+    void *sni_p_ticket;                   /*!< context for ticket callbacks   */
+#endif /* MBEDTLS_SSL_SESSION_TICKETS */
+#endif /* MBEDTLS_SSL_SRV_C */
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C) &&        \
     !defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
@@ -1086,6 +1127,10 @@ struct mbedtls_ssl_handshake_params {
     unsigned char premaster[MBEDTLS_PREMASTER_SIZE];
     /*!<  premaster secret        */
     size_t pmslen;                      /*!<  premaster length        */
+
+    mbedtls_ssl_tls12_key_scheduling_stage
+        tls12_key_scheduling_stage_completed;
+    unsigned char tls12_key_schedule_inputs;
 #endif
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
@@ -1099,6 +1144,13 @@ struct mbedtls_ssl_handshake_params {
 
     /** TLS 1.3 transform for encrypted handshake messages. */
     mbedtls_ssl_transform *transform_handshake;
+    /** TLS 1.3 key scheduling progress.
+     *
+     * The early-data, handshake and application stages are reached after
+     * successfully computing the secret, sub-secrets and keys of the stage.
+     */
+    mbedtls_ssl_tls13_key_scheduling_stage tls13_key_scheduling_stage_completed;
+    unsigned char tls13_key_exchange_inputs;
     union {
         unsigned char early[MBEDTLS_TLS1_3_MD_MAX_SIZE];
         unsigned char handshake[MBEDTLS_TLS1_3_MD_MAX_SIZE];
@@ -1129,6 +1181,14 @@ struct mbedtls_ssl_handshake_params {
 #endif
 #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
 };
+
+#if defined(MBEDTLS_SSL_SRV_C)
+void *mbedtls_ssl_get_session_cache_context(const mbedtls_ssl_context *ssl);
+
+#if defined(MBEDTLS_SSL_SESSION_TICKETS)
+void *mbedtls_ssl_get_session_ticket_context(const mbedtls_ssl_context *ssl);
+#endif /* MBEDTLS_SSL_SESSION_TICKETS */
+#endif /* MBEDTLS_SSL_SRV_C */
 
 typedef struct mbedtls_ssl_hs_buffer mbedtls_ssl_hs_buffer;
 
@@ -1416,6 +1476,13 @@ void mbedtls_ssl_transform_free(mbedtls_ssl_transform *transform);
  * \param ssl       SSL context
  */
 void mbedtls_ssl_handshake_free(mbedtls_ssl_context *ssl);
+
+/**
+ * Reinitialize the handshake negotiation state, including the provisional
+ * session, without resetting the record and message layers.
+ */
+MBEDTLS_CHECK_RETURN_CRITICAL
+int mbedtls_ssl_handshake_init(mbedtls_ssl_context *ssl);
 
 /* set inbound transform of ssl context */
 void mbedtls_ssl_set_inbound_transform(mbedtls_ssl_context *ssl,
@@ -2940,6 +3007,9 @@ MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_parse_server_name_ext(mbedtls_ssl_context *ssl,
                                       const unsigned char *buf,
                                       const unsigned char *end);
+
+MBEDTLS_CHECK_RETURN_CRITICAL
+int mbedtls_ssl_call_sni_callback(mbedtls_ssl_context *ssl);
 #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
 
 #if defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
