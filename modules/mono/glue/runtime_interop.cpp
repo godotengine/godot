@@ -223,6 +223,11 @@ int64_t godotsharp_internal_signal_awaiter_connect(Object *p_source, StringName 
 	return (int64_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
 }
 
+void godotsharp_internal_signal_awaiter_disconnect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
+	StringName signal = p_signal ? *p_signal : StringName();
+	gd_mono_disconnect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
+}
+
 GCHandleIntPtr godotsharp_internal_unmanaged_get_script_instance_managed(Object *p_unmanaged, bool *r_has_cs_script_instance) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!p_unmanaged);
@@ -1599,6 +1604,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_internal_object_disposed,
 	(void *)godotsharp_internal_refcounted_disposed,
 	(void *)godotsharp_internal_signal_awaiter_connect,
+	(void *)godotsharp_internal_signal_awaiter_disconnect,
 	(void *)godotsharp_internal_tie_native_managed_to_unmanaged,
 	(void *)godotsharp_internal_tie_user_managed_to_unmanaged,
 	(void *)godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup,

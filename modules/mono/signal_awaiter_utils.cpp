@@ -45,6 +45,18 @@ Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signa
 	return p_source->connect(p_signal, callable, Object::CONNECT_ONE_SHOT);
 }
 
+void gd_mono_disconnect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
+	ERR_FAIL_NULL(p_source);
+	ERR_FAIL_NULL(p_target);
+
+	// TODO: Use pooling for ManagedCallable instances.
+	MonoGCHandleData awaiter_handle(p_awaiter_handle_ptr, gdmono::GCHandleType::STRONG_HANDLE);
+	SignalAwaiterCallable *awaiter_callable = memnew(SignalAwaiterCallable(p_target, awaiter_handle, p_signal));
+	Callable callable = Callable(awaiter_callable);
+
+	p_source->disconnect(p_signal, callable);
+}
+
 bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Only called if both instances are of type SignalAwaiterCallable. Static cast is safe.
 	const SignalAwaiterCallable *a = static_cast<const SignalAwaiterCallable *>(p_a);
