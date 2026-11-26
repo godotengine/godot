@@ -194,7 +194,7 @@ public:
 
 	virtual PS2DE::ShapeType get_type() const override { return PS2DE::SHAPE_SEPARATION_RAY; }
 
-	virtual bool allows_one_way_collision() const override { return false; }
+	virtual bool allows_one_way_collision() const override { return true; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const override { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const override;
