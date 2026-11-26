@@ -119,6 +119,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static Error get_uv_lines(Ref<Mesh> p_mesh, int p_layer, PackedVector2Array *r_output);
 	void edit(MeshInstance3D *p_mesh);
 	MeshInstance3DEditor();
 };
