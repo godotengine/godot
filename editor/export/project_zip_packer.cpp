@@ -53,12 +53,12 @@ String ProjectZIPPacker::get_project_zip_safe_name() {
 
 void ProjectZIPPacker::pack_project_zip(const String &p_path) {
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 	const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
 
-	zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+	zipFile zip = zipOpen2_64(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, nullptr);
 }
@@ -66,7 +66,7 @@ void ProjectZIPPacker::pack_project_zip(const String &p_path) {
 void ProjectZIPPacker::pack_zip_absolute_path(const String &p_output_path, const String &p_source_absolute_path) {
 	ERR_FAIL_COND_MSG(!DirAccess::dir_exists_absolute(p_source_absolute_path), vformat("Path %s doesn't exist or is not a directory.", p_source_absolute_path));
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
 	String base_path = p_source_absolute_path.rstrip("/");
 	if (base_path.begins_with("res://")) {
@@ -75,7 +75,7 @@ void ProjectZIPPacker::pack_zip_absolute_path(const String &p_output_path, const
 	}
 	base_path = base_path.get_base_dir(); // This will force to include the root dir in the zip
 
-	zipFile zip = zipOpen2(p_output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+	zipFile zip = zipOpen2_64(p_output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 
 	_zip_recursive(p_source_absolute_path, base_path + "/", zip);
 	zipClose(zip, nullptr);
@@ -122,7 +122,7 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 	zipfi.internal_fa = 0;
 
 	String path = p_path.trim_prefix(p_base_path);
-	zipOpenNewFileInZip4(p_zip,
+	zipOpenNewFileInZip4_64(p_zip,
 			path.utf8().get_data(),
 			&zipfi,
 			nullptr,
@@ -138,9 +138,10 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 			Z_DEFAULT_STRATEGY,
 			nullptr,
 			0,
-			0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
-	zipWriteInFileInZip(p_zip, data.ptr(), data.size());
+			0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+			1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+			data.size() > UINT_MAX); // zip64: only pass if size exceeds 0xFFFFFFFF
+	godot_zip_write_file(p_zip, data.ptr(), data.size());
 	zipCloseFileInZip(p_zip);
 }
 
@@ -159,7 +160,7 @@ void ProjectZIPPacker::_zip_recursive(const String &p_path, const String &p_base
 			// Skip
 		} else if (dir->current_is_dir()) {
 			String path = cs.trim_prefix(p_base_path) + "/";
-			zipOpenNewFileInZip4(p_zip,
+			zipOpenNewFileInZip4_64(p_zip,
 					path.utf8().get_data(),
 					nullptr,
 					nullptr,
@@ -175,8 +176,9 @@ void ProjectZIPPacker::_zip_recursive(const String &p_path, const String &p_base
 					Z_DEFAULT_STRATEGY,
 					nullptr,
 					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+					1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					0); // zip64: don't pass because directories never need 64-bit extensions
 			zipCloseFileInZip(p_zip);
 			_zip_recursive(cs, p_base_path, p_zip);
 		} else {

@@ -50,8 +50,8 @@
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
-	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
+	unzFile pkg = unzOpen2_64(p_template.utf8().get_data(), &io);
 
 	if (!pkg) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not open template for export: \"%s\"."), p_template));
@@ -66,9 +66,9 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 
 	do {
 		//get filename
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = String::utf8(fname);
 
