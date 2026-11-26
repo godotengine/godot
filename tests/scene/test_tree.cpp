@@ -35,6 +35,8 @@ TEST_FORCE_LINK(test_tree)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 
 namespace TestTree {
 
@@ -316,6 +318,25 @@ TEST_CASE("[SceneTree][Tree]") {
 		CHECK_EQ(child3->get_prev_visible(true), child2);
 		CHECK_EQ(child3->get_prev_in_tree(true), child2);
 
+		memdelete(tree);
+	}
+
+	SUBCASE("[Tree] Refused drags do not block drops under selected items.") {
+		Tree *tree = memnew(Tree);
+		tree->set_size(Size2(200, 200));
+
+		SceneTree::get_singleton()->get_root()->add_child(tree);
+		TreeItem *root = tree->create_item();
+		TreeItem *child = tree->create_item(root);
+		TreeItem *grandchild = tree->create_item(child);
+		child->select(0);
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+
+		const Point2 pos = tree->get_item_rect(grandchild, 0).get_center();
+		CHECK_EQ(tree->get_drop_section_at_position(pos), 0);
+
+		CHECK_EQ(tree->get_drag_data(pos), Variant());
+		CHECK_EQ(tree->get_drop_section_at_position(pos), 0);
 		memdelete(tree);
 	}
 }
