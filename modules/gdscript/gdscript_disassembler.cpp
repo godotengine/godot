@@ -443,16 +443,26 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
+			case OPCODE_CAST_TO_TYPED_ARRAY:
 			case OPCODE_ASSIGN_TYPED_ARRAY: {
-				text += "assign typed array ";
+				if (opcode == OPCODE_ASSIGN_TYPED_ARRAY) {
+					text += "assign typed array ";
+				} else {
+					text += "cast to typed array ";
+				}
 				text += DADDR(1);
 				text += " = ";
 				text += DADDR(2);
 
 				incr += 6;
 			} break;
+			case OPCODE_CAST_TO_TYPED_DICTIONARY:
 			case OPCODE_ASSIGN_TYPED_DICTIONARY: {
-				text += "assign typed dictionary ";
+				if (opcode == OPCODE_ASSIGN_TYPED_DICTIONARY) {
+					text += "assign typed dictionary ";
+				} else {
+					text += "cast to typed dictionary ";
+				}
 				text += DADDR(1);
 				text += " = ";
 				text += DADDR(2);
