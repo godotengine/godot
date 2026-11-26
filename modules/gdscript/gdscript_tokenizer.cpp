@@ -1010,7 +1010,8 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 						if (_peek() != '\n') {
 							// Carriage return without newline in string. (???)
 							// Just add it to the string and keep going.
-							result += ch;
+							result += code;
+							valid_escape = false;
 							_advance();
 							break;
 						}
