@@ -821,6 +821,9 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 
 	TreeItem **directory_ptr = folder_map.getptr(base_dir_path);
 	if (!directory_ptr) {
+		if (display_mode != DISPLAY_MODE_TREE_ONLY) {
+			_update_file_list(false);
+		}
 		return;
 	}
 
@@ -853,7 +856,10 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			tree->grab_focus(true);
 		}
 	} else {
+		const bool tree_signals_blocked = tree->is_blocking_signals();
+		tree->set_block_signals(true);
 		(*directory_ptr)->select(0);
+		tree->set_block_signals(tree_signals_blocked);
 		_update_file_list(false);
 		if (p_grab_focus) {
 			files->grab_focus(true);
@@ -1032,6 +1038,30 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 	}
 
 	HashSet<int> valid_selection;
+
+	if (current_path != "Favorites") {
+		String probe_dir = current_path;
+		if (!probe_dir.begins_with("res://")) {
+			probe_dir = "res://" + probe_dir;
+		}
+		if (probe_dir.ends_with("/") && probe_dir != "res://") {
+			probe_dir = probe_dir.substr(0, probe_dir.length() - 1);
+		}
+		EditorFileSystemDirectory *probe_efd = EditorFileSystem::get_singleton()->get_filesystem_path(probe_dir);
+		if (!probe_efd) {
+			String base_dir = current_path.get_base_dir();
+			if (base_dir.ends_with("/") && base_dir != "res://") {
+				base_dir = base_dir.substr(0, base_dir.length() - 1);
+			}
+			probe_efd = EditorFileSystem::get_singleton()->get_filesystem_path(base_dir);
+		}
+		if (!probe_efd) {
+			if (select_after_scan.is_empty()) {
+				files->clear();
+			}
+			return;
+		}
+	}
 
 	files->clear();
 
@@ -1293,6 +1323,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 	if (files->get_current() == -1 && !valid_selection.is_empty()) {
 		files->set_current(*valid_selection.begin());
 	}
+	if (p_keep_selection && files->get_current() != -1) {
+		files->ensure_current_is_visible();
+	}
 }
 
 HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vector<String> &p_paths) {
@@ -1442,13 +1475,33 @@ void FileSystemDock::_fs_changed() {
 	scanning_vb->hide();
 	split_box->show();
 
-	update_all();
-
 	if (!select_after_scan.is_empty()) {
-		_navigate_to_path(select_after_scan);
-		select_after_scan.clear();
+		const String target = select_after_scan;
+		if (tree->is_visible()) {
+			_update_tree(get_uncollapsed_paths(), false, false);
+		}
+		_navigate_to_path(target);
+		bool selected = false;
+		if (file_list_vb->is_visible() && !target.ends_with("/")) {
+			for (int i = 0; i < files->get_item_count(); i++) {
+				if (String(files->get_item_metadata(i)) == target) {
+					files->select(i, true);
+					files->set_current(i);
+					files->ensure_current_is_visible();
+					selected = true;
+					break;
+				}
+			}
+		}
+		if (selected || !file_list_vb->is_visible() || target.ends_with("/")) {
+			select_after_scan.clear();
+		} else {
+			select_after_scan = target;
+		}
 		import_dock_needs_update = true;
 		_update_import_dock();
+	} else {
+		update_all();
 	}
 
 	set_process(false);
@@ -1964,6 +2017,7 @@ void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 		current_path_line_edit->set_text(current_path);
 	}
 
+	select_after_scan = new_path;
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
 }
