@@ -52,6 +52,14 @@
 				Closes the underlying resources used by this instance.
 			</description>
 		</method>
+		<method name="decompress" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="input_path" type="String" />
+			<param index="1" name="output_path" type="String" />
+			<description>
+				Opens the zip archive at the given [param input_path] and decompresses it to [param output_path].
+			</description>
+		</method>
 		<method name="file_exists">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
