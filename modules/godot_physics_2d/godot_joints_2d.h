@@ -82,24 +82,74 @@ class GodotPinJoint2D : public GodotJoint2D {
 		GodotBody2D *_arr[2] = { nullptr, nullptr };
 	};
 
+	// `ENABLE_SPLIT_IMPULSE` can dramatically improve stability but also change behavior (less springy).
+	// The user can easily turn this off in their joints by setting softness to a small value.
+	static constexpr bool ENABLE_SPLIT_IMPULSE = true;
+
+	// `ENABLE_PARALLEL_AXIS` will rotate bodies around the pin rather than their center of mass.
+	// This solver is needed for ANGULAR_VEL_CLAMP to work well. Together they are remarkable.
+	static constexpr bool ENABLE_PARALLEL_AXIS = true;
+	static constexpr bool ENABLE_ANGULAR_VEL_CLAMP = true && ENABLE_PARALLEL_AXIS;
+
+	// This could be added as a property the user can set.
+	// As long as ENABLE_PARALLEL_AXIS is true, a high max torque shouldn't hurt.
+	static constexpr real_t MOTOR_MAX_TORQUE = 1.0e24;
+
+	// Consider warning the user somehow if they set angular limits closer than this gap.
+	// If the gap is smaller and limit_high is more than limit_low, then
+	// the joint will lock to the center point (which is a useful weld function).
+	// If limit_high is less than limit_low, then the joint will have no limits.
+	static constexpr real_t MIN_ANGULAR_LIMIT_SEPERATION = 2 * Math::PI / 180;
+
+	// Rotating more than this in one timestep will create unmanageable integration errors.
+	static constexpr real_t MAX_SINGLE_FRAME_ROTATION = Math::PI * 10 / 180;
+
+	// Linear solver working variables.
 	Transform2D M;
 	Vector2 rA, rB;
+	Vector2 bias_vel;
+	Vector2 linear_impulse;
+	real_t softness = 0.0;
+
+	// Angular solver working variables.
+	real_t i_sum;
+	real_t inv_inertia_A;
+	real_t inv_inertia_B;
+	real_t w_max;
+	real_t motor_w;
+	real_t motor_impulse;
+	real_t max_motor_impulse;
+	real_t bias_w;
+	real_t limit_bias_impulse;
+	real_t limit_lower_w;
+	real_t limit_upper_w;
+	real_t limit_lower_impulse;
+	real_t limit_upper_impulse;
+
+	// Parallel axis working variables
+	Vector2 system_rA;
+	Vector2 system_rB;
+	real_t system_inv_mass;
+	real_t system_inv_inertia;
+
+	// Setup and configuration members
+	real_t initial_angle = 0.0;
 	Vector2 anchor_A;
 	Vector2 anchor_B;
-	Vector2 bias;
-	real_t initial_angle = 0.0;
-	real_t bias_velocity = 0.0;
-	real_t jn_max = 0.0;
-	real_t j_acc = 0.0;
-	real_t i_sum = 0.0;
-	Vector2 P;
-	real_t softness = 0.0;
-	real_t angular_limit_lower = 0.0;
-	real_t angular_limit_upper = 0.0;
+	real_t angular_limit_center = 0.0;
+	real_t angular_limit_extent = 0.0;
 	real_t motor_target_velocity = 0.0;
-	bool is_joint_at_limit = false;
-	bool motor_enabled = false;
 	bool angular_limit_enabled = false;
+	bool motor_enabled = false;
+	bool solve_limits = false;
+
+	static constexpr bool apply_to_bias = true;
+	template <bool APPLY_TO_BIAS = false>
+	void _apply_torque_impulse(float p_torque_impulse);
+	template <bool APPLY_TO_BIAS = false>
+	void _apply_impulse(Vector2 p_impulse);
+	void _solve_angular();
+	void _solve_linear();
 
 public:
 	virtual PS2DE::JointType get_type() const override { return PS2DE::JOINT_TYPE_PIN; }

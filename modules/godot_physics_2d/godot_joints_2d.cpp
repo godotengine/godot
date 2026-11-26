@@ -55,6 +55,10 @@
  * SOFTWARE.
  */
 
+// Math::PI and Math::TAU are double, which may slow things down and mess with boundary conditions when compared with real_t
+static constexpr real_t PI = Math::PI;
+static constexpr real_t TAU = Math::TAU;
+
 void GodotJoint2D::copy_settings_from(GodotJoint2D *p_joint) {
 	set_self(p_joint->get_self());
 	set_max_force(p_joint->get_max_force());
@@ -96,164 +100,371 @@ normal_relative_velocity(GodotBody2D *a, GodotBody2D *b, Vector2 rA, Vector2 rB,
 	return relative_velocity(a, b, rA, rB).dot(n);
 }
 
-bool GodotPinJoint2D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
+// Returns normalized [-Pi, Pi).
+static real_t _angle_normalize_slow(real_t angle) {
+	if (unlikely(std::fabs(angle) >= 3 * PI)) {
+		angle = std::remainder(angle, TAU);
+	}
+	return angle - std::copysign(static_cast<real_t>(angle >= PI || angle < -PI) * TAU, angle);
+}
 
+// Returns normalized [-Pi, Pi) with inlined early-out.
+_FORCE_INLINE_ static real_t angle_normalize(real_t angle) {
+	if (likely(std::fabs(angle) < PI)) {
+		return angle;
+	}
+	// Let the compiler decide whether to inline the slow path or not
+	return _angle_normalize_slow(angle);
+}
+
+_FORCE_INLINE_ static Vector2 cross(real_t p_other, const Vector2 &p_vec) {
+	return Vector2(-p_other * p_vec.y, p_other * p_vec.x);
+}
+
+bool GodotPinJoint2D::setup(real_t p_step) {
+	const GodotBody2D &body_A = *A;
+	const GodotBody2D &body_B = *B;
+
+	dynamic_A = body_A.get_mode() > PS2DE::BODY_MODE_KINEMATIC;
+	dynamic_B = B && body_B.get_mode() > PS2DE::BODY_MODE_KINEMATIC;
 	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
-
-	GodotSpace2D *space = A->get_space();
+	GodotSpace2D *space = body_A.get_space();
 	ERR_FAIL_NULL_V(space, false);
+	real_t bias_coeff = (get_bias() == 0 ? space->get_constraint_bias() : get_bias());
+	real_t inv_step = 1 / p_step;
+	w_max = inv_step * MAX_SINGLE_FRAME_ROTATION;
 
-	rA = A->get_transform().basis_xform(anchor_A);
-	rB = B ? B->get_transform().basis_xform(anchor_B) : anchor_B;
+	rA = body_A.get_transform().basis_xform(anchor_A);
+	rB = B ? body_B.get_transform().basis_xform(anchor_B) : Vector2();
 
-	real_t B_inv_mass = B ? B->get_inv_mass() : 0.0;
+	// Bracketing critical for floating point precision.
+	Vector2 delta = (rB - rA) + ((B ? body_B.get_transform().get_origin() : anchor_B) - A->get_transform().get_origin());
+	bias_vel = -delta * bias_coeff * inv_step;
 
-	Transform2D K1;
-	K1[0].x = A->get_inv_mass() + B_inv_mass;
-	K1[1].x = 0.0f;
-	K1[0].y = 0.0f;
-	K1[1].y = A->get_inv_mass() + B_inv_mass;
-
-	Vector2 r1 = rA - A->get_center_of_mass();
-
-	Transform2D K2;
-	K2[0].x = A->get_inv_inertia() * r1.y * r1.y;
-	K2[1].x = -A->get_inv_inertia() * r1.x * r1.y;
-	K2[0].y = -A->get_inv_inertia() * r1.x * r1.y;
-	K2[1].y = A->get_inv_inertia() * r1.x * r1.x;
-
+	// Calculate effective mass.
 	Transform2D K;
-	K[0] = K1[0] + K2[0];
-	K[1] = K1[1] + K2[1];
-
-	if (B) {
-		Vector2 r2 = rB - B->get_center_of_mass();
-
-		Transform2D K3;
-		K3[0].x = B->get_inv_inertia() * r2.y * r2.y;
-		K3[1].x = -B->get_inv_inertia() * r2.x * r2.y;
-		K3[0].y = -B->get_inv_inertia() * r2.x * r2.y;
-		K3[1].y = B->get_inv_inertia() * r2.x * r2.x;
-
-		K[0] += K3[0];
-		K[1] += K3[1];
+	inv_inertia_A = 0;
+	inv_inertia_B = 0;
+	if (dynamic_A) {
+		rA -= body_A.get_center_of_mass();
+		K[0].x += body_A.get_inv_mass() + body_A.get_inv_inertia() * rA.y * rA.y;
+		K[1].x -= body_A.get_inv_inertia() * rA.x * rA.y;
+		K[0].y -= body_A.get_inv_inertia() * rA.x * rA.y;
+		K[1].y += body_A.get_inv_mass() + body_A.get_inv_inertia() * rA.x * rA.x;
+		if constexpr (ENABLE_PARALLEL_AXIS) {
+			if (body_A.get_inv_inertia() > 0) {
+				DEV_ASSERT(body_A.inertia > 0);
+				inv_inertia_A = 1 / (body_A.inertia + body_A.mass * rA.dot(rA));
+			}
+		} else {
+			inv_inertia_A = body_A.get_inv_inertia();
+		}
 	}
-
+	if (dynamic_B) {
+		rB -= body_B.get_center_of_mass();
+		K[0].x += body_B.get_inv_mass() + body_B.get_inv_inertia() * rB.y * rB.y;
+		K[1].x -= body_B.get_inv_inertia() * rB.x * rB.y;
+		K[0].y -= body_B.get_inv_inertia() * rB.x * rB.y;
+		K[1].y += body_B.get_inv_mass() + body_B.get_inv_inertia() * rB.x * rB.x;
+		if constexpr (ENABLE_PARALLEL_AXIS) {
+			if (body_B.get_inv_inertia() > 0) {
+				DEV_ASSERT(body_B.inertia > 0);
+				inv_inertia_B = 1 / (body_B.inertia + body_B.mass * rB.dot(rB));
+			}
+		} else {
+			inv_inertia_B = body_B.get_inv_inertia();
+		}
+	}
 	K[0].x += softness;
 	K[1].y += softness;
-
 	M = K.affine_inverse();
+	i_sum = 0.0;
+	if (inv_inertia_A != 0 || inv_inertia_B != 0) {
+		i_sum = 1 / (inv_inertia_A + inv_inertia_B);
+	}
 
-	Vector2 gA = rA + A->get_transform().get_origin();
-	Vector2 gB = B ? rB + B->get_transform().get_origin() : rB;
+	if constexpr (ENABLE_PARALLEL_AXIS) {
+		if (dynamic_A && dynamic_B) {
+			DEV_ASSERT((body_A.mass > 0) && (body_B.mass > 0));
+			system_inv_mass = 1 / (body_A.mass + body_B.mass);
+			system_rA = body_A.get_center_of_mass();
+			system_rB = body_B.get_center_of_mass() + (body_B.get_transform().get_origin() - body_A.get_transform().get_origin());
+			Vector2 system_com = system_inv_mass * (body_A.mass * system_rA + body_B.mass * system_rB);
+			system_rA -= system_com;
+			system_rB -= system_com;
 
-	Vector2 delta = gB - gA;
+			// It is possible that one of the bodies is PS2DE::BODY_MODE_RIGID_LINEAR
+			// or has inertia still set to 0 from construction (in either case, inv_inertia_X will also be 0)
+			DEV_ASSERT((body_A.inertia == 0) ? (inv_inertia_A == 0) : (inv_inertia_A > 0));
+			DEV_ASSERT((body_B.inertia == 0) ? (inv_inertia_B == 0) : (inv_inertia_B > 0));
+			DEV_ASSERT((body_A.get_mode() == PS2DE::BODY_MODE_RIGID_LINEAR) ? (inv_inertia_A == 0) : true);
+			DEV_ASSERT((body_B.get_mode() == PS2DE::BODY_MODE_RIGID_LINEAR) ? (inv_inertia_B == 0) : true);
 
-	bias = delta * -(get_bias() == 0 ? space->get_constraint_bias() : get_bias()) * (1.0 / p_step);
+			if ((inv_inertia_A > 0) && (inv_inertia_B > 0)) {
+				// Both of the bodies are freely rotating with finite inertia.
+				system_inv_inertia = 1 / (body_A.inertia + body_B.inertia + body_A.mass * system_rA.dot(system_rA) + body_B.mass * system_rB.dot(system_rB));
+			}
+		}
+	}
 
-	// Compute max impulse.
-	jn_max = get_max_force() * p_step;
+	// Setup motor for warm start or cold start
+	motor_impulse = motor_enabled ? motor_impulse : 0;
+	motor_w = CLAMP(motor_target_velocity, -w_max, w_max);
+	max_motor_impulse = MOTOR_MAX_TORQUE * p_step;
 
+	solve_limits = false;
+	if (angular_limit_enabled) {
+		bias_w = 0;
+		limit_bias_impulse = 0; // cold start for bias
+		real_t dist = angle_normalize(body_A.get_transform().columns[0].angle_to(
+											  B ? body_B.get_transform().columns[0] : Vector2(1, 0)) -
+				initial_angle - angular_limit_center);
+		// `angular_limit_center` is the center of the restricted arc.
+		// `angular_limit_extent` is the distance from this center to the equidistant limits (upper and lower)
+		// `dist` is the distance from this center to our current angle.
+		if (angular_limit_extent > PI - MIN_ANGULAR_LIMIT_SEPERATION * 0.5) {
+			// The user has set the permitted arc to an angle too small to enforce without issues.
+			// Implement this as a weld to be held at `dist == PI`.
+			solve_limits = true;
+			bias_w = angle_normalize(PI - dist) * inv_step * bias_coeff;
+			bias_w = CLAMP(bias_w, -w_max, w_max);
+			if constexpr (ENABLE_SPLIT_IMPULSE) {
+				limit_upper_w = 0;
+				limit_lower_w = 0;
+			} else {
+				limit_upper_w = bias_w;
+				limit_lower_w = bias_w;
+			}
+		} else if (angular_limit_extent > MIN_ANGULAR_LIMIT_SEPERATION * 0.5) {
+			solve_limits = true;
+			limit_upper_w = inv_step * (-angular_limit_extent - dist + (dist >= 0) * TAU);
+			limit_lower_w = inv_step * (angular_limit_extent - dist - (dist < 0) * TAU);
+			if (limit_upper_w < 0) {
+				// Upper limit breached.
+				if constexpr (ENABLE_SPLIT_IMPULSE) {
+					bias_w = limit_upper_w * bias_coeff;
+					limit_upper_w = 0;
+				} else {
+					limit_upper_w *= bias_coeff;
+				}
+			}
+			if (limit_lower_w > 0) {
+				// Lower limit breached.
+				if constexpr (ENABLE_SPLIT_IMPULSE) {
+					bias_w = limit_lower_w * bias_coeff;
+					limit_lower_w = 0;
+				} else {
+					limit_lower_w *= bias_coeff;
+				}
+			}
+			bias_w = CLAMP(bias_w, -w_max, w_max);
+		} // else the user has set the restricted arc too small to enforce.
+	}
+	if (!solve_limits) {
+		// Setup for cold start for the next time `solve_limits` is true
+		limit_upper_impulse = 0;
+		limit_lower_impulse = 0;
+	}
 	return true;
 }
 
-inline Vector2 custom_cross(const Vector2 &p_vec, real_t p_other) {
-	return Vector2(p_other * p_vec.y, -p_other * p_vec.x);
-}
-
 bool GodotPinJoint2D::pre_solve(real_t p_step) {
-	// Apply accumulated impulse.
-	if (dynamic_A) {
-		A->apply_impulse(-P, rA);
+	if (!dynamic_A && !dynamic_B) {
+		return false;
 	}
-	if (B && dynamic_B) {
-		B->apply_impulse(P, rB);
-	}
-	// Angle limits joint pre_solve step taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpRotaryLimitJoint.c
-	real_t i_sum_local = A->get_inv_inertia();
-	if (B) {
-		i_sum_local += B->get_inv_inertia();
-	}
-	i_sum = 1.0 / (i_sum_local);
-	if (angular_limit_enabled && B) {
-		Vector2 diff_vector = B->get_transform().get_origin() - A->get_transform().get_origin();
-		diff_vector = diff_vector.rotated(-initial_angle);
-		real_t dist = diff_vector.angle();
-		real_t pdist = 0.0;
-		if (dist > angular_limit_upper) {
-			pdist = dist - angular_limit_upper;
-		} else if (dist < angular_limit_lower) {
-			pdist = dist - angular_limit_lower;
-		}
-		real_t error_bias = Math::pow(1.0 - 0.15, 60.0);
-		// Calculate bias velocity.
-		bias_velocity = -CLAMP((-1.0 - Math::pow(error_bias, p_step)) * pdist / p_step, -get_max_bias(), get_max_bias());
-		// If the bias velocity is 0, the joint is not at a limit.
-		if (bias_velocity >= -CMP_EPSILON && bias_velocity <= CMP_EPSILON) {
-			j_acc = 0;
-			is_joint_at_limit = false;
-		} else {
-			is_joint_at_limit = true;
-		}
-	} else {
-		bias_velocity = 0.0;
-	}
-
+	// Warm start impulses
+	_apply_torque_impulse(motor_impulse + limit_upper_impulse + limit_lower_impulse);
+	_apply_impulse(linear_impulse);
 	return true;
 }
 
 void GodotPinJoint2D::solve(real_t p_step) {
-	// Compute relative velocity.
-	Vector2 vA = A->get_linear_velocity() - custom_cross(rA - A->get_center_of_mass(), A->get_angular_velocity());
-
-	Vector2 rel_vel;
-	if (B) {
-		rel_vel = B->get_linear_velocity() - custom_cross(rB - B->get_center_of_mass(), B->get_angular_velocity()) - vA;
+	if constexpr (ENABLE_PARALLEL_AXIS) {
+		// The linear motion still fights angular, so it should go first, and then angular will correct for it.
+		_solve_linear();
+		_solve_angular();
 	} else {
-		rel_vel = -vA;
+		// Traditional approach. Angular motion will fight the linear motion and vice versa.
+		// Angular should go first as it produces the larger error.
+		_solve_angular();
+		_solve_linear();
 	}
-	// Angle limits joint solve step taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpRotaryLimitJoint.c
-	if ((angular_limit_enabled || motor_enabled) && B) {
-		// Compute relative rotational velocity.
-		real_t wr = B->get_angular_velocity() - A->get_angular_velocity();
-		// Motor solve part taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpSimpleMotor.c
-		if (motor_enabled) {
-			wr -= motor_target_velocity;
-		}
-		real_t j_max = jn_max;
+}
 
-		// Compute normal impulse.
-		real_t j = -(bias_velocity + wr) * i_sum;
-		real_t j_old = j_acc;
-		// Only enable the limits if we have to.
-		if (angular_limit_enabled && is_joint_at_limit) {
-			if (bias_velocity < 0.0) {
-				j_acc = CLAMP(j_old + j, 0.0, j_max);
-			} else {
-				j_acc = CLAMP(j_old + j, -j_max, 0.0);
+_FORCE_INLINE_ void GodotPinJoint2D::_solve_angular() {
+	GodotBody2D &body_A = *A;
+	GodotBody2D &body_B = *B;
+	real_t clamp_partial = 0;
+	real_t motor_partial = 0;
+	real_t limit_upper_partial = 0;
+	real_t limit_lower_partial = 0;
+
+	real_t rel_w = (B ? body_B.get_angular_velocity() : 0) - body_A.get_angular_velocity();
+	if (motor_enabled) {
+		motor_partial = i_sum * (motor_w - rel_w);
+		motor_partial = CLAMP(motor_partial + motor_impulse, -max_motor_impulse, max_motor_impulse) - motor_impulse;
+		motor_impulse += motor_partial;
+	}
+	if (solve_limits) {
+		if constexpr (ENABLE_SPLIT_IMPULSE) {
+			// Apply bias as a positional pass.
+			real_t bias_rel_w = (B ? body_B.get_biased_angular_velocity() : 0) - body_A.get_biased_angular_velocity();
+			real_t bias_partial = i_sum * (bias_w - bias_rel_w);
+			if (limit_upper_w != limit_lower_w) {
+				if (bias_w > 0) {
+					bias_partial = MAX(0, bias_partial + limit_bias_impulse) - limit_bias_impulse;
+				} else if (bias_w < 0) {
+					bias_partial = MIN(bias_partial + limit_bias_impulse, 0) - limit_bias_impulse;
+				} else {
+					bias_partial = 0; // bias_w == 0 means no bias
+				}
+			} // else user has made restricted zone small enough to make this a weld. Bias should be unclamped.
+
+			limit_bias_impulse += bias_partial;
+			_apply_torque_impulse<apply_to_bias>(bias_partial);
+		} // else bias will already have been incorporated into limit_upper_w and limit_lower_w during setup
+
+		// Compute and clamp limit impulses.
+		limit_lower_partial = i_sum * (limit_lower_w - rel_w) - motor_partial;
+		limit_lower_partial = MAX(0, limit_lower_partial + limit_lower_impulse) - limit_lower_impulse;
+		limit_lower_impulse += limit_lower_partial;
+
+		limit_upper_partial = i_sum * (limit_upper_w - rel_w) - motor_partial - limit_lower_partial;
+		limit_upper_partial = MIN(limit_upper_partial + limit_upper_impulse, 0) - limit_upper_impulse;
+		limit_upper_impulse += limit_upper_partial;
+	}
+	if constexpr (ENABLE_ANGULAR_VEL_CLAMP && ENABLE_PARALLEL_AXIS) {
+		// Clamp relative angular velocity using equal and opposite impulse (to preserve momentum).
+		// Note the primary purpose is to clamp angular velocity generated from the linear solve.
+		if constexpr (ENABLE_SPLIT_IMPULSE) {
+			real_t bias_rel_w = (B ? body_B.get_biased_angular_velocity() : 0) - body_A.get_biased_angular_velocity();
+			if (std::fabs(bias_rel_w) > w_max) {
+				real_t clamp_biased_rel_w = CLAMP(bias_rel_w, -w_max, w_max);
+				real_t clamp_impulse = i_sum * (clamp_biased_rel_w - bias_rel_w);
+				_apply_torque_impulse<apply_to_bias>(clamp_impulse);
 			}
-		} else {
-			j_acc = CLAMP(j_old + j, -j_max, j_max);
 		}
-		j = j_acc - j_old;
-		A->apply_torque_impulse(-j * A->get_inv_inertia());
-		B->apply_torque_impulse(j * B->get_inv_inertia());
+		rel_w = rel_w + (motor_partial + limit_lower_partial + limit_upper_partial) * (inv_inertia_A + inv_inertia_B);
+		if (std::fabs(rel_w) > w_max) {
+			real_t clamp_rel_w = CLAMP(rel_w, -w_max, w_max);
+			clamp_partial = i_sum * (clamp_rel_w - rel_w);
+			if (!solve_limits && !motor_enabled) {
+				_apply_torque_impulse(limit_upper_partial + limit_lower_partial + motor_partial + clamp_partial);
+			}
+		}
+	}
+	if (solve_limits || motor_enabled) {
+		_apply_torque_impulse(limit_upper_partial + limit_lower_partial + motor_partial + clamp_partial);
+	}
+}
+
+_FORCE_INLINE_ void GodotPinJoint2D::_solve_linear() {
+	GodotBody2D &body_A = *A;
+	GodotBody2D &body_B = *B;
+	Vector2 linear_partial;
+
+	Vector2 rel_vel = -body_A.get_linear_velocity() - cross(body_A.get_angular_velocity(), rA);
+	if (B) {
+		rel_vel += body_B.get_linear_velocity() + cross(body_B.get_angular_velocity(), rB);
 	}
 
-	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
-
-	if (dynamic_A) {
-		A->apply_impulse(-impulse, rA);
+	if (ENABLE_SPLIT_IMPULSE && softness == 0) {
+		// Apply bias as a positional pass. Don't do this when using soft constraints
+		Vector2 bias_rel_vel = -body_A.get_biased_linear_velocity() - cross(body_A.get_biased_angular_velocity(), rA);
+		if (B) {
+			bias_rel_vel += body_B.get_biased_linear_velocity() + cross(body_B.get_biased_angular_velocity(), rB);
+		}
+		_apply_impulse<apply_to_bias>(M.basis_xform(bias_vel - bias_rel_vel));
+		linear_partial = M.basis_xform(-rel_vel);
+	} else {
+		linear_partial = M.basis_xform(bias_vel - rel_vel - softness * linear_impulse);
 	}
-	if (B && dynamic_B) {
-		B->apply_impulse(impulse, rB);
-	}
 
-	P += impulse;
+	linear_impulse += linear_partial;
+	_apply_impulse(linear_partial);
+}
+
+template <bool APPLY_TO_BIAS>
+void GodotPinJoint2D::_apply_torque_impulse(float p_torque_impulse) {
+	GodotBody2D &body_A = *A;
+	GodotBody2D &body_B = *B;
+	Vector2 a_vel, b_vel;
+	real_t a_angular_vel, b_angular_vel;
+
+	DEV_ASSERT(dynamic_A == false ? inv_inertia_A == 0 : true);
+	a_angular_vel = inv_inertia_A * -p_torque_impulse;
+	b_angular_vel = inv_inertia_B * p_torque_impulse;
+
+	if (ENABLE_PARALLEL_AXIS) {
+		// Apply torque impulse around the pin
+		a_vel = -cross(a_angular_vel, rA);
+		b_vel = -cross(b_angular_vel, rB);
+
+		if (dynamic_A && dynamic_B) {
+			// Relative body velocity is now accurate, but system velocity may not be.
+			// The two body system must preserve angular and linear momentum.
+			// Use this law to correct motion.
+			Vector2 system_vel = system_inv_mass * (a_vel * body_A.mass + b_vel * body_B.mass);
+			a_vel -= system_vel;
+			b_vel -= system_vel;
+
+			if (inv_inertia_A > 0 && inv_inertia_B > 0) {
+				// Both of the bodies are freely rotating with non-infinite inertia.
+				real_t system_angular_vel = system_inv_inertia * (body_A.inertia * a_angular_vel + body_B.inertia * b_angular_vel + body_A.mass * system_rA.cross(a_vel) + body_B.mass * system_rB.cross(b_vel));
+				a_angular_vel -= system_angular_vel;
+				b_angular_vel -= system_angular_vel;
+				a_vel -= cross(system_angular_vel, system_rA);
+				b_vel -= cross(system_angular_vel, system_rB);
+			}
+		}
+	}
+	if constexpr (APPLY_TO_BIAS) {
+		if (dynamic_A) {
+			body_A.biased_angular_velocity += a_angular_vel;
+			body_A.biased_linear_velocity += a_vel;
+		}
+		if (dynamic_B) {
+			body_B.biased_angular_velocity += b_angular_vel;
+			body_B.biased_linear_velocity += b_vel;
+		}
+	} else {
+		if (dynamic_A) {
+			body_A.angular_velocity += a_angular_vel;
+			body_A.linear_velocity += a_vel;
+		}
+		if (dynamic_B) {
+			body_B.angular_velocity += b_angular_vel;
+			body_B.linear_velocity += b_vel;
+		}
+	}
+}
+
+template <bool APPLY_TO_BIAS>
+_FORCE_INLINE_ void GodotPinJoint2D::_apply_impulse(Vector2 p_impulse) {
+	GodotBody2D &body_A = *A;
+	GodotBody2D &body_B = *B;
+
+	if constexpr (APPLY_TO_BIAS) {
+		if (dynamic_A) {
+			body_A.biased_linear_velocity += -p_impulse * body_A._inv_mass;
+			body_A.biased_angular_velocity += body_A._inv_inertia * rA.cross(-p_impulse);
+		}
+		if (dynamic_B) {
+			body_B.biased_linear_velocity += p_impulse * body_B._inv_mass;
+			body_B.biased_angular_velocity += body_B._inv_inertia * rB.cross(p_impulse);
+		}
+	} else {
+		if (dynamic_A) {
+			body_A.linear_velocity += -p_impulse * body_A._inv_mass;
+			body_A.angular_velocity += body_A._inv_inertia * rA.cross(-p_impulse);
+		}
+		if (dynamic_B) {
+			body_B.linear_velocity += p_impulse * body_B._inv_mass;
+			body_B.angular_velocity += body_B._inv_inertia * rB.cross(p_impulse);
+		}
+	}
 }
 
 void GodotPinJoint2D::set_param(PS2DE::PinJointParam p_param, real_t p_value) {
@@ -262,10 +473,20 @@ void GodotPinJoint2D::set_param(PS2DE::PinJointParam p_param, real_t p_value) {
 			softness = p_value;
 		} break;
 		case PS2DE::PIN_JOINT_LIMIT_UPPER: {
-			angular_limit_upper = p_value;
+			real_t lower_limit_rel_upper = angle_normalize(angular_limit_center + angular_limit_extent - p_value);
+			if (lower_limit_rel_upper <= 0) {
+				lower_limit_rel_upper += TAU;
+			}
+			angular_limit_center = angle_normalize(p_value + lower_limit_rel_upper * real_t(0.5));
+			angular_limit_extent = std::fabs(angle_normalize(angular_limit_center - p_value));
 		} break;
 		case PS2DE::PIN_JOINT_LIMIT_LOWER: {
-			angular_limit_lower = p_value;
+			real_t upper_limit_rel_lower = angle_normalize(angular_limit_center - angular_limit_extent - p_value);
+			if (upper_limit_rel_lower >= 0) {
+				upper_limit_rel_lower -= TAU;
+			}
+			angular_limit_center = angle_normalize(p_value + upper_limit_rel_lower * real_t(0.5));
+			angular_limit_extent = std::fabs(angle_normalize(p_value - angular_limit_center));
 		} break;
 		case PS2DE::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			motor_target_velocity = p_value;
@@ -279,10 +500,10 @@ real_t GodotPinJoint2D::get_param(PS2DE::PinJointParam p_param) const {
 			return softness;
 		}
 		case PS2DE::PIN_JOINT_LIMIT_UPPER: {
-			return angular_limit_upper;
+			return angle_normalize(angular_limit_center - angular_limit_extent);
 		}
 		case PS2DE::PIN_JOINT_LIMIT_LOWER: {
-			return angular_limit_lower;
+			return angle_normalize(angular_limit_center + angular_limit_extent);
 		}
 		case PS2DE::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			return motor_target_velocity;
@@ -318,13 +539,17 @@ GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, Go
 		GodotJoint2D(_arr, p_body_b ? 2 : 1) {
 	A = p_body_a;
 	B = p_body_b;
-	anchor_A = p_body_a->get_inv_transform().xform(p_pos);
-	anchor_B = p_body_b ? p_body_b->get_inv_transform().xform(p_pos) : p_pos;
+	GodotBody2D &body_A = *A;
+	GodotBody2D &body_B = *B;
 
-	p_body_a->add_constraint(this, 0);
-	if (p_body_b) {
-		p_body_b->add_constraint(this, 1);
-		initial_angle = A->get_transform().get_origin().angle_to_point(B->get_transform().get_origin());
+	// This assumes there is no scale in the transform. Written this way to avoid floating point precision issues.
+	anchor_A = body_A.get_inv_transform().basis_xform(p_pos - body_A.get_transform().get_origin());
+	anchor_B = B ? body_B.get_inv_transform().basis_xform(p_pos - body_B.get_transform().get_origin()) : p_pos;
+	initial_angle = angle_normalize(body_A.get_transform().columns[0].angle_to(B ? body_B.get_transform().columns[0] : Vector2(1, 0)));
+
+	body_A.add_constraint(this, 0);
+	if (B) {
+		body_B.add_constraint(this, 1);
 	}
 }
 
