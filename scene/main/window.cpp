@@ -614,6 +614,11 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
+
+		if (p_flag == FLAG_ALWAYS_ON_TOP) {
+			embedder->_sub_window_update_order();
+		}
+
 	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WindowFlags(p_flag), p_enabled, window_id);
