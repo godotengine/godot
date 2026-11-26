@@ -831,13 +831,7 @@ Ref<World> Spatial::get_world() const {
 
 void Spatial::_update_visible_in_tree() {
 	Spatial *parent = get_parent_spatial();
-
-	bool propagate_visible = parent ? parent->data.visible_in_tree : true;
-
-	// Only propagate visible when entering tree if we are visible.
-	propagate_visible &= is_visible();
-
-	_propagate_visible_in_tree(propagate_visible);
+	_propagate_visible_in_tree(parent ? parent->data.visible_in_tree : true);
 }
 
 void Spatial::_propagate_visible_in_tree(bool p_visible_in_tree) {
