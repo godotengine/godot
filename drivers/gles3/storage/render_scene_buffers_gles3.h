@@ -76,8 +76,12 @@ public:
 		GLuint fbo = 0;
 
 		bool check_fbo_cache = false;
-		Vector<FBDEF> cached_fbos;
 	} msaa3d; // MSAA buffers used to render 3D
+
+	static AHashMap<const RenderSceneBuffers *, LocalVector<FBDEF>> msaa3d_fbo_caches;
+	static _FORCE_INLINE_ LocalVector<FBDEF> &get_cached_msaa3d_fbos(const RenderSceneBuffersGLES3 *p_render_buffers) {
+		return msaa3d_fbo_caches[p_render_buffers];
+	}
 
 	FBDEF internal3d; // buffers used to either render 3D (scaled/post) or to resolve MSAA into
 
@@ -152,6 +156,8 @@ public:
 	GLuint get_backbuffer_depth() const { return backbuffer3d.depth; }
 
 	const GLES3::Glow::Level *get_glow_buffers() const { return &glow.levels[0]; }
+
+	static void clear_cached_fbos_using_texture(GLuint p_texture);
 
 	// Getters
 
