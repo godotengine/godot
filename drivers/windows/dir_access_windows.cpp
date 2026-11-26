@@ -38,7 +38,6 @@
 #include "drivers/windows/file_access_windows.h"
 
 #include <windows.h>
-
 #include <cstdio>
 #include <cwchar>
 

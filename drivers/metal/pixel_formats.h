@@ -62,7 +62,6 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 #include <Metal/Metal.h>
 #endif
 #include <Metal/Metal.hpp>
-
 #include <iterator>
 
 #pragma mark -

@@ -38,7 +38,6 @@
 
 #include <miniupnpc/miniwget.h>
 #include <miniupnpc/upnpcommands.h>
-
 #include <cstdlib>
 
 UPNP *UPNPMiniUPNP::_create(bool p_notify_postinitialize) {

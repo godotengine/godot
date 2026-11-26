@@ -56,7 +56,6 @@
 
 #import <Foundation/Foundation.h>
 #import <Quartz/Quartz.h>
-
 #include <cstdint>
 
 // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/ui/base/cocoa/remote_layer_api.h

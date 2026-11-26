@@ -55,7 +55,6 @@
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
-
 #include <initializer_list>
 #include <optional>
 

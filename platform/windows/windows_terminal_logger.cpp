@@ -36,7 +36,6 @@
 #include "core/os/os.h"
 
 #include <windows.h>
-
 #include <cstdio>
 
 void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_err) {

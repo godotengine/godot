@@ -33,11 +33,9 @@
 #include "tts_driver.h"
 
 #include <windows.h>
-
 #include <objbase.h>
 #include <sapi.h>
 #include <winnls.h>
-
 #include <cwchar>
 
 struct TTSUtterance;

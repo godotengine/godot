@@ -41,7 +41,6 @@
 #include <sys/xattr.h>
 #endif
 #include <unistd.h>
-
 #include <cerrno>
 #include <cstdlib>
 

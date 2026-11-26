@@ -40,9 +40,7 @@
 #include "core/variant/dictionary.h"
 
 #include <windows.h>
-
 #include <dwmapi.h>
-
 #include <cstdio>
 #include <cstdlib>
 

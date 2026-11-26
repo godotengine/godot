@@ -35,7 +35,6 @@
 #include "core/error/error_macros.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
 

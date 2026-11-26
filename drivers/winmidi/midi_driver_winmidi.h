@@ -36,7 +36,6 @@
 #include "core/templates/vector.h"
 
 #include <windows.h>
-
 #include <mmsystem.h>
 
 class MIDIDriverWinMidi : public MIDIDriver {

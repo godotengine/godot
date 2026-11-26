@@ -33,7 +33,6 @@
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
 #import <EGL/eglext_angle.h>
-
 #include <cstdio>
 #include <cstdlib>
 

@@ -58,7 +58,6 @@
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
 #include <sys/sysctl.h>
-
 #include <iterator>
 
 #if defined(RD_ENABLED)
