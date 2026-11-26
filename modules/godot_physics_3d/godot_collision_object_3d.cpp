@@ -48,10 +48,10 @@ void GodotCollisionObject3D::add_shape(GodotShape3D *p_shape, const Transform3D 
 	}
 }
 
-void GodotCollisionObject3D::set_shape(int p_index, GodotShape3D *p_shape) {
-	ERR_FAIL_INDEX(p_index, shapes.size());
+void GodotCollisionObject3D::set_shape(uint32_t p_index, GodotShape3D *p_shape) {
+	ERR_FAIL_UNSIGNED_INDEX(p_index, shapes.size());
 	shapes[p_index].shape->remove_owner(this);
-	shapes.write[p_index].shape = p_shape;
+	shapes[p_index].shape = p_shape;
 
 	p_shape->add_owner(this);
 	if (!pending_shape_update_list.in_list()) {
@@ -59,20 +59,20 @@ void GodotCollisionObject3D::set_shape(int p_index, GodotShape3D *p_shape) {
 	}
 }
 
-void GodotCollisionObject3D::set_shape_transform(int p_index, const Transform3D &p_transform) {
-	ERR_FAIL_INDEX(p_index, shapes.size());
+void GodotCollisionObject3D::set_shape_transform(uint32_t p_index, const Transform3D &p_transform) {
+	ERR_FAIL_UNSIGNED_INDEX(p_index, shapes.size());
 
-	shapes.write[p_index].xform = p_transform;
-	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
+	shapes[p_index].xform = p_transform;
+	shapes[p_index].xform_inv = p_transform.affine_inverse();
 	if (!pending_shape_update_list.in_list()) {
 		GodotPhysicsServer3D::godot_singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 }
 
-void GodotCollisionObject3D::set_shape_disabled(int p_idx, bool p_disabled) {
-	ERR_FAIL_INDEX(p_idx, shapes.size());
+void GodotCollisionObject3D::set_shape_disabled(uint32_t p_idx, bool p_disabled) {
+	ERR_FAIL_UNSIGNED_INDEX(p_idx, shapes.size());
 
-	GodotCollisionObject3D::Shape &shape = shapes.write[p_idx];
+	GodotCollisionObject3D::Shape &shape = shapes[p_idx];
 	if (shape.disabled == p_disabled) {
 		return;
 	}
@@ -97,25 +97,25 @@ void GodotCollisionObject3D::set_shape_disabled(int p_idx, bool p_disabled) {
 }
 
 void GodotCollisionObject3D::remove_shape(GodotShape3D *p_shape) {
-	//remove a shape, all the times it appears
-	for (int i = 0; i < shapes.size(); i++) {
+	// Remove a shape, all the times it appears.
+	for (uint32_t i = 0; i < shapes.size(); i++) {
 		if (shapes[i].shape == p_shape) {
-			remove_shape(i);
+			remove_shape_by_index(i);
 			i--;
 		}
 	}
 }
 
-void GodotCollisionObject3D::remove_shape(int p_index) {
-	//remove anything from shape to be erased to end, so subindices don't change
-	ERR_FAIL_INDEX(p_index, shapes.size());
-	for (int i = p_index; i < shapes.size(); i++) {
+void GodotCollisionObject3D::remove_shape_by_index(uint32_t p_index) {
+	// Remove anything from shape to be erased to end, so subindices don't change.
+	ERR_FAIL_UNSIGNED_INDEX(p_index, shapes.size());
+	for (uint32_t i = p_index; i < shapes.size(); i++) {
 		if (shapes[i].bpid == 0) {
 			continue;
 		}
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
-		shapes.write[i].bpid = 0;
+		shapes[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
 	shapes.remove_at(p_index);
@@ -134,8 +134,7 @@ void GodotCollisionObject3D::_set_static(bool p_static) {
 	if (!space) {
 		return;
 	}
-	for (int i = 0; i < get_shape_count(); i++) {
-		const Shape &s = shapes[i];
+	for (Shape &s : shapes) {
 		if (s.bpid > 0) {
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
@@ -143,8 +142,7 @@ void GodotCollisionObject3D::_set_static(bool p_static) {
 }
 
 void GodotCollisionObject3D::_unregister_shapes() {
-	for (int i = 0; i < shapes.size(); i++) {
-		Shape &s = shapes.write[i];
+	for (Shape &s : shapes) {
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
 			s.bpid = 0;
@@ -157,8 +155,8 @@ void GodotCollisionObject3D::_update_shapes() {
 		return;
 	}
 
-	for (int i = 0; i < shapes.size(); i++) {
-		Shape &s = shapes.write[i];
+	for (uint32_t i = 0; i < shapes.size(); i++) {
+		Shape &s = shapes[i];
 		if (s.disabled) {
 			continue;
 		}
@@ -187,8 +185,8 @@ void GodotCollisionObject3D::_update_shapes_with_motion(const Vector3 &p_motion)
 		return;
 	}
 
-	for (int i = 0; i < shapes.size(); i++) {
-		Shape &s = shapes.write[i];
+	for (uint32_t i = 0; i < shapes.size(); i++) {
+		Shape &s = shapes[i];
 		if (s.disabled) {
 			continue;
 		}
@@ -216,8 +214,7 @@ void GodotCollisionObject3D::_set_space(GodotSpace3D *p_space) {
 	if (old_space) {
 		old_space->remove_object(this);
 
-		for (int i = 0; i < shapes.size(); i++) {
-			Shape &s = shapes.write[i];
+		for (Shape &s : shapes) {
 			if (s.bpid) {
 				old_space->get_broadphase()->remove(s.bpid);
 				s.bpid = 0;
