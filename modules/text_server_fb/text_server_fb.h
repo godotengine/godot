@@ -57,6 +57,7 @@
 #include FT_SIZES_H
 #include FT_MODULE_H
 #include FT_CONFIG_OPTIONS_H
+#include FT_FONT_FORMATS_H
 #if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
 #warning FreeType is configured without Brotli support, built-in fonts will not be available.
 #endif
