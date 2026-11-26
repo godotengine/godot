@@ -30,6 +30,7 @@
 
 #include "audio_stream_preview.h"
 
+#include "core/io/file_access.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -187,9 +188,13 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 }
 
 Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<AudioStream> &p_stream) {
+	return generate_preview_internal(p_stream);
+}
+
+Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview_internal(const Ref<AudioStream> &p_stream, bool p_force) {
 	ERR_FAIL_COND_V(p_stream.is_null(), Ref<AudioStreamPreview>());
 
-	if (previews.has(p_stream->get_instance_id())) {
+	if (!p_force && previews.has(p_stream->get_instance_id()) && previews[p_stream->get_instance_id()].last_modified_time == FileAccess::get_modified_time(p_stream->get_import_path())) {
 		return previews[p_stream->get_instance_id()].preview;
 	}
 
@@ -202,6 +207,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->playback = preview->base_stream->instantiate_playback();
 	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
+	preview->last_modified_time = FileAccess::get_modified_time(p_stream->get_import_path());
 
 	float len_s = preview->base_stream->get_length();
 	if (len_s == 0) {
