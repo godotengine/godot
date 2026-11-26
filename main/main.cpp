@@ -4400,6 +4400,22 @@ int Main::start() {
 		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 		ERR_FAIL_V_MSG(EXIT_FAILURE, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 	}
+
+	if (!script.is_empty()) {
+		// Register autoload names before the script loads so it can reference them.
+		// A SceneTree main loop replaces these with the real nodes later.
+		if (ProjectSettings::get_singleton()->is_project_loaded()) {
+			const HashMap<StringName, ProjectSettings::AutoloadInfo> &autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+			for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+				const ProjectSettings::AutoloadInfo &info = E.value;
+				if (info.is_singleton) {
+					for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+						ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
+					}
+				}
+			}
+		}
+	}
 #endif
 
 	MainLoop *main_loop = nullptr;
