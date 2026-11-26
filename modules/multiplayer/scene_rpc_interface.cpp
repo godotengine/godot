@@ -326,7 +326,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 	if (p_to > 0) {
 		ERR_FAIL_COND_MSG(!multiplayer_replicator->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
 		targets.insert(p_to);
-		has_all_peers = multiplayer_cache->send_object_cache(p_node, p_to, psc_id);
+		has_all_peers = multiplayer_cache->send_object_cache(p_node, p_to, psc_id, true);
 	} else {
 		bool restricted = !multiplayer_replicator->is_rpc_visible(oid, 0);
 		for (const int &P : multiplayer->get_connected_peers()) {
@@ -337,7 +337,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 				continue; // Not visible to this peer.
 			}
 			targets.insert(P);
-			bool has_peer = multiplayer_cache->send_object_cache(p_node, P, psc_id);
+			bool has_peer = multiplayer_cache->send_object_cache(p_node, P, psc_id, true);
 			has_all_peers = has_all_peers && has_peer;
 		}
 	}

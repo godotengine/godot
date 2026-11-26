@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "scene/main/multiplayer_peer.h"
+#include "scene/main/node.h"
 
 class MultiplayerAPI : public RefCounted {
 	GDCLASS(MultiplayerAPI, RefCounted);
@@ -68,6 +69,7 @@ public:
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) = 0;
 	virtual int get_remote_sender_id() = 0;
 
+	virtual Error send_request_path(Node *p_node) = 0;
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
 
@@ -95,6 +97,7 @@ public:
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 	virtual int get_remote_sender_id() override;
 
+	virtual Error send_request_path(Node *p_node) override;
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
 
@@ -106,6 +109,7 @@ public:
 	GDVIRTUAL0RC(PackedInt32Array, _get_peer_ids);
 	GDVIRTUAL4R(Error, _rpc, int, Object *, StringName, Array);
 	GDVIRTUAL0RC(int, _get_remote_sender_id);
+	GDVIRTUAL1R(Error, _send_request_path, Node *);
 	GDVIRTUAL2R(Error, _object_configuration_add, Object *, Variant);
 	GDVIRTUAL2R(Error, _object_configuration_remove, Object *, Variant);
 };

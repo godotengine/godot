@@ -359,6 +359,12 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 	return id;
 }
 
+Error MultiplayerAPIExtension::send_request_path(Node *p_node) {
+	Error err = ERR_UNAVAILABLE;
+	GDVIRTUAL_CALL(_send_request_path, p_node, err);
+	return err;
+}
+
 Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
 	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
@@ -379,6 +385,7 @@ void MultiplayerAPIExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_peer_ids);
 	GDVIRTUAL_BIND(_rpc, "peer", "object", "method", "args");
 	GDVIRTUAL_BIND(_get_remote_sender_id);
+	GDVIRTUAL_BIND(_send_request_path, "node");
 	GDVIRTUAL_BIND(_object_configuration_add, "object", "configuration");
 	GDVIRTUAL_BIND(_object_configuration_remove, "object", "configuration");
 }

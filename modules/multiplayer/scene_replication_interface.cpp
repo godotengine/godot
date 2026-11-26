@@ -107,6 +107,22 @@ void SceneReplicationInterface::on_peer_change(int p_id, bool p_connected) {
 	}
 }
 
+void SceneReplicationInterface::spawner_replicate_to(ObjectID p_oid, int p_id) {
+	MultiplayerSpawner *spawner = get_id_as<MultiplayerSpawner>(p_oid);
+	if (spawner) {
+		for (const ObjectID &oid : spawned_nodes) {
+			Node *node = get_id_as<Node>(oid);
+			const TrackedNode *tnode = tracked_nodes.getptr(oid);
+			if (tnode->spawner == p_oid) {
+				int len = 0;
+				_make_spawn_packet(node, spawner, len);
+				_send_raw(packet_cache.ptr(), len, p_id, true);
+				peers_info[p_id].spawn_nodes.insert(oid);
+			}
+		}
+	}
+}
+
 void SceneReplicationInterface::on_reset() {
 	for (const KeyValue<int, PeerInfo> &E : peers_info) {
 		_free_remotes(E.value);
@@ -204,7 +220,7 @@ Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(err != OK, ERR_BUG);
 	const ObjectID oid = p_obj->get_instance_id();
 	for (const KeyValue<int, PeerInfo> &E : peers_info) {
-		if (!E.value.spawn_nodes.has(oid)) {
+		if (!E.value.spawn_nodes.has(oid) || !multiplayer_cache->is_cache_confirmed(spawner, E.key)) {
 			continue;
 		}
 		_send_raw(packet_cache.ptr(), len, E.key, true);
@@ -574,7 +590,11 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer_cache->get_cached_object(p_from, node_target));
-	ERR_FAIL_NULL_V(spawner, ERR_DOES_NOT_EXIST);
+	if (!spawner) {
+		WARN_PRINT("Received a Spawn Command for an un-cached remote id");
+		return ERR_DOES_NOT_EXIST;
+	}
+	//ERR_FAIL_NULL_V(spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
 	uint32_t net_id = decode_uint32(&p_buffer[ofs]);
@@ -778,7 +798,8 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 		Node *node = sync ? sync->get_root_node() : nullptr;
 		if (!sync || sync->get_multiplayer_authority() != p_from || !node) {
 			ofs += size;
-			ERR_CONTINUE_MSG(true, "Ignoring delta for non-authority or invalid synchronizer.");
+			WARN_PRINT("Ignoring delta for non-authority or invalid synchronizer.");
+			continue;
 		}
 		List<NodePath> props = sync->get_delta_properties(indexes);
 		ERR_FAIL_COND_V(props.is_empty(), ERR_INVALID_DATA);
@@ -876,7 +897,8 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		if (sync->get_multiplayer_authority() != p_from || !node) {
 			// Not valid for me.
 			ofs += size;
-			ERR_CONTINUE_MSG(true, "Ignoring sync data from non-authority or for missing node.");
+			WARN_PRINT("Ignoring sync data from non-authority or for missing node.");
+			continue;
 		}
 		if (!sync->update_inbound_sync_time(time)) {
 			// State is too old.

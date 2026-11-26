@@ -220,12 +220,8 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 	uint8_t packet_type = p_packet[0] & CMD_MASK;
 
 	switch (packet_type) {
-		case NETWORK_COMMAND_SIMPLIFY_PATH: {
-			cache->process_simplify_path(p_from, p_packet, p_packet_len);
-		} break;
-
-		case NETWORK_COMMAND_CONFIRM_PATH: {
-			cache->process_confirm_path(p_from, p_packet, p_packet_len);
+		case NETWORK_COMMAND_PATH_HANDSHAKE: {
+			cache->process_path_handshake(p_from, p_packet, p_packet_len);
 		} break;
 
 		case NETWORK_COMMAND_REMOTE_CALL: {
@@ -577,6 +573,40 @@ String SceneMultiplayer::get_rpc_md5(const Object *p_obj) {
 
 Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	return rpc->rpcp(p_obj, p_peer_id, p_method, p_arg, p_argcount);
+}
+
+Error SceneMultiplayer::send_request_path(Node *p_node) {
+	if (multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED) {
+		return OK;
+	}
+
+	const CharString path = String(get_root_path().rel_path_to(p_node->get_path())).utf8();
+	const int path_len = encode_cstring(path.get_data(), nullptr);
+
+	Vector<uint8_t> packet;
+	// 16 Empty Bytes - Request Path packet should require more bandwidth than Simplify Path response to prevent bad behavior
+	packet.resize(1 + 1 + path_len + 16);
+	int ofs = 0;
+
+	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_PATH_HANDSHAKE;
+	packet.write[ofs + 1] = SceneMultiplayer::REQUEST_PATH;
+	ofs += 2;
+
+	ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
+
+	ERR_FAIL_COND_V_MSG(multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a multiplayer peer which is not connected.");
+
+	Error err = OK;
+	multiplayer_peer->set_transfer_channel(0);
+	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+
+	err = send_command(0, packet.ptr(), packet.size());
+	ERR_FAIL_COND_V(err != OK, err);
+	return err;
+}
+
+void SceneMultiplayer::force_replicate_to(ObjectID p_oid, int p_id) {
+	replicator->spawner_replicate_to(p_oid, p_id);
 }
 
 Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config) {
