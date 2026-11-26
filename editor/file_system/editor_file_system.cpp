@@ -1875,57 +1875,92 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	}
 }
 
-bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const {
-	//todo make faster
+static bool _span_equals(const Span<char32_t> &p_a, const Span<char32_t> &p_b, bool p_case_sensitive) {
+	if (p_case_sensitive) {
+		return p_a == p_b;
+	}
+	if (p_a.size() != p_b.size()) {
+		return false;
+	}
+	const char32_t *a = p_a.ptr();
+	const char32_t *b = p_b.ptr();
+	for (uint64_t i = 0; i < p_a.size(); i++) {
+		if (a[i] != b[i] && String::char_lowercase(a[i]) != String::char_lowercase(b[i])) {
+			return false;
+		}
+	}
+	return true;
+}
 
+// Returns true when `simplify_path()` would return `p_path` unchanged:
+// no backslashes, no empty, "." or ".." segments, and no trailing slash.
+static bool _is_simple_res_path(const String &p_path) {
+	const char32_t *str = p_path.ptr();
+	const int len = p_path.length();
+	int seg_start = 6; // After "res://".
+	for (int i = seg_start; i <= len; i++) {
+		const char32_t c = i < len ? str[i] : '/';
+		if (c == '\\') {
+			return false;
+		}
+		if (c != '/') {
+			continue;
+		}
+		const int seg_len = i - seg_start;
+		if (seg_len == 0 && i < len) {
+			return false;
+		}
+		if (str[seg_start] == '.' && (seg_len == 1 || (seg_len == 2 && str[seg_start + 1] == '.'))) {
+			return false;
+		}
+		seg_start = i + 1;
+	}
+	return len == 6 || str[len - 1] != '/';
+}
+
+bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const {
 	if (!filesystem || scanning) {
 		return false;
 	}
 
-	String f = ProjectSettings::get_singleton()->localize_path(p_file);
-	if (!f.begins_with("res://")) {
-		return false;
-	}
-	f = f.substr(6);
-	f = f.replace_char('\\', '/');
-
-	Vector<String> path = f.split("/");
-
-	if (path.is_empty()) {
-		return false;
-	}
-	const String file = path[path.size() - 1];
-	const String file_lower = file.to_lower();
-	path.resize(path.size() - 1);
-
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	EditorFileSystemDirectory *fs = filesystem;
-
-	for (const String &path_bit : path) {
-		if (path_bit.begins_with(".")) {
+	// Skip `localize_path()` when it would return the path unchanged, as it always allocates.
+	String f = p_file;
+	if (!f.begins_with("res://") || !_is_simple_res_path(f)) {
+		f = ProjectSettings::get_singleton()->localize_path(p_file);
+		if (!f.begins_with("res://")) {
 			return false;
 		}
-		const String path_bit_lower = path_bit.to_lower();
+	}
+
+	const Span<char32_t> str = f.span();
+	uint64_t seg_start = 6; // After "res://".
+
+	EditorFileSystemDirectory *fs = filesystem;
+
+	while (true) {
+		const int64_t seg_end = str.find('/', seg_start);
+		if (seg_end == -1) {
+			break; // Last segment is the file name.
+		}
+
+		const Span<char32_t> seg(str.ptr() + seg_start, seg_end - seg_start);
+		if (!seg.is_empty() && seg.ptr()[0] == '.') {
+			return false;
+		}
 
 		int idx = -1;
-		for (int j = 0; j < fs->get_subdir_count(); j++) {
-			if (is_case_sensitive) {
-				if (fs->get_subdir(j)->get_name() == path_bit) {
-					idx = j;
-					break;
-				}
-			} else {
-				if (fs->get_subdir(j)->get_name().to_lower() == path_bit_lower) {
-					idx = j;
-					break;
-				}
+		for (int j = 0; j < fs->subdirs.size(); j++) {
+			if (_span_equals(fs->subdirs[j]->name, seg, is_case_sensitive)) {
+				idx = j;
+				break;
 			}
 		}
 
 		if (idx == -1) {
+			const String path_bit = String::utf32(seg);
 			// Only create a missing directory in memory when it exists on disk.
-			String dir_path = fs->get_path().path_join(path_bit);
-			if (!dir->dir_exists(ProjectSettings::get_singleton()->globalize_path(dir_path))) {
+			const String dir_path = fs->get_path().path_join(path_bit);
+			if (!DirAccess::dir_exists_absolute(dir_path) || _should_skip_directory(dir_path)) {
 				return false;
 			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
@@ -1948,22 +1983,19 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 			}
 			fs = efsd;
 		} else {
-			fs = fs->get_subdir(idx);
+			fs = fs->subdirs[idx];
 		}
+
+		seg_start = seg_end + 1;
 	}
+
+	const Span<char32_t> file(str.ptr() + seg_start, str.size() - seg_start);
 
 	int cpos = -1;
 	for (int i = 0; i < fs->files.size(); i++) {
-		if (is_case_sensitive) {
-			if (fs->files[i]->file == file) {
-				cpos = i;
-				break;
-			}
-		} else {
-			if (fs->files[i]->file.to_lower() == file_lower) {
-				cpos = i;
-				break;
-			}
+		if (_span_equals(fs->files[i]->file, file, is_case_sensitive)) {
+			cpos = i;
+			break;
 		}
 	}
 
@@ -3355,17 +3387,16 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, item_count, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 
 					int imported_count = 0;
-					while (true) {
+					while (imported_count < item_count) {
+						const String file_name = reimport_files[from + imported_count].path.get_file();
 						while (true) {
-							ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
+							ep->step(file_name, from + imported_count, false);
 							if (imported_sem.try_wait()) {
-								imported_count++;
 								break;
 							}
+							OS::get_singleton()->delay_usec(1000);
 						}
-						if (imported_count == item_count) {
-							break;
-						}
+						imported_count++;
 					}
 
 					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);

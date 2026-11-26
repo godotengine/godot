@@ -36,7 +36,9 @@
 
 #import <AppKit/NSWorkspace.h>
 #import <Foundation/Foundation.h>
+#include <sys/attr.h>
 #include <sys/mount.h>
+#include <unistd.h>
 
 #include <cerrno>
 
@@ -81,13 +83,28 @@ String DirAccessMacOS::get_drive(int p_drive) {
 }
 
 bool DirAccessMacOS::is_hidden(const String &p_name) {
-	String f = get_current_dir().path_join(p_name);
-	NSURL *url = [NSURL fileURLWithPath:@(f.utf8().get_data())];
-	NSNumber *hidden = nil;
-	if (![url getResourceValue:&hidden forKey:NSURLIsHiddenKey error:nil]) {
+	// Only called from get_next(), so p_name is relative to the open dir_stream.
+	ERR_FAIL_NULL_V(dir_stream, false);
+
+	// Same rule as NSURLIsHiddenKey: the real name starts with a dot, or the UF_HIDDEN flag is set.
+	// Using the real name makes "." and ".." follow the directory they refer to.
+	struct attrlist attrs = {};
+	attrs.bitmapcount = ATTR_BIT_MAP_COUNT;
+	attrs.commonattr = ATTR_CMN_NAME | ATTR_CMN_FLAGS;
+
+	struct __attribute__((packed)) {
+		uint32_t length;
+		attrreference_t name_ref;
+		uint32_t flags;
+		char name[NAME_MAX * 3 + 1];
+	} buf;
+
+	if (getattrlistat(dirfd(dir_stream), p_name.utf8().get_data(), &attrs, &buf, sizeof(buf), FSOPT_NOFOLLOW) != 0) {
 		return DirAccessUnix::is_hidden(p_name);
 	}
-	return [hidden boolValue];
+
+	const char *real_name = (const char *)&buf.name_ref + buf.name_ref.attr_dataoffset;
+	return real_name[0] == '.' || (buf.flags & UF_HIDDEN) != 0;
 }
 
 bool DirAccessMacOS::is_case_sensitive(const String &p_path) const {
