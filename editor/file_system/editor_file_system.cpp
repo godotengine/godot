@@ -1027,6 +1027,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			ep->step(ia.file, step_count++, false);
 		}
 	}
+	scan_actions.clear();
 
 	memdelete(ep);
 
@@ -1073,7 +1074,6 @@ bool EditorFileSystem::_update_scan_actions() {
 	if (reloads.size()) {
 		emit_signal(SNAME("resources_reload"), reloads);
 	}
-	scan_actions.clear();
 
 	updating_scan_actions = false;
 	return fs_changed;
