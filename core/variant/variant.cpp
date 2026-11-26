@@ -2248,7 +2248,8 @@ Variant::operator PackedVector4Array() const {
 
 /* helpers */
 
-Variant::operator Vector<::RID>() const {
+template <>
+Vector<::RID> Variant::to<Vector<::RID>>() const {
 	Array va = operator Array();
 	Vector<::RID> rids;
 	rids.resize(va.size());
@@ -2258,7 +2259,8 @@ Variant::operator Vector<::RID>() const {
 	return rids;
 }
 
-Variant::operator Vector<Plane>() const {
+template <>
+Vector<Plane> Variant::to<Vector<Plane>>() const {
 	Array va = operator Array();
 	Vector<Plane> planes;
 	int va_size = va.size();
@@ -2276,7 +2278,8 @@ Variant::operator Vector<Plane>() const {
 	return planes;
 }
 
-Variant::operator Vector<Face3>() const {
+template <>
+Vector<Face3> Variant::to<Vector<Face3>>() const {
 	PackedVector3Array va = operator PackedVector3Array();
 	Vector<Face3> faces;
 	int va_size = va.size();
@@ -2295,7 +2298,8 @@ Variant::operator Vector<Face3>() const {
 	return faces;
 }
 
-Variant::operator Vector<Variant>() const {
+template <>
+Vector<Variant> Variant::to<Vector<Variant>>() const {
 	Array va = operator Array();
 	Vector<Variant> variants;
 	int va_size = va.size();
@@ -2312,7 +2316,8 @@ Variant::operator Vector<Variant>() const {
 	return variants;
 }
 
-Variant::operator Vector<StringName>() const {
+template <>
+Vector<StringName> Variant::to<Vector<StringName>>() const {
 	PackedStringArray from = operator PackedStringArray();
 	Vector<StringName> to;
 	int len = from.size();
