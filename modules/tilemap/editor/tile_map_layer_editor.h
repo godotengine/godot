@@ -135,8 +135,11 @@ private:
 	float scattering = 0.0;
 	Label *scatter_label = nullptr;
 	SpinBox *scatter_spinbox = nullptr;
+	CheckBox *random_alt_checkbox = nullptr;
+	bool random_alt_enabled = false;
 	void _on_random_tile_checkbox_toggled(bool p_pressed);
 	void _on_scattering_spinbox_changed(double p_value);
+	void _on_random_alt_checkbox_toggled(bool p_pressed);
 
 	void _update_toolbar();
 	void _update_transform_buttons();
