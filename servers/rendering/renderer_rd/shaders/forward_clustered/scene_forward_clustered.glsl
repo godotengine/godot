@@ -2754,12 +2754,43 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 			float size_A = sc_use_directional_soft_shadows() ? directional_lights.data[i].size : 0.0;
+			vec3 light_color = directional_lights.data[i].color;
+
+			// Directional light projector
+			if (sc_use_directional_projector() && directional_lights.data[i].projector_rect != vec4(0.0)) {
+				vec4 v = vec4(vertex, 1.0);
+				vec2 splane = vec2(dot(v, directional_lights.data[i].projector_matrix_line_x), dot(v, directional_lights.data[i].projector_matrix_line_y));
+				splane = (splane * 0.5 + 0.5);
+
+				// fract for repeating
+				vec2 proj_uv = fract(splane) * directional_lights.data[i].projector_rect.zw;
+				vec4 proj;
+
+				if (sc_projector_use_mipmaps()) {
+					//ensure we have proper mipmaps
+					vec2 splane_ddx = vec2(dot(vertex_ddx, directional_lights.data[i].projector_matrix_line_x.xyz), dot(vertex_ddx, directional_lights.data[i].projector_matrix_line_y.xyz));
+					vec2 proj_uv_ddx = splane_ddx * directional_lights.data[i].projector_rect.zw;
+
+					vec2 splane_ddy = vec2(dot(vertex_ddy, directional_lights.data[i].projector_matrix_line_x.xyz), dot(vertex_ddy, directional_lights.data[i].projector_matrix_line_y.xyz));
+					vec2 proj_uv_ddy = splane_ddy * directional_lights.data[i].projector_rect.zw;
+
+					proj = textureGrad(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + directional_lights.data[i].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
+				} else {
+					proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + directional_lights.data[i].projector_rect.xy, 0.0);
+				}
+
+				// To disable repeat if projector_not_repeat if 1.0
+				float outside = float(any(lessThan(splane, vec2(0.0))) || any(greaterThan(splane, vec2(1.0))));
+				proj = mix(proj, vec4(1.0), outside * directional_lights.data[i].projector_not_repeat);
+
+				light_color *= proj.rgb * proj.a;
+			}
 
 			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A,
 #ifndef DEBUG_DRAW_PSSM_SPLITS
-					directional_lights.data[i].color * directional_lights.data[i].energy,
+					light_color * directional_lights.data[i].energy,
 #else
-					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
+					light_color * directional_lights.data[i].energy * tint,
 #endif
 					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
