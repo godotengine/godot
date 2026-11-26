@@ -146,9 +146,12 @@ private:
 
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
+	Button *generate_missing_uids_button = nullptr;
 	CheckButton *instant_preview_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
+	ConfirmationDialog *generate_missing_uids_confirmation = nullptr;
+	Vector<String> missing_uid_paths;
 
 	AHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
@@ -178,6 +181,10 @@ private:
 	void _toggle_instant_preview(bool p_pressed);
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
+	void _request_generate_missing_uids();
+	void _update_generate_missing_uids_button();
+	void _acknowledge_generated_uid_files(const Vector<String> &p_paths);
+	void _generate_missing_uids();
 	void _menu_option(int p_option);
 
 	String _get_cache_file_path() const;
