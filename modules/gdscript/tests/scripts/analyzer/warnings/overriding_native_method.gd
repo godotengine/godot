@@ -3,3 +3,6 @@ func test():
 
 func get(_property: StringName) -> Variant:
 	return null
+
+func new():
+	pass
