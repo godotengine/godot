@@ -321,6 +321,9 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
+		<member name="auto_width" type="bool" setter="set_auto_width" getter="has_auto_width" default="false">
+			If [code]true[/code], the control will automatically resize the width to fit its content.
+		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
 			The width all columns will be adjusted to.
 			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
