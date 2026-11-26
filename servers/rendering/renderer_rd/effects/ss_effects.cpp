@@ -399,7 +399,7 @@ void SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_bu
 	}
 
 	if (p_use_ssil) {
-		mipmaps = 6;
+		mipmaps = limit_mipmaps(6, last_frame_size);
 	}
 
 	bool should_create = true;
@@ -546,7 +546,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 
 	// Make sure our buffers exist, buffers are automatically cleared if view count or size changes.
 	if (!p_render_buffers->has_texture(RB_SCOPE_SSDS, RB_LINEAR_DEPTH)) {
-		p_render_buffers->create_texture(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, RD::DATA_FORMAT_R16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, size, view_count * 4, 5);
+		p_render_buffers->create_texture(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, RD::DATA_FORMAT_R16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, size, view_count * 4, limit_mipmaps(5, size));
 	}
 
 	// Downsample and deinterleave the depth buffer for SSAO and SSIL
@@ -762,7 +762,8 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Indirect Lighting");
 
 	// Obtain our (cached) buffer slices for the view we are rendering.
-	RID last_frame = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, p_view, 0, 1, 6);
+	uint32_t last_frame_mipmaps = p_render_buffers->get_texture_format(RB_SCOPE_SSLF, RB_LAST_FRAME).mipmaps;
+	RID last_frame = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, p_view, 0, 1, last_frame_mipmaps);
 	RID deinterleaved = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_DEINTERLEAVED, p_view * 4, 0, 4, 1);
 	RID deinterleaved_pong = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_DEINTERLEAVED_PONG, 4 * p_view, 0, 4, 1);
 	RID edges = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_EDGES, 4 * p_view, 0, 4, 1);
@@ -859,7 +860,8 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 		RID gather_uniform_set;
 		{
-			RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, ssil_half_size ? 1 : 0, 4, 4);
+			uint32_t depth_texture_mipmaps = p_render_buffers->get_texture_format(RB_SCOPE_SSDS, RB_LINEAR_DEPTH).mipmaps;
+			RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, ssil_half_size ? 1 : 0, 4, depth_texture_mipmaps - 1);
 
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
@@ -1241,7 +1243,8 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		// remember each instance of the uniform set.
 		RID gather_uniform_set;
 		{
-			RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, ssao_half_size ? 1 : 0, 4, 4);
+			uint32_t depth_texture_mipmaps = p_render_buffers->get_texture_format(RB_SCOPE_SSDS, RB_LINEAR_DEPTH).mipmaps;
+			RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, ssao_half_size ? 1 : 0, 4, depth_texture_mipmaps - 1);
 
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
