@@ -39,6 +39,22 @@ class EditorSpinSlider;
 class MenuButton;
 class PopupMenu;
 
+class CurveSettings : public RefCounted {
+	GDCLASS(CurveSettings, RefCounted);
+
+public:
+	void set_curve(Ref<Curve> p_curve);
+	Ref<Curve> get_curve();
+
+protected:
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+
+private:
+	Ref<Curve> curve;
+};
+
 class CurveEdit : public Control {
 	GDCLASS(CurveEdit, Control);
 
@@ -53,6 +69,7 @@ public:
 	Ref<Curve> get_curve();
 
 	Size2 get_minimum_size() const override;
+	void set_is_popped_out(bool p_popped_out);
 
 	enum PresetID {
 		PRESET_CONSTANT = 0,
@@ -105,7 +122,8 @@ private:
 
 private:
 	const float ASPECT_RATIO = 6.f / 13.f;
-	const float LINE_WIDTH = 0.5f;
+	const float LINE_WIDTH_EMBEDDED = 0.5f;
+	const float LINE_WIDTH_POPOUT = 1.5f;
 	const int STEP_SIZE = 2; // Number of pixels between plot points.
 
 	Transform2D _world_to_view;
@@ -143,6 +161,9 @@ private:
 
 	bool snap_enabled = false;
 	int snap_count = 10;
+
+	bool aspect_ratio_enforced = true;
+	float line_width = LINE_WIDTH_EMBEDDED;
 };
 
 // CurveEdit + toolbar
@@ -156,10 +177,13 @@ class CurveEditor : public VBoxContainer {
 	Button *snap_button = nullptr;
 	EditorSpinSlider *snap_count_edit = nullptr;
 	MenuButton *presets_button = nullptr;
+	Button *popout_button = nullptr;
+	Button *curve_settings_btn = nullptr;
 	CurveEdit *curve_editor_rect = nullptr;
 
 	void _set_snap_enabled(bool p_enabled);
 	void _set_snap_count(int p_snap_count);
+	void _popout_editor();
 	void _on_preset_item_selected(int p_preset_id);
 
 protected:
@@ -168,6 +192,8 @@ protected:
 public:
 	static const int DEFAULT_SNAP;
 	void set_curve(const Ref<Curve> &p_curve);
+	void set_popout_button_visible(bool p_visible);
+	void set_curve_settings_visible(bool p_visible);
 
 	CurveEditor();
 };
