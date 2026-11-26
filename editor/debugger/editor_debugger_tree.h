@@ -56,6 +56,7 @@ private:
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
 		ITEM_MENU_EXPAND_COLLAPSE,
+		ITEM_MENU_DELETE_NODE,
 	};
 
 	TypedArray<uint64_t> inspected_object_ids;
@@ -92,6 +93,7 @@ public:
 	};
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void set_new_session();
 	void update_icon_max_width();

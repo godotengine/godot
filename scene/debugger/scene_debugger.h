@@ -73,6 +73,8 @@ private:
 	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
+	static Error _msg_delete_node(const Array &p_args);
+	static Error _msg_restore_node(const Array &p_args);
 	static Error _msg_inspect_objects(const Array &p_args);
 	static Error _msg_change_canvas_item_states(const Array &p_args);
 #ifndef DISABLE_DEPRECATED
@@ -139,10 +141,17 @@ public:
 
 #ifdef DEBUG_ENABLED
 class LiveEditor {
+	struct RemoteRemovedNode {
+		ObjectID parent_id;
+		int position = 0;
+		Node *node = nullptr;
+	};
+
 private:
 	friend class SceneDebugger;
 	HashMap<int, NodePath> live_edit_node_path_cache;
 	HashMap<int, String> live_edit_resource_cache;
+	HashMap<ObjectID, RemoteRemovedNode> live_edit_remote_removed_nodes;
 
 	NodePath live_edit_root;
 	String live_edit_scene;
@@ -171,6 +180,9 @@ private:
 	void _duplicate_node_func(const NodePath &p_at, const String &p_new_name);
 	void _reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
+	void _delete_nodes_func(const Array &p_ids);
+	void _restore_nodes_func(const Array &p_ids);
+
 	LiveEditor() {
 		singleton = this;
 		live_edit_root = NodePath("/root");
@@ -180,5 +192,10 @@ private:
 
 public:
 	static LiveEditor *get_singleton();
+	~LiveEditor() {
+		for (KeyValue<ObjectID, RemoteRemovedNode> &kv : live_edit_remote_removed_nodes) {
+			memdelete(kv.value.node);
+		}
+	}
 };
 #endif // DEBUG_ENABLED
