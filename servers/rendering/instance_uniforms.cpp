@@ -133,7 +133,8 @@ Variant InstanceUniforms::get_default(const StringName &p_name) const {
 void InstanceUniforms::get_property_list(List<PropertyInfo> &r_parameters) const {
 	Vector<StringName> names;
 
-	// Invalid items won't be saved, but will remain in memory in case of shader compilation failure.
+	// Invalid items stay in memory in case of shader compilation failure. They are not listed
+	// here; the owning node saves them from its own copy instead.
 	for (const KeyValue<StringName, Item> &kv : _parameters) {
 		if (kv.value.is_valid()) {
 			names.push_back(kv.key);
