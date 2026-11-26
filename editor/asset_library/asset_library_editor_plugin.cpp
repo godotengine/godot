@@ -371,6 +371,9 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 			next_preview->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 			zoom_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			Color c = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+			c.a *= 0.25;
+			description->update_image(SNAME("rich_text_label_hr_key"), RichTextLabel::ImageUpdateMask::UPDATE_COLOR, nullptr, 0, 0, c);
 
 			Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("OptionButton"));
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("OptionButton"));
@@ -533,7 +536,10 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, const S
 	description->append_text(p_description);
 
 	if (!p_tags.is_empty()) {
-		description->append_text("\n[b]" + TTR("Tags:") + "[/b]");
+		Color c = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+		c.a *= 0.25;
+		description->append_text("\n[hr color=" + c.to_html() + "]\n");
+		description->append_text("[b]" + TTR("Tags:") + "[/b]");
 		for (const KeyValue<String, String> &KV : p_tags) {
 			description->add_text(" ");
 			description->push_meta("#" + KV.value);

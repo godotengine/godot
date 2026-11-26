@@ -4539,6 +4539,7 @@ void RichTextLabel::add_hr(int p_width, int p_height, const Color &p_color, Hori
 	item->size = _get_image_size(theme_cache.horizontal_rule, p_width, p_height, Rect2());
 	item->width_unit = p_width_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL;
 	item->height_unit = p_height_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL;
+	item->key = SNAME("rich_text_label_hr_key");
 
 	item->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(item->rid), CONNECT_REFERENCE_COUNTED);
 
