@@ -13,7 +13,7 @@
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the current line count.
+				Returns the number of wrapped lines. (Not the number of items in a line.)
 			</description>
 		</method>
 	</methods>
