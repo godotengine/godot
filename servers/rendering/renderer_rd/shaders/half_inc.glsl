@@ -14,6 +14,7 @@
 
 #define HALF_FLT_MIN float16_t(6.10352e-5)
 #define HALF_FLT_MAX float16_t(65504.0)
+#define ROUGHNESS_MIN float16_t(0.089) // From Filament
 
 #define half float16_t
 #define hvec2 f16vec2
@@ -28,6 +29,7 @@
 
 #define HALF_FLT_MIN float(1.175494351e-38F)
 #define HALF_FLT_MAX float(3.402823466e+38F)
+#define ROUGHNESS_MIN float(0.045) // From Frostbite
 
 #define half float
 #define hvec2 vec2
