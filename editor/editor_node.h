@@ -294,6 +294,15 @@ private:
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
 
+	struct SpeedState {
+		const int DEFAULT_TIME_SCALE_INDEX = 5;
+		static constexpr uint32_t NUM_SCALES = 13;
+		static constexpr float TIME_SCALE_RANGES[] = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
+		static constexpr const char *TIME_SCALE_LABELS[] = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
+		int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+		MenuButton *menu;
+	} speed_state;
+
 	Timer *screenshot_timer;
 
 	PluginConfigDialog *plugin_config_dialog;
@@ -675,6 +684,7 @@ private:
 	static String _to_absolute_plugin_path(const String &p_path);
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
+	void _speed_state_changed(int p_index);
 
 protected:
 	void _notification(int p_what);
