@@ -177,7 +177,7 @@ private:
 		DIVISOR_4,
 	};
 
-	uint32_t tile_size = 32;
+	uint32_t tile_size = 16;
 	bool use_msaa = true;
 	Divisor divisor = DIVISOR_4;
 
