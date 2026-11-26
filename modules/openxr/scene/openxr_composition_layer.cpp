@@ -737,7 +737,9 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_natively_supported() && openxr_session_running && is_inside_tree()) {
 				if (is_visible_in_tree()) {
-					_setup_composition_layer();
+					if (!registered) {
+						_setup_composition_layer();
+					}
 					update_transform();
 				} else {
 					_clear_composition_layer();
@@ -753,7 +755,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (layer_viewport && is_viewport_in_use(layer_viewport)) {
 				_clear_composition_layer();
-			} else if (openxr_session_running && is_visible_in_tree()) {
+			} else if (_should_register()) {
 				_setup_composition_layer();
 			}
 			update_transform();
