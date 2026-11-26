@@ -89,7 +89,8 @@
 // We can debug GL if we use GLAD or EGL, so not on iOS or Web.
 #define GL_DEBUG_CALLBACK
 
-#ifdef _WIN32
+#ifdef _MSC_VER
+// Avoid MSVC's deprecated-CRT warning. This should not be defined for MinGW.
 #define strcpy strcpy_s
 #endif
 #endif // GLAD_ENABLED || EGL_ENABLED || ANDROID_ENABLED
