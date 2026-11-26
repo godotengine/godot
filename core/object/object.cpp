@@ -841,7 +841,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	}
 
 	Callable::CallError ce;
-	const Variant ret = callp(p_method, argptrs, p_args.size(), ce);
+	Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'callv': %s.", Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce)));
 	}
