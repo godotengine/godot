@@ -665,6 +665,18 @@ public:
 		_init_from(p_other);
 	}
 
+	void operator=(AHashMap &&p_other) {
+		if (this == &p_other) {
+			return; // Ignore self assignment.
+		}
+
+		SWAP(_elements, p_other._elements);
+		SWAP(_metadata, p_other._metadata);
+
+		SWAP(_capacity_mask, p_other._capacity_mask);
+		SWAP(_size, p_other._size);
+	}
+
 	explicit AHashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
