@@ -57,6 +57,7 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_visionos_version"), get_minimum_deployment_target()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/min_visionos_gpu_family", PROPERTY_HINT_ENUM, "Apple8:1008,Apple9:1009"), 1008));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/app_role", PROPERTY_HINT_ENUM, "Window,Immersive"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), 1));
