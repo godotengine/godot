@@ -57,6 +57,7 @@ public:
 	virtual Ref<Texture2D> get_logo() const override;
 
 	void check_export_template_debugsymbols(const String &p_template_path, String *r_err) const;
+	String get_export_template_to_use(const Ref<EditorExportPreset> &p_preset, const String &p_target, String *r_err = nullptr) const;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
