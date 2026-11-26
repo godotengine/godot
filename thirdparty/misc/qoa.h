@@ -293,7 +293,7 @@ argument, so it can do the division with a cheaper integer multiplication. */
 
 static inline int qoa_div(int v, int scalefactor) {
 	int reciprocal = qoa_reciprocal_tab[scalefactor];
-	int n = (v * reciprocal + (1 << 15)) >> 16;
+	int n = (int)(((long long)v * reciprocal + (1 << 15)) >> 16);
 	n = n + ((v > 0) - (v < 0)) - ((n > 0) - (n < 0)); /* round away from 0 */
 	return n;
 }
