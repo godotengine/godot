@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwp_linux_dmabuf_v1" version="5">
+  <interface name="zwp_linux_dmabuf_v1" version="6">
     <description summary="factory for creating dmabuf-based wl_buffers">
       This interface offers ways to create generic dmabuf-based wl_buffers.
 
@@ -61,7 +61,7 @@
       import later fails.
 
       To create a wl_buffer from one or more dmabufs, a client creates a
-      zwp_linux_dmabuf_params_v1 object with a zwp_linux_dmabuf_v1.create_params
+      zwp_linux_buffer_params_v1 object with a zwp_linux_dmabuf_v1.create_params
       request. All planes required by the intended format are added with
       the 'add' request. Finally, a 'create' or 'create_immed' request is
       issued, which has the following outcome depending on the import success.
@@ -105,7 +105,7 @@
         received.
       </description>
       <arg name="params_id" type="new_id" interface="zwp_linux_buffer_params_v1"
-           summary="the new temporary"/>
+           summary="id for the newly created zwp_linux_buffer_params_v1"/>
     </request>
 
     <event name="format" deprecated-since="4">
@@ -162,7 +162,7 @@
 
     <request name="get_default_feedback" since="4">
       <description summary="get default feedback">
-        This request creates a new wp_linux_dmabuf_feedback object not bound
+        This request creates a new zwp_linux_dmabuf_feedback_v1 object not bound
         to a particular surface. This object will deliver feedback about dmabuf
         parameters to use if the client doesn't support per-surface feedback
         (see get_surface_feedback).
@@ -172,11 +172,11 @@
 
     <request name="get_surface_feedback" since="4">
       <description summary="get feedback for a surface">
-        This request creates a new wp_linux_dmabuf_feedback object for the
+        This request creates a new zwp_linux_dmabuf_feedback_v1 object for the
         specified wl_surface. This object will deliver feedback about dmabuf
         parameters to use for buffers attached to this surface.
 
-        If the surface is destroyed before the wp_linux_dmabuf_feedback object,
+        If the surface is destroyed before the zwp_linux_dmabuf_feedback_v1 object,
         the feedback object becomes inert.
       </description>
       <arg name="id" type="new_id" interface="zwp_linux_dmabuf_feedback_v1"/>
@@ -184,7 +184,7 @@
     </request>
   </interface>
 
-  <interface name="zwp_linux_buffer_params_v1" version="5">
+  <interface name="zwp_linux_buffer_params_v1" version="6">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
@@ -206,7 +206,7 @@
 
     <enum name="error">
       <entry name="already_used" value="0"
-             summary="the dmabuf_batch object has already been used to create a wl_buffer"/>
+             summary="the zwp_linux_buffer_params_v1 object has already been used to create a wl_buffer"/>
       <entry name="plane_idx" value="1"
              summary="plane index out of bounds"/>
       <entry name="plane_set" value="2"
@@ -222,6 +222,8 @@
       <entry name="invalid_wl_buffer" value="7"
              summary="invalid wl_buffer resulted from importing dmabufs via
                the create_immed request on given buffer_params"/>
+      <entry name="invalid_dev_t_size" value="8"
+             summary="an array with mismatching size for a dev_t was used"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -282,7 +284,7 @@
         authoritative source on how the format codes should work.
 
         The 'flags' is a bitfield of the flags defined in enum "flags".
-        'y_invert' means the that the image needs to be y-flipped.
+        'y_invert' means that the image needs to be y-flipped.
 
         Flag 'interlaced' means that the frame in the buffer is not
         progressive as usual, but interlaced. An interlaced buffer as
@@ -326,7 +328,7 @@
         This request can be sent only once in the object's lifetime, after
         which the only legal request is destroy. This object should be
         destroyed after issuing a 'create' request. Attempting to use this
-        object after issuing 'create' raises ALREADY_USED protocol error.
+        object after issuing 'create' raises the ALREADY_USED protocol error.
 
         It is not mandatory to issue 'create'. If a client wants to
         cancel the buffer creation, it can just destroy this object.
@@ -346,7 +348,7 @@
         zwp_linux_buffer_params_v1 object.
       </description>
       <arg name="buffer" type="new_id" interface="wl_buffer"
-           summary="the newly created wl_buffer"/>
+           summary="id for the newly created wl_buffer"/>
     </event>
 
     <event name="failed">
@@ -394,9 +396,28 @@
       <arg name="format" type="uint" summary="DRM_FORMAT code"/>
       <arg name="flags" type="uint" enum="flags" summary="see enum flags"/>
     </request>
+
+    <request name="set_sampling_device" since="6">
+      <description summary="set the target device of the wl_buffer">
+        Set the device the compositor should import the dmabufs to for sampling
+        in the next create or create_immed request.
+
+        To avoid race conditions when the compositor removes a device from the
+        tranches, it is not a protocol error if the device hasn't been advertised
+        by the compositor in a tranche with the sampling flag, but the import is
+        likely to fail in that case.
+
+        If the client doesn't know a suitable target device, it shouldn't set one,
+        and the compositor should attempt import on all devices it supports.
+
+        If the array is too small to contain a dev_t or larger than required, the
+        invalid_dev_t_size error will be emitted.
+      </description>
+      <arg name="device" type="array" summary="device dev_t value"/>
+    </request>
   </interface>
 
-  <interface name="zwp_linux_dmabuf_feedback_v1" version="5">
+  <interface name="zwp_linux_dmabuf_feedback_v1" version="6">
     <description summary="dmabuf feedback">
       This object advertises dmabuf parameters feedback. This includes the
       preferred devices and the supported formats/modifiers.
@@ -419,25 +440,33 @@
       descending order of preference. All formats and modifiers in the same
       tranche have the same preference.
 
-      To send parameters, the compositor sends one main_device event, tranches
-      (each consisting of one tranche_target_device event, one tranche_flags
-      event, tranche_formats events and then a tranche_done event), then one
-      done event.
+      To send parameters, the compositor sends one main_device event (unless
+      the client bound version 6 or above), tranches (each consisting of one
+      tranche_target_device event, one tranche_flags event, tranche_formats
+      events and then a tranche_done event), then one done event.
+
+      With version 6 and above, the compositor must always advertise at least
+      one tranche with the sampling flag set.
+
+      The compositor sends a format_table event at least once for each dmabuf
+      parameters feedback object, before any tranche events. Unless the format
+      table contents change later, the compositor is free not to send another
+      format_table event for the same dmabuf parameters feedback object.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the feedback object">
         Using this request a client can tell the server that it is not going to
-        use the wp_linux_dmabuf_feedback object anymore.
+        use the zwp_linux_dmabuf_feedback_v1 object anymore.
       </description>
     </request>
 
     <event name="done">
       <description summary="all feedback has been sent">
-        This event is sent after all parameters of a wp_linux_dmabuf_feedback
+        This event is sent after all parameters of a zwp_linux_dmabuf_feedback_v1
         object have been sent.
 
-        This allows changes to the wp_linux_dmabuf_feedback parameters to be
+        This allows changes to the zwp_linux_dmabuf_feedback_v1 parameters to be
         seen as atomic, even if they happen via multiple events.
       </description>
     </event>
@@ -463,19 +492,19 @@
       <arg name="size" type="uint" summary="table size, in bytes"/>
     </event>
 
-    <event name="main_device">
+    <event name="main_device" deprecated-since="6">
       <description summary="preferred main device">
         This event advertises the main device that the server prefers to use
         when direct scan-out to the target device isn't possible. The
         advertised main device may be different for each
-        wp_linux_dmabuf_feedback object, and may change over time.
+        zwp_linux_dmabuf_feedback_v1 object, and may change over time.
 
         There is exactly one main device. The compositor must send at least
         one preference tranche with tranche_target_device equal to main_device.
 
         Clients need to create buffers that the main device can import and
         read from, otherwise creating the dmabuf wl_buffer will fail (see the
-        wp_linux_buffer_params.create and create_immed requests for details).
+        zwp_linux_buffer_params_v1.create and create_immed requests for details).
         The main device will also likely be kept active by the compositor,
         so clients can use it instead of waking up another device for power
         savings.
@@ -488,13 +517,16 @@
         If explicit modifiers are not supported and the client performs buffer
         allocations on a different device than the main device, then the client
         must force the buffer to have a linear layout.
+
+        With version 6 and above, this event is no longer sent. Clients should
+        use a device with the sampling flag in the tranches instead.
       </description>
       <arg name="device" type="array" summary="device dev_t value"/>
     </event>
 
     <event name="tranche_done">
       <description summary="a preference tranche has been sent">
-        This event splits tranche_target_device and tranche_formats events in
+        This event splits tranche_target_device and tranche_formats events into
         preference tranches. It is sent after a set of tranche_target_device
         and tranche_formats events; it represents the end of a tranche. The
         next tranche will have a lower preference.
@@ -516,11 +548,11 @@
 
         The client can use this hint to allocate the buffer in a way that makes
         it accessible from the target device, ideally directly. The buffer must
-        still be accessible from the main device, either through direct import
-        or through a potentially more expensive fallback path. If the buffer
-        can't be directly imported from the main device then clients must be
+        still be accessible from a device with the sampling flag, either through
+        direct import or a potentially more expensive fallback path. If the
+        buffer can't be directly imported for sampling, then clients must be
         prepared for the compositor changing the tranche priority or making
-        wl_buffer creation fail (see the wp_linux_buffer_params.create and
+        wl_buffer creation fail (see the zwp_linux_buffer_params_v1.create and
         create_immed requests for details).
 
         If the device is a DRM node, the DRM node type (primary vs. render) is
@@ -534,7 +566,7 @@
     </event>
 
     <event name="tranche_formats">
-      <description summary="supported buffer format modifier">
+      <description summary="supported buffer format modifiers">
         This event advertises the format + modifier combinations that the
         compositor supports.
 
@@ -558,25 +590,36 @@
         This event is tied to a preference tranche, see the tranche_done event.
 
         For the definition of the format and modifier codes, see the
-        wp_linux_buffer_params.create request.
+        zwp_linux_buffer_params_v1.create request.
       </description>
       <arg name="indices" type="array" summary="array of 16-bit indexes"/>
     </event>
 
     <enum name="tranche_flags" bitfield="true">
-      <entry name="scanout" value="1" summary="direct scan-out tranche"/>
+      <entry name="scanout" value="1" since="4">
+        <description summary="direct scan-out tranche">
+          The scanout flag is a hint that direct scan-out may be attempted by
+          the compositor on the target device if the client appropriately
+          allocates a buffer. How to allocate a buffer that can be scanned out
+          on the target device is implementation-defined.
+        </description>
+      </entry>
+      <entry name="sampling" value="2" since="6">
+        <description summary="sampling tranche">
+          The sampling flag describes that the compositor is able to efficiently
+          sample from buffers imported to the target device if the client
+          appropriately allocates a buffer. How to allocate a buffer that can be
+          efficiently sampled on the target device is implementation defined.
+        </description>
+      </entry>
     </enum>
 
     <event name="tranche_flags">
       <description summary="tranche flags">
-        This event sets tranche-specific flags.
-
-        The scanout flag is a hint that direct scan-out may be attempted by the
-        compositor on the target device if the client appropriately allocates a
-        buffer. How to allocate a buffer that can be scanned out on the target
-        device is implementation-defined.
-
-        This event is tied to a preference tranche, see the tranche_done event.
+        This event sets tranche-specific flags. This event is tied to a
+        preference tranche, see the tranche_done event.
+        With version 6 and above, the compositor must set at least one flag
+        in each tranche.
       </description>
       <arg name="flags" type="uint" enum="tranche_flags" summary="tranche flags"/>
     </event>

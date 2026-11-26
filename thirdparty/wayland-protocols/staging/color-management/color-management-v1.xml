@@ -38,7 +38,7 @@
     look like.
 
     For an introduction, see the section "Color management" in the Wayland
-    documentation at https://wayland.freedesktop.org/docs/html/ .
+    documentation at https://wayland.freedesktop.org/docs/book/ .
 
     The color properties are represented as an image description object which
     is immutable after it has been created. A wl_output always has an
@@ -77,7 +77,7 @@
     only be done by creating a new major version of the extension.
   </description>
 
-  <interface name="wp_color_manager_v1" version="2">
+  <interface name="wp_color_manager_v1" version="3">
     <description summary="color manager singleton">
       A singleton global interface used for getting color management extensions
       for wl_surface and wl_output objects, and for creating client defined
@@ -164,6 +164,8 @@
       </entry>
       <entry name="windows_scrgb" value="7"
              summary="create_windows_scrgb request"/>
+      <entry name="windows_bt2100" value="8"
+             summary="create_windows_bt2100 request"/>
     </enum>
 
     <enum name="primaries">
@@ -595,9 +597,41 @@
       <arg name="reference"
            type="object" interface="wp_image_description_reference_v1"/>
     </request>
+
+    <request name="create_windows_bt2100" since="3">
+      <description summary="create Windows-BT.2100 image description object">
+        This creates a pre-defined image description for the so-called
+        Windows-BT.2100 stimulus encoding. This comes from the Windows 10
+        handling of its own definition of a BT.2100 color space for an HDR
+        screen driven in BT.2100/PQ signalling mode.
+
+        Windows-BT.2100 uses BT.2020 color primaries and white point.
+        The transfer characteristic is st2084_pq.
+
+        Windows-BT.2100 is generally displayed by Windows 10 without any
+        adjustments to the signal to account for viewing conditions.
+
+        The reference white level of Windows-BT.2100 is unknown. If a
+        reference white level must be assumed for compositor processing, it
+        should be 203 cd/m² of Report ITU-R BT.2408-7.
+
+        The target color volume of Windows-BT.2100 is unknown. The color gamut
+        may be anything up to BT.2100.
+
+        This request can be used when the compositor advertises
+        wp_color_manager_v1.feature.windows_bt2100.
+        Otherwise this request raises the protocol error unsupported_feature.
+
+        The resulting image description object does not allow get_information
+        request. The wp_image_description_v1.ready event shall be sent.
+      </description>
+
+      <arg name="image_description"
+           type="new_id" interface="wp_image_description_v1"/>
+      </request>
   </interface>
 
-  <interface name="wp_color_management_output_v1" version="2">
+  <interface name="wp_color_management_output_v1" version="3">
     <description summary="output color properties">
       A wp_color_management_output_v1 describes the color properties of an
       output.
@@ -667,7 +701,7 @@
     </request>
   </interface>
 
-  <interface name="wp_color_management_surface_v1" version="2">
+  <interface name="wp_color_management_surface_v1" version="3">
     <description summary="color management extension to a surface">
         A wp_color_management_surface_v1 allows the client to set the color
         space and HDR properties of a surface.
@@ -755,7 +789,7 @@
     </request>
   </interface>
 
-  <interface name="wp_color_management_surface_feedback_v1" version="2">
+  <interface name="wp_color_management_surface_feedback_v1" version="3">
     <description summary="color management extension to a surface">
         A wp_color_management_surface_feedback_v1 allows the client to get the
         preferred image description of a surface.
@@ -815,7 +849,7 @@
         wl_surface only if the image description is an exact match with the
         client content. Particularly if everything else matches, but the target
         color volume is greater than what the client needs, the client should
-        create its own parameric image description with its exact parameters.
+        create its own parametric image description with its exact parameters.
 
         If the interface version is inadequate for the preferred image
         description, meaning that the client does not support all the
@@ -854,7 +888,7 @@
 
         This event sends the identity of the new preferred state as the argument,
         so clients who are aware of the image description already can reuse it.
-        Otherwise, if the client client wants to know what the preferred image
+        Otherwise, if the client wants to know what the preferred image
         description is, it shall use the get_preferred request.
 
         The preferred image description is not automatically used for anything.
@@ -873,7 +907,7 @@
 
   </interface>
 
-  <interface name="wp_image_description_creator_icc_v1" version="2">
+  <interface name="wp_image_description_creator_icc_v1" version="3">
     <description summary="holder of image description ICC information">
       This type of object is used for collecting all the information required
       to create a wp_image_description_v1 object from an ICC file. A complete
@@ -989,7 +1023,7 @@
     </request>
   </interface>
 
-  <interface name="wp_image_description_creator_params_v1" version="2">
+  <interface name="wp_image_description_creator_params_v1" version="3">
     <description summary="holder of image description parameters">
       This type of object is used for collecting all the parameters required
       to create a wp_image_description_v1 object. A complete set of required
@@ -1363,7 +1397,7 @@
     </request>
   </interface>
 
-  <interface name="wp_image_description_v1" version="2">
+  <interface name="wp_image_description_v1" version="3">
     <description summary="Colorimetric image description">
       An image description carries information about the pixel color encoding
       and its intended display and viewing environment. The image description is
@@ -1510,7 +1544,7 @@
     </event>
   </interface>
 
-  <interface name="wp_image_description_info_v1" version="2">
+  <interface name="wp_image_description_info_v1" version="3">
     <description summary="Colorimetric image description information">
       Sends all matching events describing an image description object exactly
       once and finally sends the 'done' event.
@@ -1639,9 +1673,7 @@
         SMPTE ST 2086 definition of HDR static metadata for mastering displays.
 
         While primary color volume is about how color is encoded, the target
-        color volume is the actually displayable color volume. If target color
-        volume is equal to the primary color volume, then this event is not
-        sent.
+        color volume is the actually displayable color volume.
 
         Each coordinate value is multiplied by 1 million to get the argument
         value to carry precision of 6 decimals.
@@ -1704,7 +1736,7 @@
     </event>
   </interface>
 
-  <interface name="wp_image_description_reference_v1" version="1">
+  <interface name="wp_image_description_reference_v1" version="1" frozen="true">
     <description summary="Reference to an image description">
       This object is a reference to an image description. This interface is
       frozen at version 1 to allow other protocols to create
