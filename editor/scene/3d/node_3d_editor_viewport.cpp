@@ -7015,7 +7015,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Displays directional shadow splits in different colors to make adjusting split thresholds easier. \nRed: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, Yellow: 4th split (furthest from the camera)"));
 	display_submenu->add_separator();
 	// TRANSLATORS: "Normal" as in "normal vector", not "normal life".
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS);
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS, SupportedRenderingMethods::ALL,
 			TTRC("Displays the shadow atlas used for positional (omni/spot) shadow mapping.\nRequires a visible OmniLight3D or SpotLight3D node with shadows enabled to have a visible effect."));
