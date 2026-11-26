@@ -174,4 +174,5 @@ public:
 #endif // TOOLS_ENABLED
 
 	TranslationServer();
+	~TranslationServer();
 };

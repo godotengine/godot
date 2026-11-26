@@ -71,6 +71,9 @@ NavMeshGenerator2D::NavMeshGenerator2D() {
 
 NavMeshGenerator2D::~NavMeshGenerator2D() {
 	cleanup();
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void NavMeshGenerator2D::sync() {
