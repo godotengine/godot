@@ -314,6 +314,7 @@ public:
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
+	static inline const int ROUGHNESS_LAYERS_MIN = 2;
 
 	RendererRD::MaterialStorage::ShaderData *_create_sky_shader_func();
 	static RendererRD::MaterialStorage::ShaderData *_create_sky_shader_funcs();

@@ -3321,6 +3321,7 @@
 		</member>
 		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="8">
 			Limits the number of layers to use in radiance maps when using importance sampling. A lower number will be slightly faster and take up less VRAM.
+			[b]Note:[/b] This must be at least [code]2[/code], as with one layer, rough materials will reflect like mirrors. If the value is set below [code]2[/code] a warning will be printed and [code]2[/code] will be used instead.
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/reflections/sky_reflections/roughness_layers] times more memory.

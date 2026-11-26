@@ -715,6 +715,12 @@ RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_funcs(Ren
 
 SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
+
+	if (roughness_layers < ROUGHNESS_LAYERS_MIN) {
+		WARN_PRINT(vformat("rendering/reflections/sky_reflections/roughness_layers is set to %d, but the minimum is %d. Using %d instead.", roughness_layers, ROUGHNESS_LAYERS_MIN, ROUGHNESS_LAYERS_MIN));
+		roughness_layers = ROUGHNESS_LAYERS_MIN;
+	}
+
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_octmap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
 }
