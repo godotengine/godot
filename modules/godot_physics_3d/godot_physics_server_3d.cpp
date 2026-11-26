@@ -778,7 +778,7 @@ void GodotPhysicsServer3D::body_add_constant_central_force(RID p_body, const Vec
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_central_force(p_force);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer3D::body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
@@ -786,7 +786,7 @@ void GodotPhysicsServer3D::body_add_constant_force(RID p_body, const Vector3 &p_
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_force(p_force, p_position);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer3D::body_add_constant_torque(RID p_body, const Vector3 &p_torque) {
@@ -794,7 +794,7 @@ void GodotPhysicsServer3D::body_add_constant_torque(RID p_body, const Vector3 &p
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_torque(p_torque);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer3D::body_set_constant_force(RID p_body, const Vector3 &p_force) {
@@ -803,7 +803,7 @@ void GodotPhysicsServer3D::body_set_constant_force(RID p_body, const Vector3 &p_
 
 	body->set_constant_force(p_force);
 	if (!p_force.is_zero_approx()) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 }
 
@@ -819,7 +819,7 @@ void GodotPhysicsServer3D::body_set_constant_torque(RID p_body, const Vector3 &p
 
 	body->set_constant_torque(p_torque);
 	if (!p_torque.is_zero_approx()) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 }
 
@@ -863,7 +863,7 @@ void GodotPhysicsServer3D::body_add_collision_exception(RID p_body, RID p_body_b
 	ERR_FAIL_NULL(body);
 
 	body->add_exception(p_body_b);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer3D::body_remove_collision_exception(RID p_body, RID p_body_b) {
