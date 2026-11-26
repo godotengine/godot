@@ -5542,11 +5542,6 @@ void DisplayServerWindows::_dispatch_input_events(const Ref<InputEvent> &p_event
 }
 
 void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	if (in_dispatch_input_event) {
-		return;
-	}
-	in_dispatch_input_event = true;
-
 	{
 		List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 		if (E && Object::cast_to<InputEventKey>(*p_event)) {
@@ -5557,7 +5552,6 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 					callable.call(p_event);
 				}
 			}
-			in_dispatch_input_event = false;
 			return;
 		}
 	}
@@ -5584,8 +5578,6 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			cb.call(p_event);
 		}
 	}
-
-	in_dispatch_input_event = false;
 }
 
 LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam) {
