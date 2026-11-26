@@ -1081,6 +1081,7 @@ Patches:
 - `0005-ios-link.patch` ([GH-123903](https://github.com/godotengine/godot/pull/123903))
 - `0006-ios-iostream-no-prefpath.patch` ([GH-123899](https://github.com/godotengine/godot/pull/123899))
 - `0007-fix-linux-getenv-unsafe.patch` ([GH-124017](https://github.com/godotengine/godot/pull/124017))
+- `0008-android-changes.patch` ([GH-125777](https://github.com/godotengine/godot/pull/125777))
 
 
 ## smaa

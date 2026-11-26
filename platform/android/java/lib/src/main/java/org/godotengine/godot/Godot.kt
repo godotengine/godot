@@ -56,6 +56,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
+import org.godotengine.godot.input.SDLActivity
 import org.godotengine.godot.io.FilePicker
 import org.godotengine.godot.io.StorageScope
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
@@ -679,6 +680,10 @@ class Godot private constructor(val context: Context) {
 			endBenchmarkMeasure("Startup", "Godot::onInitRenderView")
 		}
 		return containerLayout
+	}
+
+	fun onCreate() {
+		SDLActivity.onCreate(context)
 	}
 
 	fun onStart(host: GodotHost) {

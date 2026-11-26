@@ -72,7 +72,6 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge)
 	_get_ca_certificates = p_env->GetMethodID(godot_native_bridge_class, "getCACertificates", "()Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(godot_native_bridge_class, "initInputDevices", "()V");
 	_vibrate = p_env->GetMethodID(godot_native_bridge_class, "vibrate", "(II)V");
-	_get_input_fallback_mapping = p_env->GetMethodID(godot_native_bridge_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_native_bridge_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_native_bridge_class, "onGodotMainLoopStarted", "()V");
 	_on_godot_terminating = p_env->GetMethodID(godot_native_bridge_class, "onGodotTerminating", "()V");
@@ -280,18 +279,6 @@ String GodotJavaWrapper::get_clipboard() {
 		env->DeleteLocalRef(s);
 	}
 	return clipboard;
-}
-
-String GodotJavaWrapper::get_input_fallback_mapping() {
-	String input_fallback_mapping;
-	if (_get_input_fallback_mapping) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, String());
-		jstring fallback_mapping = (jstring)env->CallObjectMethod(godot_native_bridge, _get_input_fallback_mapping);
-		input_fallback_mapping = jstring_to_string(fallback_mapping, env);
-		env->DeleteLocalRef(fallback_mapping);
-	}
-	return input_fallback_mapping;
 }
 
 bool GodotJavaWrapper::has_set_clipboard() {

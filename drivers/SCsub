@@ -62,8 +62,8 @@ if env["opengl3"]:
     SConscript("egl/SCsub")
 
 # Input drivers
-if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "visionos"]:
-    # TODO: Evaluate support for Android and Web.
+if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "android", "ios", "visionos"]:
+    # TODO: Evaluate support for Web.
     SConscript("sdl/SCsub")
 
 # Core dependencies

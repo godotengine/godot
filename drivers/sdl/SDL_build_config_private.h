@@ -160,6 +160,24 @@
 #define SDL_FILESYSTEM_DUMMY 1
 #define SDL_FSOPS_DUMMY 1
 
+// Android defines
+#elif defined(SDL_PLATFORM_ANDROID)
+
+#define SDL_PLATFORM_PRIVATE_NAME "Android"
+#define SDL_PLATFORM_UNIX 1
+
+#define SDL_HAPTIC_ANDROID 1
+//#define SDL_JOYSTICK_HIDAPI 1 // No HIDAPI for bluetooth controllers, so no HIDAPI at all :( (for now?)
+#define SDL_JOYSTICK_ANDROID 1
+
+#define SDL_LOADSO_DLOPEN 1
+#define SDL_TIMER_UNIX 1
+#define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+#define SDL_FILESYSTEM_DUMMY 1
+
+#define SDL_MAIN_HANDLED 1
+
 // iOS/visionOS defines.
 #elif defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
 
