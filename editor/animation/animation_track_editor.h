@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
 #include "editor/editor_data.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"
@@ -676,6 +677,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _timeline_changed(float p_new_pos, bool p_timeline_only);
 	void _track_remove_request(int p_track);
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
+	void _animation_remove_selected_tracks();
+	void _set_track_selection_for_animation(const PackedInt32Array &p_tracks, const StringName &p_animation);
 	void _track_grab_focus(int p_track);
 
 	void _update_scroll(double);
@@ -756,7 +759,18 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
-	//selection
+	// track selection
+	RBSet<int> track_selection;
+
+	enum {
+		TRACK_MENU_COPY,
+		TRACK_MENU_PASTE,
+		TRACK_MENU_DELETE,
+	};
+	PopupMenu *track_menu = nullptr;
+	void _track_menu_selected(int p_id);
+
+	// key selection
 
 	struct SelectedKey {
 		int track = 0;
@@ -885,6 +899,9 @@ class AnimationTrackEditor : public VBoxContainer {
 		Vector<Key> keys;
 	};
 
+	void _copy_tracks(const RBSet<int> &p_tracks);
+	void _paste_tracks();
+
 	struct KeyClipboard {
 		int top_track;
 
@@ -917,11 +934,14 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 public:
 	// Public for use as signal callback.
 	void _clear_selection(bool p_update = false);
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
+	void _show_track_popup_menu();
 
 	enum {
 		EDIT_COPY_TRACKS,
@@ -986,6 +1006,10 @@ public:
 	void show_dummy_player_warning(bool p_show);
 	void show_inactive_player_warning(bool p_show);
 
+	bool is_track_selected(int p_track) const;
+	bool is_track_selection_active() const;
+	void try_select_track_edit(AnimationTrackEdit *p_track_edit, bool p_aggregate, bool p_deselectable);
+	void try_select_track_group(AnimationTrackEditGroup *p_group, bool p_aggregate, bool p_deselectable);
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
 	bool is_key_clipboard_active() const;
