@@ -1012,13 +1012,32 @@ uint64_t OS_Windows::get_ticks_usec() const {
 }
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
-	for (int i = 0; i < p_text.size(); i++) {
-		char32_t c = p_text[i];
-		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
-			return "\"" + p_text + "\"";
+	static const Vector<String> esc_c = { " ", "\t", "\v", "\n", "\"" };
+	if (p_text.findmk(esc_c) < 0 && !p_text.is_empty()) {
+		return p_text;
+	} else {
+		String out;
+		out += "\"";
+		for (int i = 0;; i++) {
+			int backslashes = 0;
+			while (i < p_text.length() && p_text[i] == '\\') {
+				i++;
+				backslashes++;
+			}
+			if (i == p_text.length()) {
+				out += String("\\").repeat(backslashes * 2);
+				break;
+			} else if (p_text[i] == '"') {
+				out += String("\\").repeat(backslashes * 2 + 1);
+				out += String::chr(p_text[i]);
+			} else {
+				out += String("\\").repeat(backslashes);
+				out += String::chr(p_text[i]);
+			}
 		}
+		out += "\"";
+		return out;
 	}
-	return p_text;
 }
 
 static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_pipe_mutex) {
