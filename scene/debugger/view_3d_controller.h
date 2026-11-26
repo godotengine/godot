@@ -215,6 +215,7 @@ private:
 	ZoomStyle zoom_style = ZOOM_VERTICAL;
 	NavigationMouseButton zoom_mouse_button = NAV_MOUSE_BUTTON_MIDDLE;
 	float zoom_inertia = 0;
+	float zoom_scalar = 1.0;
 	int zoom_failed_attempts_count = 0;
 
 	float translation_sensitivity = 0;
@@ -310,6 +311,7 @@ public:
 	void set_zoom_style(ZoomStyle p_style) { zoom_style = p_style; }
 	void set_zoom_inertia(const float p_inertia) { zoom_inertia = p_inertia; }
 	void set_zoom_mouse_button(const NavigationMouseButton p_button) { zoom_mouse_button = p_button; }
+	void set_zoom_scalar(const float p_scalar) { zoom_scalar = p_scalar; }
 
 	void set_translation_sensitivity(const float p_sensitivity) { translation_sensitivity = p_sensitivity; }
 	void set_translation_inertia(const float p_inertia) { translation_inertia = p_inertia; }

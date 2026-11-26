@@ -3999,6 +3999,7 @@ void Node3DEditorViewport::_update_view_3d_controller(bool p_update_all) {
 
 		view_3d_controller->set_zoom_style((View3DController::ZoomStyle)EDITOR_GET("editors/3d/navigation/zoom_style").operator int());
 		view_3d_controller->set_zoom_inertia(EDITOR_GET("editors/3d/navigation_feel/zoom_inertia"));
+		view_3d_controller->set_zoom_scalar(EDITOR_GET("editors/3d/navigation_feel/zoom_scalar"));
 		view_3d_controller->set_zoom_mouse_button((View3DController::NavigationMouseButton)EDITOR_GET("editors/3d/navigation/zoom_mouse_button").operator int());
 
 		view_3d_controller->set_freelook_scheme((View3DController::FreelookScheme)EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme").operator int());

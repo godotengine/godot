@@ -110,6 +110,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation_feel/orbit_inertia"] = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
 	settings["editors/3d/navigation/zoom_style"] = EDITOR_GET("editors/3d/navigation/zoom_style");
 	settings["editors/3d/navigation_feel/zoom_inertia"] = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+	settings["editors/3d/navigation_feel/zoom_scalar"] = EDITOR_GET("editors/3d/navigation_feel/zoom_scalar");
 	settings["editors/3d/navigation/zoom_mouse_button"] = EDITOR_GET("editors/3d/navigation/zoom_mouse_button");
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 	settings["editors/3d/navigation_feel/translation_inertia"] = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
