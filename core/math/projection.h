@@ -107,6 +107,7 @@ struct [[nodiscard]] Projection {
 
 	real_t get_z_far() const;
 	real_t get_z_near() const;
+	Vector2 get_frustum_depth_range() const;
 	real_t get_aspect() const;
 	real_t get_fov() const;
 	bool is_orthogonal() const;
