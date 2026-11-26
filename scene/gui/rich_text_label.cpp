@@ -6400,7 +6400,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			String alt_text;
 
 			if (_validate_resource_path(image)) {
+#ifdef TOOLS_ENABLED
+				Ref<Texture2D> texture;
+				if (image.begins_with("editor://")) {
+					texture = get_editor_theme_icon(image.trim_prefix("editor://"));
+				} else {
+					texture = ResourceLoader::load(image, "Texture2D");
+				}
+#else
 				Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
+#endif
 				if (texture.is_valid()) {
 					Rect2 region;
 					OptionMap::Iterator region_option = bbcode_options.find("region");
@@ -6429,6 +6438,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					float height = 0;
 					bool pad = false;
 					String tooltip;
+					Variant key;
 					ImageUnit width_unit = IMAGE_UNIT_PIXEL;
 					ImageUnit height_unit = IMAGE_UNIT_PIXEL;
 					if (!bbcode_value.is_empty()) {
@@ -6510,13 +6520,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							tooltip = tooltip_option->value;
 						}
 
+						OptionMap::Iterator key_option = bbcode_options.find("key");
+						if (key_option) {
+							key = String(key_option->value);
+						}
+
 						OptionMap::Iterator pad_option = bbcode_options.find("pad");
 						if (pad_option) {
 							pad = (pad_option->value == "true");
 						}
 					}
 
-					add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_unit, height_unit, alt_text);
+					add_image(texture, width, height, color, (InlineAlignment)alignment, region, key, pad, tooltip, width_unit, height_unit, alt_text);
 				}
 			} else {
 				WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", image));
@@ -7975,6 +7990,11 @@ int RichTextLabel::get_line_width(int p_line) const {
 }
 
 bool RichTextLabel::_validate_resource_path(const String &p_path) const {
+#ifdef TOOLS_ENABLED
+	if (p_path.begins_with("editor://")) {
+		return true;
+	}
+#endif
 	if (p_path.begins_with("res://") || p_path.begins_with("uid://") || p_path.is_relative_path()) {
 		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
