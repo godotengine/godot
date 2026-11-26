@@ -1155,6 +1155,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::STATIC: {
 				advance();
 				next_is_static = true;
+				make_completion_context(COMPLETION_STATIC_DECLARATION, current_class);
 				if (!check(GDScriptTokenizer::Token::FUNC) && !check(GDScriptTokenizer::Token::VAR)) {
 					push_error(R"(Expected "func" or "var" after "static".)");
 				}
