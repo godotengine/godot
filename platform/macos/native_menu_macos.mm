@@ -131,7 +131,7 @@ void NativeMenuMacOS::_menu_close(NSMenu *p_menu) {
 
 void NativeMenuMacOS::_menu_close_cb(const RID &p_rid) {
 	MenuData *md = menus.get_or_null(p_rid);
-	if (md->close_cb.is_valid()) {
+	if (md && md->close_cb.is_valid()) {
 		Variant ret;
 		Callable::CallError ce;
 
