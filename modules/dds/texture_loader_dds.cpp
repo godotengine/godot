@@ -790,3 +790,86 @@ Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 ResourceFormatDDS::ResourceFormatDDS() {
 	Image::_dds_mem_loader_func = load_mem_dds;
 }
+
+Vector<Ref<Image>> dds_load_images(const String &p_path, bool &r_is_2d) {
+	r_is_2d = false;
+
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(f.is_null(), Vector<Ref<Image>>(), vformat("Unable to open DDS file: %s.", p_path));
+
+	DDSFormat dds_format;
+	uint32_t width, height, mipmaps, pitch, flags, layer_count, dds_type;
+	Vector<Ref<Image>> images = _dds_load_images_from_buffer(f, dds_format, width, height, mipmaps, pitch, flags, layer_count, dds_type, p_path);
+	if (images.is_empty()) {
+		return images;
+	}
+
+	r_is_2d = (dds_type & DDST_TYPE_MASK) == DDST_2D && (dds_type & DDST_ARRAY) == 0;
+
+	return images;
+}
+
+static constexpr uint32_t DDS_REDIRECT_MAGIC = 0x52534444; // "DDSR"
+static constexpr uint32_t DDS_REDIRECT_VERSION = 1;
+
+Error dds_save_redirect(const String &p_path, const String &p_source_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat("Unable to create file: %s.", p_path));
+
+	f->store_32(DDS_REDIRECT_MAGIC);
+	f->store_32(DDS_REDIRECT_VERSION);
+	f->store_pascal_string(p_source_path);
+
+	return f->get_error();
+}
+
+static String _dds_read_redirect(const String &p_path, Error *r_error) {
+	if (r_error) {
+		*r_error = ERR_FILE_CORRUPT;
+	}
+
+	Error open_error;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &open_error);
+	if (f.is_null()) {
+		if (r_error) {
+			*r_error = open_error;
+		}
+		ERR_FAIL_V_MSG(String(), vformat("Unable to open DDS redirect file: %s.", p_path));
+	}
+
+	ERR_FAIL_COND_V_MSG(f->get_32() != DDS_REDIRECT_MAGIC, String(), vformat("Invalid DDS redirect file: %s.", p_path));
+	ERR_FAIL_COND_V_MSG(f->get_32() > DDS_REDIRECT_VERSION, String(), vformat("DDS redirect file is too new: %s.", p_path));
+
+	const String source_path = f->get_pascal_string();
+	ERR_FAIL_COND_V_MSG(source_path.is_empty(), String(), vformat("DDS redirect file names no source: %s.", p_path));
+
+	if (r_error) {
+		*r_error = OK;
+	}
+	return source_path;
+}
+
+Ref<Resource> ResourceFormatDDSRef::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	const String source_path = _dds_read_redirect(p_path, r_error);
+	if (source_path.is_empty()) {
+		return Ref<Resource>();
+	}
+
+	return _dds_load_from_file(source_path, r_error);
+}
+
+void ResourceFormatDDSRef::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("ddsref");
+}
+
+bool ResourceFormatDDSRef::handles_type(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "Texture");
+}
+
+String ResourceFormatDDSRef::get_resource_type(const String &p_path) const {
+	if (p_path.has_extension("ddsref")) {
+		return "Texture";
+	}
+	return "";
+}

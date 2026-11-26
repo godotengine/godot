@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterDDS" inherits="ResourceImporter" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports a DDS image for use as a texture.
+	</brief_description>
+	<description>
+		This is the default importer for [code].dds[/code] files and has no import options.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
