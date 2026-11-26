@@ -37,9 +37,9 @@
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
 
-struct ContainerType;
 class GDScriptInstance;
 class GDScript;
 
@@ -61,6 +61,8 @@ public:
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
+
+	ContainerType make_container_type() const;
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
@@ -384,6 +386,7 @@ private:
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
+	Vector<ContainerType> container_types;
 
 	int _code_size = 0;
 	int _default_arg_count = 0;
@@ -402,6 +405,7 @@ private:
 	int _gds_utilities_count = 0;
 	int _methods_count = 0;
 	int _lambdas_count = 0;
+	int _container_types_count = 0;
 
 	int *_code_ptr = nullptr;
 	const int *_default_arg_ptr = nullptr;
@@ -420,6 +424,7 @@ private:
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
+	const ContainerType *_container_types_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
@@ -488,6 +493,7 @@ public:
 
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
+	const ContainerType &get_container_type(int p_idx) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
