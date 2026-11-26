@@ -10,6 +10,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="decal_atlas_get_texture" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the decal atlas texture.
+			</description>
+		</method>
+		<method name="decal_atlas_get_texture_srgb" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the decal atlas texture in sRGB.
+			</description>
+		</method>
+		<method name="directional_shadow_get_texture" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the directional shadow atlas texture.
+			</description>
+		</method>
 		<method name="get_cam_projection" qualifiers="const">
 			<return type="Projection" />
 			<description>
@@ -22,6 +40,24 @@
 			<description>
 				Returns the camera transform used to render this frame.
 				[b]Note:[/b] If more than one view is rendered, this will return a centered transform.
+			</description>
+		</method>
+		<method name="get_directional_light_buffer" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the directional light buffer, which contains the scene directional light data for each light source as a UBO.
+			</description>
+		</method>
+		<method name="get_omni_light_buffer" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the omni light buffer, which contains the scene omni light data as a UBO.
+			</description>
+		</method>
+		<method name="get_spot_light_buffer" qualifiers="const" experimental="">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the spot light buffer, which contains the scene spot light data as a UBO.
 			</description>
 		</method>
 		<method name="get_uniform_buffer" qualifiers="const">
