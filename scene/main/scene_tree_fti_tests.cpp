@@ -141,7 +141,7 @@ void SceneTreeFTITests::update_dirty_nodes(Node *p_node, uint32_t p_current_half
 					s->data.global_transform_interpolated = s->data.fti_is_identity_xform ? (*p_parent_global_xform) : (*p_parent_global_xform) * local_interp;
 				}
 			} else {
-				const Node3D *parent = s->get_parent_node_3d();
+				const Node3D *parent = s->data.parent;
 
 				if (parent) {
 					const Transform3D &parent_glob = parent->data.fti_global_xform_interp_set ? parent->data.global_transform_interpolated : parent->get_global_transform();
