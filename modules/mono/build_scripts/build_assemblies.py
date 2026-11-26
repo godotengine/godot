@@ -109,6 +109,45 @@ def find_msbuild_tools_path_reg():
         pass
 
 
+def input_path_is_local_source(tools, local_path) -> bool:
+    import subprocess
+
+    if not os.path.exists(local_path):
+        return False
+
+    cli: str
+    # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
+    if tools.dotnet_cli:
+        cli = tools.dotnet_cli
+    else:
+        cli = find_dotnet_cli()
+
+    args = ["nuget", "list", "source"]
+
+    try:
+        sources = subprocess.check_output([cli] + args).decode("utf-8")
+
+        if local_path in sources:
+            dir_list = []
+            for home, dirs, files in os.walk(local_path):
+                for dir_name in dirs:
+                    dir_list.append(os.path.join(home, dir_name))
+
+            if len(dir_list) > 0:
+                for path in dir_list:
+                    if path in sources:
+                        # The file path entered by the user might be a parent path of the local source path. In this case, return false.
+                        return False
+
+            return True
+
+    except OSError:
+        pass  # Fine, vswhere not found
+    except (subprocess.CalledProcessError, OSError):
+        pass
+    return False
+
+
 @dataclass
 class ToolsLocation:
     dotnet_cli: str = ""
@@ -444,6 +483,12 @@ def main():
 
     if msbuild_tool is None:
         print("Unable to find MSBuild")
+        sys.exit(1)
+
+    if push_nupkgs_local is not None and not input_path_is_local_source(msbuild_tool, push_nupkgs_local):
+        print(
+            "The parameters for push_nupkgs_local don’t exist in the local source list. Please check the path format or use the 'dotnet nuget add source' command."
+        )
         sys.exit(1)
 
     exit_code = build_all(
