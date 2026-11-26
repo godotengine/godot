@@ -31,11 +31,157 @@
 #include "translation.h"
 
 #include "core/object/class_db.h"
-#include "core/os/thread.h"
+#include "core/os/os.h"
 #include "core/string/plural_rules.h"
 #include "core/string/translation_server.h"
 
-void _check_for_incompatibility(const String &p_msgctxt, const String &p_msgid) {
+Vector<int> _util_sprintf_extract_arg_types(const StringName &p_str) {
+	// Note: keep in sync with 'String::sprintf'.
+	Vector<int> value_types;
+	char32_t *self = (char32_t *)p_str.get_data();
+	int selected_index = -1;
+	int pending_index = 0;
+	bool in_decimals = false;
+	int value_index = 0;
+	bool in_format = false;
+
+	for (; *self; self++) {
+		const char32_t c = *self;
+
+		if (in_format) { // We have % - let's see what else we get.
+			switch (c) {
+				case '%': { // Replace %% with %
+					in_format = false;
+					break;
+				}
+				case 'd': // Integer (signed)
+				case 'o': // Octal
+				case 'x': // Hexadecimal (lowercase)
+				case 'X': { // Hexadecimal (uppercase)
+					int64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= value_types.size()) {
+						for (int i = value_types.size(); i < index + 1; i++) {
+							value_types.push_back(-1);
+						}
+					}
+					value_types.write[index] = Variant::Type::INT;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					in_format = false;
+					break;
+				}
+				case 'f': { // Float
+					int64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= value_types.size()) {
+						for (int i = value_types.size(); i < index + 1; i++) {
+							value_types.push_back(-1);
+						}
+					}
+					value_types.write[index] = Variant::Type::FLOAT;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					in_format = false;
+					break;
+				}
+				case 'v': { // Vector2/3/4/2i/3i/4i
+					int64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= value_types.size()) {
+						for (int i = value_types.size(); i < index + 1; i++) {
+							value_types.push_back(-1);
+						}
+					}
+					value_types.write[index] = Variant::Type::VECTOR2;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					in_format = false;
+					break;
+				}
+				case 'c':
+				case 's': { // String
+					int64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= value_types.size()) {
+						for (int i = value_types.size(); i < index + 1; i++) {
+							value_types.push_back(-1);
+						}
+					}
+					value_types.write[index] = Variant::Type::STRING;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					in_format = false;
+					break;
+				}
+				case '-': // Left justify
+				case '+': // Show + if positive.
+				case 'u': { // Treat as unsigned (for int/hex).
+					break;
+				}
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9': {
+					int n = c - '0';
+					if (!in_decimals) {
+						if (c != '0' || pending_index != 0) {
+							pending_index *= 10;
+							pending_index += n;
+						}
+					}
+					break;
+				}
+				case '$': {
+					if (pending_index > 0) {
+						selected_index = pending_index - 1;
+					}
+					pending_index = 0;
+					break;
+				}
+				case '.': { // Float/Vector separator.
+					in_decimals = true;
+					break;
+				}
+				case '*': { // Dynamic width, based on value.
+					int64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= value_types.size()) {
+						for (int i = value_types.size(); i < index + 1; i++) {
+							value_types.push_back(-1);
+						}
+					}
+					value_types.write[index] = Variant::Type::NIL;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					break;
+				}
+
+				default: {
+					in_format = false;
+					break;
+				}
+			}
+		} else { // Not in format string.
+			if (c == '%') {
+				in_format = true;
+				selected_index = -1;
+				pending_index = 0;
+				in_decimals = false;
+			}
+		}
+	}
+
+	return value_types;
+}
+
+bool _check_for_incompatibility(const StringName &p_msgctxt, const StringName &p_msgid, const Vector<StringName> &p_msgstrs) {
 	// Gettext PO and MO files use an empty untranslated string without context
 	// to store metadata.
 	if (p_msgctxt.is_empty() && p_msgid.is_empty()) {
@@ -49,12 +195,26 @@ void _check_for_incompatibility(const String &p_msgctxt, const String &p_msgid) 
 	// It's unusual to have this character in the context or untranslated
 	// string. But it doesn't do any harm as long as you are aware of this when
 	// using the relevant APIs and tools.
-	if (p_msgctxt.contains_char(0x04)) {
+	if (Span(p_msgctxt.get_data(), p_msgctxt.length()).find(0x04, 0) != -1) {
 		WARN_PRINT(vformat("Found EOT character (0x04) within context '%s'. This may cause issues with the translation system and external tools.", p_msgctxt));
 	}
-	if (p_msgid.contains_char(0x04)) {
+	if (Span(p_msgid.get_data(), p_msgid.length()).find(0x04, 0) != -1) {
 		WARN_PRINT(vformat("Found EOT character (0x04) within untranslated string '%s'. This may cause issues with the translation system and external tools.", p_msgid));
 	}
+
+	const Vector<int> id_format = _util_sprintf_extract_arg_types(p_msgid);
+	for (const StringName &msgstr : p_msgstrs) {
+		const Vector<int> xl_format = _util_sprintf_extract_arg_types(msgstr);
+		if (id_format != xl_format) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_FAIL_V_MSG(false, vformat("Translated string '%s' format mismatch.", String(p_msgid)));
+			} else {
+				ERR_FAIL_V_MSG(false, vformat("Translated string '%s%s' format mismatch.", String(p_msgid).substr(0, 30), p_msgid.length() > 30 ? " ..." : ""));
+			}
+		}
+	}
+
+	return true;
 }
 
 Dictionary Translation::_get_messages() const {
@@ -80,9 +240,11 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 			// Old version, no context or plural support.
 			case Variant::STRING:
 			case Variant::STRING_NAME: {
+				Vector<StringName> msgstrs = { kv.value };
 				const MessageKey msg_key = { StringName(), kv.key };
-				_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid);
-				translation_map[msg_key] = { kv.value };
+				if (_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid, msgstrs)) {
+					translation_map[msg_key] = msgstrs;
+				}
 			} break;
 
 			// Current version.
@@ -99,8 +261,9 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 					msgstrs.write[i] = storage_value[i];
 				}
 
-				_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid);
-				translation_map[msg_key] = msgstrs;
+				if (_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid, msgstrs)) {
+					translation_map[msg_key] = msgstrs;
+				}
 			} break;
 
 			default: {
@@ -144,8 +307,10 @@ void Translation::set_locale(const String &p_locale) {
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
-	_check_for_incompatibility(p_context, p_src_text);
-	translation_map[{ p_context, p_src_text }] = { p_xlated_text };
+	Vector<StringName> msgstrs = { p_xlated_text };
+	if (_check_for_incompatibility(p_context, p_src_text, msgstrs)) {
+		translation_map[{ p_context, p_src_text }] = msgstrs;
+	}
 }
 
 void Translation::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context) {
@@ -157,8 +322,9 @@ void Translation::add_plural_message(const StringName &p_src_text, const Vector<
 		msgstrs.write[i] = p_plural_xlated_texts[i];
 	}
 
-	_check_for_incompatibility(p_context, p_src_text);
-	translation_map[{ p_context, p_src_text }] = msgstrs;
+	if (_check_for_incompatibility(p_context, p_src_text, msgstrs)) {
+		translation_map[{ p_context, p_src_text }] = msgstrs;
+	}
 }
 
 StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
