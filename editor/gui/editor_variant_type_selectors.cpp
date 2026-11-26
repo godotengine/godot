@@ -115,22 +115,27 @@ void EditorVariantTypePopupMenu::_populate() {
 	}
 
 	LocalVector<String> names;
+	HashMap<String, Variant::Type> name_to_type;
 	names.reserve(Variant::VARIANT_MAX);
+	name_to_type.reserve(Variant::VARIANT_MAX);
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		const Variant::Type type = Variant::Type(i);
 
-		if (type == Variant::RID || type == Variant::CALLABLE || type == Variant::SIGNAL) {
+		if (disabled_types.has(type) || type == Variant::RID || type == Variant::CALLABLE || type == Variant::SIGNAL) {
 			continue;
 		}
 
-		names.push_back(Variant::get_type_name(type));
+		const String &type_name = Variant::get_type_name(type);
+		const String &display_name = renames.has(type) ? renames[type] : type_name;
+		names.push_back(display_name);
+		name_to_type[display_name] = type;
 	}
 
 	names.sort_custom<CompareVariantTypeNames>();
 
 	for (const String &name : names) {
-		add_item(name, Variant::get_type_by_name(name));
+		add_item(name, name_to_type[name]);
 	}
 }
 
@@ -174,8 +179,11 @@ void EditorVariantTypePopupMenu::_popup_base(const Rect2i &p_bounds) {
 	PopupMenu::_popup_base(p_bounds);
 }
 
-EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item) {
+EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item, const LocalVector<Variant::Type> &p_disabled_types, const HashMap<Variant::Type, String> &p_renames) {
 	remove_item = p_remove_item;
+	disabled_types = p_disabled_types;
+	renames = p_renames;
+
 	set_search_bar_enabled(true);
 	set_search_bar_min_item_count(10);
 }
