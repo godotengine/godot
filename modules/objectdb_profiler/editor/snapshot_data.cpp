@@ -96,7 +96,7 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 			pvalue = resource_cache.cache[path];
 
 			if (pinfo.hint_string == "Script") {
-				if (get_script() != pvalue) {
+				if (get_script_bind() != pvalue) {
 					set_script(Ref<RefCounted>());
 					Ref<Script> scr(pvalue);
 					if (scr.is_valid()) {
@@ -184,10 +184,10 @@ String SnapshotDataObject::get_name() {
 	String found_type_name = type_name;
 
 	// Ideally, we will name it after the script attached to it.
-	Ref<Script> maybe_script = get_script();
-	if (maybe_script.is_valid()) {
+	Script *maybe_script = get_script();
+	if (maybe_script != nullptr) {
 		String full_name;
-		while (maybe_script.is_valid()) {
+		while (maybe_script != nullptr) {
 			String global_name = _get_script_name(maybe_script);
 			if (global_name != "") {
 				if (full_name != "") {
