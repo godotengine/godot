@@ -238,6 +238,7 @@
 				[/csharp]
 				[/codeblocks]
 				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
+				[b]Note:[/b] The alpha channel is always read from the last 8 bits, so it must be written out explicitly. A 6-digit hexadecimal number such as [code]0x9a9a9a[/code] is the same integer as [code]0x009a9a9a[/code], which results in a translucent color with a red channel of [code]0[/code]. To get an opaque color, append [code]ff[/code] (e.g. [code]0x9a9a9aff[/code]), or use [method html] / the [String] constructor, which accept 6-digit color codes (e.g. [code]Color("#9a9a9a")[/code]).
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static" keywords="from_rgba64">
