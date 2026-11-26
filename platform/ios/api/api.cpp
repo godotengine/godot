@@ -30,6 +30,12 @@
 
 #include "api.h"
 
+void register_core_ios_api() {
+}
+
+void unregister_core_ios_api() {
+}
+
 #if defined(IOS_ENABLED)
 
 void register_ios_api() {
