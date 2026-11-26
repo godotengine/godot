@@ -44,6 +44,7 @@ public:
 	Vector2i range;
 	bool visibility = true;
 	bool outline = false;
+	bool shadow = false;
 	Point2 offset;
 	Color color;
 	double elapsed_time = 0.0f;
@@ -52,6 +53,9 @@ public:
 	uint16_t glyph_flags = 0;
 	uint8_t glyph_count = 0;
 	int32_t relative_index = 0;
+	int font_size = 0;
+	int outline_size = 0;
+	Vector2 shadow_offset;
 	RID font;
 
 	CharFXTransform();
@@ -72,6 +76,9 @@ public:
 	bool is_outline() { return outline; }
 	void set_outline(bool p_outline) { outline = p_outline; }
 
+	bool is_shadow() { return shadow; }
+	void set_shadow(bool p_shadow) { shadow = p_shadow; }
+
 	Point2 get_offset() { return offset; }
 	void set_offset(Point2 p_offset) { offset = p_offset; }
 
@@ -89,6 +96,15 @@ public:
 
 	int32_t get_relative_index() const { return relative_index; }
 	void set_relative_index(int32_t p_relative_index) { relative_index = p_relative_index; }
+
+	int get_font_size() const { return font_size; }
+	void set_font_size(int32_t p_font_size) { font_size = p_font_size; }
+
+	int get_outline_size() const { return outline_size; }
+	void set_outline_size(int32_t p_outline_size) { outline_size = p_outline_size; }
+
+	Vector2 get_shadow_offset() const { return shadow_offset; }
+	void set_shadow_offset(const Vector2 &p_shadow_offset) { shadow_offset = p_shadow_offset; }
 
 	RID get_font() const { return font; }
 	void set_font(RID p_font) { font = p_font; }
