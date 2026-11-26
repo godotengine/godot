@@ -1315,6 +1315,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
 			_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+			if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME_OVERLAY) {
+				render_list_params.force_wireframe = true;
+				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+			}
 		}
 
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque
@@ -1342,6 +1346,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+				if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME_OVERLAY) {
+					render_list_params.force_wireframe = true;
+					_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+				}
 
 				RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
 			}
@@ -1412,6 +1420,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_render_data->render_region, breadcrumb);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+				if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME_OVERLAY) {
+					render_list_params.force_wireframe = true;
+					_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+				}
 				RD::get_singleton()->draw_list_end();
 
 				RD::get_singleton()->draw_command_end_label(); // Render Transparent Pass
@@ -2502,11 +2514,25 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		const RenderElementInfo &element_info = p_params->element_info[i];
 		const GeometryInstanceForwardMobile *inst = surf->owner;
 
+		if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME_OVERLAY && p_params->force_wireframe) {
+			if (surf->primitive != RSE::PRIMITIVE_TRIANGLES && surf->primitive != RSE::PRIMITIVE_TRIANGLE_STRIP) {
+				continue;
+			}
+
+#ifdef TOOLS_ENABLED
+			constexpr uint32_t scene_layer_mask = (1u << 20) - 1u;
+			if ((inst->layer_mask & scene_layer_mask) == 0) {
+				continue;
+			}
+#endif
+		}
+
 		if (inst->instance_count == 0) {
 			continue;
 		}
 
 		SceneShaderForwardMobile::ShaderSpecialization pipeline_specialization = p_params->base_specialization;
+		pipeline_specialization.wireframe_overlay = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME_OVERLAY && p_params->force_wireframe;
 		pipeline_specialization.multimesh = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH);
 		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
@@ -2636,6 +2662,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			if (pipeline_key.ubershader) {
 				pipeline_key.shader_specialization = {};
+				pipeline_key.shader_specialization.wireframe_overlay = pipeline_specialization.wireframe_overlay;
 				pipeline_key.cull_mode = RD::POLYGON_CULL_DISABLED;
 			} else {
 				pipeline_key.shader_specialization = pipeline_specialization;

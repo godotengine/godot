@@ -4629,6 +4629,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_DISPLAY_NORMAL:
 		case VIEW_DISPLAY_WIREFRAME:
+		case VIEW_DISPLAY_WIREFRAME_OVERLAY:
 		case VIEW_DISPLAY_OVERDRAW:
 		case VIEW_DISPLAY_UNSHADED:
 		case VIEW_DISPLAY_LIGHTING:
@@ -4659,6 +4660,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
 				VIEW_DISPLAY_WIREFRAME,
+				VIEW_DISPLAY_WIREFRAME_OVERLAY,
 				VIEW_DISPLAY_OVERDRAW,
 				VIEW_DISPLAY_UNSHADED,
 				VIEW_DISPLAY_LIGHTING,
@@ -4691,6 +4693,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			static const Viewport::DebugDraw debug_draw_modes[] = {
 				Viewport::DEBUG_DRAW_DISABLED,
 				Viewport::DEBUG_DRAW_WIREFRAME,
+				Viewport::DEBUG_DRAW_WIREFRAME_OVERLAY,
 				Viewport::DEBUG_DRAW_OVERDRAW,
 				Viewport::DEBUG_DRAW_UNSHADED,
 				Viewport::DEBUG_DRAW_LIGHTING,
@@ -7004,6 +7007,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// TRANSLATORS: "Normal" as in "normal life", not "normal vector".
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTRC("Display Normal")), VIEW_DISPLAY_NORMAL);
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTRC("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
+	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe_overlay", TTRC("Display Wireframe Overlay")), VIEW_DISPLAY_WIREFRAME_OVERLAY);
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTRC("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_lighting", TTRC("Display Lighting")), VIEW_DISPLAY_LIGHTING);
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTRC("Display Unshaded")), VIEW_DISPLAY_UNSHADED);

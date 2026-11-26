@@ -502,6 +502,21 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader);
 	ERR_FAIL_COND(shader_rid.is_null());
 
+	if (p_pipeline_key.shader_specialization.wireframe_overlay) {
+		depth_stencil_state.enable_depth_test = true;
+		depth_stencil_state.enable_depth_write = false;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
+
+		raster_state.depth_bias_enabled = true;
+		raster_state.depth_bias_constant_factor = 1.0f;
+		raster_state.depth_bias_slope_factor = 1.0f;
+		raster_state.depth_bias_clamp = 0.0001f;
+
+		blend_state = blend_state_color_opaque;
+		multisample_state.enable_alpha_to_coverage = false;
+		multisample_state.enable_alpha_to_one = false;
+	}
+
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, 0, specialization_constants);
 	ERR_FAIL_COND(pipeline.is_null());
 
