@@ -15,8 +15,11 @@ namespace Godot
             var awaiterGcHandle = CustomGCHandle.AllocStrong(this);
             using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
                 (godot_string_name)(signal?.NativeValue ?? default));
+            GC.KeepAlive(signal);
             NativeFuncs.godotsharp_internal_signal_awaiter_connect(GodotObject.GetPtr(source), in signalSrc,
                 GodotObject.GetPtr(target), GCHandle.ToIntPtr(awaiterGcHandle));
+            GC.KeepAlive(source);
+            GC.KeepAlive(target);
         }
 
         public bool IsCompleted => _completed;
