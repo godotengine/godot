@@ -43,10 +43,6 @@ void __cpuid(int *r_cpuinfo, int p_info) {
 }
 #endif
 
-#ifndef PF_SSE4_2_INSTRUCTIONS_AVAILABLE
-#define PF_SSE4_2_INSTRUCTIONS_AVAILABLE 38
-#endif
-
 #ifdef WINDOWS_SUBSYSTEM_CONSOLE
 extern int WINAPI mainCRTStartup();
 #else
@@ -58,16 +54,13 @@ extern int WINAPI ShimMainCRTStartup() __attribute__((used));
 #endif
 
 extern int WINAPI ShimMainCRTStartup() {
-	BOOL win_sse42_supported = FALSE;
-	BOOL cpuid_sse42_supported = FALSE;
+	BOOL cpuid_supported = FALSE;
 
 	int cpuinfo[4];
 	__cpuid(cpuinfo, 0x01);
+	cpuid_supported = (cpuinfo[2] & (1 << 20)) && (cpuinfo[2] & (1 << 23)); // SSE4.2 + POPCNT
 
-	win_sse42_supported = IsProcessorFeaturePresent(PF_SSE4_2_INSTRUCTIONS_AVAILABLE);
-	cpuid_sse42_supported = cpuinfo[2] & (1 << 20);
-
-	if (win_sse42_supported || cpuid_sse42_supported) {
+	if (cpuid_supported) {
 #ifdef WINDOWS_SUBSYSTEM_CONSOLE
 		return mainCRTStartup();
 #else
