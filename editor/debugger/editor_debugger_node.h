@@ -116,6 +116,7 @@ private:
 	bool debug_mute_audio = false;
 
 	CameraOverride camera_override = OVERRIDE_NONE;
+	int viewport_debug_draw_mode = 0;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
@@ -229,6 +230,9 @@ public:
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
+
+	void set_viewport_debug_draw_mode(int p_mode);
+	int get_viewport_debug_draw_mode();
 
 	String get_server_uri() const;
 
