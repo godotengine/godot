@@ -152,8 +152,47 @@
 		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is disabled (for right-to-left layouts).
 		</theme_item>
+		<theme_item name="disabled_pressed" data_type="style" type="StyleBox" keywords="enabled">
+			[StyleBox] used when the [Button] is disabled and pressed. If this property isn't set the [theme_item disabled] will be used instead.
+		</theme_item>
+		<theme_item name="disabled_pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is disabled and pressed. If this property isn't set the [theme_item disabled] will be used instead. (for right-to-left layouts).
+		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="focus_disabled" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being disabled. If this property isn't set the [theme_item focus] will be used instead.
+		</theme_item>
+		<theme_item name="focus_disabled_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being disabled. If this property isn't set the [theme_item focus] will be used instead. (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="focus_disabled_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being disabled and pressed. If this property isn't set the [theme_item focus] will be used instead.
+		</theme_item>
+		<theme_item name="focus_disabled_pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being disabled and pressed. If this property isn't set the [theme_item focus] will be used instead. (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="focus_hover" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being hovered. If the [Button] is being pressed [theme_item focus_pressed] will take priority. If this property isn't set the [theme_item focus] will be used instead.
+		</theme_item>
+		<theme_item name="focus_hover_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being hovered. If the [Button] is being pressed [theme_item focus_pressed] will take priority. If this property isn't set the [theme_item focus] will be used instead. (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="focus_hover_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being hovered and pressed. If this property isn't set the [theme_item focus] will be used instead.
+		</theme_item>
+		<theme_item name="focus_hover_pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being hovered and pressed. If this property isn't set the [theme_item focus] will be used instead. (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="focus_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons. (for right-to-left layouts)
+		</theme_item>
+		<theme_item name="focus_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being pressed. If this property isn't set the [theme_item focus] will be used instead.
+		</theme_item>
+		<theme_item name="focus_pressed_mirrored" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused whilst being pressed. If this property isn't set the [theme_item focus] will be used instead. (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is being hovered.
