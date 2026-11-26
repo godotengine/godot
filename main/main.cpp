@@ -3439,8 +3439,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 
-			memdelete(display_server);
-			display_server = nullptr;
+			finalize_display();
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2DManager::finalize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+			NavigationServer3DManager::finalize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
