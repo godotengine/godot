@@ -65,7 +65,8 @@ Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flag
 
 	HANDLE h = CreateFileW((LPCWSTR)path.utf16().get_data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (h == INVALID_HANDLE_VALUE) {
-		h = CreateNamedPipeW((LPCWSTR)path.utf16().get_data(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT, 1, 4096, 4096, 0, nullptr);
+		constexpr DWORD pipe_buffer_size = 64 * 1024;
+		h = CreateNamedPipeW((LPCWSTR)path.utf16().get_data(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT, 1, pipe_buffer_size, pipe_buffer_size, 0, nullptr);
 		if (h == INVALID_HANDLE_VALUE) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
