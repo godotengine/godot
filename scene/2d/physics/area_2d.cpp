@@ -533,15 +533,35 @@ bool Area2D::is_overriding_audio_bus() const {
 
 void Area2D::set_audio_bus_name(const StringName &p_audio_bus) {
 	audio_bus = p_audio_bus;
+	int idx = AudioServer::get_singleton()->get_bus_index(p_audio_bus);
+	audio_bus_uid = (idx >= 0) ? AudioServer::get_singleton()->get_bus_uid(idx) : 0;
 }
 
 StringName Area2D::get_audio_bus_name() const {
+	if (audio_bus_uid != 0) {
+		int idx = AudioServer::get_singleton()->get_bus_index_by_uid(audio_bus_uid);
+		if (idx >= 0) {
+			return AudioServer::get_singleton()->get_bus_name(idx);
+		}
+	}
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
 			return audio_bus;
 		}
 	}
 	return SceneStringName(Master);
+}
+
+void Area2D::set_audio_bus_uid(uint64_t p_uid) {
+	audio_bus_uid = p_uid;
+	int idx = AudioServer::get_singleton()->get_bus_index_by_uid(p_uid);
+	if (idx >= 0) {
+		audio_bus = AudioServer::get_singleton()->get_bus_name(idx);
+	}
+}
+
+uint64_t Area2D::get_audio_bus_uid() const {
+	return audio_bus_uid;
 }
 
 void Area2D::_validate_property(PropertyInfo &p_property) const {
@@ -625,6 +645,9 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area2D::set_audio_bus_name);
 	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area2D::get_audio_bus_name);
 
+	ClassDB::bind_method(D_METHOD("set_audio_bus_uid", "uid"), &Area2D::set_audio_bus_uid);
+	ClassDB::bind_method(D_METHOD("get_audio_bus_uid"), &Area2D::get_audio_bus_uid);
+
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
 
@@ -661,6 +684,7 @@ void Area2D::_bind_methods() {
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_AUDIO_BUS), "set_audio_bus_name", "get_audio_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_bus_uid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_audio_bus_uid", "get_audio_bus_uid");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);

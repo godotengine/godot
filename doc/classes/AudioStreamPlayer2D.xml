@@ -13,6 +13,12 @@
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_bus_uid" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the target audio bus, or [code]0[/code] if unset.
+			</description>
+		</method>
 		<method name="get_playback_position">
 			<return type="float" />
 			<description>
@@ -43,6 +49,13 @@
 			<param index="0" name="to_position" type="float" />
 			<description>
 				Sets the position from which audio will be played, in seconds.
+			</description>
+		</method>
+		<method name="set_bus_uid">
+			<return type="void" />
+			<param index="0" name="uid" type="int" />
+			<description>
+				Sets the unique ID of the target audio bus. Used internally for serialization.
 			</description>
 		</method>
 		<method name="stop">

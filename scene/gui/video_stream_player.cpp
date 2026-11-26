@@ -152,7 +152,9 @@ void VideoStreamPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
+			bus_index = (bus_uid != 0)
+					? AudioServer::get_singleton()->thread_find_bus_index_by_uid(bus_uid)
+					: AudioServer::get_singleton()->thread_find_bus_index(bus);
 
 			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing()) {
 				return;
@@ -497,16 +499,36 @@ void VideoStreamPlayer::set_bus(const StringName &p_bus) {
 	// If audio is active, must lock this.
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
+	int idx = AudioServer::get_singleton()->get_bus_index(p_bus);
+	bus_uid = (idx >= 0) ? AudioServer::get_singleton()->get_bus_uid(idx) : 0;
 	AudioServer::get_singleton()->unlock();
 }
 
 StringName VideoStreamPlayer::get_bus() const {
+	if (bus_uid != 0) {
+		int idx = AudioServer::get_singleton()->get_bus_index_by_uid(bus_uid);
+		if (idx >= 0) {
+			return AudioServer::get_singleton()->get_bus_name(idx);
+		}
+	}
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
 			return bus;
 		}
 	}
 	return SceneStringName(Master);
+}
+
+void VideoStreamPlayer::set_bus_uid(uint64_t p_uid) {
+	bus_uid = p_uid;
+	int idx = AudioServer::get_singleton()->get_bus_index_by_uid(p_uid);
+	if (idx >= 0) {
+		bus = AudioServer::get_singleton()->get_bus_name(idx);
+	}
+}
+
+uint64_t VideoStreamPlayer::get_bus_uid() const {
+	return bus_uid;
 }
 
 void VideoStreamPlayer::_bind_methods() {
@@ -554,6 +576,9 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &VideoStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &VideoStreamPlayer::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_bus_uid", "uid"), &VideoStreamPlayer::set_bus_uid);
+	ClassDB::bind_method(D_METHOD("get_bus_uid"), &VideoStreamPlayer::get_bus_uid);
+
 	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoStreamPlayer::get_video_texture);
 
 	ADD_SIGNAL(MethodInfo("finished"));
@@ -571,6 +596,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_uid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_bus_uid", "get_bus_uid");
 }
 
 VideoStreamPlayer::~VideoStreamPlayer() {

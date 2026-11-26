@@ -73,6 +73,7 @@ public:
 	float volume_db = 0.0;
 	bool autoplay = false;
 	StringName bus;
+	uint64_t bus_uid = 0;
 	int max_polyphony = 1;
 
 	void process();

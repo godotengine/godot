@@ -333,6 +333,12 @@ AuSE::PlaybackType AudioStreamPlayerInternal::get_playback_type() const {
 }
 
 StringName AudioStreamPlayerInternal::get_bus() const {
+	if (bus_uid != 0) {
+		int idx = AudioServer::get_singleton()->get_bus_index_by_uid(bus_uid);
+		if (idx >= 0) {
+			return AudioServer::get_singleton()->get_bus_name(idx);
+		}
+	}
 	const String bus_name = bus;
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus_name) {

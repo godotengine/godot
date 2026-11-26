@@ -145,11 +145,11 @@ void AudioServer::_mix_step() {
 			do {
 				if (bus != buses[0]) {
 					//everything has a send save for master bus
-					if (!bus_map.has(bus->send)) {
+					if (!bus_id_map.has(bus->send_uid)) {
 						bus = buses[0]; //send to master
 					} else {
 						int prev_index_cache = bus->index_cache;
-						bus = bus_map[bus->send];
+						bus = bus_id_map[bus->send_uid];
 						if (prev_index_cache >= bus->index_cache) { //invalid, send to master
 							bus = buses[0];
 						}
@@ -380,10 +380,10 @@ void AudioServer::_mix_step() {
 
 		if (i > 0) {
 			// Everything has a send except for the master bus.
-			if (!bus_map.has(bus->send)) {
+			if (!bus_id_map.has(bus->send_uid)) {
 				send = buses[0];
 			} else {
-				send = bus_map[bus->send];
+				send = bus_id_map[bus->send_uid];
 				if (send->index_cache >= bus->index_cache) { // Invalid, send to master.
 					send = buses[0];
 				}
@@ -585,6 +585,14 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 	}
 }
 
+int AudioServer::thread_find_bus_index_by_uid(uint64_t p_uid) {
+	if (bus_id_map.has(p_uid)) {
+		return bus_id_map[p_uid]->index_cache;
+	} else {
+		return 0;
+	}
+}
+
 #ifdef DEBUG_ENABLED
 void AudioServer::set_debug_mute(bool p_mute) {
 	debug_mute = p_mute;
@@ -605,9 +613,20 @@ void AudioServer::set_bus_count(int p_count) {
 	int cb = buses.size();
 
 	if (p_count < buses.size()) {
+		HashSet<uint64_t> deleted_uids;
 		for (int i = p_count; i < buses.size(); i++) {
+			deleted_uids.insert(buses[i]->uid);
 			bus_map.erase(buses[i]->name);
+			bus_id_map.erase(buses[i]->uid);
 			memdelete(buses[i]);
+		}
+
+		for (int i = 0; i < p_count; i++) {
+			if (deleted_uids.has(buses[i]->send_uid)) {
+				buses.write[i]->send_uid = buses[0]->uid;
+				buses.write[i]->send = SceneStringName(Master);
+				AudioDriver::get_singleton()->set_sample_bus_send(i, buses[i]->send);
+			}
 		}
 	}
 
@@ -643,8 +662,11 @@ void AudioServer::set_bus_count(int p_count) {
 		buses[i]->mute = false;
 		buses[i]->bypass = false;
 		buses[i]->volume_db = 0;
+		buses[i]->uid = ResourceUID::get_singleton()->create_id();
+		bus_id_map[buses[i]->uid] = buses[i];
 		if (i > 0) {
 			buses[i]->send = SceneStringName(Master);
+			buses[i]->send_uid = buses[0]->uid;
 		}
 
 		bus_map[attempt] = buses[i];
@@ -664,9 +686,19 @@ void AudioServer::remove_bus(int p_index) {
 	MARK_EDITED
 
 	lock();
+	uint64_t deleted_uid = buses[p_index]->uid;
 	bus_map.erase(buses[p_index]->name);
+	bus_id_map.erase(deleted_uid);
 	memdelete(buses[p_index]);
 	buses.remove_at(p_index);
+
+	for (int i = 1; i < buses.size(); i++) {
+		if (buses[i]->send_uid == deleted_uid) {
+			buses.write[i]->send_uid = buses[0]->uid;
+			buses.write[i]->send = buses[0]->name;
+			AudioDriver::get_singleton()->set_sample_bus_send(i, buses[i]->send);
+		}
+	}
 	unlock();
 
 	AudioDriver::get_singleton()->remove_sample_bus(p_index);
@@ -711,13 +743,17 @@ void AudioServer::add_bus(int p_at_pos) {
 	for (int j = 0; j < channel_count; j++) {
 		bus->channels.write[j].buffer.resize(buffer_size);
 	}
+	bus->uid = ResourceUID::get_singleton()->create_id();
 	bus->name = attempt;
 	bus->solo = false;
 	bus->mute = false;
 	bus->bypass = false;
 	bus->volume_db = 0;
+	bus->send = SceneStringName(Master);
+	bus->send_uid = buses[0]->uid;
 
 	bus_map[attempt] = bus;
+	bus_id_map[bus->uid] = bus;
 
 	if (p_at_pos == -1) {
 		p_at_pos = buses.size();
@@ -761,6 +797,24 @@ int AudioServer::get_bus_count() const {
 	return buses.size();
 }
 
+void AudioServer::set_bus_uid(int p_bus, uint64_t p_uid) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+	ERR_FAIL_COND(bus_id_map.has(p_uid));
+
+	MARK_EDITED
+
+	lock();
+	bus_id_map.erase(buses[p_bus]->uid);
+	buses[p_bus]->uid = p_uid;
+	bus_id_map[p_uid] = buses[p_bus];
+	unlock();
+}
+
+uint64_t AudioServer::get_bus_uid(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus]->uid;
+}
+
 void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	ERR_FAIL_INDEX(p_bus, buses.size());
 	if (p_bus == 0 && p_name != "Master") {
@@ -800,6 +854,14 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	bus_map.erase(old_name);
 	buses[p_bus]->name = attempt;
 	bus_map[attempt] = buses[p_bus];
+
+	for (int i = 1; i < buses.size(); i++) {
+		if (buses[i]->send_uid == buses[p_bus]->uid) {
+			buses[i]->send = attempt;
+			AudioDriver::get_singleton()->set_sample_bus_send(i, attempt);
+		}
+	}
+
 	unlock();
 
 	emit_signal(SNAME("bus_renamed"), p_bus, old_name, attempt);
@@ -813,6 +875,15 @@ String AudioServer::get_bus_name(int p_bus) const {
 int AudioServer::get_bus_index(const StringName &p_bus_name) const {
 	for (int i = 0; i < buses.size(); ++i) {
 		if (buses[i]->name == p_bus_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int AudioServer::get_bus_index_by_uid(uint64_t p_uid) const {
+	for (int i = 0; i < buses.size(); ++i) {
+		if (buses[i]->uid == p_uid) {
 			return i;
 		}
 	}
@@ -853,6 +924,8 @@ void AudioServer::set_bus_send(int p_bus, const StringName &p_send) {
 	MARK_EDITED
 
 	buses[p_bus]->send = p_send;
+	int idx = get_bus_index(p_send);
+	buses.write[p_bus]->send_uid = (idx >= 0) ? buses[idx]->uid : buses[0]->uid;
 
 	AudioDriver::get_singleton()->set_sample_bus_send(p_bus, p_send);
 }
@@ -860,6 +933,26 @@ void AudioServer::set_bus_send(int p_bus, const StringName &p_send) {
 StringName AudioServer::get_bus_send(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), StringName());
 	return buses[p_bus]->send;
+}
+
+void AudioServer::set_bus_send_uid(int p_bus, uint64_t p_send_uid) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+	ERR_FAIL_COND(p_bus == 0);
+	ERR_FAIL_COND(buses[p_bus]->uid == p_send_uid);
+
+	int target = get_bus_index_by_uid(p_send_uid);
+	ERR_FAIL_COND(target < 0);
+	ERR_FAIL_COND(target >= p_bus);
+
+	MARK_EDITED
+	buses.write[p_bus]->send_uid = p_send_uid;
+	buses.write[p_bus]->send = buses[target]->name;
+	AudioDriver::get_singleton()->set_sample_bus_send(p_bus, buses[p_bus]->send);
+}
+
+uint64_t AudioServer::get_bus_send_uid(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus]->send_uid;
 }
 
 void AudioServer::set_bus_solo(int p_bus, bool p_enable) {
@@ -1597,16 +1690,24 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 	}
 	buses.resize(p_bus_layout->buses.size());
 	bus_map.clear();
+	bus_id_map.clear();
 
 	AudioDriver::get_singleton()->set_sample_bus_count(buses.size());
 
 	for (int i = 0; i < p_bus_layout->buses.size(); i++) {
 		Bus *bus = memnew(Bus);
+		bus->uid = p_bus_layout->buses[i].uid;
+		if (bus->uid == 0 || bus_id_map.has(bus->uid)) {
+			bus->uid = ResourceUID::get_singleton()->create_id();
+		}
+		bus_id_map[bus->uid] = bus;
+
 		if (i == 0) {
 			bus->name = SceneStringName(Master);
 		} else {
 			bus->name = p_bus_layout->buses[i].name;
 			bus->send = p_bus_layout->buses[i].send;
+			bus->send_uid = p_bus_layout->buses[i].send_uid;
 			AudioDriver::get_singleton()->set_sample_bus_send(i, bus->send);
 		}
 
@@ -1645,6 +1746,12 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 #ifdef TOOLS_ENABLED
 	set_edited(false);
 #endif
+	for (int i = 1; i < buses.size(); i++) {
+		if (buses[i]->send_uid == 0 || !bus_id_map.has(buses[i]->send_uid)) {
+			buses[i]->send_uid = bus_map.has(buses[i]->send) ? bus_map[buses[i]->send]->uid : buses[0]->uid;
+		}
+	}
+
 	unlock();
 
 	// Samples bus sync.
@@ -1657,8 +1764,10 @@ Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	state->buses.resize(buses.size());
 
 	for (int i = 0; i < buses.size(); i++) {
+		state->buses.write[i].uid = buses[i]->uid;
 		state->buses.write[i].name = buses[i]->name;
 		state->buses.write[i].send = buses[i]->send;
+		state->buses.write[i].send_uid = buses[i]->send_uid;
 		state->buses.write[i].mute = buses[i]->mute;
 		state->buses.write[i].solo = buses[i]->solo;
 		state->buses.write[i].bypass = buses[i]->bypass;
@@ -1877,9 +1986,12 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bus", "at_position"), &AudioServer::add_bus, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("move_bus", "index", "to_index"), &AudioServer::move_bus);
 
+	ClassDB::bind_method(D_METHOD("set_bus_uid", "bus_idx", "uid"), &AudioServer::set_bus_uid);
+	ClassDB::bind_method(D_METHOD("get_bus_uid", "bus_idx"), &AudioServer::get_bus_uid);
 	ClassDB::bind_method(D_METHOD("set_bus_name", "bus_idx", "name"), &AudioServer::set_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_name", "bus_idx"), &AudioServer::get_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_index", "bus_name"), &AudioServer::get_bus_index);
+	ClassDB::bind_method(D_METHOD("get_bus_index_by_uid", "uid"), &AudioServer::get_bus_index_by_uid);
 
 	ClassDB::bind_method(D_METHOD("get_bus_channels", "bus_idx"), &AudioServer::get_bus_channels);
 
@@ -1891,6 +2003,9 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
+
+	ClassDB::bind_method(D_METHOD("set_bus_send_uid", "bus_idx", "uid"), &AudioServer::set_bus_send_uid);
+	ClassDB::bind_method(D_METHOD("get_bus_send_uid", "bus_idx"), &AudioServer::get_bus_send_uid);
 
 	ClassDB::bind_method(D_METHOD("set_bus_solo", "bus_idx", "enable"), &AudioServer::set_bus_solo);
 	ClassDB::bind_method(D_METHOD("is_bus_solo", "bus_idx"), &AudioServer::is_bus_solo);

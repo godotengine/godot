@@ -111,6 +111,9 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
+	void set_bus_uid(uint64_t p_uid);
+	uint64_t get_bus_uid() const;
+
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;
 
