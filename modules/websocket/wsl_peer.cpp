@@ -594,12 +594,13 @@ void WSLPeer::_wsl_recv_start_callback(wslay_event_context_ptr ctx, const struct
 		PendingMessage &pm = peer->pending_message;
 		pm.opcode = op;
 	}
+	peer->current_frame_is_data = op == WSLAY_TEXT_FRAME || op == WSLAY_BINARY_FRAME || op == WSLAY_CONTINUATION_FRAME;
 }
 
 void WSLPeer::_wsl_frame_recv_chunk_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data) {
 	WSLPeer *peer = (WSLPeer *)user_data;
 	PendingMessage &pm = peer->pending_message;
-	if (pm.opcode != 0) {
+	if (pm.opcode != 0 && peer->current_frame_is_data) {
 		// Only write the payload.
 		peer->in_buffer.write_packet(arg->data, arg->data_length, nullptr);
 		pm.payload_size += arg->data_length;

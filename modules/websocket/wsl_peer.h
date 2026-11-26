@@ -109,6 +109,7 @@ private:
 	uint8_t was_string = 0;
 	uint64_t last_heartbeat = 0;
 	bool heartbeat_waiting = false;
+	bool current_frame_is_data = false;
 	PendingMessage pending_message;
 
 	// WebSocket configuration.
