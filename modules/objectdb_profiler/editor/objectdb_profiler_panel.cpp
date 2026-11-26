@@ -226,6 +226,23 @@ void ObjectDBProfilerPanel::show_snapshot(const String &p_snapshot_file_name, co
 	current_snapshot = get_snapshot(p_snapshot_file_name);
 	if (!p_snapshot_diff_file_name.is_empty()) {
 		diff_snapshot = get_snapshot(p_snapshot_diff_file_name);
+		for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : current_snapshot->objects) {
+			ObjectID obj_id = pair.key;
+			if (diff_snapshot->objects.has(obj_id) && pair.value->type_name == diff_snapshot->objects[obj_id]->type_name) {
+				if (pair.value->did_change(diff_snapshot->objects[obj_id])) {
+					pair.value->diff_status = SnapshotDataObject::DIFF_MODIFIED;
+					diff_snapshot->objects[obj_id]->diff_status = SnapshotDataObject::DIFF_MODIFIED;
+				}
+			} else {
+				pair.value->diff_status = SnapshotDataObject::DIFF_REMOVED;
+			}
+		}
+		for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : diff_snapshot->objects) {
+			ObjectID obj_id = pair.key;
+			if (!current_snapshot->objects.has(obj_id) || current_snapshot->objects[obj_id]->type_name != pair.value->type_name) {
+				pair.value->diff_status = SnapshotDataObject::DIFF_ADDED;
+			}
+		}
 	}
 
 	_update_view_tabs();
