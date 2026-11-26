@@ -255,7 +255,7 @@ void MDCommandBuffer::_end() {
 
 void MDCommandBuffer::_commit() {
 	end();
-	commandBuffer->commit();
+	command_buffer()->commit();
 	commandBuffer.reset();
 	state_begin = false;
 }
