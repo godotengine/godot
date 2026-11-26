@@ -154,15 +154,13 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
-	property_object = nullptr;
-	property_path = "";
-	item_selected_callback = p_item_selected_callback;
-	allow_type_switching = p_allow_type_switching;
+	_popup_dialog(p_base_types, p_item_selected_callback, p_allow_type_switching);
+}
 
-	is_cycling_items = false;
-	container->init(p_base_types);
-	container->set_instant_preview_toggle_visible(false);
-	_finish_dialog_setup(p_base_types);
+void EditorQuickOpenDialog::popup_dialog_for_instantiating_scenes(const Callable &p_item_selected_callback) {
+	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
+
+	_popup_dialog(Vector<StringName>{ "PackedScene" }, p_item_selected_callback, false, nullptr, StringName::EMPTY, true);
 }
 
 void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback) {
@@ -170,19 +168,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
-	property_object = p_obj;
-	property_path = p_path;
-	item_selected_callback = p_item_selected_callback;
-	initial_property_value = property_object->get(property_path);
-	allow_type_switching = false;
-
-	// Reset this, so that the property isn't updated immediately upon opening
-	// the window.
-	initial_selection_performed = false;
-
-	container->init(p_base_types);
-	container->set_instant_preview_toggle_visible(true);
-	_finish_dialog_setup(p_base_types);
+	_popup_dialog(p_base_types, p_item_selected_callback, false, p_obj, p_path);
 }
 
 void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_base_types) {
@@ -200,6 +186,28 @@ void EditorQuickOpenDialog::ok_pressed() {
 	container->cleanup();
 	search_box->clear();
 	hide();
+}
+
+void EditorQuickOpenDialog::_popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching, Object *p_object, const StringName &p_property, bool p_instantiating) {
+	// The arguments are expected to be correct. The validation should be done in calling methods.
+	property_object = p_object;
+	property_path = p_property;
+	item_selected_callback = p_item_selected_callback;
+	allow_type_switching = p_allow_type_switching;
+	is_cycling_items = false;
+	container->set_instantiating_mode(p_instantiating);
+
+	if (property_object) {
+		container->set_instant_preview_toggle_visible(true);
+		initial_property_value = property_object->get(property_path);
+		// Reset this, so that the property isn't updated immediately upon opening
+		// the window.
+		initial_selection_performed = false;
+	} else {
+		container->set_instant_preview_toggle_visible(false);
+	}
+	container->init(p_base_types);
+	_finish_dialog_setup(p_base_types);
 }
 
 bool EditorQuickOpenDialog::_is_instant_preview_active() const {
@@ -739,8 +747,8 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 
 	String file_path = ResourceUID::get_singleton()->get_id_path(p_candidate.uid);
 
-	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context.
-	if (base_types.size() == 1 && base_types[0] == SNAME("PackedScene")) {
+	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context, unless instantiating scenes.
+	if (!instantiating_mode && base_types.size() == 1 && base_types[0] == SNAME("PackedScene")) {
 		static FixedVector<String, 3> valid_extensions = { "tscn", "scn", "res" };
 		bool is_valid_type = false;
 		for (const String &ext : valid_extensions) {

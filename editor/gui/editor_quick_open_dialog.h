@@ -102,6 +102,7 @@ public:
 
 	bool is_instant_preview_enabled() const;
 	void set_instant_preview_toggle_visible(bool p_visible);
+	void set_instantiating_mode(bool p_enabled) { instantiating_mode = p_enabled; }
 
 	void save_selected_item();
 	void cleanup();
@@ -127,6 +128,7 @@ private:
 	int selection_index = -1;
 	int num_visible_results = 0;
 	int max_total_results = 0;
+	bool instantiating_mode = false;
 
 	bool never_opened = true;
 	Ref<ConfigFile> history_file;
@@ -258,6 +260,7 @@ class EditorQuickOpenDialog : public AcceptDialog {
 
 public:
 	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching = false);
+	void popup_dialog_for_instantiating_scenes(const Callable &p_item_selected_callback);
 	void popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback);
 	EditorQuickOpenDialog();
 
@@ -282,6 +285,7 @@ private:
 	bool initial_selection_performed = false;
 	bool allow_type_switching = false;
 	bool is_cycling_items = false;
+	void _popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching = false, Object *p_object = nullptr, const StringName &p_property = StringName::EMPTY, bool p_instantiating = false);
 	bool _is_instant_preview_active() const;
 	void _search_box_text_changed(const String &p_query);
 	void _finish_dialog_setup(const Vector<StringName> &p_base_types);

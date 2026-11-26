@@ -834,7 +834,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			add_node_dialog->popup_create(true);
 		} break;
 		case ADD_INSTANCE: {
-			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(Vector<StringName>{ "PackedScene" }, callable_mp(this, &CanvasItemEditor::_instantiate_scene));
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog_for_instantiating_scenes(callable_mp(this, &CanvasItemEditor::_instantiate_scene));
 		} break;
 		case ADD_PASTE: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();

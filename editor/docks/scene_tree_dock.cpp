@@ -722,7 +722,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneTreeDock::_quick_open));
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog_for_instantiating_scenes(callable_mp(this, &SceneTreeDock::_quick_open));
 		} break;
 		case TOOL_EXPAND_COLLAPSE: {
 			Tree *tree = scene_tree->get_scene_tree();
