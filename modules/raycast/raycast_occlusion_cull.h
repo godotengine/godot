@@ -65,9 +65,10 @@ public:
 
 	public:
 		unsigned int camera_rays_tile_count = 0;
+		// Stores camera rays and masks, accessed with `camera_rays` and `camera_ray_masks`.
 		uint8_t *camera_rays_unaligned_buffer = nullptr;
 		CameraRayTile *camera_rays = nullptr;
-		LocalVector<uint32_t> camera_ray_masks;
+		uint32_t *camera_ray_masks = nullptr;
 		RID scenario_rid;
 
 		virtual void clear() override;
