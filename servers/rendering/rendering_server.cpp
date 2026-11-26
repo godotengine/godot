@@ -3678,6 +3678,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2_astc", false);
 	GLOBAL_DEF("rendering/textures/vram_compression/compress_with_gpu", true);
 	GLOBAL_DEF("rendering/textures/vram_compression/cache_gpu_compressor", true);
+	GLOBAL_DEF("rendering/textures/vram_compression/use_zstd_supercompression", true);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 
