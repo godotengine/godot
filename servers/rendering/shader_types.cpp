@@ -201,6 +201,24 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_ANTIALIASING_EDGE"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_TEXTURE_COORDINATE"] = ShaderLanguage::TYPE_VEC2;
 
+	{
+		// TODO: Make macros accessible from the vertex() function.
+		ShaderLanguage::StageFunctionInfo view_to_model_func;
+		view_to_model_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("view_coord", ShaderLanguage::TYPE_VEC4));
+		view_to_model_func.return_type = ShaderLanguage::TYPE_VEC4;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["VIEW_TO_MODEL"] = view_to_model_func;
+
+		ShaderLanguage::StageFunctionInfo view_to_world_func;
+		view_to_world_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("view_coord", ShaderLanguage::TYPE_VEC4));
+		view_to_world_func.return_type = ShaderLanguage::TYPE_VEC4;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["VIEW_TO_WORLD"] = view_to_world_func;
+
+		ShaderLanguage::StageFunctionInfo world_to_view_func;
+		world_to_view_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("world_coord", ShaderLanguage::TYPE_VEC4));
+		world_to_view_func.return_type = ShaderLanguage::TYPE_VEC4;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["WORLD_TO_VIEW"] = world_to_view_func;
+	}
+
 	// texture streaming
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["STREAMING_LOD"] = ShaderLanguage::TYPE_FLOAT;
 
