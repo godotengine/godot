@@ -343,24 +343,6 @@ public:
 
 	static uint32_t get_api_hash(APIType p_api);
 
-	template <typename>
-	struct member_function_traits;
-
-	template <typename R, typename T, typename... Args>
-	struct member_function_traits<R (T::*)(Args...)> {
-		using return_type = R;
-	};
-
-	template <typename R, typename T, typename... Args>
-	struct member_function_traits<R (T::*)(Args...) const> {
-		using return_type = R;
-	};
-
-	template <typename R, typename... Args>
-	struct member_function_traits<R (*)(Args...)> {
-		using return_type = R;
-	};
-
 	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
@@ -369,9 +351,6 @@ public:
 			argptrs[i] = &args[i];
 		}
 		MethodBind *bind = create_method_bind(p_method);
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -384,9 +363,6 @@ public:
 		}
 		MethodBind *bind = create_static_method_bind(p_method);
 		bind->set_instance_class(p_class);
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -398,9 +374,6 @@ public:
 			argptrs[i] = &args[i];
 		}
 		MethodBind *bind = create_method_bind(p_method);
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -413,9 +386,6 @@ public:
 		}
 		MethodBind *bind = create_static_method_bind(p_method);
 		bind->set_instance_class(p_class);
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -426,9 +396,6 @@ public:
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
 		ERR_FAIL_NULL_V(bind, nullptr);
 
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return _bind_vararg_method(bind, p_name, p_default_args, false);
 	}
 
@@ -439,9 +406,6 @@ public:
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
 		ERR_FAIL_NULL_V(bind, nullptr);
 
-		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
-			bind->set_return_type_is_raw_object_ptr(true);
-		}
 		return _bind_vararg_method(bind, p_name, p_default_args, true);
 	}
 
