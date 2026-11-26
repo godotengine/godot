@@ -6086,12 +6086,9 @@ void GDScriptParser::TreePrinter::print_identifier(const IdentifierNode *p_ident
 	}
 }
 
-void GDScriptParser::TreePrinter::print_if(const IfNode *p_if, bool p_is_elif) {
-	if (p_is_elif) {
-		push_text("Elif ");
-	} else {
-		push_text("If ");
-	}
+void GDScriptParser::TreePrinter::print_if(const IfNode *p_if) {
+	push_text("If ");
+
 	print_expression(p_if->condition);
 	push_line(" :");
 

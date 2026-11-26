@@ -1750,7 +1750,7 @@ public:
 		void print_for(const ForNode *p_for);
 		void print_function(const FunctionNode *p_function, const String &p_context = "Function");
 		void print_get_node(const GetNodeNode *p_get_node);
-		void print_if(const IfNode *p_if, bool p_is_elif = false);
+		void print_if(const IfNode *p_if);
 		void print_identifier(const IdentifierNode *p_identifier);
 		void print_lambda(const LambdaNode *p_lambda);
 		void print_literal(const LiteralNode *p_literal);
