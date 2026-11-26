@@ -141,6 +141,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="activated">
+			<description>
+				Emitted when the label of the edited property is double clicked.
+			</description>
+		</signal>
 		<signal name="multiple_properties_changed">
 			<param index="0" name="properties" type="PackedStringArray" />
 			<param index="1" name="value" type="Array" />

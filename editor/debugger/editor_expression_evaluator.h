@@ -45,6 +45,7 @@ private:
 	LineEdit *expression_input = nullptr;
 	CheckBox *clear_on_run_checkbox = nullptr;
 	Button *evaluate_btn = nullptr;
+	Button *refresh_btn = nullptr;
 	Button *clear_btn = nullptr;
 
 	EditorDebuggerInspector *inspector = nullptr;
@@ -54,10 +55,13 @@ private:
 
 	void _line_edit_gui_input(const Ref<InputEvent> &p_event);
 	void _evaluate();
+	void _refresh();
 	void _clear();
 
 	void _remote_object_selected(ObjectID p_id);
 	void _on_expression_input_changed(const String &p_expression);
+	void _on_expression_deleted(const String &p_expression);
+	void _on_expression_edited(const String &p_old_expression, const String &p_new_expression);
 	void _on_debugger_breaked(bool p_breaked, bool p_can_debug);
 	void _on_debugger_clear_execution(Ref<Script> p_stack_script);
 

@@ -104,6 +104,12 @@
 				Emitted when the Edit button of an [Object] has been pressed in the inspector. This is mainly used in the remote scene tree Inspector.
 			</description>
 		</signal>
+		<signal name="property_activated">
+			<param index="0" name="property" type="String" />
+			<description>
+				Emitted when the label of a property is double clicked.
+			</description>
+		</signal>
 		<signal name="property_deleted">
 			<param index="0" name="property" type="String" />
 			<description>
