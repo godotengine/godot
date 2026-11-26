@@ -835,9 +835,9 @@ void Camera3D::set_cull_mask_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
 	uint32_t mask = get_cull_mask();
 	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
+		mask |= 1u << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << (p_layer_number - 1));
+		mask &= ~(1u << (p_layer_number - 1));
 	}
 	set_cull_mask(mask);
 }
@@ -845,7 +845,7 @@ void Camera3D::set_cull_mask_value(int p_layer_number, bool p_value) {
 bool Camera3D::get_cull_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
-	return layers & (1 << (p_layer_number - 1));
+	return layers & (1u << (p_layer_number - 1));
 }
 
 Vector<Plane> Camera3D::get_frustum() const {
