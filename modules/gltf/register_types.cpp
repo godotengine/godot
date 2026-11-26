@@ -110,6 +110,8 @@ static void _editor_init() {
 
 void initialize_gltf_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		// Base class, register first.
+		GDREGISTER_CLASS(GLTFItem);
 		// glTF API available at runtime.
 		GDREGISTER_CLASS(GLTFAccessor);
 		GDREGISTER_CLASS(GLTFAnimation);

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/io/resource.h"
+#include "../structures/gltf_item.h"
 
 class Image;
 
@@ -39,8 +39,8 @@ class Image;
 // However, it is still supported for loading old files.
 // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness
 
-class GLTFSpecGloss : public Resource {
-	GDCLASS(GLTFSpecGloss, Resource);
+class GLTFSpecGloss : public GLTFItem {
+	GDCLASS(GLTFSpecGloss, GLTFItem);
 	friend class GLTFDocument;
 
 private:

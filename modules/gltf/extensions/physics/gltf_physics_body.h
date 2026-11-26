@@ -30,15 +30,16 @@
 
 #pragma once
 
-#include "core/io/resource.h"
+#include "../../structures/gltf_item.h"
+
 #include "scene/3d/physics/collision_object_3d.h"
 
 // GLTFPhysicsBody is an intermediary between Godot's physics body nodes
 // and the OMI_physics_body extension.
 // https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body
 
-class GLTFPhysicsBody : public Resource {
-	GDCLASS(GLTFPhysicsBody, Resource)
+class GLTFPhysicsBody : public GLTFItem {
+	GDCLASS(GLTFPhysicsBody, GLTFItem)
 
 public:
 	// These values map to Godot's physics body types.
@@ -101,5 +102,9 @@ public:
 	CollisionObject3D *to_node() const;
 
 	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary &p_dictionary);
-	Dictionary to_dictionary() const;
+	virtual Error read_from_dictionary(const Dictionary &p_dictionary) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };

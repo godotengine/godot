@@ -64,8 +64,6 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
 	ClassDB::bind_method(D_METHOD("get_visible"), &GLTFNode::get_visible);
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &GLTFNode::set_visible);
-	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFNode::get_additional_data);
-	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFNode::set_additional_data);
 	ClassDB::bind_method(D_METHOD("get_scene_node_path", "gltf_state", "handle_skeletons"), &GLTFNode::get_scene_node_path, DEFVAL(true));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name"); // String
@@ -197,18 +195,6 @@ bool GLTFNode::get_visible() {
 
 void GLTFNode::set_visible(bool p_visible) {
 	visible = p_visible;
-}
-
-Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
-	return additional_data.get(p_extension_name, Variant());
-}
-
-bool GLTFNode::has_additional_data(const StringName &p_extension_name) {
-	return additional_data.has(p_extension_name);
-}
-
-void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
-	additional_data[p_extension_name] = p_additional_data;
 }
 
 NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons) {
