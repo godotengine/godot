@@ -248,50 +248,49 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif
 		}
 
-		if (roughness > half(0.0)) {
+		// Clamp roughness to avoid NaNs.
+		roughness = clamp(roughness, ROUGHNESS_MIN, half(1.0));
 #if defined(SPECULAR_SCHLICK_GGX)
-			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
+		half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 #endif
-			// Apply specular light.
-			// FIXME: roughness == 0 should not disable specular light entirely
+		// Apply specular light.
 #if defined(SPECULAR_TOON)
-			hvec3 R = normalize(-reflect(L, N));
-			half RdotV = dot(R, V);
-			half mid = half(1.0) - roughness;
-			mid *= mid;
-			half intensity = smoothstep(mid - roughness * half(0.5), mid + roughness * half(0.5), RdotV) * mid;
-			diffuse_light += light_color * intensity * attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
+		hvec3 R = normalize(-reflect(L, N));
+		half RdotV = dot(R, V);
+		half mid = half(1.0) - roughness;
+		mid *= mid;
+		half intensity = smoothstep(mid - roughness * half(0.5), mid + roughness * half(0.5), RdotV) * mid;
+		diffuse_light += light_color * intensity * attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
 
 #elif defined(SPECULAR_DISABLED)
-			// Do nothing.
+		// Do nothing.
 
 #elif defined(SPECULAR_SCHLICK_GGX)
-			// shlick+ggx as default
-			half alpha_ggx = roughness * roughness;
+		// shlick+ggx as default
+		half alpha_ggx = roughness * roughness;
 #if defined(LIGHT_ANISOTROPY_USED)
-			half aspect = sqrt(half(1.0) - anisotropy * half(0.9));
-			half ax = alpha_ggx / aspect;
-			half ay = alpha_ggx * aspect;
-			half XdotH = dot(T, H);
-			half YdotH = dot(B, H);
-			half D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
-			half G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
+		half aspect = sqrt(half(1.0) - anisotropy * half(0.9));
+		half ax = alpha_ggx / aspect;
+		half ay = alpha_ggx * aspect;
+		half XdotH = dot(T, H);
+		half YdotH = dot(B, H);
+		half D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
+		half G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
 #else // LIGHT_ANISOTROPY_USED
-			half D = D_GGX(cNdotH, alpha_ggx, N, H);
-			half G = V_GGX(cNdotL, cNdotV, alpha_ggx);
+		half D = D_GGX(cNdotH, alpha_ggx, N, H);
+		half G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 #if !defined(LIGHT_CLEARCOAT_USED)
-			half cLdotH5 = SchlickFresnel(cLdotH);
+		half cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-			// Calculate Fresnel using specular occlusion term from Filament:
-			// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
-			half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
-			hvec3 F = f0 + (f90 - f0) * cLdotH5;
-			hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
-			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
+		// Calculate Fresnel using specular occlusion term from Filament:
+		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
+		half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
+		hvec3 F = f0 + (f90 - f0) * cLdotH5;
+		hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
+		specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
-		}
 
 #ifdef USE_SHADOW_TO_OPACITY
 		alpha = min(alpha, clamp(half(1.0 - attenuation), half(0.0), half(1.0)));

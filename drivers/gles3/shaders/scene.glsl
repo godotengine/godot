@@ -1728,51 +1728,50 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #endif
 	}
 
-	if (roughness > 0.0) { // FIXME: roughness == 0 should not disable specular light entirely
-
-		// D
+	// Clamp roughness to avoid NaNs.
+	// Note: will need to be increased to 0.089 if we move to mediump
+	roughness = clamp(roughness, 0.045, 1.0);
 
 #if defined(SPECULAR_TOON)
 
-		vec3 R = normalize(-reflect(L, N));
-		float RdotV = dot(R, V);
-		float mid = 1.0 - roughness;
-		mid *= mid;
-		float intensity = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
-		diffuse_light += light_color * intensity * attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
+	vec3 R = normalize(-reflect(L, N));
+	float RdotV = dot(R, V);
+	float mid = 1.0 - roughness;
+	mid *= mid;
+	float intensity = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
+	diffuse_light += light_color * intensity * attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
 
 #elif defined(SPECULAR_DISABLED)
-		// none..
+	// none..
 
 #elif defined(SPECULAR_SCHLICK_GGX)
-		// shlick+ggx as default
-		float alpha_ggx = roughness * roughness;
+	// shlick+ggx as default
+	float alpha_ggx = roughness * roughness;
 #if defined(LIGHT_ANISOTROPY_USED)
-		float aspect = sqrt(1.0 - anisotropy * 0.9);
-		float ax = alpha_ggx / aspect;
-		float ay = alpha_ggx * aspect;
-		float XdotH = dot(T, H);
-		float YdotH = dot(B, H);
-		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
-		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
+	float aspect = sqrt(1.0 - anisotropy * 0.9);
+	float ax = alpha_ggx / aspect;
+	float ay = alpha_ggx * aspect;
+	float XdotH = dot(T, H);
+	float YdotH = dot(B, H);
+	float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
+	float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
 #else
-		float D = D_GGX(cNdotH, alpha_ggx);
-		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
+	float D = D_GGX(cNdotH, alpha_ggx);
+	float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
-	   // F
+	// F
 #if !defined(LIGHT_CLEARCOAT_USED)
-		float cLdotH5 = SchlickFresnel(cLdotH);
+	float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-		// Calculate Fresnel using cheap approximate specular occlusion term from Filament:
-		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
-		float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
-		vec3 F = f0 + (f90 - f0) * cLdotH5;
+	// Calculate Fresnel using cheap approximate specular occlusion term from Filament:
+	// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
+	float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
+	vec3 F = f0 + (f90 - f0) * cLdotH5;
 
-		vec3 specular_brdf_NL = cNdotL * D * F * G;
+	vec3 specular_brdf_NL = cNdotL * D * F * G;
 
-		specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
+	specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
-	}
 
 #ifdef USE_SHADOW_TO_OPACITY
 	alpha = min(alpha, clamp(1.0 - attenuation, 0.0, 1.0));
