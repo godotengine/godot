@@ -168,6 +168,8 @@ private:
 	JointData *joint_data = nullptr;
 	Transform3D joint_offset;
 	RID joint;
+	// The type of joint last made by _reload_joint() - JOINT_TYPE_NONE while cleared
+	JointType made_joint_type = JOINT_TYPE_NONE;
 
 	ObjectID simulator_id;
 	Transform3D body_offset;
@@ -216,6 +218,7 @@ private:
 	void _update_joint_offset();
 	void _fix_joint_offset();
 	void _reload_joint();
+	void _clear_joint();
 
 	void _update_simulator_path();
 
