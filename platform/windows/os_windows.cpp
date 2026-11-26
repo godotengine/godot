@@ -981,7 +981,7 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 	}
 }
 
-uint64_t OS_Windows::get_ticks_usec() const {
+uint64_t OS_Windows::get_raw_ticks_usec() const {
 	uint64_t ticks;
 
 	// This is the number of clock ticks since start

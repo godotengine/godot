@@ -212,7 +212,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
 
 	// Calculate time step of a single XPBD iteration
-	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
+	const float dt = 1.0f / Engine::get_singleton()->get_physics_ticks_per_second() / simulation_precision;
 
 	// Now calculate the compliance
 	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
