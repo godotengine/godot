@@ -60,6 +60,7 @@ const GodotConfig = {
 		locale: 'en',
 		canvas_resize_policy: 2, // Adaptive
 		virtual_keyboard: false,
+		xr_compatible_by_default: false,
 		godot_pool_size: 4,
 		debug_port: null,
 		on_execute: null,
@@ -72,6 +73,7 @@ const GodotConfig = {
 			GodotConfig.canvas = p_opts['canvas'];
 			GodotConfig.locale = p_opts['locale'] || GodotConfig.locale;
 			GodotConfig.virtual_keyboard = p_opts['virtualKeyboard'];
+			GodotConfig.xr_compatible_by_default = !!p_opts['xrCompatibleByDefault'];
 			GodotConfig.godot_pool_size = p_opts['godotPoolSize'];
 			GodotConfig.debug_port = p_opts['debugPort'];
 			GodotConfig.pid = p_opts['pid'];
@@ -92,6 +94,7 @@ const GodotConfig = {
 			GodotConfig.locale = 'en';
 			GodotConfig.canvas_resize_policy = 2;
 			GodotConfig.virtual_keyboard = false;
+			GodotConfig.xr_compatible_by_default = false;
 			GodotConfig.debug_port = null;
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
