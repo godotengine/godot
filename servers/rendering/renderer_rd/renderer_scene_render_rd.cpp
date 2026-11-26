@@ -1408,8 +1408,10 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		// Also, take into account resolution scaling for the multiplier, since we have more leeway with quality
 		// degradation visibility. Conversely, allow upwards scaling, too, for increased mesh detail at high res.
-		const float scaling_3d_scale = GLOBAL_GET_CACHED(float, "rendering/scaling_3d/scale");
-		scene_data.lod_distance_multiplier = lod_distance_multiplier * (1.0 / scaling_3d_scale);
+		const Size2i internal_size = rb->get_internal_size();
+		const Size2i target_size = rb->get_target_size();
+		const float scaling_3d_scale = (internal_size.width > 0 && target_size.width > 0) ? (float(internal_size.width) / float(target_size.width)) : 1.0f;
+		scene_data.lod_distance_multiplier = lod_distance_multiplier / scaling_3d_scale;
 
 		if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			scene_data.screen_mesh_lod_threshold = 0.0;
