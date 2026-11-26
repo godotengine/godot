@@ -1932,7 +1932,6 @@ Object::Object() {
 	_class_ptr = nullptr;
 	_block_signals = false;
 	_predelete_ok = 0;
-	_instance_id = 0;
 	_instance_id = ObjectDB::add_instance(this);
 	_can_translate = true;
 	_is_queued_for_deletion = false;
@@ -1993,7 +1992,7 @@ Object::~Object() {
 	}
 
 	ObjectDB::remove_instance(this);
-	_instance_id = 0;
+	_instance_id = ObjectID();
 	_predelete_ok = 2;
 
 	if (!ScriptServer::are_languages_finished()) {
@@ -2014,13 +2013,13 @@ void postinitialize_handler(Object *p_object) {
 }
 
 HashMap<ObjectID, Object *> ObjectDB::instances;
-ObjectID ObjectDB::instance_counter = 1;
+uint64_t ObjectDB::instance_counter = 1;
 HashMap<Object *, ObjectID, ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;
 ObjectID ObjectDB::add_instance(Object *p_object) {
-	ERR_FAIL_COND_V(p_object->get_instance_id() != 0, 0);
+	ERR_FAIL_COND_V(p_object->get_instance_id().is_valid(), ObjectID());
 
 	rw_lock.write_lock();
-	ObjectID instance_id = ++instance_counter;
+	ObjectID instance_id = ObjectID(++instance_counter);
 	instances[instance_id] = p_object;
 	instance_checks[p_object] = instance_id;
 
