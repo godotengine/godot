@@ -484,101 +484,82 @@ Transform Spatial::_get_global_transform_interpolated(real_t p_interpolation_fra
 
 // Visible nodes - get_global_transform_interpolated is cheap.
 // Invisible nodes - get_global_transform_interpolated is expensive, try to avoid.
-Transform Spatial::get_global_transform_interpolated() {
-#if 1
+Transform Spatial::get_global_transform_interpolated() const {
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
-	if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !Engine::get_singleton()->is_in_physics_frame()) {
+	if (SceneTree::is_fti_enabled() && !Engine::get_singleton()->is_in_physics_frame() && is_inside_tree()) {
 		// Note that with SceneTreeFTI, we may want to calculate interpolated transform for a node
 		// with physics interpolation set to OFF, if it has a parent that is ON.
 
-		// Cheap case.
-		if (is_visible_in_tree()) {
+		// Simplest case - the node is visible, and has not been marked dirty by a set_transform
+		// during the frame.
+		if (is_visible_in_tree() && !(data.dirty & Spatial::DIRTY_GLOBAL_INTERPOLATED)) {
 			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
 		}
 
-		// If we got here we are invisible.
-		// But if there is a FIRST ancestor that is visible in tree, we can back calculate the interpolated transform.
-		const Spatial *visible_parent = nullptr;
-		const Spatial *s = this;
+		if (unlikely(_get_scene_tree_depth() < 1)) {
+			// This should not happen unless there a problem has been introduced in the scene tree depth code.
+			// Print a non-spammy error and return something reasonable.
+			ERR_PRINT_ONCE("depth is < 1.");
+			return get_global_transform();
+		}
 
+		// If we got here we are either invisible (invisible node interpolated xforms are not calculated normally
+		// by SceneTreeFTI), or the cached xform is invalid.
+		// We must therefore calculate the chain on the fly, in order to find the interpolated transform.
+		const Spatial *s = this;
+		const Spatial *first_valid = nullptr;
+
+		// Reserve enough room on the stack to store the entire chain to the root node
+		// (it probably won't all be needed, but we don't know this in advance).
+		const Spatial **parents = (const Spatial **)alloca((sizeof(const Spatial *) * _get_scene_tree_depth()));
+		int32_t num_parents = 0;
+
+		// We start calculating the chain from the first visible node that is not dirty (from a set_transform()
+		// during the frame).
 		while (s) {
-			if (s->data.visible_in_tree) {
-				visible_parent = s;
+			if (s->data.visible_in_tree && !(s->data.dirty & Spatial::DIRTY_GLOBAL_INTERPOLATED)) {
+				first_valid = s;
 				break;
 			}
+
+			parents[num_parents++] = s;
 			s = s->data.parent;
 		}
 
-		// We aren't bothering with the no visible parent case, because that would mean the root node
-		// was hidden.
-		if (visible_parent) {
-			// INVISIBLE case. Not visible, but there is a visible ancestor somewhere in the chain.
-			if (_get_scene_tree_depth() < 1) {
-				// This should not happen unless there a problem has been introduced in the scene tree depth code.
-				// Print a non-spammy error and return something reasonable.
-				ERR_PRINT_ONCE("depth is < 1.");
-				return get_global_transform();
-			}
+		// Now calculate the interpolated chain forwards.
+		float interpolation_fraction = Engine::get_singleton()->get_physics_interpolation_fraction();
 
-			// The interpolated xform is not already calculated for invisible nodes, but we can calculate this
-			// manually on demand if there is a visible parent.
-			// First create the chain (backwards), from the node up to first visible parent.
-			const Spatial **parents = (const Spatial **)alloca((sizeof(const Spatial *) * _get_scene_tree_depth()));
-			int32_t num_parents = 0;
+		// Seed the xform with the visible parent.
+		Transform xform;
+		Transform local_interp;
 
-			s = this;
-			while (s) {
-				if (s == visible_parent) {
-					// Finished.
-					break;
-				}
-
-				parents[num_parents++] = s;
-				s = s->data.parent;
-			}
-
-			// Now calculate the interpolated chain forwards.
-			float interpolation_fraction = Engine::get_singleton()->get_physics_interpolation_fraction();
-
-			// Seed the xform with the visible parent.
-			Transform xform = visible_parent->data.fti_global_xform_interp_set ? visible_parent->data.global_transform_interpolated : visible_parent->get_global_transform();
-			Transform local_interp;
-
-			// Backwards through the list is forwards through the chain through the tree.
-			for (int32_t n = num_parents - 1; n >= 0; n--) {
-				s = parents[n];
-
-				if (s->is_physics_interpolated()) {
-					// Make sure to call `get_transform()` rather than using local_transform directly, because
-					// local_transform may be dirty and need updating from rotation / scale.
-					TransformInterpolator::interpolate_transform(s->data.local_transform_prev, s->get_transform(), local_interp, interpolation_fraction);
-				} else {
-					local_interp = s->get_transform();
-				}
-				xform *= local_interp;
-			}
-
-			// We could save this in case of multiple calls,
-			// but probably not necessary.
-			return xform;
+		// If first_valid is NULL, we are calculating from the root, in which case we can leave the parent xform as identity.
+		if (first_valid) {
+			xform = first_valid->data.fti_global_xform_interp_set ? first_valid->data.global_transform_interpolated : first_valid->get_global_transform();
 		}
+
+		// Backwards through the list is forwards through the chain through the tree, from the root to the leaves.
+		for (int32_t n = num_parents - 1; n >= 0; n--) {
+			s = parents[n];
+
+			if (s->is_physics_interpolated()) {
+				// Make sure to call `get_transform()` rather than using local_transform directly, because
+				// local_transform may be dirty and need updating from rotation / scale.
+				TransformInterpolator::interpolate_transform(s->data.local_transform_prev, s->get_transform(), local_interp, interpolation_fraction);
+			} else {
+				local_interp = s->get_transform();
+			}
+			xform *= local_interp;
+		}
+
+		// We could save this in case of multiple calls,
+		// but probably not necessary.
+		return xform;
 	}
 
 	return get_global_transform();
-#else
-	// OLD METHOD - deprecated since moving to SceneTreeFTI,
-	// but leaving for reference and comparison for debugging.
-
-	// However, there is an exception, we may want to use this as a means of starting off the client
-	// interpolation pump if not already started (when _is_physics_interpolated_client_side() is false).
-	if (Engine::get_singleton()->is_in_physics_frame() && _is_physics_interpolated_client_side()) {
-		return get_global_transform();
-	}
-
-	return _get_global_transform_interpolated(Engine::get_singleton()->get_physics_interpolation_fraction());
-#endif
 }
 
 Transform Spatial::get_global_transform() const {

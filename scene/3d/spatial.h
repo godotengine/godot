@@ -232,7 +232,7 @@ public:
 
 	Transform get_transform() const;
 	Transform get_global_transform() const;
-	Transform get_global_transform_interpolated();
+	Transform get_global_transform_interpolated() const;
 	bool update_client_physics_interpolation_data();
 
 #ifdef TOOLS_ENABLED
