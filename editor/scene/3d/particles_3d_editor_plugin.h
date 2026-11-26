@@ -40,9 +40,6 @@ class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 	};
 
-	ConfirmationDialog *generate_aabb = nullptr;
-	SpinBox *generate_seconds = nullptr;
-
 	SceneTreeDialog *emission_tree_dialog = nullptr;
 	ConfirmationDialog *emission_dialog = nullptr;
 	SpinBox *emission_amount = nullptr;

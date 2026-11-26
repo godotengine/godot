@@ -60,19 +60,6 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 	}
 }
 
-bool ParticlesEditorPlugin::need_show_lifetime_dialog(SpinBox *p_seconds) {
-	// Add one second to the default generation lifetime, since the progress is updated every second.
-	p_seconds->set_value(MAX(1.0, std::trunc(edited_node->get("lifetime").operator double()) + 1.0));
-
-	if (p_seconds->get_value() >= 11.0 + CMP_EPSILON) {
-		// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
-		return true;
-	} else {
-		// Generate the visibility rect/AABB immediately.
-		return false;
-	}
-}
-
 void ParticlesEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_OPTION_CONVERT: {
