@@ -196,10 +196,10 @@
 	</members>
 	<constants>
 		<constant name="MOTION_MODE_GROUNDED" value="0" enum="MotionMode">
-			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for grounded games like platformers.
+			Apply when concepts of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for grounded games like platformers.
 		</constant>
 		<constant name="MOTION_MODE_FLOATING" value="1" enum="MotionMode">
-			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for games without ground like space games.
+			Apply when there is no concept of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for games without ground like space games.
 		</constant>
 		<constant name="PLATFORM_ON_LEAVE_ADD_VELOCITY" value="0" enum="PlatformOnLeave">
 			Add the last platform velocity to the [member velocity] when you leave a moving platform.
