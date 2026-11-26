@@ -1,0 +1,714 @@
+diff --git a/thirdparty/efsw/include/efsw/efsw.h b/thirdparty/efsw/include/efsw/efsw.h
+index a6782af3bc..dca73775a9 100644
+--- a/thirdparty/efsw/include/efsw/efsw.h
++++ b/thirdparty/efsw/include/efsw/efsw.h
+@@ -122,7 +122,7 @@ enum efsw_option {
+ 
+ /// Basic interface for listening for file events.
+ typedef void ( *efsw_pfn_fileaction_callback )( efsw_watcher watcher, efsw_watchid watchid,
+-												const char* dir, const char* filename,
++												const char* dir, const char* filename, bool isDir,
+ 												enum efsw_action action, const char* old_filename,
+ 												void* param );
+ 
+diff --git a/thirdparty/efsw/include/efsw/efsw.hpp b/thirdparty/efsw/include/efsw/efsw.hpp
+index e98afae8c2..fa4ea25ca6 100644
+--- a/thirdparty/efsw/include/efsw/efsw.hpp
++++ b/thirdparty/efsw/include/efsw/efsw.hpp
+@@ -248,7 +248,7 @@ class FileWatchListener {
+ 	/// @param action Action that was performed
+ 	/// @param oldFilename The name of the file or directory moved
+ 	virtual void handleFileAction( WatchID watchid, const std::string& dir,
+-								   const std::string& filename, Action action,
++								   const std::string& filename, bool isDir, Action action,
+ 								   std::string oldFilename = "" ) = 0;
+ 
+ 	/// Handles that have missed file actions
+diff --git a/thirdparty/efsw/src/efsw/DirWatcherGeneric.cpp b/thirdparty/efsw/src/efsw/DirWatcherGeneric.cpp
+index 8b6bc8a99a..47bff34bfa 100644
+--- a/thirdparty/efsw/src/efsw/DirWatcherGeneric.cpp
++++ b/thirdparty/efsw/src/efsw/DirWatcherGeneric.cpp
+@@ -20,7 +20,7 @@ DirWatcherGeneric::DirWatcherGeneric( DirWatcherGeneric* parent, WatcherGeneric*
+ 			FileInfoList::iterator it;
+ 
+ 			DiffIterator( FilesCreated ) {
+-				handleAction( ( *it ).Filepath, Actions::Add );
++				handleAction( ( *it ).Filepath, false, Actions::Add );
+ 			}
+ 		}
+ 	}
+@@ -35,11 +35,11 @@ DirWatcherGeneric::~DirWatcherGeneric() {
+ 			FileInfoList::iterator it;
+ 
+ 			DiffIterator( FilesDeleted ) {
+-				handleAction( ( *it ).Filepath, Actions::Delete );
++				handleAction( ( *it ).Filepath, false, Actions::Delete );
+ 			}
+ 
+ 			DiffIterator( DirsDeleted ) {
+-				handleAction( ( *it ).Filepath, Actions::Delete );
++				handleAction( ( *it ).Filepath, true, Actions::Delete );
+ 			}
+ 		}
+ 	}
+@@ -80,11 +80,11 @@ void DirWatcherGeneric::resetDirectory( std::string directory ) {
+ 	DirSnap.setDirectoryInfo( dir );
+ }
+ 
+-void DirWatcherGeneric::handleAction( const std::string& filename, unsigned long action,
++void DirWatcherGeneric::handleAction( const std::string& filename, bool isDir, unsigned long action,
+ 									  std::string oldFilename ) {
+ 	Watch->Listener->handleFileAction( Watch->ID, DirSnap.DirectoryInfo.Filepath,
+-									   FileSystem::fileNameFromPath( filename ), (Action)action,
+-									   oldFilename );
++									   FileSystem::fileNameFromPath( filename ), isDir,
++									   (Action)action, oldFilename );
+ }
+ 
+ void DirWatcherGeneric::addChilds( bool reportNewFiles ) {
+@@ -123,7 +123,7 @@ void DirWatcherGeneric::addChilds( bool reportNewFiles ) {
+ 				}
+ 
+ 				if ( reportNewFiles ) {
+-					handleAction( dir, Actions::Add );
++					handleAction( dir, true, Actions::Add );
+ 				}
+ 
+ 				Directories[dir] =
+@@ -141,7 +141,8 @@ void DirWatcherGeneric::watch( bool reportOwnChange ) {
+ 	if ( reportOwnChange && Diff.DirChanged && NULL != Parent ) {
+ 		Watch->Listener->handleFileAction(
+ 			Watch->ID, FileSystem::pathRemoveFileName( DirSnap.DirectoryInfo.Filepath ),
+-			FileSystem::fileNameFromPath( DirSnap.DirectoryInfo.Filepath ), Actions::Modified );
++			FileSystem::fileNameFromPath( DirSnap.DirectoryInfo.Filepath ), true,
++			Actions::Modified );
+ 	}
+ 
+ 	if ( Diff.changed() ) {
+@@ -150,19 +151,19 @@ void DirWatcherGeneric::watch( bool reportOwnChange ) {
+ 
+ 		/// Files
+ 		DiffIterator( FilesCreated ) {
+-			handleAction( ( *it ).Filepath, Actions::Add );
++			handleAction( ( *it ).Filepath, false, Actions::Add );
+ 		}
+ 
+ 		DiffIterator( FilesModified ) {
+-			handleAction( ( *it ).Filepath, Actions::Modified );
++			handleAction( ( *it ).Filepath, false, Actions::Modified );
+ 		}
+ 
+ 		DiffIterator( FilesDeleted ) {
+-			handleAction( ( *it ).Filepath, Actions::Delete );
++			handleAction( ( *it ).Filepath, false, Actions::Delete );
+ 		}
+ 
+ 		DiffMovedIterator( FilesMoved ) {
+-			handleAction( ( *mit ).second.Filepath, Actions::Moved, ( *mit ).first );
++			handleAction( ( *mit ).second.Filepath, false, Actions::Moved, ( *mit ).first );
+ 		}
+ 
+ 		/// Directories
+@@ -171,16 +172,16 @@ void DirWatcherGeneric::watch( bool reportOwnChange ) {
+ 		}
+ 
+ 		DiffIterator( DirsModified ) {
+-			handleAction( ( *it ).Filepath, Actions::Modified );
++			handleAction( ( *it ).Filepath, true, Actions::Modified );
+ 		}
+ 
+ 		DiffIterator( DirsDeleted ) {
+-			handleAction( ( *it ).Filepath, Actions::Delete );
++			handleAction( ( *it ).Filepath, true, Actions::Delete );
+ 			removeDirectory( ( *it ).Filepath );
+ 		}
+ 
+ 		DiffMovedIterator( DirsMoved ) {
+-			handleAction( ( *mit ).second.Filepath, Actions::Moved, ( *mit ).first );
++			handleAction( ( *mit ).second.Filepath, true, Actions::Moved, ( *mit ).first );
+ 			moveDirectory( ( *mit ).first, ( *mit ).second.Filepath );
+ 		}
+ 	}
+@@ -304,7 +305,7 @@ DirWatcherGeneric* DirWatcherGeneric::createDirectory( std::string newdir ) {
+ 	}
+ 
+ 	if ( !skip ) {
+-		handleAction( newdir, Actions::Add );
++		handleAction( newdir, true, Actions::Add );
+ 
+ 		/// Creates the new directory watcher of the subfolder and check for new files
+ 		dw = new DirWatcherGeneric( this, Watch, dir, Recursive );
+diff --git a/thirdparty/efsw/src/efsw/DirWatcherGeneric.hpp b/thirdparty/efsw/src/efsw/DirWatcherGeneric.hpp
+index ca52de7f22..ab83c6e44a 100644
+--- a/thirdparty/efsw/src/efsw/DirWatcherGeneric.hpp
++++ b/thirdparty/efsw/src/efsw/DirWatcherGeneric.hpp
+@@ -48,7 +48,7 @@ class DirWatcherGeneric {
+ 
+ 	void resetDirectory( std::string directory );
+ 
+-	void handleAction( const std::string& filename, unsigned long action,
++	void handleAction( const std::string& filename, bool isDir, unsigned long action,
+ 					   std::string oldFilename = "" );
+ };
+ 
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherCWrapper.cpp b/thirdparty/efsw/src/efsw/FileWatcherCWrapper.cpp
+index 971c889afa..c0e9ad48fa 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherCWrapper.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherCWrapper.cpp
+@@ -21,9 +21,9 @@ class Watcher_CAPI : public efsw::FileWatchListener {
+ 		mWatcher( watcher ), mFn( fn ), mParam( param ), mFnMissedFa( fnfa ) {}
+ 
+ 	void handleFileAction( efsw::WatchID watchid, const std::string& dir,
+-						   const std::string& filename, efsw::Action action,
++						   const std::string& filename, bool isDir, efsw::Action action,
+ 						   std::string oldFilename = "" ) {
+-		mFn( mWatcher, watchid, dir.c_str(), filename.c_str(), (enum efsw_action)action,
++		mFn( mWatcher, watchid, dir.c_str(), filename.c_str(), isDir, (enum efsw_action)action,
+ 			 oldFilename.c_str(), mParam );
+ 	}
+ 
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherFSEvents.cpp b/thirdparty/efsw/src/efsw/FileWatcherFSEvents.cpp
+index b36df216d0..ab2e118997 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherFSEvents.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherFSEvents.cpp
+@@ -218,7 +218,8 @@ void FileWatcherFSEvents::removeWatch( WatchID watchid ) {
+ void FileWatcherFSEvents::watch() {}
+ 
+ void FileWatcherFSEvents::handleAction( Watcher* /*watch*/, const std::string& /*filename*/,
+-										unsigned long /*action*/, std::string /*oldFilename*/ ) {
++										bool /*isDir*/, unsigned long /*action*/,
++										std::string /*oldFilename*/ ) {
+ 	/// Not used
+ }
+ 
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherFSEvents.hpp b/thirdparty/efsw/src/efsw/FileWatcherFSEvents.hpp
+index daa538cc6f..8cb9e4be59 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherFSEvents.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherFSEvents.hpp
+@@ -47,8 +47,8 @@ class FileWatcherFSEvents : public FileWatcherImpl {
+ 	void watch() override;
+ 
+ 	/// Handles the action
+-	void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-					   std::string oldFilename = "" ) override;
++	void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++					   unsigned long action, std::string oldFilename = "" ) override;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherGeneric.cpp b/thirdparty/efsw/src/efsw/FileWatcherGeneric.cpp
+index 2fd6f7ea50..4ccaa5e468 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherGeneric.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherGeneric.cpp
+@@ -126,7 +126,8 @@ void FileWatcherGeneric::run() {
+ 	} while ( mInitOK );
+ }
+ 
+-void FileWatcherGeneric::handleAction( Watcher*, const std::string&, unsigned long, std::string ) {
++void FileWatcherGeneric::handleAction( Watcher*, const std::string&, bool, unsigned long,
++									   std::string ) {
+ 	/// Not used
+ }
+ 
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherGeneric.hpp b/thirdparty/efsw/src/efsw/FileWatcherGeneric.hpp
+index 47f7e04718..2ce7735246 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherGeneric.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherGeneric.hpp
+@@ -33,8 +33,8 @@ class FileWatcherGeneric : public FileWatcherImpl {
+ 	void watch() override;
+ 
+ 	/// Handles the action
+-	void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-					   std::string oldFilename = "" ) override;
++	void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++					   unsigned long action, std::string oldFilename = "" ) override;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherImpl.hpp b/thirdparty/efsw/src/efsw/FileWatcherImpl.hpp
+index d82209c902..dcd232bfda 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherImpl.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherImpl.hpp
+@@ -31,8 +31,8 @@ class FileWatcherImpl {
+ 	virtual void watch() = 0;
+ 
+ 	/// Handles the action
+-	virtual void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-							   std::string oldFilename = "" ) = 0;
++	virtual void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++							   unsigned long action, std::string oldFilename = "" ) = 0;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	virtual std::vector<std::string> directories() = 0;
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp b/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
+index 33d0140b54..0fa8435f66 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
+@@ -167,7 +167,8 @@ WatchID FileWatcherInotify::addWatch( const std::string& directory, FileWatchLis
+ 					 file.second.isLink() ) {
+ 					pWatch->Listener->handleFileAction(
+ 						pWatch->ID, pWatch->Directory,
+-						FileSystem::fileNameFromPath( file.second.Filepath ), Actions::Add );
++						FileSystem::fileNameFromPath( file.second.Filepath ),
++						file.second.isDirectory(), Actions::Add );
+ 				}
+ 			}
+ 		}
+@@ -333,7 +334,8 @@ void FileWatcherInotify::run() {
+ 						}
+ 
+ 						if ( curWatcher ) {
+-							handleAction( curWatcher, (char*)pevent->name, pevent->mask );
++							handleAction( curWatcher, (char*)pevent->name, IN_ISDIR & pevent->mask,
++										  pevent->mask );
+ 
+ 							// Check if this is the destination of a move
+ 							if ( ( pevent->mask & IN_MOVED_TO ) && currentMoveFrom &&
+@@ -344,7 +346,7 @@ void FileWatcherInotify::run() {
+ 									// We need to simulate a delete event, the IN_MOVED_TO will
+ 									// generate an add event after
+ 									handleAction( currentMoveFrom, currentMoveFrom->OldFileName,
+-												  IN_DELETE );
++												  IN_ISDIR & pevent->mask, IN_DELETE );
+ 
+ 									// Clear the state on the source watcher so it doesn't
+ 									// get processed again or stuck with stale data.
+@@ -497,7 +499,9 @@ void FileWatcherInotify::run() {
+ 								  } );
+ 
+ 				if ( eraseWatches.empty() ) {
+-					handleAction( watch, oldFileName, IN_DELETE );
++					handleAction( watch, oldFileName,
++								  FileSystem::isDirectory( watch->Directory + oldFileName ),
++								  IN_DELETE );
+ 				} else {
+ 					for ( std::vector<Watcher*>::reverse_iterator eit = eraseWatches.rbegin();
+ 						  eit != eraseWatches.rend(); ++eit ) {
+@@ -506,7 +510,7 @@ void FileWatcherInotify::run() {
+ 						/// Create Delete event for removed watches that have been moved too
+ 						if ( Watcher* cntWatch = watcherContainsDirectory( rmWatch->Directory ) ) {
+ 							handleAction( cntWatch,
+-										  FileSystem::fileNameFromPath( rmWatch->Directory ),
++										  FileSystem::fileNameFromPath( rmWatch->Directory ), true,
+ 										  IN_DELETE );
+ 						}
+ 					}
+@@ -547,7 +551,7 @@ void FileWatcherInotify::checkForNewWatcher( Watcher* watch, std::string fpath )
+ 	}
+ }
+ 
+-void FileWatcherInotify::handleAction( Watcher* watch, const std::string& filename,
++void FileWatcherInotify::handleAction( Watcher* watch, const std::string& filename, bool isDir,
+ 									   unsigned long action, std::string ) {
+ 	if ( !watch || !watch->Listener || !mInitOK ) {
+ 		return;
+@@ -560,25 +564,25 @@ void FileWatcherInotify::handleAction( Watcher* watch, const std::string& filena
+ 	if ( IN_Q_OVERFLOW & action ) {
+ 		watch->Listener->handleMissedFileActions( watch->ID, watch->Directory );
+ 	} else if ( ( IN_CLOSE_WRITE & action ) || ( IN_MODIFY & action ) ) {
+-		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename,
++		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 										   Actions::Modified );
+ 	} else if ( IN_MOVED_TO & action ) {
+ 		/// If OldFileName doesn't exist means that the file has been moved from other folder, so we
+ 		/// just send the Add event
+ 		if ( watch->OldFileName.empty() ) {
+-			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename,
++			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 											   Actions::Add );
+ 
+-			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename,
++			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 											   Actions::Modified );
+ 
+ 			checkForNewWatcher( watch, fpath );
+ 		} else {
+-			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename,
++			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 											   Actions::Moved, watch->OldFileName );
+ 		}
+ 
+-		if ( watch->Recursive && FileSystem::isDirectory( fpath ) && !watch->OldFileName.empty() ) {
++		if ( watch->Recursive && isDir && !watch->OldFileName.empty() ) {
+ 			/// Update the new directory path
+ 			std::string opath( watch->Directory + watch->OldFileName );
+ 			FileSystem::dirAddSlashAtEnd( opath );
+@@ -599,13 +603,15 @@ void FileWatcherInotify::handleAction( Watcher* watch, const std::string& filena
+ 
+ 		watch->OldFileName = "";
+ 	} else if ( IN_CREATE & action ) {
+-		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, Actions::Add );
++		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
++										   Actions::Add );
+ 
+ 		checkForNewWatcher( watch, fpath );
+ 	} else if ( IN_MOVED_FROM & action ) {
+ 		watch->OldFileName = filename;
+ 	} else if ( IN_DELETE & action ) {
+-		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, Actions::Delete );
++		watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
++										   Actions::Delete );
+ 
+ 		FileSystem::dirAddSlashAtEnd( fpath );
+ 
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherInotify.hpp b/thirdparty/efsw/src/efsw/FileWatcherInotify.hpp
+index 5598d116f3..86f248fb3d 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherInotify.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherInotify.hpp
+@@ -38,8 +38,8 @@ class FileWatcherInotify : public FileWatcherImpl {
+ 	void watch() override;
+ 
+ 	/// Handles the action
+-	void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-					   std::string oldFilename = "" ) override;
++	void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++					   unsigned long action, std::string oldFilename = "" ) override;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherKqueue.cpp b/thirdparty/efsw/src/efsw/FileWatcherKqueue.cpp
+index eba360a6c2..fead651b18 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherKqueue.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherKqueue.cpp
+@@ -184,7 +184,7 @@ void FileWatcherKqueue::run() {
+ 	} while ( mInitOK );
+ }
+ 
+-void FileWatcherKqueue::handleAction( Watcher* watch, const std::string& filename,
++void FileWatcherKqueue::handleAction( Watcher* watch, const std::string& filename, bool isDir,
+ 									  unsigned long action, std::string oldFilename ) {}
+ 
+ std::vector<std::string> FileWatcherKqueue::directories() {
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherKqueue.hpp b/thirdparty/efsw/src/efsw/FileWatcherKqueue.hpp
+index ff5327b23f..9b26b56815 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherKqueue.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherKqueue.hpp
+@@ -34,8 +34,8 @@ class FileWatcherKqueue : public FileWatcherImpl {
+ 	void watch() override;
+ 
+ 	/// Handles the action
+-	void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-					   std::string oldFilename = "" ) override;
++	void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++					   unsigned long action, std::string oldFilename = "" ) override;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp b/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
+index f525086ff2..33c08383b4 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
+@@ -160,7 +160,7 @@ void FileWatcherWin32::run() {
+ 	removeAllWatches();
+ }
+ 
+-void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename,
++void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename, bool isDir,
+ 									 unsigned long action, std::string /*oldFilename*/ ) {
+ 	Action fwAction;
+ 
+@@ -177,7 +177,7 @@ void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename
+ 			std::string fpath( watch->Directory + filename );
+ 
+ 			// Update the directory path
+-			if ( watch->Recursive && FileSystem::isDirectory( fpath ) ) {
++			if ( watch->Recursive && isDir ) {
+ 				// Update the new directory path
+ 				std::string opath( watch->Directory + watch->OldFileName );
+ 				FileSystem::dirAddSlashAtEnd( opath );
+@@ -207,12 +207,12 @@ void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename
+ 
+ 			if ( folderPath == oldFolderPath ) {
+ 				watch->Listener->handleFileAction(
+-					watch->ID, folderPath, realFilename, fwAction,
++					watch->ID, folderPath, realFilename, isDir, fwAction,
+ 					FileSystem::fileNameFromPath( watch->OldFileName ) );
+ 			} else {
+ 				watch->Listener->handleFileAction( watch->ID,
+ 												   static_cast<WatcherWin32*>( watch )->DirName,
+-												   filename, fwAction, watch->OldFileName );
++												   filename, isDir, fwAction, watch->OldFileName );
+ 			}
+ 			return;
+ 		}
+@@ -237,7 +237,7 @@ void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename
+ 
+ 	FileSystem::dirAddSlashAtEnd( folderPath );
+ 
+-	watch->Listener->handleFileAction( watch->ID, folderPath, realFilename, fwAction );
++	watch->Listener->handleFileAction( watch->ID, folderPath, realFilename, isDir, fwAction );
+ }
+ 
+ std::vector<std::string> FileWatcherWin32::directories() {
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp b/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
+index 3f6f419bdb..0fdb5edd74 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
+@@ -38,8 +38,8 @@ class FileWatcherWin32 : public FileWatcherImpl {
+ 	void watch() override;
+ 
+ 	/// Handles the action
+-	void handleAction( Watcher* watch, const std::string& filename, unsigned long action,
+-					   std::string oldFilename = "" ) override;
++	void handleAction( Watcher* watch, const std::string& filename, bool isDir,
++					   unsigned long action, std::string oldFilename = "" ) override;
+ 
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+diff --git a/thirdparty/efsw/src/efsw/WatcherFSEvents.cpp b/thirdparty/efsw/src/efsw/WatcherFSEvents.cpp
+index bc982bf7e1..93c0b564b5 100644
+--- a/thirdparty/efsw/src/efsw/WatcherFSEvents.cpp
++++ b/thirdparty/efsw/src/efsw/WatcherFSEvents.cpp
+@@ -58,10 +58,10 @@ void WatcherFSEvents::init() {
+ }
+ 
+ void WatcherFSEvents::sendFileAction( WatchID watchid, const std::string& dir,
+-									  const std::string& filename, Action action,
++									  const std::string& filename, bool isDir, Action action,
+ 									  std::string oldFilename ) {
+ 	Listener->handleFileAction( watchid, FileSystem::precomposeFileName( dir ),
+-								FileSystem::precomposeFileName( filename ), action,
++								FileSystem::precomposeFileName( filename ), isDir, action,
+ 								FileSystem::precomposeFileName( oldFilename ) );
+ }
+ 
+@@ -75,20 +75,23 @@ void WatcherFSEvents::handleAddModDel( const Uint32& flags, const std::string& p
+ 									   std::string& dirPath, std::string& filePath, Uint64 inode ) {
+ 	if ( ( flags & efswFSEventStreamEventFlagItemCreated ) && FileInfo::exists( path ) &&
+ 		 ( !SanitizeEvents || FilesAdded.find( inode ) != FilesAdded.end() ) ) {
+-		sendFileAction( ID, dirPath, filePath, Actions::Add );
++		sendFileAction( ID, dirPath, filePath, efswFSEventStreamEventFlagItemIsDir & flags,
++						Actions::Add );
+ 
+ 		if ( SanitizeEvents )
+ 			FilesAdded.insert( inode );
+ 	}
+ 
+ 	if ( flags & ModifiedFlags ) {
+-		sendFileAction( ID, dirPath, filePath, Actions::Modified );
++		sendFileAction( ID, dirPath, filePath, efswFSEventStreamEventFlagItemIsDir & flags,
++						Actions::Modified );
+ 	}
+ 
+ 	if ( ( flags & efswFSEventStreamEventFlagItemRemoved ) && !FileInfo::exists( path ) ) {
+ 		// Since i don't know the order, at least i try to keep the data consistent with the real
+ 		// state
+-		sendFileAction( ID, dirPath, filePath, Actions::Delete );
++		sendFileAction( ID, dirPath, filePath, efswFSEventStreamEventFlagItemIsDir & flags,
++						Actions::Delete );
+ 
+ 		if ( SanitizeEvents )
+ 			FilesAdded.erase( inode );
+@@ -156,18 +159,26 @@ void WatcherFSEvents::handleActions( std::vector<FSEvent>& events ) {
+ 						if ( dirPath == newDir ) {
+ 							if ( !FileInfo::exists( event.Path ) ||
+ 								 0 == strcasecmp( event.Path.c_str(), nEvent.Path.c_str() ) ) {
+-								sendFileAction( ID, dirPath, newFilepath, Actions::Moved,
+-												filePath );
++								sendFileAction( ID, dirPath, newFilepath,
++												efswFSEventStreamEventFlagItemIsDir & event.Flags,
++												Actions::Moved, filePath );
+ 							} else {
+-								sendFileAction( ID, dirPath, filePath, Actions::Moved,
+-												newFilepath );
++								sendFileAction( ID, dirPath, filePath,
++												efswFSEventStreamEventFlagItemIsDir & event.Flags,
++												Actions::Moved, newFilepath );
+ 							}
+ 						} else {
+-							sendFileAction( ID, dirPath, filePath, Actions::Delete );
+-							sendFileAction( ID, newDir, newFilepath, Actions::Add );
++							sendFileAction( ID, dirPath, filePath,
++											efswFSEventStreamEventFlagItemIsDir & event.Flags,
++											Actions::Delete );
++							sendFileAction( ID, newDir, newFilepath,
++											efswFSEventStreamEventFlagItemIsDir & event.Flags,
++											Actions::Add );
+ 
+ 							if ( nEvent.Flags & ModifiedFlags ) {
+-								sendFileAction( ID, newDir, newFilepath, Actions::Modified );
++								sendFileAction( ID, newDir, newFilepath,
++												efswFSEventStreamEventFlagItemIsDir & event.Flags,
++												Actions::Modified );
+ 							}
+ 						}
+ 					} else {
+@@ -185,13 +196,19 @@ void WatcherFSEvents::handleActions( std::vector<FSEvent>& events ) {
+ 					// Skip the renamed file
+ 					i++;
+ 				} else if ( FileInfo::exists( event.Path ) ) {
+-					sendFileAction( ID, dirPath, filePath, Actions::Add );
++					sendFileAction( ID, dirPath, filePath,
++									efswFSEventStreamEventFlagItemIsDir & event.Flags,
++									Actions::Add );
+ 
+ 					if ( event.Flags & ModifiedFlags ) {
+-						sendFileAction( ID, dirPath, filePath, Actions::Modified );
++						sendFileAction( ID, dirPath, filePath,
++										efswFSEventStreamEventFlagItemIsDir & event.Flags,
++										Actions::Modified );
+ 					}
+ 				} else {
+-					sendFileAction( ID, dirPath, filePath, Actions::Delete );
++					sendFileAction( ID, dirPath, filePath,
++									efswFSEventStreamEventFlagItemIsDir & event.Flags,
++									Actions::Delete );
+ 				}
+ 			} else {
+ 				handleAddModDel( event.Flags, event.Path, dirPath, filePath, event.inode );
+@@ -211,7 +228,8 @@ void WatcherFSEvents::process() {
+ 			WatcherGen->watchDir( ( *it ) );
+ 		} else {
+ 			sendFileAction( ID, FileSystem::pathRemoveFileName( ( *it ) ),
+-							FileSystem::fileNameFromPath( ( *it ) ), Actions::Modified );
++							FileSystem::fileNameFromPath( ( *it ) ),
++							FileSystem::isDirectory( ( *it ) ), Actions::Modified );
+ 		}
+ 	}
+ 
+diff --git a/thirdparty/efsw/src/efsw/WatcherFSEvents.hpp b/thirdparty/efsw/src/efsw/WatcherFSEvents.hpp
+index fe17ed4db1..815b047f35 100644
+--- a/thirdparty/efsw/src/efsw/WatcherFSEvents.hpp
++++ b/thirdparty/efsw/src/efsw/WatcherFSEvents.hpp
+@@ -77,7 +77,7 @@ class WatcherFSEvents : public Watcher {
+ 	std::unordered_set<Uint64> FilesAdded;
+ 
+ 	void sendFileAction( WatchID watchid, const std::string& dir, const std::string& filename,
+-						 Action action, std::string oldFilename = "" );
++						 bool isDir, Action action, std::string oldFilename = "" );
+ 
+ 	void sendMissedFileActions( WatchID watchid, const std::string& dir);
+ };
+diff --git a/thirdparty/efsw/src/efsw/WatcherKqueue.cpp b/thirdparty/efsw/src/efsw/WatcherKqueue.cpp
+index 424b9890e0..c5039cdbfd 100644
+--- a/thirdparty/efsw/src/efsw/WatcherKqueue.cpp
++++ b/thirdparty/efsw/src/efsw/WatcherKqueue.cpp
+@@ -199,7 +199,7 @@ void WatcherKqueue::addFile( const std::string& name, bool emitEvents ) {
+ 
+ 	// handle action
+ 	if ( emitEvents ) {
+-		handleAction( name, Actions::Add );
++		handleAction( name, false, Actions::Add );
+ 	}
+ }
+ 
+@@ -229,7 +229,7 @@ void WatcherKqueue::removeFile( const std::string& name, bool emitEvents ) {
+ 
+ 	// handle action
+ 	if ( emitEvents ) {
+-		handleAction( name, Actions::Delete );
++		handleAction( name, false, Actions::Delete );
+ 	}
+ 
+ 	// Delete the user data ( FileInfo ) from the kevent closed
+@@ -269,7 +269,7 @@ void WatcherKqueue::rescan() {
+ 		}
+ 
+ 		DiffIterator( FilesModified ) {
+-			handleAction( ( *it ).Filepath, Actions::Modified );
++			handleAction( ( *it ).Filepath, false, Actions::Modified );
+ 		}
+ 
+ 		DiffIterator( FilesDeleted ) {
+@@ -277,7 +277,7 @@ void WatcherKqueue::rescan() {
+ 		}
+ 
+ 		DiffMovedIterator( FilesMoved ) {
+-			handleAction( ( *mit ).second.Filepath, Actions::Moved, ( *mit ).first );
++			handleAction( ( *mit ).second.Filepath, false, Actions::Moved, ( *mit ).first );
+ 			removeFile( Directory + ( *mit ).first, false );
+ 			addFile( ( *mit ).second.Filepath, false );
+ 		}
+@@ -318,23 +318,24 @@ WatchID WatcherKqueue::watchingDirectory( std::string dir ) {
+ 	return Errors::FileNotFound;
+ }
+ 
+-void WatcherKqueue::handleAction( const std::string& filename, efsw::Action action,
++void WatcherKqueue::handleAction( const std::string& filename, bool isDir, efsw::Action action,
+ 								  const std::string& oldFilename ) {
+-	Listener->handleFileAction( ID, Directory, FileSystem::fileNameFromPath( filename ), action,
+-								FileSystem::fileNameFromPath( oldFilename ) );
++	Listener->handleFileAction( ID, Directory, FileSystem::fileNameFromPath( filename ), isDir,
++								action, FileSystem::fileNameFromPath( oldFilename ) );
+ }
+ 
+ void WatcherKqueue::handleFolderAction( std::string filename, efsw::Action action,
+ 										const std::string& oldFilename ) {
+ 	FileSystem::dirRemoveSlashAtEnd( filename );
+ 
+-	handleAction( filename, action, oldFilename );
++	handleAction( filename, true, action, oldFilename );
+ }
+ 
+ void WatcherKqueue::sendDirChanged() {
+ 	if ( NULL != mParent ) {
+ 		Listener->handleFileAction( mParent->ID, mParent->Directory,
+-									FileSystem::fileNameFromPath( Directory ), Actions::Modified );
++									FileSystem::fileNameFromPath( Directory ), true,
++									Actions::Modified );
+ 	}
+ }
+ 
+@@ -389,7 +390,8 @@ void WatcherKqueue::watch() {
+ 
+ 						mDirSnap.updateFile( entry->Filepath );
+ 
+-						handleAction( entry->Filepath, efsw::Actions::Modified );
++						handleAction( entry->Filepath, entry->isDirectory(),
++									  efsw::Actions::Modified );
+ 					}
+ 				} else if ( event.fflags & NOTE_RENAME ) {
+ 					efDEBUG( "moved\n" );
+diff --git a/thirdparty/efsw/src/efsw/WatcherKqueue.hpp b/thirdparty/efsw/src/efsw/WatcherKqueue.hpp
+index 75c0f623dd..19a92a5d5e 100644
+--- a/thirdparty/efsw/src/efsw/WatcherKqueue.hpp
++++ b/thirdparty/efsw/src/efsw/WatcherKqueue.hpp
+@@ -37,7 +37,7 @@ class WatcherKqueue : public Watcher {
+ 	// rescans the watched directory adding/removing files and sending notices
+ 	void rescan();
+ 
+-	void handleAction( const std::string& filename, efsw::Action action,
++	void handleAction( const std::string& filename, bool isDir, efsw::Action action,
+ 					   const std::string& oldFilename = "" );
+ 
+ 	void handleFolderAction( std::string filename, efsw::Action action,
+diff --git a/thirdparty/efsw/src/efsw/WatcherWin32.cpp b/thirdparty/efsw/src/efsw/WatcherWin32.cpp
+index 370369e455..4897e3433b 100644
+--- a/thirdparty/efsw/src/efsw/WatcherWin32.cpp
++++ b/thirdparty/efsw/src/efsw/WatcherWin32.cpp
+@@ -86,7 +86,9 @@ void WatchCallbackOld( WatcherWin32* pWatch ) {
+ 		}
+ 
+ 		if ( !skip ) {
+-			pWatch->Watch->handleAction( pWatch, nfile, pNotify->Action );
++			pWatch->Watch->handleAction(
++				pWatch, nfile, FileSystem::isDirectory( std::string( pWatch->DirName ) + nfile ),
++				pNotify->Action );
+ 		}
+ 	} while ( pNotify->NextEntryOffset != 0 );
+ }
+@@ -139,15 +141,21 @@ void WatchCallbackEx( WatcherWin32* pWatch ) {
+ 			}
+ 
+ 			if ( oldFile.empty() ) {
+-				pWatch->Watch->handleAction( pWatch, nfile, FILE_ACTION_ADDED );
++				pWatch->Watch->handleAction( pWatch, nfile,
++											 pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY,
++											 FILE_ACTION_ADDED );
+ 				skip = true;
+ 			} else {
+-				pWatch->Watch->handleAction( pWatch, oldFile, FILE_ACTION_RENAMED_OLD_NAME );
++				pWatch->Watch->handleAction( pWatch, oldFile,
++											 pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY,
++											 FILE_ACTION_RENAMED_OLD_NAME );
+ 			}
+ 		}
+ 
+ 		if ( !skip ) {
+-			pWatch->Watch->handleAction( pWatch, nfile, pNotify->Action );
++			pWatch->Watch->handleAction( pWatch, nfile,
++										 pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY,
++										 pNotify->Action );
+ 		}
+ 	} while ( pNotify->NextEntryOffset != 0 );
+ }
