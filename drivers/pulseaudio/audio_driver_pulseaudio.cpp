@@ -272,8 +272,8 @@ Error AudioDriverPulseAudio::init_output_device() {
 	samples_out.resize(pa_buffer_size);
 
 	// Reset audio input to keep synchronization.
-	input_position = 0;
-	input_size = 0;
+	input_position.set(0);
+	input_size.set(0);
 
 	return OK;
 }
