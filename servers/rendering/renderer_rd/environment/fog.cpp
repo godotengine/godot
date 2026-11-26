@@ -592,7 +592,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (p_cam_projection.is_orthogonal()) {
 			fog_near_size = fog_far_size;
 		} else {
-			fog_near_size = frustum_near_size.maxf(0.001);
+			fog_near_size = Vector2(0.0f, 0.0f);
 		}
 
 		params.fog_frustum_size_begin[0] = fog_near_size.x;
@@ -1078,7 +1078,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	if (p_cam_projection.is_orthogonal()) {
 		fog_near_size = fog_far_size;
 	} else {
-		fog_near_size = frustum_near_size.maxf(0.001);
+		fog_near_size = Vector2(0.0f, 0.0f);
 	}
 
 	params.fog_frustum_size_begin[0] = fog_near_size.x;
