@@ -1551,11 +1551,9 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
 			_config.erase_section(item.path);
 
-			// Comment out for now until we have a better warning system to
-			// ensure users delete their project only.
-			//if (p_delete_project_contents) {
-			//	OS::get_singleton()->move_to_trash(item.path);
-			//}
+			if (p_delete_project_contents) {
+				OS::get_singleton()->move_to_trash(item.path);
+			}
 
 			memdelete(item.control);
 			_projects.remove_at(i);
