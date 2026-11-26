@@ -99,6 +99,7 @@ class AnimationPlayerEditor : public EditorDock {
 	MenuButton *tool_anim = nullptr;
 	Button *onion_toggle = nullptr;
 	MenuButton *onion_skinning = nullptr;
+	Button *mute_audio_tracks = nullptr;
 	Button *pin = nullptr;
 	SpinBox *frame = nullptr;
 	LineEdit *scale = nullptr;
@@ -239,6 +240,7 @@ class AnimationPlayerEditor : public EditorDock {
 
 	bool _validate_tracks(const Ref<Animation> p_anim);
 
+	void _mute_audio_tracks_pressed();
 	void _pin_pressed();
 	String _get_current() const;
 
