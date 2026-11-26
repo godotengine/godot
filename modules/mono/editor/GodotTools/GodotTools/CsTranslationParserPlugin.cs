@@ -25,6 +25,7 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
     }
 
     private List<MetadataReference>? _projectReferences;
+    private readonly List<string[]> _projectDefineConstants = new List<string[]>();
     private Array<string[]> _ret = new Array<string[]>();
     private List<SyntaxTree> _syntaxTreeCaches = new List<SyntaxTree>();
 
@@ -42,6 +43,11 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
     public override string[] _GetRecognizedExtensions()
     {
         return ["cs"];
+    }
+
+    public override void _BeginParse()
+    {
+        _projectDefineConstants.Clear();
     }
 
     public override Array<string[]> _ParseFile(string path)
@@ -82,13 +88,20 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
         var res = ResourceLoader.Load<CSharpScript>(path, "Script");
         var text = res.SourceCode;
 
-        foreach (string configuration in _configurations)
+        if (_projectDefineConstants.Count == 0)
         {
-            foreach (string targetPlatform in _targetPlatforms)
+            foreach (string configuration in _configurations)
             {
-                var symbols = GetProjectDefineConstants(GodotSharpDirs.ProjectCsProjPath, configuration, targetPlatform);
-                ParseCode(text, symbols, _projectReferences);
+                foreach (string targetPlatform in _targetPlatforms)
+                {
+                    _projectDefineConstants.Add(GetProjectDefineConstants(GodotSharpDirs.ProjectCsProjPath, configuration, targetPlatform));
+                }
             }
+        }
+
+        foreach (string[] symbols in _projectDefineConstants)
+        {
+            ParseCode(text, symbols, _projectReferences);
         }
         _syntaxTreeCaches.Clear();
         return _ret;
@@ -429,7 +442,7 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
         if (buildResult.OverallResult == BuildResultCode.Success)
         {
             var defineConstantsOutput = File.ReadAllText(tempFilePath);
-            if (string.IsNullOrEmpty(defineConstantsOutput))
+            if (!string.IsNullOrEmpty(defineConstantsOutput))
             {
                 defineConstants = defineConstantsOutput.Split('\n')
                     .Select(symbol => symbol.Trim('\r').Trim('\n'))
