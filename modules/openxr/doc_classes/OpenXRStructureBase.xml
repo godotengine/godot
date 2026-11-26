@@ -28,6 +28,13 @@
 				Returns the structure type (OpenXR [code]XrStructureType[/code]) used for this structure.
 			</description>
 		</method>
+		<method name="has_structure_type">
+			<return type="bool" />
+			<param index="0" name="structure_type" type="int" />
+			<description>
+				Returns [code]true[/code] if this, or any of the structures added to our next chain is of this structure type.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="next" type="OpenXRStructureBase" setter="set_next" getter="get_next">
