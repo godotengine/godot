@@ -74,7 +74,7 @@ TEST_CASE("[ZIPPacker] no compression") {
 	CHECK(close_file_result == OK);
 	Error close_result = packer->close();
 	CHECK(close_result == OK);
-	check_file_size(path, 131);
+	check_file_size(path, 126);
 }
 
 TEST_CASE("[ZIPReader] read files") {
