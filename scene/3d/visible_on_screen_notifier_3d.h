@@ -49,6 +49,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	void _create_visibility_notifier();
+	void _free_visibility_notifier();
+
 public:
 	void set_aabb(const AABB &p_aabb);
 	virtual AABB get_aabb() const override;
