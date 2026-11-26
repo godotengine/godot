@@ -1132,14 +1132,13 @@ public:
 		LocalVector<Node *> statements;
 		struct Local {
 			enum Type {
-				UNDEFINED,
 				CONSTANT,
 				VARIABLE,
 				PARAMETER,
 				FOR_VARIABLE,
 				PATTERN_BIND,
 			};
-			Type type = UNDEFINED;
+			Type type;
 			union {
 				ConstantNode *constant = nullptr;
 				VariableNode *variable;
@@ -1157,7 +1156,7 @@ public:
 			DataType get_datatype() const;
 			String get_name() const;
 
-			Local() {}
+			Local() = delete;
 			Local(ConstantNode *p_constant, FunctionNode *p_source_function) {
 				type = CONSTANT;
 				constant = p_constant;
@@ -1203,7 +1202,6 @@ public:
 				end_column = p_identifier->end_column;
 			}
 		};
-		Local empty;
 		LocalVector<Local> locals;
 		HashMap<StringName, uint32_t> locals_indices;
 
@@ -1215,8 +1213,7 @@ public:
 		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.
 		bool is_in_loop = false; // The block is nested in a loop (directly or indirectly).
 
-		bool has_local(const StringName &p_name) const;
-		const Local &get_local(const StringName &p_name) const;
+		const Local *get_local(const StringName &p_name) const;
 		template <typename T>
 		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
