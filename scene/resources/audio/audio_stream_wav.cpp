@@ -702,6 +702,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
+	bool smpl_parsed = false; // We can only parse smpl loop points once (more not supported)
 	uint32_t format_freq = 0;
 	int64_t loop_begin = 0;
 	int64_t loop_end = 0;
@@ -836,36 +837,71 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			// }
 		}
 
-		if (import_loop_mode == 0 && chunk_id[0] == 's' && chunk_id[1] == 'm' && chunk_id[2] == 'p' && chunk_id[3] == 'l') {
-			// Loop point info!
+		if (import_loop_mode == 0 && !smpl_parsed && chunk_id[0] == 's' && chunk_id[1] == 'm' && chunk_id[2] == 'p' && chunk_id[3] == 'l') {
+			// SMPL chunk: loop point info
+			// See https://www.recordingblogs.com/wiki/sample-chunk-of-a-wave-file
+			// And https://mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			// Especially on page 16 - 18
 
-			/**
-			 *	Consider exploring next document:
-			 *		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
-			 *	Especially on page:
-			 *		16 - 17
-			 *	Timestamp:
-			 *		22:38 06.07.2017 GMT
-			 **/
+			smpl_parsed = true;
 
-			for (int i = 0; i < 10; i++) {
-				file->get_32(); // i wish to know why should i do this... no doc!
-			}
+			constexpr uint32_t SMPL_HEADER_SIZE = 9 * sizeof(uint32_t);
+			constexpr uint32_t SMPL_LOOP_SIZE = 6 * sizeof(uint32_t);
+			const uint64_t chunk_end = MIN((uint64_t)file_pos + chunksize, file_size);
 
-			// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
-			// Skip anything else because it's not supported, reserved for future uses or sampler specific
-			// from https://sites.google.com/site/musicgapi/technical-documents/wav-file-format#smpl (loop type values table)
-			uint32_t loop_type = file->get_32();
-			if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
-				if (loop_type == 0x00) {
-					loop_mode = AudioStreamWAV::LOOP_FORWARD;
-				} else if (loop_type == 0x01) {
-					loop_mode = AudioStreamWAV::LOOP_PINGPONG;
-				} else if (loop_type == 0x02) {
-					loop_mode = AudioStreamWAV::LOOP_BACKWARD;
+			if (chunksize < SMPL_HEADER_SIZE || (uint64_t)file_pos + SMPL_HEADER_SIZE > chunk_end) {
+				WARN_PRINT("Malformed 'smpl' chunk: invalid header size. Ignoring loop points.");
+			} else {
+				file->get_32(); // dwManufacturer
+				file->get_32(); // dwProduct
+				file->get_32(); // dwSamplePeriod (ns)
+				file->get_32(); // dwMIDIUnityNote
+				file->get_32(); // dwMIDIPitchFraction
+				file->get_32(); // dwSMPTEFormat
+				file->get_32(); // dwSMPTEOffset
+				const uint32_t stated_loop_count = file->get_32();
+				file->get_32(); // cbSamplerData
+
+				const uint64_t remaining = chunk_end - file->get_position();
+				const uint64_t available_loop_count = remaining / SMPL_LOOP_SIZE;
+
+				if (stated_loop_count > available_loop_count) {
+					WARN_PRINT("Malformed 'smpl' chunk: sample loop count exceeds chunk size. Reading available loops.");
 				}
-				loop_begin = file->get_32();
-				loop_end = file->get_32();
+
+				const uint64_t loop_count = MIN((uint64_t)stated_loop_count, available_loop_count);
+
+				// Godot currently only supports a single loop, so we only use the first record.
+				if (loop_count > 0) {
+					file->get_32(); // dwIdentifier
+					const uint32_t loop_type = file->get_32();
+					const uint32_t loop_start_value = file->get_32();
+					const uint32_t loop_end_value = file->get_32(); // dwEnd (inclusive)
+					file->get_32(); // dwFraction
+					file->get_32(); // dwPlayCount
+
+					// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
+					// Skip anything else because it's not supported, reserved for future uses or sampler specific
+					switch (loop_type) {
+						case 0x00:
+							loop_mode = AudioStreamWAV::LOOP_FORWARD;
+							break;
+						case 0x01:
+							loop_mode = AudioStreamWAV::LOOP_PINGPONG;
+							break;
+						case 0x02:
+							loop_mode = AudioStreamWAV::LOOP_BACKWARD;
+							break;
+						default:
+							WARN_PRINT_ONCE("Unsupported loop type in 'smpl' chunk. Ignoring loop points.");
+							break;
+					}
+
+					if (loop_mode != AudioStreamWAV::LOOP_DISABLED) {
+						loop_begin = loop_start_value;
+						loop_end = loop_end_value;
+					}
+				}
 			}
 		}
 
@@ -914,6 +950,24 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
 		// chunk sizes.
 		file->seek(file_pos + chunksize + (chunksize & 1));
+	}
+
+	// Loop points from file are in sample frames
+	// Making sure these represent a valid range
+	if (loop_mode != AudioStreamWAV::LOOP_DISABLED) {
+		const int64_t max_frame = MAX((int64_t)0, frames - 1);
+		const int64_t clamped_begin = CLAMP(loop_begin, (int64_t)0, max_frame);
+		const int64_t clamped_end = CLAMP(loop_end, (int64_t)0, max_frame);
+
+		if (clamped_end <= clamped_begin) {
+			WARN_PRINT("Invalid loop points in WAV file. Disabling loop.");
+			loop_mode = AudioStreamWAV::LOOP_DISABLED;
+			loop_begin = 0;
+			loop_end = 0;
+		} else {
+			loop_begin = clamped_begin;
+			loop_end = clamped_end;
+		}
 	}
 
 	// STEP 2, APPLY CONVERSIONS
