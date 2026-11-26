@@ -125,26 +125,30 @@ class OpenXRSpatialComponentPlaneSemanticLabelList : public OpenXRSpatialCompone
 
 public:
 	enum PlaneSemanticLabel {
-		PLANE_SEMANTIC_LABEL_UNCATEGORIZED = XR_SPATIAL_PLANE_SEMANTIC_LABEL_UNCATEGORIZED_EXT,
-		PLANE_SEMANTIC_LABEL_FLOOR = XR_SPATIAL_PLANE_SEMANTIC_LABEL_FLOOR_EXT,
-		PLANE_SEMANTIC_LABEL_WALL = XR_SPATIAL_PLANE_SEMANTIC_LABEL_WALL_EXT,
-		PLANE_SEMANTIC_LABEL_CEILING = XR_SPATIAL_PLANE_SEMANTIC_LABEL_CEILING_EXT,
-		PLANE_SEMANTIC_LABEL_TABLE = XR_SPATIAL_PLANE_SEMANTIC_LABEL_TABLE_EXT,
+		// Original plane semantics overlap with plane semantics 2, so we can just use the new constants
+		PLANE_SEMANTIC_LABEL_UNCATEGORIZED = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_UNCATEGORIZED_EXT,
+		PLANE_SEMANTIC_LABEL_FLOOR = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_FLOOR_EXT,
+		PLANE_SEMANTIC_LABEL_WALL = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WALL_EXT,
+		PLANE_SEMANTIC_LABEL_CEILING = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_CEILING_EXT,
+		PLANE_SEMANTIC_LABEL_TABLE = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_TABLE_EXT,
+		PLANE_SEMANTIC_LABEL_DOOR = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_DOOR_EXT,
+		PLANE_SEMANTIC_LABEL_WINDOW = XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WINDOW_EXT
 	};
 
 	virtual void set_capacity(uint32_t p_capacity) override;
 	virtual XrSpatialComponentTypeEXT get_component_type() const override;
 	virtual void *get_structure_data(void *p_next) override;
 
-	XrSpatialPlaneSemanticLabelEXT get_plane_semantic_label(int64_t p_index) const;
+	XrSpatialPlaneSemanticLabel2EXT get_plane_semantic_label(int64_t p_index) const;
 
 protected:
 	static void _bind_methods();
 
 private:
-	Vector<XrSpatialPlaneSemanticLabelEXT> plane_semantic_label_data;
+	Vector<XrSpatialPlaneSemanticLabel2EXT> plane_semantic_label_data;
 
-	XrSpatialComponentPlaneSemanticLabelListEXT plane_semantic_label_list = { XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT, nullptr, 0, nullptr };
+	// XrSpatialComponentPlaneSemanticLabelListEXT and XrSpatialComponentPlaneSemanticLabel2ListEXT are binary compatible, just have different type.
+	XrSpatialComponentPlaneSemanticLabel2ListEXT plane_semantic_label_list = { XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT, nullptr, 0, nullptr };
 
 	PlaneSemanticLabel _get_plane_semantic_label(int64_t p_index) const;
 };
@@ -249,6 +253,7 @@ public:
 	Ref<OpenXRFutureResult> start_entity_discovery(RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_create = nullptr, Ref<OpenXRStructureBase> p_next_snapshot_query = nullptr, const Callable &p_user_callback = Callable());
 
 	bool is_supported();
+	bool is_semantics_label2_supported();
 
 	OpenXRSpatialEntityExtension::TrackingState get_built_in_tracking_state() { return builtin_tracking_state; }
 	bool start_built_in_tracking();
@@ -258,6 +263,7 @@ private:
 	static OpenXRSpatialPlaneTrackingCapability *singleton;
 	bool spatial_plane_tracking_ext = false;
 	bool spatial_plane_tracking_supported = false;
+	bool spatial_plane_semantics_label2_supported = false;
 
 	OpenXRSpatialEntityExtension::TrackingState builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NOT_ACTIVE;
 	Ref<OpenXRFutureResult> built_in_future;

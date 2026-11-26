@@ -863,6 +863,11 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SPATIAL_MARKER_SIZE_EXT, 1000743004) \
     _(XR_TYPE_SPATIAL_MARKER_STATIC_OPTIMIZATION_EXT, 1000743005) \
     _(XR_TYPE_SPATIAL_COMPONENT_MARKER_LIST_EXT, 1000743006) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_EXT, 1000744000) \
+    _(XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_EXT, 1000744001) \
+    _(XR_TYPE_SPATIAL_FEATURE_OBJECT_SEMANTIC_LABEL_SUBSET_EXT, 1000744002) \
+    _(XR_TYPE_SPATIAL_COMPONENT_KEYBOARD_SEMANTIC_LABEL_LIST_EXT, 1000744003) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MOUSE_SEMANTIC_LABEL_LIST_EXT, 1000744004) \
     _(XR_TYPE_SYSTEM_DYNAMIC_OBJECT_TRACKING_PROPERTIES_BD, 1000746000) \
     _(XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_DYNAMIC_OBJECT_BD, 1000746001) \
     _(XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_DYNAMIC_OBJECT_BD, 1000746002) \
@@ -930,6 +935,11 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_CREATE_INFO_EXT, 1000782004) \
     _(XR_TYPE_SPATIAL_COMPONENT_IMAGE_2D_LIST_EXT, 1000782005) \
     _(XR_TYPE_CREATE_SPATIAL_IMAGE_TRACKING_DATABASE_COMPLETION_EXT, 1000782006) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_MESH_TRACKING_EXT, 1000783000) \
+    _(XR_TYPE_SPATIAL_FEATURE_TRACK_WATERTIGHT_MESH_EXT, 1000783001) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MESH_3D_NORMALS_LIST_EXT, 1000783002) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MESH_3D_VERTEX_SEMANTIC_LABELS_LIST_EXT, 1000783003) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MESH_3D_TRIANGLE_SEMANTIC_LABELS_LIST_EXT, 1000783004) \
     _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_ANDROID, 1000785000) \
     _(XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_ANDROID, 1000785001) \
     _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_DEPTH_RAYCAST_ANDROID, 1000786000) \
@@ -984,6 +994,15 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_BATTERY_STATE_DISPLAY_EXT, 1000836000) \
     _(XR_TYPE_LOADER_INIT_INFO_PROPERTIES_EXT, 1000838000) \
     _(XR_TYPE_EVENT_DATA_VIEW_CONFIGURATION_VIEWS_CHANGED_EXT, 1000839000) \
+    _(XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT, 1000842000) \
+    _(XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL2_LIST_EXT, 1000869000) \
+    _(XR_TYPE_SPATIAL_FEATURE_PLANE_SEMANTIC_LABEL2_SUBSET_EXT, 1000869001) \
+    _(XR_TYPE_SWAPCHAIN_FORMATS_ENUMERATE_INFO_EXT, 1000876000) \
+    _(XR_TYPE_APP_CONSUMED_SWAPCHAIN_CREATE_INFO_EXT, 1000877000) \
+    _(XR_TYPE_APP_CONSUMED_SWAPCHAIN_PROPERTIES_EXT, 1000877001) \
+    _(XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_ACQUIRE_INFO_EXT, 1000877002) \
+    _(XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_STATE_EXT, 1000877003) \
+    _(XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_RELEASE_INFO_EXT, 1000877004) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFormFactor(_) \
@@ -1111,6 +1130,7 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_EXT, 1000782000) \
     _(XR_OBJECT_TYPE_GEOSPATIAL_TRACKER_ANDROID, 1000789000) \
     _(XR_OBJECT_TYPE_SPATIAL_CONTAINER_EXT, 1000810000) \
+    _(XR_OBJECT_TYPE_APP_CONSUMED_SWAPCHAIN_EXT, 1000877000) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrLoaderInterfaceStructs(_) \
@@ -2800,8 +2820,10 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_MICRO_QR_CODE_EXT, 1000743001) \
     _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_ARUCO_MARKER_EXT, 1000743002) \
     _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_APRIL_TAG_EXT, 1000743003) \
+    _(XR_SPATIAL_CAPABILITY_OBJECT_TRACKING_EXT, 1000744000) \
     _(XR_SPATIAL_CAPABILITY_ANCHOR_EXT, 1000762000) \
     _(XR_SPATIAL_CAPABILITY_IMAGE_TRACKING_EXT, 1000782000) \
+    _(XR_SPATIAL_CAPABILITY_MESH_TRACKING_EXT, 1000783000) \
     _(XR_SPATIAL_CAPABILITY_OBJECT_TRACKING_ANDROID, 1000785000) \
     _(XR_SPATIAL_CAPABILITY_DEPTH_RAYCAST_ANDROID, 1000786000) \
     _(XR_SPATIAL_CAPABILITY_MAX_ENUM_EXT, 0x7FFFFFFF)
@@ -2809,12 +2831,15 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_ENUM_XrSpatialCapabilityFeatureEXT(_) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS_EXT, 1000743000) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS_EXT, 1000743001) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_OBJECT_SEMANTIC_LABEL_SUBSET_EXT, 1000744000) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID, 1000761000) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID, 1000761001) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID, 1000761002) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES_EXT, 1000782000) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES_EXT, 1000782001) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES_EXT, 1000782002) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_TRACK_WATERTIGHT_MESH_EXT, 1000783000) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_PLANE_SEMANTIC_LABEL2_SUBSET_EXT, 1000869000) \
     _(XR_SPATIAL_CAPABILITY_FEATURE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSpatialComponentTypeEXT(_) \
@@ -2827,12 +2852,19 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_COMPONENT_TYPE_POLYGON_2D_EXT, 1000741002) \
     _(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT, 1000741003) \
     _(XR_SPATIAL_COMPONENT_TYPE_MARKER_EXT, 1000743000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_EXT, 1000744000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_KEYBOARD_SEMANTIC_LABEL_EXT, 1000744001) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MOUSE_SEMANTIC_LABEL_EXT, 1000744002) \
     _(XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT, 1000762000) \
     _(XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT, 1000763000) \
     _(XR_SPATIAL_COMPONENT_TYPE_IMAGE_2D_EXT, 1000782000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MESH_3D_NORMALS_EXT, 1000783000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MESH_3D_VERTEX_SEMANTIC_LABELS_EXT, 1000783001) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MESH_3D_TRIANGLE_SEMANTIC_LABELS_EXT, 1000783002) \
     _(XR_SPATIAL_COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID, 1000785000) \
     _(XR_SPATIAL_COMPONENT_TYPE_RAYCAST_RESULT_ANDROID, 1000786000) \
     _(XR_SPATIAL_COMPONENT_TYPE_SUBSUMED_BY_ANDROID, 1000791000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL2_EXT, 1000869000) \
     _(XR_SPATIAL_COMPONENT_TYPE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSpatialEntityTrackingStateEXT(_) \
@@ -2892,6 +2924,29 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H10_EXT, 3) \
     _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H11_EXT, 4) \
     _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialObjectSemanticLabelEXT(_) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_SOFA_EXT, 2) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_BED_EXT, 3) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_CHAIR_EXT, 4) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_TABLE_EXT, 5) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_LAMP_EXT, 6) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_PLANT_EXT, 7) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_DISPLAY_SCREEN_EXT, 8) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_WALL_ART_EXT, 9) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_CABINET_EXT, 10) \
+    _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialKeyboardSemanticLabelEXT(_) \
+    _(XR_SPATIAL_KEYBOARD_SEMANTIC_LABEL_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_KEYBOARD_SEMANTIC_LABEL_KEYBOARD_EXT, 2) \
+    _(XR_SPATIAL_KEYBOARD_SEMANTIC_LABEL_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialMouseSemanticLabelEXT(_) \
+    _(XR_SPATIAL_MOUSE_SEMANTIC_LABEL_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_MOUSE_SEMANTIC_LABEL_MOUSE_EXT, 2) \
+    _(XR_SPATIAL_MOUSE_SEMANTIC_LABEL_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrDynamicObjectTypeBD(_) \
     _(XR_DYNAMIC_OBJECT_TYPE_UNKNOWN_BD, 0) \
@@ -2981,6 +3036,17 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_REFERENCE_IMAGE_FORMAT_YUV_420_888_EXT, 3) \
     _(XR_SPATIAL_REFERENCE_IMAGE_FORMAT_MAX_ENUM_EXT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrSpatialMeshSemanticLabelEXT(_) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_FLOOR_EXT, 2) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_WALL_EXT, 3) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_CEILING_EXT, 4) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_TABLE_EXT, 5) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_CHAIR_EXT, 6) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_SOFA_EXT, 7) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_BED_EXT, 8) \
+    _(XR_SPATIAL_MESH_SEMANTIC_LABEL_MAX_ENUM_EXT, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrSpatialObjectSemanticLabelANDROID(_) \
     _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_UNCATEGORIZED_ANDROID, 0) \
     _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_KEYBOARD_ANDROID, 1) \
@@ -3025,6 +3091,19 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_CONTAINER_VOLUME_CLIPPING_STRICT_EXT, 1) \
     _(XR_SPATIAL_CONTAINER_VOLUME_CLIPPING_MAX_ENUM_EXT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrSpatialPlaneSemanticLabel2EXT(_) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_FLOOR_EXT, 2) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WALL_EXT, 3) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_CEILING_EXT, 4) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_TABLE_EXT, 5) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_DOOR_EXT, 6) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL2_WINDOW_EXT, 7) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_2EXT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrAppConsumedSwapchainKindEXT(_) \
+    _(XR_APP_CONSUMED_SWAPCHAIN_KIND_MAX_ENUM_EXT, 0x7FFFFFFF)
+
 #define XR_LIST_BITS_XrInstanceCreateFlags(_)
 
 #define XR_LIST_BITS_XrSessionCreateFlags(_)
@@ -3051,8 +3130,8 @@ XR_ENUM_STR(XrResult);
     _(XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT, 0x00000010) \
     _(XR_SWAPCHAIN_USAGE_SAMPLED_BIT, 0x00000020) \
     _(XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, 0x00000040) \
-    _(XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_MND, 0x00000080) \
-    _(XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_KHR, XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_MND) \
+    _(XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_MND, XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_KHR) \
+    _(XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_KHR, 0x00000080) \
 
 #define XR_LIST_BITS_XrCompositionLayerFlags(_) \
     _(XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT, 0x00000001) \
@@ -8574,6 +8653,42 @@ XR_ENUM_STR(XrResult);
     _(markerCount) \
     _(markers) \
 
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationObjectTrackingEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationObjectTrackingEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentObjectSemanticLabelListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentObjectSemanticLabelListEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialFeatureObjectSemanticLabelSubsetEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialFeatureObjectSemanticLabelSubsetEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentKeyboardSemanticLabelListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentKeyboardSemanticLabelListEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMouseSemanticLabelListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMouseSemanticLabelListEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
 /// Calls your macro with the name of each member of XrSystemDynamicObjectTrackingPropertiesBD, in order.
 #define XR_LIST_STRUCT_XrSystemDynamicObjectTrackingPropertiesBD(_) \
     _(type) \
@@ -9115,6 +9230,41 @@ XR_ENUM_STR(XrResult);
     _(futureResult) \
     _(database) \
 
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationMeshTrackingEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationMeshTrackingEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialFeatureTrackWatertightMeshEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialFeatureTrackWatertightMeshEXT(_) \
+    _(type) \
+    _(next) \
+    _(enableWatertightMeshTracking) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMesh3DNormalsListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMesh3DNormalsListEXT(_) \
+    _(type) \
+    _(next) \
+    _(meshNormalsCount) \
+    _(meshNormals) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMesh3DVertexSemanticLabelsListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMesh3DVertexSemanticLabelsListEXT(_) \
+    _(type) \
+    _(next) \
+    _(meshSemanticLabelsCount) \
+    _(meshSemanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMesh3DTriangleSemanticLabelsListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMesh3DTriangleSemanticLabelsListEXT(_) \
+    _(type) \
+    _(next) \
+    _(meshSemanticLabelsCount) \
+    _(meshSemanticLabels) \
+
 /// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationObjectTrackingANDROID, in order.
 #define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationObjectTrackingANDROID(_) \
     _(type) \
@@ -9514,6 +9664,70 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(systemId) \
     _(viewConfigurationType) \
+
+/// Calls your macro with the name of each member of XrSpatialFilterArchetypeEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialFilterArchetypeEXT(_) \
+    _(type) \
+    _(next) \
+    _(archetype) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentPlaneSemanticLabel2ListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentPlaneSemanticLabel2ListEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialFeaturePlaneSemanticLabel2SubsetEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialFeaturePlaneSemanticLabel2SubsetEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSwapchainFormatsEnumerateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSwapchainFormatsEnumerateInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrAppConsumedSwapchainCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrAppConsumedSwapchainCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(kind) \
+    _(usageFlags) \
+    _(format) \
+
+/// Calls your macro with the name of each member of XrAppConsumedSwapchainPropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrAppConsumedSwapchainPropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(usageFlags) \
+    _(format) \
+    _(sampleCount) \
+    _(width) \
+    _(height) \
+    _(faceCount) \
+    _(arraySize) \
+    _(mipCount) \
+
+/// Calls your macro with the name of each member of XrAppConsumedSwapchainImageAcquireInfoEXT, in order.
+#define XR_LIST_STRUCT_XrAppConsumedSwapchainImageAcquireInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrAppConsumedSwapchainImageStateEXT, in order.
+#define XR_LIST_STRUCT_XrAppConsumedSwapchainImageStateEXT(_) \
+    _(type) \
+    _(next) \
+    _(ready) \
+    _(unchanged) \
+    _(imageIndex) \
+
+/// Calls your macro with the name of each member of XrAppConsumedSwapchainImageReleaseInfoEXT, in order.
+#define XR_LIST_STRUCT_XrAppConsumedSwapchainImageReleaseInfoEXT(_) \
+    _(type) \
+    _(next) \
 
 
 
@@ -10131,6 +10345,11 @@ XR_ENUM_STR(XrResult);
     _(XrSpatialMarkerSizeEXT, XR_TYPE_SPATIAL_MARKER_SIZE_EXT) \
     _(XrSpatialMarkerStaticOptimizationEXT, XR_TYPE_SPATIAL_MARKER_STATIC_OPTIMIZATION_EXT) \
     _(XrSpatialComponentMarkerListEXT, XR_TYPE_SPATIAL_COMPONENT_MARKER_LIST_EXT) \
+    _(XrSpatialCapabilityConfigurationObjectTrackingEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_EXT) \
+    _(XrSpatialComponentObjectSemanticLabelListEXT, XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_EXT) \
+    _(XrSpatialFeatureObjectSemanticLabelSubsetEXT, XR_TYPE_SPATIAL_FEATURE_OBJECT_SEMANTIC_LABEL_SUBSET_EXT) \
+    _(XrSpatialComponentKeyboardSemanticLabelListEXT, XR_TYPE_SPATIAL_COMPONENT_KEYBOARD_SEMANTIC_LABEL_LIST_EXT) \
+    _(XrSpatialComponentMouseSemanticLabelListEXT, XR_TYPE_SPATIAL_COMPONENT_MOUSE_SEMANTIC_LABEL_LIST_EXT) \
     _(XrSystemDynamicObjectTrackingPropertiesBD, XR_TYPE_SYSTEM_DYNAMIC_OBJECT_TRACKING_PROPERTIES_BD) \
     _(XrSenseDataProviderCreateInfoDynamicObjectBD, XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_DYNAMIC_OBJECT_BD) \
     _(XrDynamicObjectDataBD, XR_TYPE_DYNAMIC_OBJECT_DATA_BD) \
@@ -10198,6 +10417,11 @@ XR_ENUM_STR(XrResult);
     _(XrSpatialImageTrackingDatabaseCreateInfoEXT, XR_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_CREATE_INFO_EXT) \
     _(XrSpatialComponentImage2DListEXT, XR_TYPE_SPATIAL_COMPONENT_IMAGE_2D_LIST_EXT) \
     _(XrCreateSpatialImageTrackingDatabaseCompletionEXT, XR_TYPE_CREATE_SPATIAL_IMAGE_TRACKING_DATABASE_COMPLETION_EXT) \
+    _(XrSpatialCapabilityConfigurationMeshTrackingEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_MESH_TRACKING_EXT) \
+    _(XrSpatialFeatureTrackWatertightMeshEXT, XR_TYPE_SPATIAL_FEATURE_TRACK_WATERTIGHT_MESH_EXT) \
+    _(XrSpatialComponentMesh3DNormalsListEXT, XR_TYPE_SPATIAL_COMPONENT_MESH_3D_NORMALS_LIST_EXT) \
+    _(XrSpatialComponentMesh3DVertexSemanticLabelsListEXT, XR_TYPE_SPATIAL_COMPONENT_MESH_3D_VERTEX_SEMANTIC_LABELS_LIST_EXT) \
+    _(XrSpatialComponentMesh3DTriangleSemanticLabelsListEXT, XR_TYPE_SPATIAL_COMPONENT_MESH_3D_TRIANGLE_SEMANTIC_LABELS_LIST_EXT) \
     _(XrSpatialCapabilityConfigurationObjectTrackingANDROID, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_ANDROID) \
     _(XrSpatialComponentObjectSemanticLabelListANDROID, XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_ANDROID) \
     _(XrSpatialCapabilityConfigurationDepthRaycastANDROID, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_DEPTH_RAYCAST_ANDROID) \
@@ -10252,6 +10476,15 @@ XR_ENUM_STR(XrResult);
     _(XrBatteryStateDisplayEXT, XR_TYPE_BATTERY_STATE_DISPLAY_EXT) \
     _(XrLoaderInitInfoPropertiesEXT, XR_TYPE_LOADER_INIT_INFO_PROPERTIES_EXT) \
     _(XrEventDataViewConfigurationViewsChangedEXT, XR_TYPE_EVENT_DATA_VIEW_CONFIGURATION_VIEWS_CHANGED_EXT) \
+    _(XrSpatialFilterArchetypeEXT, XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT) \
+    _(XrSpatialComponentPlaneSemanticLabel2ListEXT, XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL2_LIST_EXT) \
+    _(XrSpatialFeaturePlaneSemanticLabel2SubsetEXT, XR_TYPE_SPATIAL_FEATURE_PLANE_SEMANTIC_LABEL2_SUBSET_EXT) \
+    _(XrSwapchainFormatsEnumerateInfoEXT, XR_TYPE_SWAPCHAIN_FORMATS_ENUMERATE_INFO_EXT) \
+    _(XrAppConsumedSwapchainCreateInfoEXT, XR_TYPE_APP_CONSUMED_SWAPCHAIN_CREATE_INFO_EXT) \
+    _(XrAppConsumedSwapchainPropertiesEXT, XR_TYPE_APP_CONSUMED_SWAPCHAIN_PROPERTIES_EXT) \
+    _(XrAppConsumedSwapchainImageAcquireInfoEXT, XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_ACQUIRE_INFO_EXT) \
+    _(XrAppConsumedSwapchainImageStateEXT, XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_STATE_EXT) \
+    _(XrAppConsumedSwapchainImageReleaseInfoEXT, XR_TYPE_APP_CONSUMED_SWAPCHAIN_IMAGE_RELEASE_INFO_EXT) \
 
 
 #if defined(XR_USE_GRAPHICS_API_D3D11)
@@ -10659,10 +10892,12 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_spatial_plane_tracking, 742) \
     _(XR_EXT_stationary_reference_space, 743) \
     _(XR_EXT_spatial_marker_tracking, 744) \
+    _(XR_EXT_spatial_object_tracking, 745) \
     _(XR_LOGITECH_mx_ink_stylus_interaction, 746) \
     _(XR_BD_dynamic_object_tracking, 747) \
     _(XR_BD_dynamic_object_keyboard, 748) \
     _(XR_BD_dynamic_object_mouse, 749) \
+    _(XR_BD_motion_tracker, 750) \
     _(XR_BD_camera_image, 756) \
     _(XR_ANDROID_spatial_discovery_bounds, 762) \
     _(XR_EXT_spatial_anchor, 763) \
@@ -10672,6 +10907,7 @@ XR_ENUM_STR(XrResult);
     _(XR_SONY_hdr_metadata, 778) \
     _(XR_EXT_spatial_persistence_operations, 782) \
     _(XR_EXT_spatial_image_tracking, 783) \
+    _(XR_EXT_spatial_mesh_tracking, 784) \
     _(XR_ANDROID_spatial_object_tracking, 786) \
     _(XR_ANDROID_spatial_discovery_raycast, 787) \
     _(XR_ANDROID_google_cloud_auth, 788) \
@@ -10685,7 +10921,12 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_interaction_profile_battery_state_display, 837) \
     _(XR_EXT_loader_init_properties, 839) \
     _(XR_EXT_view_configuration_views_change, 840) \
+    _(XR_EXT_aosp_hand_tracking_permission, 841) \
+    _(XR_EXT_spatial_entity_archetypes, 843) \
+    _(XR_EXT_spatial_plane_semantic_label2, 870) \
     _(XR_KHR_extended_result_name_lengths, 875) \
+    _(XR_EXT_enumerate_swapchain_formats2, 877) \
+    _(XR_EXT_app_consumed_swapchain, 878) \
 
 
 
@@ -12792,6 +13033,13 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_FUNCTIONS_XR_EXT_spatial_marker_tracking(_)
 
 
+/// For every function defined by XR_EXT_spatial_object_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_object_tracking(_)
+
+
 /// For every function defined by XR_LOGITECH_mx_ink_stylus_interaction in this version of the spec,
 /// calls your macro with the function name and extension name.
 /// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
@@ -12818,6 +13066,13 @@ XR_ENUM_STR(XrResult);
 /// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
 /// because it is easy to add back but impossible to remove with the preprocessor.
 #define XR_LIST_FUNCTIONS_XR_BD_dynamic_object_mouse(_)
+
+
+/// For every function defined by XR_BD_motion_tracker in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_BD_motion_tracker(_)
 
 
 /// For every function defined by XR_BD_camera_image in this version of the spec,
@@ -12913,6 +13168,13 @@ XR_ENUM_STR(XrResult);
     _(CreateSpatialImageTrackingDatabaseAsyncEXT, EXT_spatial_image_tracking) \
     _(CreateSpatialImageTrackingDatabaseCompleteEXT, EXT_spatial_image_tracking) \
     _(DestroySpatialImageTrackingDatabaseEXT, EXT_spatial_image_tracking) \
+
+
+/// For every function defined by XR_EXT_spatial_mesh_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_mesh_tracking(_)
 
 
 /// For every function defined by XR_ANDROID_spatial_object_tracking in this version of the spec,
@@ -13030,6 +13292,50 @@ XR_ENUM_STR(XrResult);
 /// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
 /// because it is easy to add back but impossible to remove with the preprocessor.
 #define XR_LIST_FUNCTIONS_XR_EXT_view_configuration_views_change(_)
+
+
+/// For every function defined by XR_EXT_aosp_hand_tracking_permission in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_aosp_hand_tracking_permission(_)
+
+
+/// For every function defined by XR_EXT_spatial_entity_archetypes in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_entity_archetypes(_) \
+    _(EnumerateSpatialArchetypesEXT, EXT_spatial_entity_archetypes) \
+    _(EnumerateSpatialArchetypeComponentTypesEXT, EXT_spatial_entity_archetypes) \
+
+
+/// For every function defined by XR_EXT_spatial_plane_semantic_label2 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_plane_semantic_label2(_)
+
+
+/// For every function defined by XR_EXT_enumerate_swapchain_formats2 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_enumerate_swapchain_formats2(_) \
+    _(EnumerateSwapchainFormats2EXT, EXT_enumerate_swapchain_formats2) \
+
+
+/// For every function defined by XR_EXT_app_consumed_swapchain in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_app_consumed_swapchain(_) \
+    _(CreateAppConsumedSwapchainEXT, EXT_app_consumed_swapchain) \
+    _(DestroyAppConsumedSwapchainEXT, EXT_app_consumed_swapchain) \
+    _(GetAppConsumedSwapchainPropertiesEXT, EXT_app_consumed_swapchain) \
+    _(EnumerateAppConsumedSwapchainImagesEXT, EXT_app_consumed_swapchain) \
+    _(AcquireAppConsumedSwapchainImageEXT, EXT_app_consumed_swapchain) \
+    _(ReleaseAppConsumedSwapchainImageEXT, EXT_app_consumed_swapchain) \
 
 
 
