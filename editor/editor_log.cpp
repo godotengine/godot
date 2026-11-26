@@ -405,6 +405,16 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
+	if (!OS::get_singleton()->is_stderr_enabled()) {
+		switch (p_message.type) {
+			case MSG_TYPE_ERROR:
+			case MSG_TYPE_WARNING:
+				return;
+			default:
+				break;
+		}
+	}
+
 	if (p_replace_previous) {
 		// Remove last line if replacing, as it will be replace by the next added line.
 		// Why "- 2"? RichTextLabel is weird. When you add a line with add_newline(), it also adds an element to the list of lines which is null/blank,
