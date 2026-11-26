@@ -52,6 +52,7 @@ private:
 	BufferDecoder *buffer_decoder = nullptr;
 
 	static void update_buffer_thread_func(void *p_func);
+	static bool is_format_supported(uint32_t p_pixel_format);
 
 	void _update_buffer();
 	void _query_device(const String &p_device_name);
