@@ -341,6 +341,9 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
+		<member name="deep_focus_lookup" type="bool" setter="set_deep_focus_lookup" getter="is_deep_focus_lookup" default="false">
+			If [code]true[/code], the viewport will check all descendants when looking for a control to focus with the [code]ui_focus_next[/code] and [code]ui_focus_prev[/code] actions. Otherwise, only direct children of the [Viewport] are checked.
+		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
 		</member>
