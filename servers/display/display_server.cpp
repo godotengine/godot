@@ -1489,6 +1489,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_hinge_statue", "screen"), &DisplayServer::screen_get_hinge_statue, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_hinge_angle", "screen"), &DisplayServer::screen_get_hinge_angle, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
 
 	ClassDB::bind_method(D_METHOD("screen_set_keep_on", "enable"), &DisplayServer::screen_set_keep_on);
 	ClassDB::bind_method(D_METHOD("screen_is_kept_on"), &DisplayServer::screen_is_kept_on);
@@ -1910,6 +1912,11 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR);
 
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_HINGE_STATUS_CLOSED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_HINGE_STATUS_FULLY_OPEN);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_HINGE_STATUS_PARTIALLY_OPEN);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_HINGE_STATUS_UNKNOWN);
+
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE);
@@ -1985,6 +1992,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_HINGE_STATUS_CHANGED);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_TOP_LEFT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_TOP);

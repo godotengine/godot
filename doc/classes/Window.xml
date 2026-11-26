@@ -907,6 +907,13 @@
 				Emitted when a go back request is sent (e.g. pressing the "Back" button on Android), right after [constant Node.NOTIFICATION_WM_GO_BACK_REQUEST].
 			</description>
 		</signal>
+		<signal name="hinge_status_changed">
+			<param index="0" name="status" type="int" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Emitted when the status or angle of the hinge has changed.
+			</description>
+		</signal>
 		<signal name="mouse_entered">
 			<description>
 				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.

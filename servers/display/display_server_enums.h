@@ -173,6 +173,13 @@ enum ScreenOrientation {
 	SCREEN_SENSOR,
 };
 
+enum ScreenHingeStatus {
+	SCREEN_HINGE_STATUS_CLOSED,
+	SCREEN_HINGE_STATUS_FULLY_OPEN,
+	SCREEN_HINGE_STATUS_PARTIALLY_OPEN,
+	SCREEN_HINGE_STATUS_UNKNOWN,
+};
+
 // Values returned by the DisplayServer `orientation_changed` signal.
 // Unlike ScreenOrientation, which represents the desired screen orientation and can be used to get or set the screen orientation,
 // SensorOrientation represents the actual screen orientation detected. It can be used with ScreenOrientation::SCREEN_SENSOR.
@@ -257,6 +264,7 @@ enum WindowEvent {
 	WINDOW_EVENT_TITLEBAR_CHANGE,
 	WINDOW_EVENT_FORCE_CLOSE,
 	WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED,
+	WINDOW_EVENT_HINGE_STATUS_CHANGED,
 };
 
 enum WindowResizeEdge {
