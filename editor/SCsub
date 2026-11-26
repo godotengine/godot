@@ -50,6 +50,20 @@ if env.editor_build:
         env.Run(editor_builders.make_doc_header),
     )
 
+    doc_img_sources = Glob("#doc/classes/images/*.svg")
+
+    for path in module_dirs:
+        if not os.path.isabs(path):
+            doc_img_sources += Glob(f"#{path}/images/*.svg")  # Built-in.
+        else:
+            doc_img_sources += Glob(f"{path}/images/*.svg")  # Custom.
+
+    env.CommandNoCache(
+        "#editor/doc/doc_images.gen.h",
+        doc_img_sources,
+        env.Run(editor_builders.make_editor_images_action),
+    )
+
     # Editor interface and class reference translations incur a significant size
     # cost for the editor binary (see godot-proposals#3421).
     # To limit it, we only include translations with a high enough completion

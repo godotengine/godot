@@ -114,6 +114,8 @@ class EditorHelp : public VBoxContainer {
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
 
+	inline static HashMap<String, String> images;
+
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 
@@ -244,6 +246,8 @@ public:
 
 	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
 	static void remove_class(const String &p_class);
+
+	static String get_image_code(const String &p_name);
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
