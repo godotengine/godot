@@ -2204,7 +2204,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		// Sets lod_index, uses_lightmap, and uses_lightmap_specular at once.
-		element_info.value = uint32_t(surface->sort.sort_key1 & 0x3FF);
+		element_info.value = uint32_t((surface->sort.sort_key1 >> 4) & 0x3FF);
 	}
 
 	if (p_update_buffer && element_total > 0u) {
