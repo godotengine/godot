@@ -68,7 +68,7 @@ struct SetCommand2D {
 
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class GodotNavigationServer2D : public NavigationServer2D {
-	GDCLASS(GodotNavigationServer2D, NavigationServer2D);
+	GDSOFTCLASS(GodotNavigationServer2D, NavigationServer2D);
 
 	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
