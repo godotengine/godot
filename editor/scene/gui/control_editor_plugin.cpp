@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 // Inspector controls.
 
@@ -500,6 +502,9 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (making_default) {
+		return false;
+	}
 	Control *control = Object::cast_to<Control>(p_object);
 	if (!control) {
 		return false;
@@ -523,6 +528,64 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 		prop_editor->setup(options, p_path == "size_flags_vertical");
 		add_property_editor(p_path, prop_editor);
 
+		return true;
+	}
+
+	if (p_path == "theme_type_variation") {
+		making_default = true;
+		EditorProperty *prop = EditorInspector::instantiate_property_editor(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		making_default = false;
+
+		EditorPropertyTextEnum *prop_editor = Object::cast_to<EditorPropertyTextEnum>(prop);
+		if (!prop_editor) {
+			memdelete(prop);
+			ERR_FAIL_V(false);
+		}
+
+		// Manually add theme type variations to the default enum editor.
+		List<StringName> names;
+
+		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(p_object->get_class_name(), &names);
+
+		// Iterate to find all themes.
+		Control *tmp_control = Object::cast_to<Control>(control->get_parent());
+		Window *tmp_window = Object::cast_to<Window>(control->get_parent());
+		while (tmp_control || tmp_window) {
+			// We go up and any non Control/Window will break the chain.
+			if (tmp_control) {
+				if (tmp_control->get_theme().is_valid()) {
+					tmp_control->get_theme()->get_type_variation_list(p_object->get_class_name(), &names);
+				}
+				tmp_window = Object::cast_to<Window>(tmp_control->get_parent());
+				tmp_control = Object::cast_to<Control>(tmp_control->get_parent());
+			} else { // Window.
+				if (tmp_window->get_theme().is_valid()) {
+					tmp_window->get_theme()->get_type_variation_list(p_object->get_class_name(), &names);
+				}
+				tmp_control = Object::cast_to<Control>(tmp_window->get_parent());
+				tmp_window = Object::cast_to<Window>(tmp_window->get_parent());
+			}
+		}
+		if (control->get_theme().is_valid()) {
+			control->get_theme()->get_type_variation_list(p_object->get_class_name(), &names);
+		}
+		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(p_object->get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<String> names_vector;
+		names_vector.resize(names.size());
+		String *names_write = names_vector.ptrw();
+
+		int i = 0;
+		for (const String &s : names) {
+			names_write[i] = s;
+			i++;
+		}
+		prop_editor->setup(names_vector, Vector<String>(), true, true);
+
+		add_property_editor(p_path, prop_editor);
 		return true;
 	}
 
