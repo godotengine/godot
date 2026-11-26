@@ -2087,9 +2087,7 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 
 	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 	if (cl) {
-		if (editor_mode) {
-			xform *= cl->get_transform();
-		}
+		xform *= cl->get_transform();
 	} else {
 		Viewport *vp = Object::cast_to<Viewport>(p_node);
 		if (vp) {
@@ -2157,12 +2155,10 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	}
 
 	Transform2D xform = p_canvas_xform;
-	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 	if (cl) {
-		if (editor_mode) {
-			xform = cl->get_transform();
-		}
+		xform = cl->get_transform();
 	} else {
 		Viewport *vp = Object::cast_to<Viewport>(p_node);
 		if (vp) {
