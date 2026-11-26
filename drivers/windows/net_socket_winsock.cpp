@@ -268,6 +268,7 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 
 void NetSocketWinSock::close() {
 	if (_sock != INVALID_SOCKET) {
+		shutdown(_sock, SD_BOTH);
 		closesocket(_sock);
 	}
 
