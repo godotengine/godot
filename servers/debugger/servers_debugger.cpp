@@ -398,9 +398,8 @@ void ServersDebugger::deinitialize() {
 	memdelete(singleton);
 }
 
-Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-	ERR_FAIL_NULL_V(singleton, ERR_BUG);
-	r_captured = true;
+bool ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data) {
+	ERR_FAIL_NULL_V(singleton, true);
 	if (p_cmd == "memory") {
 		singleton->_send_resource_usage();
 	} else if (p_cmd == "draw") { // Forced redraw.
@@ -420,9 +419,9 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 		DisplayServer::get_singleton()->window_move_to_foreground();
 		singleton->servers_profiler->skip_frame();
 	} else {
-		r_captured = false;
+		return false;
 	}
-	return OK;
+	return true;
 }
 
 void ServersDebugger::_send_resource_usage() {

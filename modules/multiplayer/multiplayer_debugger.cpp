@@ -62,7 +62,7 @@ void MultiplayerDebugger::deinitialize() {
 	multiplayer_profilers.clear();
 }
 
-Error MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
+bool MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Array &p_args) {
 	if (p_msg == "cache") {
 		Array out;
 		for (int i = 0; i < p_args.size(); i++) {
@@ -78,13 +78,13 @@ Error MultiplayerDebugger::_capture(void *p_user, const String &p_msg, const Arr
 				out.push_back(obj->get_class());
 				out.push_back(String(((Node *)obj)->get_path()));
 			} else {
-				ERR_FAIL_V(FAILED);
+				ERR_FAIL_V(true);
 			}
 		}
 		EngineDebugger::get_singleton()->send_message("multiplayer:cache", out);
-		return OK;
+		return true;
 	}
-	ERR_FAIL_V(FAILED);
+	return false;
 }
 
 // BandwidthProfiler
