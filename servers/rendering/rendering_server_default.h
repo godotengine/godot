@@ -716,6 +716,15 @@ public:
 #define ServerName RenderingMethod
 #define server_name RSG::scene
 
+	/* CULLING VOLUME API */
+
+	FUNCRIDSPLIT(culling_volume)
+
+	FUNC2(culling_volume_set_mask, RID, int)
+	FUNC2(culling_volume_set_plane, RID, const Plane &)
+	FUNC3(culling_volume_set_sphere, RID, const Vector3 &, real_t)
+	FUNC4(culling_volume_set_cylinder, RID, const Vector3 &, const Vector3 &, real_t)
+
 	/* CAMERA API */
 
 	FUNCRIDSPLIT(camera)
@@ -820,6 +829,9 @@ public:
 	FUNC2(viewport_set_vrs_mode, RID, RSE::ViewportVRSMode)
 	FUNC2(viewport_set_vrs_update_mode, RID, RSE::ViewportVRSUpdateMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
+
+	FUNC2(viewport_add_culling_volume, RID, RID)
+	FUNC2(viewport_remove_culling_volume, RID, RID)
 
 	/* COMPOSITOR EFFECT */
 

@@ -154,6 +154,8 @@ public:
 
 		RenderingServerTypes::RenderInfo render_info;
 
+		LocalVector<RID> culling_volumes;
+
 		Viewport() {
 			view_count = 1;
 			update_mode = RSE::VIEWPORT_UPDATE_WHEN_VISIBLE;
@@ -306,6 +308,9 @@ public:
 	void viewport_set_vrs_mode(RID p_viewport, RSE::ViewportVRSMode p_mode);
 	void viewport_set_vrs_update_mode(RID p_viewport, RSE::ViewportVRSUpdateMode p_mode);
 	void viewport_set_vrs_texture(RID p_viewport, RID p_texture);
+
+	void viewport_add_culling_volume(RID p_viewport, RID p_culling_volume);
+	void viewport_remove_culling_volume(RID p_viewport, RID p_culling_volume);
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 
