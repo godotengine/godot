@@ -38,6 +38,7 @@ class NavRegionBuilder2D {
 	static void _build_step_process_navmesh_data(NavRegionIterationBuild2D &r_build);
 	static void _build_step_find_edge_connection_pairs(NavRegionIterationBuild2D &r_build);
 	static void _build_step_merge_edge_connection_pairs(NavRegionIterationBuild2D &r_build);
+	static void _build_step_build_polygon_bvh(NavRegionIterationBuild2D &r_build);
 	static void _build_update_iteration(NavRegionIterationBuild2D &r_build);
 
 public:
