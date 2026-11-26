@@ -1,3 +1,15 @@
+[dependency-groups]
+build = ["scons>=4", "ninja", "prek"]
+dev = [
+	{ include-group = "build" },
+	"clang-format",
+	"clang-tidy",
+	"clangd-tidy",
+	"clangd",
+	"mypy",
+	"ruff",
+]
+
 [tool.mypy]
 disallow_any_generics = true
 explicit_package_bases = true
