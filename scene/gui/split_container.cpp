@@ -1159,7 +1159,7 @@ void SplitContainer::add_child_notify(Node *p_child) {
 	}
 
 	child->connect(SceneStringName(visibility_changed), callable_mp(this, &SplitContainer::_on_child_visibility_changed).bind(child));
-	if (child->is_visible_in_tree()) {
+	if (child->is_visible_in_tree() || child->is_hidden_layout_enabled()) {
 		_add_valid_child(child);
 	}
 }
@@ -1176,7 +1176,7 @@ void SplitContainer::remove_child_notify(Node *p_child) {
 	}
 
 	child->disconnect(SceneStringName(visibility_changed), callable_mp(this, &SplitContainer::_on_child_visibility_changed));
-	if (child->is_visible()) {
+	if (child->is_visible() || child->is_hidden_layout_enabled()) {
 		_remove_valid_child(child);
 	}
 }
@@ -1225,7 +1225,7 @@ void SplitContainer::move_child_notify(Node *p_child) {
 }
 
 void SplitContainer::_on_child_visibility_changed(Control *p_control) {
-	if (p_control->is_visible()) {
+	if (p_control->is_visible() || p_control->is_hidden_layout_enabled()) {
 		_add_valid_child(p_control);
 	} else {
 		_remove_valid_child(p_control);
@@ -1246,7 +1246,7 @@ void SplitContainer::_add_valid_child(Control *p_control) {
 			continue;
 		}
 		if (child == p_control) {
-			if (child->is_visible()) {
+			if (child->is_visible() || child->is_hidden_layout_enabled()) {
 				child_is_valid = true;
 			}
 			break;
