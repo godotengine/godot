@@ -2497,7 +2497,7 @@
 			If enabled, and baking would potentially lead to an engine crash, the baking will be interrupted and an error message with explanation will be raised.
 		</member>
 		<member name="navigation/pathfinding/max_threads" type="int" setter="" getter="" default="4">
-			Maximum number of threads that can run pathfinding queries simultaneously on the same pathfinding graph, for example the same navigation map. Additional threads increase memory consumption and synchronization time due to the need for extra data copies prepared for each thread. A value of [code]-1[/code] means unlimited and the maximum available OS processor count is used. Defaults to [code]1[/code] when the OS does not support threads.
+			Maximum number of threads that can run pathfinding queries simultaneously on the same pathfinding graph, for example the same navigation map. Additional threads increase memory consumption and synchronization time due to the need for extra data copies prepared for each thread. A value of [code]-1[/code] means unlimited and the maximum available or allowed OS processor count is used. Defaults to [code]1[/code] when the OS does not support threads.
 		</member>
 		<member name="navigation/world/map_use_async_iterations" type="bool" setter="" getter="" default="true">
 			If enabled, navigation map synchronization uses an async process that runs on a background thread. This avoids stalling the main thread but adds an additional delay to any navigation map change.
@@ -3618,7 +3618,7 @@
 			The ratio of [WorkerThreadPool]'s threads that will be reserved for low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], 3 of the worker threads will be reserved for low-priority tasks. The actual value won't exceed the number of CPU cores minus one, and if possible, at least one worker thread will be dedicated to low-priority tasks.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
-			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
+			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]) or allowed.
 		</member>
 		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.

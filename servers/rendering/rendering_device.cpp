@@ -8698,8 +8698,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		present_queue_family = main_queue_family;
 	}
 
-	// Use the processor count as the max amount of transfer workers that can be created.
-	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
+	// Use the default thread pool size as the max amount of transfer workers that can be created.
+	transfer_worker_pool_max_size = OS::get_singleton()->get_default_thread_pool_size();
 
 	// Pre-allocate to avoid locking a mutex when indexing into them.
 	transfer_worker_pool.resize(transfer_worker_pool_max_size);
