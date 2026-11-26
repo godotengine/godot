@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
@@ -22,6 +23,11 @@ public partial struct Variant : IDisposable
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         public Disposer(in godot_variant.movable nativeVar)
+        {
+            TakeOwnershipOfDisposableValue(nativeVar);
+        }
+
+        public void TakeOwnershipOfDisposableValue(in godot_variant.movable nativeVar)
         {
             _native = nativeVar;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
@@ -76,7 +82,7 @@ public partial struct Variant : IDisposable
                 break;
             default:
             {
-                _disposer = new Disposer(NativeVar);
+                _disposer = DisposerPool.Instance.Rent(NativeVar);
                 break;
             }
         }
@@ -100,7 +106,7 @@ public partial struct Variant : IDisposable
 
     public void Dispose()
     {
-        _disposer?.Dispose();
+        if (_disposer != null) DisposerPool.Instance.Return(_disposer);
         NativeVar = default;
         _obj = null;
     }
@@ -950,4 +956,32 @@ public partial struct Variant : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Collections.Array from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromArray(from));
+
+    private sealed class DisposerPool
+    {
+        internal static DisposerPool Instance = new();
+
+        private DisposerPool() { }
+
+        private readonly ConcurrentBag<Disposer> _objects = [];
+
+        internal Disposer Rent(in godot_variant.movable nativeVar)
+        {
+            if (_objects.TryTake(out var item))
+            {
+                if (item != null)
+                {
+                    item.TakeOwnershipOfDisposableValue(nativeVar);
+                    return item;
+                }
+            }
+            return new Disposer(nativeVar);
+        }
+
+        internal void Return(Disposer disposer)
+        {
+            disposer.Dispose();
+            _objects.Add(disposer);
+        }
+    }
 }
