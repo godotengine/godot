@@ -602,6 +602,18 @@ String DisplayServerWayland::clipboard_get() const {
 	return String::utf8((const char *)data.ptr(), data.size());
 }
 
+// NOTE: Same limitation as `clipboard_set`, "recent enough" input event is required.
+void DisplayServerWayland::clipboard_set_image(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image.");
+
+	Vector<uint8_t> png_data = p_image->save_png_to_buffer();
+	ERR_FAIL_COND_MSG(png_data.is_empty(), "Unable to encode image as PNG.");
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.selection_set_image(png_data);
+}
+
 Ref<Image> DisplayServerWayland::clipboard_get_image() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 

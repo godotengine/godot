@@ -222,6 +222,7 @@ class DisplayServerX11 : public DisplayServer {
 	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window);
 
 	String internal_clipboard;
+	Vector<uint8_t> internal_clipboard_image; // PNG-encoded.
 	String internal_clipboard_primary;
 	Window xdnd_source_window = 0;
 	::Display *x11_display = nullptr;
@@ -439,6 +440,7 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual void clipboard_set_image(const Ref<Image> &p_image) override;
 	virtual Ref<Image> clipboard_get_image() const override;
 	virtual bool clipboard_has_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;

@@ -548,6 +548,10 @@ String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
+void DisplayServer::clipboard_set_image(const Ref<Image> &p_image) {
+	WARN_PRINT("Image clipboard is not supported by this display server.");
+}
+
 Ref<Image> DisplayServer::clipboard_get_image() const {
 	ERR_FAIL_V_MSG(Ref<Image>(), "Clipboard is not supported by this display server.");
 }
@@ -1462,6 +1466,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_set_image", "image"), &DisplayServer::clipboard_set_image);
 	ClassDB::bind_method(D_METHOD("clipboard_get_image"), &DisplayServer::clipboard_get_image);
 	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
 	ClassDB::bind_method(D_METHOD("clipboard_has_image"), &DisplayServer::clipboard_has_image);

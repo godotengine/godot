@@ -133,6 +133,28 @@ String DisplayServerMacOSBase::clipboard_get() const {
 	return ret;
 }
 
+void DisplayServerMacOSBase::clipboard_set_image(const Ref<Image> &p_image) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image.");
+
+	Vector<uint8_t> png_data;
+	ERR_FAIL_COND_MSG(PNGDriverCommon::image_to_png(p_image, png_data) != OK || png_data.is_empty(), "Unable to encode image as PNG.");
+
+	NSData *png = [NSData dataWithBytes:png_data.ptr() length:png_data.size()];
+	ERR_FAIL_NULL_MSG(png, "Unable to allocate memory for clipboard contents.");
+
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:png];
+	NSData *tiff = bitmap ? [bitmap TIFFRepresentation] : nil;
+
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	[pasteboard clearContents];
+	[pasteboard setData:png forType:NSPasteboardTypePNG];
+	if (tiff) {
+		[pasteboard setData:tiff forType:NSPasteboardTypeTIFF];
+	}
+}
+
 Ref<Image> DisplayServerMacOSBase::clipboard_get_image() const {
 	Ref<Image> image;
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];

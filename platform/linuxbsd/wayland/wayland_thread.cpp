@@ -52,6 +52,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+// For clipboard data transfers.
+#include <csignal>
+
 // Fix the wl_array_for_each macro to work with C++. This is based on the
 // original from `wayland-util.h` in the Wayland client library.
 #undef wl_array_for_each
@@ -2856,7 +2859,7 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 
 	if (wl_data_source == ss->wl_data_source_selection) {
 		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
-		_clipboard_send(ss->selection_data, mime_type, fd);
+		_clipboard_send(ss->selection_data, mime_type, fd, ss->selection_data_is_image);
 	}
 
 	close(fd);
@@ -2871,6 +2874,7 @@ void WaylandThread::_wl_data_source_on_cancelled(void *data, struct wl_data_sour
 	if (wl_data_source == ss->wl_data_source_selection) {
 		ss->wl_data_source_selection = nullptr;
 		ss->selection_data.clear();
+		ss->selection_data_is_image = false;
 
 		DEBUG_LOG_WAYLAND_THREAD("Clipboard: selection set by another program.");
 		return;
@@ -3786,12 +3790,12 @@ void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struc
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
 }
 
-void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd) {
-	ssize_t written_bytes = 0;
-
+void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd, bool p_is_image) {
 	bool valid_mime = false;
 
-	if (strcmp(p_media_type, "text/plain;charset=utf-8") == 0) {
+	if (p_is_image) {
+		valid_mime = strcmp(p_media_type, "image/png") == 0;
+	} else if (strcmp(p_media_type, "text/plain;charset=utf-8") == 0) {
 		valid_mime = true;
 	} else if (strcmp(p_media_type, "text/plain") == 0) {
 		valid_mime = true;
@@ -3802,14 +3806,33 @@ void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media
 		return;
 	}
 
-	written_bytes = write(p_fd, p_data.ptr(), p_data.size());
+	void (*sig_pipe)(int) = signal(SIGPIPE, SIG_IGN);
 
-	if (written_bytes > 0) {
-		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
-	} else if (written_bytes == 0) {
-		DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
+	const uint8_t *ptr = p_data.ptr();
+	size_t remaining = p_data.size();
+	size_t total_written = 0;
+	while (remaining > 0) {
+		ssize_t written_bytes = write(p_fd, ptr + total_written, remaining);
+		if (written_bytes < 0) {
+			if (errno == EINTR) {
+				continue;
+			}
+			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+			break;
+		}
+		if (written_bytes == 0) {
+			break;
+		}
+		total_written += written_bytes;
+		remaining -= written_bytes;
+	}
+
+	signal(SIGPIPE, sig_pipe);
+
+	if (total_written > 0) {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", (int64_t)total_written));
 	} else {
-		ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
 	}
 }
 
@@ -5969,6 +5992,14 @@ void WaylandThread::keyboard_echo_keys() {
 }
 
 void WaylandThread::selection_set_text(const String &p_text) {
+	_selection_set_data(p_text.to_utf8_buffer(), false);
+}
+
+void WaylandThread::selection_set_image(const Vector<uint8_t> &p_png_data) {
+	_selection_set_data(p_png_data, true);
+}
+
+void WaylandThread::_selection_set_data(const Vector<uint8_t> &p_data, bool p_is_image) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (registry.wl_data_device_manager == nullptr) {
@@ -5986,7 +6017,8 @@ void WaylandThread::selection_set_text(const String &p_text) {
 		return;
 	}
 
-	ss->selection_data = p_text.to_utf8_buffer();
+	ss->selection_data = p_data;
+	ss->selection_data_is_image = p_is_image;
 
 	if (ss->wl_data_source_selection != nullptr) {
 		wl_data_source_destroy(ss->wl_data_source_selection);
@@ -5995,8 +6027,12 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
 	wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
-	wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
-	wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+	if (p_is_image) {
+		wl_data_source_offer(ss->wl_data_source_selection, "image/png");
+	} else {
+		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
+		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+	}
 
 	// TODO: Implement a good way of getting the latest serial from the user.
 	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));

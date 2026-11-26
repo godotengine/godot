@@ -682,6 +682,13 @@
 				Sets the user's clipboard content to the given string.
 			</description>
 		</method>
+		<method name="clipboard_set_image">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<description>
+				Sets the user's clipboard content to the given image.
+			</description>
+		</method>
 		<method name="clipboard_set_primary">
 			<return type="void" />
 			<param index="0" name="clipboard_primary" type="String" />

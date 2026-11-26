@@ -623,6 +623,7 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual void clipboard_set_image(const Ref<Image> &p_image) override;
 	virtual Ref<Image> clipboard_get_image() const override;
 	virtual bool clipboard_has() const override;
 	virtual bool clipboard_has_image() const override;

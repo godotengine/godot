@@ -712,9 +712,28 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 		// The clipboard content can be accessed while polling for events.
 		MutexLock mutex_lock(events_mutex);
 		internal_clipboard = p_text;
+		internal_clipboard_image.clear();
 	}
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
+	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
+}
+
+void DisplayServerX11::clipboard_set_image(const Ref<Image> &p_image) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image.");
+
+	Vector<uint8_t> png_data;
+	ERR_FAIL_COND_MSG(PNGDriverCommon::image_to_png(p_image, png_data) != OK || png_data.is_empty(), "Unable to encode image as PNG.");
+
+	{
+		// The clipboard content can be accessed while polling for events.
+		MutexLock mutex_lock(events_mutex);
+		internal_clipboard = String();
+		internal_clipboard_image = png_data;
+	}
+
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
 }
 
@@ -997,6 +1016,16 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 	Atom clipboard = XInternAtom(x11_display, "CLIPBOARD", 0);
 	Window x11_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
 	Ref<Image> ret;
+
+	if (XGetSelectionOwner(x11_display, clipboard) == x11_window) {
+		// We own the clipboard, use the internal data directly.
+		if (!internal_clipboard_image.is_empty()) {
+			ret.instantiate();
+			PNGDriverCommon::png_to_image(internal_clipboard_image.ptr(), internal_clipboard_image.size(), false, ret);
+		}
+		return ret;
+	}
+
 	Atom target = _clipboard_get_image_target(clipboard, x11_window);
 	if (target == None) {
 		return ret;
@@ -1138,9 +1167,13 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 }
 
 bool DisplayServerX11::clipboard_has_image() const {
-	Atom target = _clipboard_get_image_target(
-			XInternAtom(x11_display, "CLIPBOARD", 0),
-			windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
+	Atom clipboard = XInternAtom(x11_display, "CLIPBOARD", 0);
+	Window x11_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
+	if (XGetSelectionOwner(x11_display, clipboard) == x11_window) {
+		// We own the clipboard, check the internal data directly.
+		return !internal_clipboard_image.is_empty();
+	}
+	Atom target = _clipboard_get_image_target(clipboard, x11_window);
 	return target != None;
 }
 
@@ -4380,7 +4413,50 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 }
 
 Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const {
-	if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
+	// Image data is only provided through the CLIPBOARD selection.
+	const bool is_image = !internal_clipboard_image.is_empty() && p_selection == XInternAtom(x11_display, "CLIPBOARD", 0);
+	const Atom png_atom = XInternAtom(x11_display, "image/png", 0);
+
+	if (is_image && p_target == XInternAtom(x11_display, "TARGETS", 0)) {
+		// Request to list all supported targets.
+		Atom data[4];
+		data[0] = XInternAtom(x11_display, "TARGETS", 0);
+		data[1] = XInternAtom(x11_display, "SAVE_TARGETS", 0);
+		data[2] = XInternAtom(x11_display, "MULTIPLE", 0);
+		data[3] = png_atom;
+
+		XChangeProperty(x11_display,
+				p_requestor,
+				p_property,
+				XA_ATOM,
+				32,
+				PropModeReplace,
+				(unsigned char *)&data,
+				std_size(data));
+		return p_property;
+	} else if (is_image && p_target == png_atom) {
+		// Directly using internal clipboard because we know our window is the owner during a selection request.
+		long max_request_size = XExtendedMaxRequestSize(x11_display);
+		if (max_request_size == 0) {
+			max_request_size = XMaxRequestSize(x11_display);
+		}
+		// Request size is in 4-byte units, reserve some space for the request header.
+		const int64_t max_data_size = (int64_t)max_request_size * 4 - 64;
+		if ((int64_t)internal_clipboard_image.size() > max_data_size) {
+			ERR_PRINT(vformat("Clipboard image is too large to be transferred (%d bytes, maximum is %d bytes).", internal_clipboard_image.size(), max_data_size));
+			return None;
+		}
+
+		XChangeProperty(x11_display,
+				p_requestor,
+				p_property,
+				p_target,
+				8,
+				PropModeReplace,
+				(const unsigned char *)internal_clipboard_image.ptr(),
+				internal_clipboard_image.size());
+		return p_property;
+	} else if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
 		// Request to list all supported targets.
 		Atom data[9];
 		data[0] = XInternAtom(x11_display, "TARGETS", 0);

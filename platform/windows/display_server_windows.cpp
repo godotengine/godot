@@ -1201,6 +1201,108 @@ String DisplayServerWindows::clipboard_get() const {
 	return ret;
 }
 
+void DisplayServerWindows::clipboard_set_image(const Ref<Image> &p_image) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image.");
+
+	if (!windows.has(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		return;
+	}
+
+	Ref<Image> image;
+	image.instantiate();
+	image->copy_internals_from(p_image);
+	if (image->is_compressed()) {
+		ERR_FAIL_COND_MSG(image->decompress() != OK, "Unable to decompress image.");
+	}
+	image->convert(Image::FORMAT_RGBA8);
+
+	const int width = image->get_width();
+	const int height = image->get_height();
+	const size_t pixels_size = (size_t)width * height * 4;
+
+	// CF_DIBV5 data.
+	HGLOBAL dib_mem = GlobalAlloc(GMEM_MOVEABLE, sizeof(BITMAPV5HEADER) + pixels_size);
+	ERR_FAIL_NULL_MSG(dib_mem, "Unable to allocate memory for clipboard contents.");
+
+	uint8_t *dib_ptr = (uint8_t *)GlobalLock(dib_mem);
+	if (dib_ptr == nullptr) {
+		GlobalFree(dib_mem);
+		ERR_FAIL_MSG("Unable to lock memory for clipboard contents.");
+	}
+
+	BITMAPV5HEADER *header = (BITMAPV5HEADER *)dib_ptr;
+	memset(header, 0, sizeof(BITMAPV5HEADER));
+	header->bV5Size = sizeof(BITMAPV5HEADER);
+	header->bV5Width = width;
+	header->bV5Height = height;
+	header->bV5Planes = 1;
+	header->bV5BitCount = 32;
+	header->bV5Compression = BI_BITFIELDS;
+	header->bV5SizeImage = (DWORD)pixels_size;
+	header->bV5RedMask = 0x00FF0000;
+	header->bV5GreenMask = 0x0000FF00;
+	header->bV5BlueMask = 0x000000FF;
+	header->bV5AlphaMask = 0xFF000000;
+	header->bV5CSType = 0x73524742; // LCS_sRGB ('sRGB'), MinGW defines it as a multi-character constant.
+	header->bV5Intent = LCS_GM_IMAGES;
+
+	const uint8_t *src = image->ptr();
+	uint8_t *dst = dib_ptr + sizeof(BITMAPV5HEADER);
+	for (int y = 0; y < height; y++) {
+		const uint8_t *src_row = src + (size_t)(height - 1 - y) * width * 4;
+		uint8_t *dst_row = dst + (size_t)y * width * 4;
+		for (int x = 0; x < width; x++) {
+			dst_row[x * 4 + 0] = src_row[x * 4 + 2]; // B
+			dst_row[x * 4 + 1] = src_row[x * 4 + 1]; // G
+			dst_row[x * 4 + 2] = src_row[x * 4 + 0]; // R
+			dst_row[x * 4 + 3] = src_row[x * 4 + 3]; // A
+		}
+	}
+	GlobalUnlock(dib_mem);
+
+	// PNG data.
+	HGLOBAL png_mem = nullptr;
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	if (png_format) {
+		Vector<uint8_t> png_data;
+		if (PNGDriverCommon::image_to_png(image, png_data) == OK && !png_data.is_empty()) {
+			png_mem = GlobalAlloc(GMEM_MOVEABLE, png_data.size());
+			if (png_mem) {
+				uint8_t *png_ptr = (uint8_t *)GlobalLock(png_mem);
+				if (png_ptr) {
+					memcpy(png_ptr, png_data.ptr(), png_data.size());
+					GlobalUnlock(png_mem);
+				} else {
+					GlobalFree(png_mem);
+					png_mem = nullptr;
+				}
+			}
+		}
+	}
+
+	if (!OpenClipboard(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd)) {
+		GlobalFree(dib_mem);
+		if (png_mem) {
+			GlobalFree(png_mem);
+		}
+		ERR_FAIL_MSG("Unable to open clipboard.");
+	}
+	EmptyClipboard();
+
+	if (SetClipboardData(CF_DIBV5, dib_mem) == nullptr) {
+		GlobalFree(dib_mem);
+		ERR_PRINT("Unable to set clipboard DIB data.");
+	}
+	if (png_mem && SetClipboardData(png_format, png_mem) == nullptr) {
+		GlobalFree(png_mem);
+		ERR_PRINT("Unable to set clipboard PNG data.");
+	}
+
+	CloseClipboard();
+}
+
 Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 	Ref<Image> image;
 	if (!windows.has(last_focused_window)) {
