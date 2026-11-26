@@ -265,7 +265,7 @@ public:
 		applied_torque += p_torque;
 	}
 
-	void set_active(bool p_active);
+	void set_active(bool p_active, bool reset_timer = false);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {

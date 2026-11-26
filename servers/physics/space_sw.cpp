@@ -1133,6 +1133,7 @@ void SpaceSW::_broadphase_unpair(CollisionObjectSW *p_object_A, int p_subindex_A
 	SpaceSW *self = (SpaceSW *)p_self;
 	self->collision_pairs--;
 	ConstraintSW *c = (ConstraintSW *)p_pair_data;
+	c->set_wake_on_delete(self->get_wake_on_unpair());
 	memdelete(c);
 }
 
