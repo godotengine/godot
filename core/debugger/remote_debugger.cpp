@@ -743,7 +743,17 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
-		script_debugger->debug(script_debugger->get_break_language());
+		ScriptLanguage *break_lang = script_debugger->get_break_language();
+		if (!break_lang) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptLanguage *lang = ScriptServer::get_language(i);
+				if (lang->debug_get_stack_level_count() > 0) {
+					break_lang = lang;
+					break;
+				}
+			}
+		}
+		script_debugger->debug(break_lang);
 	} else {
 		r_captured = false;
 	}
