@@ -31,6 +31,7 @@
 #import "godot_view_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #import "drivers/apple_embedded/display_layer_apple_embedded.h"
@@ -148,6 +149,20 @@ static const float earth_gravity = 9.80665;
 
 	self.multipleTouchEnabled = YES;
 
+	self.pinchZoomFactor = 1.0;
+	self.panTranslation = CGPointMake(0, 0);
+
+	if (GLOBAL_GET("input_devices/pointing/ios/enable_pan_and_scale_gestures")) {
+		self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+		self.pinchGesture.delegate = self;
+		[self addGestureRecognizer:self.pinchGesture];
+
+		self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+		self.panGesture.delegate = self;
+		self.panGesture.minimumNumberOfTouches = 2;
+		[self addGestureRecognizer:self.panGesture];
+	}
+
 	// Configure and start accelerometer
 	if (!self.motionManager) {
 		self.motionManager = [[CMMotionManager alloc] init];
@@ -157,6 +172,55 @@ static const float earth_gravity = 9.80665;
 		} else {
 			self.motionManager = nil;
 		}
+	}
+}
+
+- (void)handlePinch:(UIPinchGestureRecognizer *)gesture {
+	if (gesture.state == UIGestureRecognizerStateBegan) {
+		self.pinchZoomFactor = gesture.scale;
+	} else if (gesture.state == UIGestureRecognizerStateChanged) {
+		CGPoint pos = [gesture locationInView:self];
+
+		Ref<InputEventMagnifyGesture> ev;
+		ev.instantiate();
+
+		ev->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
+		ev->set_position(Vector2(pos.x, pos.y) * self.contentScaleFactor);
+		ev->set_factor(1.0 + (gesture.scale - self.pinchZoomFactor));
+		self.pinchZoomFactor = gesture.scale;
+
+		Input::get_singleton()->parse_input_event(ev);
+	} else if (gesture.state == UIGestureRecognizerStateEnded) {
+		CGPoint pos = [gesture locationInView:self];
+
+		Ref<InputEventMagnifyGesture> ev;
+		ev.instantiate();
+
+		ev->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
+		ev->set_position(Vector2(pos.x, pos.y) * self.contentScaleFactor);
+		ev->set_factor(1.0);
+		self.pinchZoomFactor = 1.0;
+
+		Input::get_singleton()->parse_input_event(ev);
+	}
+}
+
+- (void)handlePan:(UIPanGestureRecognizer *)gesture {
+	if (gesture.state == UIGestureRecognizerStateBegan) {
+		self.panTranslation = [gesture translationInView:self];
+	} else if (gesture.state == UIGestureRecognizerStateChanged) {
+		CGPoint pos = [gesture locationInView:self];
+		CGPoint transl = [gesture translationInView:self];
+
+		Ref<InputEventPanGesture> ev;
+		ev.instantiate();
+
+		ev->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
+		ev->set_position(Vector2(pos.x, pos.y) * self.contentScaleFactor);
+		ev->set_delta(Vector2(transl.x - self.panTranslation.x, transl.y - self.panTranslation.y) * self.contentScaleFactor);
+		self.panTranslation = transl;
+
+		Input::get_singleton()->parse_input_event(ev);
 	}
 }
 
