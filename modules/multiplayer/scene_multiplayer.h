@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene_cache_interface.h"
+#include "scene_multiplayer_metadata.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
 
@@ -67,13 +68,13 @@ class SceneMultiplayer : public MultiplayerAPI {
 public:
 	enum NetworkCommands {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
-		NETWORK_COMMAND_SIMPLIFY_PATH,
-		NETWORK_COMMAND_CONFIRM_PATH,
+		NETWORK_COMMAND_PATH_HANDSHAKE,
 		NETWORK_COMMAND_RAW,
 		NETWORK_COMMAND_SPAWN,
 		NETWORK_COMMAND_DESPAWN,
 		NETWORK_COMMAND_SYNC,
 		NETWORK_COMMAND_SYS,
+		NETWORK_COMMAND_DATA,
 	};
 
 	enum SysCommands {
@@ -81,6 +82,16 @@ public:
 		SYS_COMMAND_ADD_PEER,
 		SYS_COMMAND_DEL_PEER,
 		SYS_COMMAND_RELAY,
+	};
+
+	enum PathHandshake {
+		SIMPLIFY_PATH,
+		CONFIRM_PATH,
+	};
+
+	enum DataCommands {
+		REPLICATE_LOBBY_PROPERTY,
+		REPLICATE_PEER_PROPERTY,
 	};
 
 	enum {
@@ -126,6 +137,7 @@ private:
 	Ref<SceneCacheInterface> cache;
 	Ref<SceneReplicationInterface> replicator;
 	Ref<SceneRPCInterface> rpc;
+	Ref<SceneMultiplayerMetadata> metadata;
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
@@ -140,6 +152,7 @@ protected:
 	static void _bind_methods();
 
 	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_metadata(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
 
@@ -177,6 +190,13 @@ public:
 	void set_auth_timeout(double p_timeout);
 	double get_auth_timeout() const;
 	Vector<int> get_authenticating_peer_ids();
+
+	void add_lobby_property(String p_prop_name);
+	void add_peer_property(String p_prop_name);
+	void set_lobby_property(String p_prop_name, Variant value);
+	void set_peer_property(String p_prop_name, Variant value);
+	Variant get_lobby_property(String p_prop_name);
+	Variant get_peer_property(String p_prop_name, int peer_id);
 
 	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
