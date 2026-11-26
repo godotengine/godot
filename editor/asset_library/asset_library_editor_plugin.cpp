@@ -352,6 +352,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 				break;
 			}
 		} break;
+		case EditorAssetLibrary::IMAGE_QUEUE_INLINE: {
+			description->update_image("Img" + String::num_uint64(p_index), RichTextLabel::ImageUpdateMask::UPDATE_TEXTURE, p_image);
+		} break;
 	}
 }
 
@@ -1348,6 +1351,7 @@ void EditorAssetLibrary::_image_update(void *p_image_queue) {
 				max_size = THUMBNAIL_SIZE;
 			} break;
 
+			case IMAGE_QUEUE_INLINE:
 			case IMAGE_QUEUE_SCREENSHOT: {
 				max_size.y = image->get_height();
 			} break;
@@ -1723,6 +1727,67 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 	requester->request(host + "/" + p_request);
 }
 
+Vector<String> EditorAssetLibrary::_find_inline_images(String &p_bbcode) {
+	// Finds inline images and replaces them with loading icon and key for later update.
+	Vector<String> inline_images;
+	List<String> tag_stack;
+	int pos = 0;
+
+	while (pos < p_bbcode.length()) {
+		int brk_pos = p_bbcode.find_char('[', pos);
+
+		if (brk_pos < 0) {
+			brk_pos = p_bbcode.length();
+		}
+
+		if (brk_pos == p_bbcode.length()) {
+			break;
+		}
+
+		int brk_end = p_bbcode.find_char(']', brk_pos + 1);
+
+		if (brk_end == -1) {
+			break;
+		}
+
+		const String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
+
+			if (!tag_ok) {
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+		} else if (tag.begins_with("img")) {
+			int end = p_bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = p_bbcode.length();
+			}
+			String image_path = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			inline_images.push_back(image_path);
+
+			String key = " key=Img" + String::num_uint64(inline_images.size() - 1) + "]editor://AssetThumbLoading";
+			p_bbcode = p_bbcode.substr(0, brk_end) + key + p_bbcode.substr(end, -1);
+
+			end = p_bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = p_bbcode.length();
+			}
+
+			pos = end;
+			tag_stack.push_front("img");
+		} else {
+			pos = brk_pos + 1;
+		}
+	}
+
+	return inline_images;
+}
+
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, HTTPRequest *p_requester) {
 	String str = String::utf8((const char *)p_data.ptr(), (int)p_data.size());
 	bool error_abort = true;
@@ -1980,7 +2045,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect(SNAME("install_requested"), callable_mp(this, &EditorAssetLibrary::_install_asset));
 			description->connect(SNAME("tag_clicked"), callable_mp(this, &EditorAssetLibrary::_tag_clicked));
 
-			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
+			String bbcode = d["body_bbcode"];
+			Vector<String> inline_images = _find_inline_images(bbcode);
+
+			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], bbcode, tags, d["store_url"], d["source"]);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(d["slug"]);
 			if (download_item) {
@@ -2017,6 +2085,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					_request_image(description->get_instance_id(), d["slug"], previews[i], IMAGE_QUEUE_SCREENSHOT, preview_index);
 					preview_index++;
 				}
+			}
+
+			for (int i = 0; i < inline_images.size(); i++) {
+				_request_image(description->get_instance_id(), d["slug"], inline_images[i], IMAGE_QUEUE_INLINE, i);
 			}
 
 			description->popup_centered();

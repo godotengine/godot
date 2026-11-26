@@ -328,7 +328,7 @@ class EditorAssetLibrary : public EditorDock {
 		IMAGE_QUEUE_THUMBNAIL,
 		IMAGE_QUEUE_VIDEO_THUMBNAIL,
 		IMAGE_QUEUE_SCREENSHOT,
-
+		IMAGE_QUEUE_INLINE,
 	};
 
 	struct ImageQueue {
@@ -355,6 +355,7 @@ class EditorAssetLibrary : public EditorDock {
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
 	void _request_image(ObjectID p_for, int p_asset_id, const String &p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
+	Vector<String> _find_inline_images(String &p_bbcode);
 
 	int current_page = 0;
 
