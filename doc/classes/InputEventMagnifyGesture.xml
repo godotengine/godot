@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Stores the factor of a magnifying touch gesture. This is usually performed when the user pinches the touch screen and used for zooming in/out.
+		[b]Note:[/b] This [InputEvent] is only emitted on platforms where Godot supports [i]native[/i] touch events, i.e. Android and iOS. On desktop platforms, this event type is never emitted unless done manually through a script with [method Input.parse_input_event].
 		[b]Note:[/b] On Android, this requires the [member ProjectSettings.input_devices/pointing/android/enable_pan_and_scale_gestures] project setting to be enabled.
 	</description>
 	<tutorials>
