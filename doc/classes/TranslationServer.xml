@@ -6,6 +6,7 @@
 	<description>
 		The translation server is the API backend that manages all language translations.
 		Translations are stored in [TranslationDomain]s, which can be accessed by name. The most commonly used translation domain is the main translation domain. It always exists and can be accessed using an empty [StringName]. The translation server provides wrapper methods for accessing the main translation domain directly, without having to fetch the translation domain first. Custom translation domains are mainly for advanced usages like editor plugins. Names starting with [code]godot.[/code] are reserved for engine internals.
+		[b]Note:[/b] [code]tool scripts[/code] can cause conflicts when using methods of [TranslationServer] that access the main domain while it is intended to be in control of the editor. Using a custom domain created with [method get_or_add_domain] instead for translations in editor-scope avoids that.
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
