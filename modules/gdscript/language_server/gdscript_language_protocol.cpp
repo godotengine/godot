@@ -30,6 +30,7 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "../editor/gdscript_editor_language.h"
 #include "godot_lsp.h"
 
 #include "core/config/project_settings.h"
@@ -529,77 +530,104 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	params.load(p_params);
 	Dictionary request_data = params.to_json();
 
-	List<EditorLanguage::CompletionOption> options;
-	get_workspace()->completion(params, &options);
+	String path = workspace->get_file_path(params.textDocument.uri);
 
-	if (!options.is_empty()) {
-		int i = 0;
-		arr.resize(options.size());
+	const ExtendGDScriptParser *parser = get_parse_result(path);
+	ERR_FAIL_NULL_V(parser, arr);
 
-		for (const EditorLanguage::CompletionOption &option : options) {
-			LSP::CompletionItem item;
-			item.label = option.display;
-			item.data = request_data;
-			item.insertText = option.insert_text;
+	// Find the node the script is attached to.
+	Node *owner = scene_cache.get(path);
+	if (owner != nullptr) {
+		LocalVector<Node *> stack;
+		stack.push_back(owner);
 
-			// LSP clients won't autoclose brackets.
-			if (client->behavior.use_snippets_for_brace_completion) {
-				// Use snippet insert mode to insert closing brace as well.
-				if (item.insertText.ends_with("(")) {
-					item.insertText += "$1)";
-					item.insertTextFormat = LSP::InsertTextFormat::Snippet;
-				}
-			} else {
-				// Trim braces.
-				item.insertText = item.insertText.trim_suffix("(");
+		while (!stack.is_empty()) {
+			Node *current = stack[stack.size() - 1];
+			stack.resize(stack.size() - 1);
+
+			Ref<GDScript> scr = current->get_script();
+			if (scr.is_valid() && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
+				owner = current;
+				break;
 			}
-
-			if (option.text_edit.is_set()) {
-				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
-				item.textEdit.newText = option.text_edit.new_text;
-				item.textEdit.range = range.to_lsp();
+			for (int i = 0; i < current->get_child_count(); ++i) {
+				stack.push_back(current->get_child(i));
 			}
-
-			switch (option.kind) {
-				case EditorLanguage::CompletionKind::ENUM:
-					item.kind = LSP::CompletionItemKind::Enum;
-					break;
-				case EditorLanguage::CompletionKind::CLASS:
-					item.kind = LSP::CompletionItemKind::Class;
-					break;
-				case EditorLanguage::CompletionKind::MEMBER_VARIABLE:
-					item.kind = LSP::CompletionItemKind::Property;
-					break;
-				case EditorLanguage::CompletionKind::FUNCTION:
-					item.kind = LSP::CompletionItemKind::Method;
-					break;
-				case EditorLanguage::CompletionKind::SIGNAL:
-					item.kind = LSP::CompletionItemKind::Event;
-					break;
-				case EditorLanguage::CompletionKind::CONSTANT:
-					item.kind = LSP::CompletionItemKind::Constant;
-					break;
-				case EditorLanguage::CompletionKind::VARIABLE:
-					item.kind = LSP::CompletionItemKind::Variable;
-					break;
-				case EditorLanguage::CompletionKind::FILE_PATH:
-					item.kind = LSP::CompletionItemKind::File;
-					break;
-				case EditorLanguage::CompletionKind::NODE_PATH:
-					item.kind = LSP::CompletionItemKind::Snippet;
-					break;
-				case EditorLanguage::CompletionKind::PLAIN_TEXT:
-					item.kind = LSP::CompletionItemKind::Text;
-					break;
-				case EditorLanguage::CompletionKind::KEYWORD:
-					item.kind = LSP::CompletionItemKind::Keyword;
-					break;
-			}
-
-			arr[i] = item.to_json();
-			i++;
 		}
 	}
+
+	// Retrieve options.
+	List<EditorLanguage::CompletionOption> options;
+	String call_hint;
+	bool forced = false;
+	String code = parser->get_text_for_completion(params.position);
+	GDScriptEditorLanguage::get_singleton()->complete_code(code, path, owner, &options, forced, call_hint);
+
+	// Transform options into LSP format.
+	arr.reserve(options.size());
+	for (const EditorLanguage::CompletionOption &option : options) {
+		LSP::CompletionItem item;
+		item.label = option.display;
+		item.data = request_data;
+		item.insertText = option.insert_text;
+
+		// LSP clients won't autoclose brackets.
+		if (client->behavior.use_snippets_for_brace_completion) {
+			// Use snippet insert mode to insert closing brace as well.
+			if (item.insertText.ends_with("(")) {
+				item.insertText += "$1)";
+				item.insertTextFormat = LSP::InsertTextFormat::Snippet;
+			}
+		} else {
+			// Trim braces.
+			item.insertText = item.insertText.trim_suffix("(");
+		}
+
+		if (option.text_edit.is_set()) {
+			GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+			item.textEdit.newText = option.text_edit.new_text;
+			item.textEdit.range = range.to_lsp();
+		}
+
+		switch (option.kind) {
+			case EditorLanguage::CompletionKind::ENUM:
+				item.kind = LSP::CompletionItemKind::Enum;
+				break;
+			case EditorLanguage::CompletionKind::CLASS:
+				item.kind = LSP::CompletionItemKind::Class;
+				break;
+			case EditorLanguage::CompletionKind::MEMBER_VARIABLE:
+				item.kind = LSP::CompletionItemKind::Property;
+				break;
+			case EditorLanguage::CompletionKind::FUNCTION:
+				item.kind = LSP::CompletionItemKind::Method;
+				break;
+			case EditorLanguage::CompletionKind::SIGNAL:
+				item.kind = LSP::CompletionItemKind::Event;
+				break;
+			case EditorLanguage::CompletionKind::CONSTANT:
+				item.kind = LSP::CompletionItemKind::Constant;
+				break;
+			case EditorLanguage::CompletionKind::VARIABLE:
+				item.kind = LSP::CompletionItemKind::Variable;
+				break;
+			case EditorLanguage::CompletionKind::FILE_PATH:
+				item.kind = LSP::CompletionItemKind::File;
+				break;
+			case EditorLanguage::CompletionKind::NODE_PATH:
+				item.kind = LSP::CompletionItemKind::Snippet;
+				break;
+			case EditorLanguage::CompletionKind::PLAIN_TEXT:
+				item.kind = LSP::CompletionItemKind::Text;
+				break;
+			case EditorLanguage::CompletionKind::KEYWORD:
+				item.kind = LSP::CompletionItemKind::Keyword;
+				break;
+		}
+
+		arr.append(item.to_json());
+	}
+
 	return arr;
 }
 
