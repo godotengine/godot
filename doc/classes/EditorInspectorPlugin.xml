@@ -36,6 +36,37 @@
 			<param index="1" name="category" type="String" />
 			<description>
 				Called to allow adding controls at the beginning of a category in the property list for [param object].
+				See also [method _parse_category_header].
+			</description>
+		</method>
+		<method name="_parse_category_header" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="category" type="String" />
+			<description>
+				Called before creating Category headers in the inspector. This method allows to prepend controls to a category header and/or suppress it. If the returned value is [code]true[/code] the default header will not be added.
+				[codeblocks]
+				[gdscript]
+				# Remove a specific Category Header
+				func _parse_category_header(object: Object, category: String) -&gt; bool:
+					if category == "Label":
+						return true
+					return false
+				[/gdscript]
+				[/codeblocks]
+				[codeblocks]
+				[gdscript]
+				# Replace a Category Header
+				func _parse_category_header(object: Object, category: String) -&gt; bool:
+					if category == "Label":
+						var label = Label.new()
+						label.text = "This is a custom %s Header" % category
+						add_custom_control(label)
+						return true
+					return false
+				[/gdscript]
+				[/codeblocks]
+				[note]To place controls after the Category header see [method _parse_category].[/note]
 			</description>
 		</method>
 		<method name="_parse_end" qualifiers="virtual">
@@ -51,6 +82,39 @@
 			<param index="1" name="group" type="String" />
 			<description>
 				Called to allow adding controls at the beginning of a group or a sub-group in the property list for [param object].
+				See also [method _parse_group_section].
+			</description>
+		</method>
+		<method name="_parse_group_section" qualifiers="virtual">
+			<return type="VBoxContainer" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="group" type="String" />
+			<description>
+				Called to allow adding controls before a group or sub-group in the property list for [param object]. This function should return a [VBoxContainer] or [code]null[/code]. If null is returned a default group foldable section will be created. If a [VBoxContainer] is returned, it should have been added to the tree with [method add_custom_control].
+				[codeblocks]
+				[gdscript]
+				# Custom Group Container
+				func _parse_group_section(object: Object, group: String) -&gt; VBoxContainer:
+					if group == "Visibility":
+						var container := FoldableContainer.new()
+						container.title = group
+						var vbox := VBoxContainer.new()
+						container.add_child(vbox)
+						add_custom_control(container)
+						return vbox
+					return null
+				[/gdscript]
+				[/codeblocks]
+				[codeblocks]
+				[gdscript]
+				# Show contents of a group without making a default foldable container
+				func _parse_group_section(object: Object, group: String) -&gt; VBoxContainer:
+					var vbox := VBoxContainer.new()
+					add_custom_control(vbox)
+					return vbox
+				[/gdscript]
+				[/codeblocks]
+				[note]To place custom controls inside the default group section use [method _parse_group].[/note]
 			</description>
 		</method>
 		<method name="_parse_property" qualifiers="virtual">

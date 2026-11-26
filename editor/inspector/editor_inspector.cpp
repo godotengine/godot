@@ -1878,8 +1878,20 @@ void EditorInspectorPlugin::parse_begin(Object *p_object) {
 	GDVIRTUAL_CALL(_parse_begin, p_object);
 }
 
+bool EditorInspectorPlugin::parse_category_header(Object *p_object, const String &p_category) {
+	bool ret = false;
+	GDVIRTUAL_CALL(_parse_category_header, p_object, p_category, ret);
+	return ret;
+}
+
 void EditorInspectorPlugin::parse_category(Object *p_object, const String &p_category) {
 	GDVIRTUAL_CALL(_parse_category, p_object, p_category);
+}
+
+VBoxContainer *EditorInspectorPlugin::parse_group_section(Object *p_object, const String &p_group) {
+	VBoxContainer *ret = nullptr;
+	GDVIRTUAL_CALL(_parse_group_section, p_object, p_group, ret);
+	return ret;
 }
 
 void EditorInspectorPlugin::parse_group(Object *p_object, const String &p_group) {
@@ -1903,7 +1915,9 @@ void EditorInspectorPlugin::_bind_methods() {
 
 	GDVIRTUAL_BIND(_can_handle, "object")
 	GDVIRTUAL_BIND(_parse_begin, "object")
+	GDVIRTUAL_BIND(_parse_category_header, "object", "category");
 	GDVIRTUAL_BIND(_parse_category, "object", "category")
+	GDVIRTUAL_BIND(_parse_group_section, "object", "group");
 	GDVIRTUAL_BIND(_parse_group, "object", "group")
 	GDVIRTUAL_BIND(_parse_property, "object", "type", "name", "hint_type", "hint_string", "usage_flags", "wide");
 	GDVIRTUAL_BIND(_parse_end, "object")
@@ -4636,18 +4650,26 @@ void EditorInspector::update_tree() {
 				continue;
 			}
 
-			// Create an EditorInspectorCategory and add it to the inspector.
-			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
-			category->set_property_info(p);
-			category->set_color_level(category_color_level);
-			main_vbox->add_child(category);
-			category_vbox = nullptr; // Reset.
-
-			// Set the category info.
-			category->set_tooltip_text(category_tooltip);
-			if (!is_custom_category) {
-				category->set_doc_class_name(doc_name);
+			bool handled = false;
+			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+				handled = ped->parse_category_header(object, p.name) || handled;
+				_parse_added_editors(main_vbox, nullptr, ped);
 			}
+
+			if (!handled) {
+				// Create an EditorInspectorCategory and add it to the inspector.
+				EditorInspectorCategory *category = memnew(EditorInspectorCategory);
+				category->set_property_info(p);
+				category->set_color_level(category_color_level);
+				main_vbox->add_child(category);
+				category->set_tooltip_text(category_tooltip);
+
+				// Set the category info.
+				if (!is_custom_category) {
+					category->set_doc_class_name(doc_name);
+				}
+			}
+			category_vbox = nullptr; // Reset.
 
 			// Add editors at the start of a category.
 			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -4845,50 +4867,68 @@ void EditorInspector::update_tree() {
 			acc_path += (i > 0) ? "/" + component : component;
 
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
-				// If the section does not exists, create it.
-				EditorInspectorSection *section = memnew(EditorInspectorSection);
-				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
-				_add_section_in_tree(section, current_vbox);
-				sections.push_back(section);
-
-				String label;
-				String tooltip;
-
-				// Don't localize groups for script variables.
-				EditorPropertyNameProcessor::Style section_name_style = property_name_style;
-				if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-					section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
-				}
-
-				// Only process group label if this is not the group or subgroup.
-				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
-					if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-						label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
-						tooltip = component;
-					} else {
-						label = component;
-						tooltip = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
+				VBoxContainer *section_vbox = nullptr;
+				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+					section_vbox = ped->parse_group_section(object, path);
+					_parse_added_editors(current_vbox, nullptr, ped);
+					if (section_vbox) {
+						if (!section_vbox->is_inside_tree()) {
+							ERR_PRINT("Custom group section was not added to the tree. Did you forget to `add_custom_control()`?");
+							section_vbox = nullptr;
+							continue;
+						}
+						break;
 					}
-				} else {
-					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, section_name_style, p.name, doc_name);
-					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(section_name_style), p.name, doc_name);
 				}
 
-				Color c = sscolor;
-				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
-				section->set_tooltip_text(tooltip);
+				EditorInspectorSection *section = nullptr;
+				if (section_vbox == nullptr) {
+					// If the section does not exists, create it.
+					section = memnew(EditorInspectorSection);
+					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
+					_add_section_in_tree(section, current_vbox);
+					sections.push_back(section);
+					section_vbox = section->get_vbox();
 
-				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
-				section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+					String label;
+					String tooltip;
+
+					// Don't localize groups for script variables.
+					EditorPropertyNameProcessor::Style section_name_style = property_name_style;
+					if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+					}
+
+					// Only process group label if this is not the group or subgroup.
+					if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
+						if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+							label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
+							tooltip = component;
+						} else {
+							label = component;
+							tooltip = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
+						}
+					} else {
+						label = EditorPropertyNameProcessor::get_singleton()->process_name(component, section_name_style, p.name, doc_name);
+						tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(section_name_style), p.name, doc_name);
+					}
+
+					Color c = sscolor;
+					c.a /= level;
+					section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+					section->set_tooltip_text(tooltip);
+
+					section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+					section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+				}
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 					ped->parse_group(object, path);
-					_parse_added_editors(section->get_vbox(), section, ped);
+					_parse_added_editors(section_vbox, section, ped);
 				}
 
-				vbox_per_path[root_vbox][acc_path] = section->get_vbox();
+				vbox_per_path[root_vbox][acc_path] = section_vbox;
 			}
 
 			current_vbox = vbox_per_path[root_vbox][acc_path];
