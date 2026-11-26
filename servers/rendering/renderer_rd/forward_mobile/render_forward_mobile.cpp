@@ -470,6 +470,17 @@ void RenderForwardMobile::update() {
 	RendererSceneRenderRD::update();
 	_update_global_pipeline_data_requirements_from_project();
 	_update_global_pipeline_data_requirements_from_light_storage();
+
+	// GPU particles stay queued: their first update has to run post-cull, in _fill_render_list().
+	SelfList<GeometryInstanceForwardMobile> *E = geometry_instance_dirty_list.first();
+	while (E) {
+		SelfList<GeometryInstanceForwardMobile> *next = E->next();
+		if (E->self()->data->base_type != RSE::INSTANCE_PARTICLES) {
+			_geometry_instance_update(E->self());
+		}
+		E = next;
+	}
+	_update_dirty_geometry_pipelines();
 }
 
 /* Render functions */
@@ -3678,6 +3689,10 @@ RenderForwardMobile::RenderForwardMobile() {
 	const bool root_hdr_render_target = GLOBAL_GET("rendering/viewport/hdr_2d");
 	global_pipeline_data_required.use_hdr_render_target = root_hdr_render_target;
 	global_pipeline_data_required.use_ldr_render_target = !root_hdr_render_target;
+	global_pipeline_data_required.use_multiview = scene_shader.is_multiview_shader_group_enabled();
+	// SceneTree defines rendering/vrs/mode after the renderer is created, so it may not exist yet.
+	const int vrs_mode = ProjectSettings::get_singleton()->has_setting("rendering/vrs/mode") ? int(GLOBAL_GET("rendering/vrs/mode")) : 0;
+	global_pipeline_data_required.use_vrs = is_vrs_supported() && vrs_mode != RSE::VIEWPORT_VRS_DISABLED;
 }
 
 RenderForwardMobile::~RenderForwardMobile() {
