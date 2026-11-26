@@ -84,4 +84,12 @@
 			</description>
 		</signal>
 	</signals>
+	<theme_items>
+		<theme_item name="popup_offset_x" data_type="constant" type="int" default="0">
+			The horizontal offset from the initial popup position.
+		</theme_item>
+		<theme_item name="popup_offset_y" data_type="constant" type="int" default="0">
+			The vertical offset from the initial popup position.
+		</theme_item>
+	</theme_items>
 </class>
