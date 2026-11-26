@@ -1406,6 +1406,8 @@ void RuntimeNodeSelect::_open_selection_list(const Array &p_selection, const Poi
 	selection_list->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	selection_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	selection_list->set_force_native(true);
+	selection_list->set_ignore_suspend(true);
+	selection_list->set_process_mode(Node::PROCESS_MODE_ALWAYS);
 	selection_list->connect("index_pressed", callable_mp(this, &RuntimeNodeSelect::_items_popup_index_pressed).bind(selection_list));
 	selection_list->connect("popup_hide", callable_mp(this, &RuntimeNodeSelect::_close_selection_list));
 

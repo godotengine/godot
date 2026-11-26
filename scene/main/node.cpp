@@ -905,20 +905,21 @@ bool Node::can_process_notification(int p_what) const {
 }
 
 bool Node::can_process() const {
-	return is_inside_tree() && !data.tree->is_suspended() && _can_process(data.tree->is_paused());
+	return is_inside_tree() && _can_process(data.tree->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
 	ProcessMode process_mode;
 
+	bool is_suspended = data.tree->is_suspended() && !data.ignore_suspend;
 	if (data.process_mode == PROCESS_MODE_INHERIT) {
 		if (!data.process_owner) {
-			process_mode = PROCESS_MODE_PAUSABLE;
+			process_mode = is_suspended ? PROCESS_MODE_DISABLED : PROCESS_MODE_PAUSABLE;
 		} else {
 			process_mode = data.process_owner->data.process_mode;
 		}
 	} else {
-		process_mode = data.process_mode;
+		process_mode = is_suspended ? PROCESS_MODE_DISABLED : data.process_mode;
 	}
 
 	// The owner can't be set to inherit, must be a bug.
@@ -4146,6 +4147,8 @@ Node::Node() {
 
 	data.physics_process_internal = false;
 	data.process_internal = false;
+
+	data.ignore_suspend = false;
 
 	data.input = false;
 	data.shortcut_input = false;
