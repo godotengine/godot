@@ -116,6 +116,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height, const Vector2 
 		}
 	}
 
+	wd8.release();
 	Ref<Image> image = memnew(Image(p_width, p_height, false, Image::FORMAT_L8, data));
 	return image;
 }
@@ -147,6 +148,7 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 		}
 	}
 
+	wd8.release();
 	Ref<Image> image = memnew(Image(p_size, p_size, false, Image::FORMAT_L8, data));
 	return image;
 }
