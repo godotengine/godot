@@ -42,6 +42,9 @@
 #if defined(ANDROID_ENABLED)
 #include "camera_android.h"
 #endif
+#if defined(WEB_ENABLED)
+#include "camera_web.h"
+#endif
 
 void initialize_camera_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -59,6 +62,9 @@ void initialize_camera_module(ModuleInitializationLevel p_level) {
 #endif
 #if defined(ANDROID_ENABLED)
 	CameraServer::make_default<CameraAndroid>();
+#endif
+#if defined(WEB_ENABLED)
+	CameraServer::make_default<CameraWeb>();
 #endif
 }
 
