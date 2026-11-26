@@ -24,6 +24,46 @@ env_etcpak.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_etcpak.Clone()
 env_thirdparty.disable_warnings()
+
+if env["arch"] == "x86_64" and env["extension"] == "sse42" and env.msvc:
+    env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__"])
+
+if env["arch"] == "x86_64" and env["extension"] == "avx" and env.msvc:
+    env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__", "__AVX__"])
+
+if env["arch"] == "x86_64" and env["extension"] == "avx2" and env.msvc:
+    env_thirdparty.Append(
+        CPPDEFINES=[
+            "__SSE3__",
+            "__SSSE3__",
+            "__SSE4_1__",
+            "__SSE4_2__",
+            "__AVX__",
+            "__AVX2__",
+            "__F16C__",
+            "__FMA__",
+            "__BMI2__",
+        ]
+    )
+
+if env["arch"] == "x86_64" and env["extension"] == "avx512" and env.msvc:
+    env_thirdparty.Append(
+        CPPDEFINES=[
+            "__SSE3__",
+            "__SSSE3__",
+            "__SSE4_1__",
+            "__SSE4_2__",
+            "__AVX__",
+            "__AVX2__",
+            "__F16C__",
+            "__FMA__",
+            "__BMI2__",
+            "__AVX512F__",
+            "__AVX512DQ__",
+            "__AVX512VL__",
+        ]
+    )
+
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
 
