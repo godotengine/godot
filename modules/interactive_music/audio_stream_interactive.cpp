@@ -195,8 +195,16 @@ void AudioStreamInteractive::_set_transitions(const Dictionary &p_transitions) {
 Dictionary AudioStreamInteractive::_get_transitions() const {
 	Vector<Vector2i> keys;
 
-	for (const KeyValue<TransitionKey, Transition> &K : transition_map) {
-		keys.push_back(Vector2i(K.key.from_clip, K.key.to_clip));
+	for (const KeyValue<TransitionKey, Transition> &kv : transition_map) {
+		const bool is_from_clip_stale = kv.key.from_clip != static_cast<uint32_t>(CLIP_ANY) && kv.key.from_clip >= static_cast<uint32_t>(clip_count);
+		const bool is_to_clip_stale = kv.key.to_clip != static_cast<uint32_t>(CLIP_ANY) && kv.key.to_clip >= static_cast<uint32_t>(clip_count);
+		if (is_from_clip_stale || is_to_clip_stale) {
+			// Stale transition; just ignore it here.
+			// TODO Long term this could be filtered in set_clip_count instead,
+			//      but that needs undo/redo integration.
+			continue;
+		}
+		keys.push_back(Vector2i(kv.key.from_clip, kv.key.to_clip));
 	}
 	keys.sort();
 	Dictionary ret;
