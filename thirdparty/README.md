@@ -65,13 +65,17 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 5.3.0 (30aabb3f42406df45a910d8496f9bee17eeba9bb, 2025)
+- Version: 5.7.1 (0affb51aaf0e0de3a8b038fa32487d59754a1eed, 2026)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `astcenc_*` and `astcenc.h` files from `Source`
 - `LICENSE.txt`
+
+Patches:
+
+- `0001-angle-symbol-compat.patch` ([GH-125249](https://github.com/godotengine/godot/pull/125249))
 
 
 ## basis_universal

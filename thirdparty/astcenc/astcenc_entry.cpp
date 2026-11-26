@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2025 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -24,8 +24,9 @@
 #include <new>
 
 #include "astcenc.h"
-#include "astcenc_internal_entry.h"
 #include "astcenc_diagnostic_trace.h"
+#include "astcenc_internal_entry.h"
+#include "astcenc_mathlib.h"
 
 /**
  * @brief Record of the quality tuning parameter values.
@@ -64,22 +65,22 @@ struct astcenc_preset_config
 static const std::array<astcenc_preset_config, 6> preset_configs_high {{
 	{
 		ASTCENC_PRE_FASTEST,
-		2, 10, 6, 4, 43, 2, 2, 2, 2, 2, 85.2f, 63.2f, 3.5f, 1.0f, 1.0f, 0.85f, 0.0f
+		2,  10,   6,   4,  43, 2, 2, 2, 2, 2,  85.2f,  63.2f,  3.5f, 1.00f, 1.00f, 0.85f, 0.0f
 	}, {
 		ASTCENC_PRE_FAST,
-		3, 18, 10, 8, 55, 3, 3, 2, 2, 2, 85.2f, 63.2f, 3.5f, 1.0f, 1.0f, 0.90f, 0.0f
+		3,  18,  10,   8,  55, 3, 3, 2, 2, 2,  85.2f,  63.2f,  3.5f, 1.00f, 1.00f, 0.90f, 0.0f
 	}, {
 		ASTCENC_PRE_MEDIUM,
-		4, 34, 28, 16, 77, 3, 3, 2, 2, 2, 95.0f, 70.0f, 2.5f, 1.1f, 1.05f, 0.95f, 0.0f
+		4,  34,  28,  16,  77, 3, 3, 2, 2, 2,  95.0f,  70.0f,  2.5f, 1.10f, 1.05f, 0.95f, 0.0f
 	}, {
 		ASTCENC_PRE_THOROUGH,
-		4, 82, 60, 30, 94, 4, 4, 3, 2, 2, 105.0f, 77.0f, 10.0f, 1.35f, 1.15f, 0.97f, 0.0f
+		4,  82,  60,  30,  94, 4, 4, 3, 2, 2, 105.0f,  77.0f, 10.0f, 1.35f, 1.15f, 0.97f, 0.0f
 	}, {
 		ASTCENC_PRE_VERYTHOROUGH,
-		4, 256, 128, 64, 98, 4, 6, 8, 6, 4, 200.0f, 200.0f, 10.0f, 1.6f, 1.4f, 0.98f, 0.0f
+		4, 256, 128,  64,  98, 4, 6, 8, 6, 4, 200.0f, 200.0f, 10.0f, 1.60f, 1.40f, 0.98f, 0.0f
 	}, {
 		ASTCENC_PRE_EXHAUSTIVE,
-		4, 512, 512, 512, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.0f, 2.0f, 0.99f, 0.0f
+		4, 512, 512, 512, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.00f, 2.00f, 0.99f, 0.0f
 	}
 }};
 
@@ -89,22 +90,22 @@ static const std::array<astcenc_preset_config, 6> preset_configs_high {{
 static const std::array<astcenc_preset_config, 6> preset_configs_mid {{
 	{
 		ASTCENC_PRE_FASTEST,
-		2, 10, 6, 4, 43, 2, 2, 2, 2, 2, 85.2f, 63.2f, 3.5f, 1.0f, 1.0f, 0.80f, 1.0f
+		2,  10,   6,   4,  43, 2, 2, 2, 2, 2,  85.2f,  63.2f,  3.5f, 1.00f, 1.00f, 0.80f, 1.0f
 	}, {
 		ASTCENC_PRE_FAST,
-		3, 18, 12, 10, 55, 3, 3, 2, 2, 2, 85.2f, 63.2f, 3.5f, 1.0f, 1.0f, 0.85f, 1.0f
+		3,  18,  12,  10,  55, 3, 3, 2, 2, 2,  85.2f,  63.2f,  3.5f, 1.00f, 1.00f, 0.85f, 1.0f
 	}, {
 		ASTCENC_PRE_MEDIUM,
-		3, 34, 28, 16, 77, 3, 3, 2, 2, 2, 95.0f, 70.0f, 3.0f, 1.1f, 1.05f, 0.90f, 1.0f
+		3,  34,  28,  16,  77, 3, 3, 2, 2, 2,  95.0f,  70.0f,  3.0f, 1.10f, 1.05f, 0.90f, 1.0f
 	}, {
 		ASTCENC_PRE_THOROUGH,
-		4, 82, 60, 30, 94, 4, 4, 3, 2, 2, 105.0f, 77.0f, 10.0f, 1.4f, 1.2f, 0.95f, 0.0f
+		4,  82,  60,  30,  94, 4, 4, 3, 2, 2, 105.0f,  77.0f, 10.0f, 1.40f, 1.20f, 0.95f, 0.0f
 	}, {
 		ASTCENC_PRE_VERYTHOROUGH,
-		4, 256, 128, 64, 98, 4, 6, 8, 6, 3, 200.0f, 200.0f, 10.0f, 1.6f, 1.4f, 0.98f, 0.0f
+		4, 256, 128,  64,  98, 4, 6, 8, 6, 3, 200.0f, 200.0f, 10.0f, 1.60f, 1.40f, 0.98f, 0.0f
 	}, {
 		ASTCENC_PRE_EXHAUSTIVE,
-		4, 256, 256, 256, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.0f, 2.0f, 0.99f, 0.0f
+		4, 256, 256, 256, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.00f, 2.00f, 0.99f, 0.0f
 	}
 }};
 
@@ -114,41 +115,108 @@ static const std::array<astcenc_preset_config, 6> preset_configs_mid {{
 static const std::array<astcenc_preset_config, 6> preset_configs_low {{
 	{
 		ASTCENC_PRE_FASTEST,
-		2, 10, 6, 4, 40, 2, 2, 2, 2, 2, 85.0f, 63.0f, 3.5f, 1.0f, 1.0f, 0.80f, 1.0f
+		2,  10,   6,   4,  40, 2, 2, 2, 2, 2,  85.0f,  63.0f,  3.5f, 1.00f, 1.00f, 0.80f, 1.0f
 	}, {
 		ASTCENC_PRE_FAST,
-		2, 18, 12, 10, 55, 3, 3, 2, 2, 2, 85.0f, 63.0f, 3.5f, 1.0f, 1.0f, 0.85f, 1.0f
+		2,  18,  12,  10,  55, 3, 3, 2, 2, 2,  85.0f,  63.0f,  3.5f, 1.00f, 1.00f, 0.85f, 1.0f
 	}, {
 		ASTCENC_PRE_MEDIUM,
-		3, 34, 28, 16, 77, 3, 3, 2, 2, 2, 95.0f, 70.0f, 3.5f, 1.1f, 1.05f, 0.90f, 1.0f
+		3,  34,  28,  16,  77, 3, 3, 2, 2, 2,  95.0f,  70.0f,  3.5f, 1.10f, 1.05f, 0.90f, 1.0f
 	}, {
 		ASTCENC_PRE_THOROUGH,
-		4, 82, 60, 30, 93, 4, 4, 3, 2, 2, 105.0f, 77.0f, 10.0f, 1.3f, 1.2f, 0.97f, 1.0f
+		4,  82,  60,  30,  93, 4, 4, 3, 2, 2, 105.0f,  77.0f, 10.0f, 1.30f, 1.20f, 0.97f, 1.0f
 	}, {
 		ASTCENC_PRE_VERYTHOROUGH,
-		4, 256, 128, 64, 98, 4, 6, 8, 5, 2, 200.0f, 200.0f, 10.0f, 1.6f, 1.4f, 0.98f, 1.0f
+		4, 256, 128,  64,  98, 4, 6, 8, 5, 2, 200.0f, 200.0f, 10.0f, 1.60f, 1.40f, 0.98f, 1.0f
 	}, {
 		ASTCENC_PRE_EXHAUSTIVE,
-		4, 256, 256, 256, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.0f, 2.0f, 0.99f, 1.0f
+		4, 256, 256, 256, 100, 4, 8, 8, 8, 8, 200.0f, 200.0f, 10.0f, 2.00f, 2.00f, 0.99f, 1.0f
 	}
 }};
 
 /**
+ * @brief Get the total number of texels in an image.
+ *
+ * This function validates that the total size would fit in a size_t and returns
+ * 0 if it does not.
+ *
+ * @param texels_x   Number of texels in the X axis.
+ * @param texels_y   Number of texels in the Y axis.
+ * @param texels_z   Number of texels in the Z axis.
+ *
+ * @return The number of texels in the image, or zero if total size would not
+ *         fit into a size_t.
+ */
+static size_t get_texels_count(
+	size_t texels_x,
+	size_t texels_y,
+	size_t texels_z
+) {
+	bool overflow { false };
+
+	// Compute texel count
+	size_t texels_count = astc::mul_safe(texels_x, texels_y, overflow);
+	texels_count = astc::mul_safe(texels_count, texels_z, overflow);
+
+	if (overflow)
+	{
+		return 0;
+	}
+
+	return texels_count;
+}
+
+/**
+ * @brief Get the total number of blocks in an image.
+ *
+ * This function also validates that the total size of the compressed image,
+ * in bytes, would fit in a size_t.
+ *
+ * @param blocks_x   Number of blocks in the X axis.
+ * @param blocks_y   Number of blocks in the Y axis.
+ * @param blocks_z   Number of blocks in the Z axis.
+ *
+ * @return The number of blocks in the image, or zero if total size would not
+ *         fit into a size_t.
+ */
+static size_t get_blocks_count(
+	size_t blocks_x,
+	size_t blocks_y,
+	size_t blocks_z
+) {
+	bool overflow { false };
+
+	// Compute block count
+	size_t blocks_count = astc::mul_safe(blocks_x, blocks_y, overflow);
+	blocks_count = astc::mul_safe(blocks_count, blocks_z, overflow);
+
+	// Also compute byte count, but we only use overflow and not the result
+	astc::mul_safe(blocks_count, 16, overflow);
+
+	if (overflow)
+	{
+		return 0;
+	}
+
+	return blocks_count;
+}
+
+/**
  * @brief Validate CPU floating point meets assumptions made in the codec.
  *
- * The codec is written with the assumption that a float threaded through the @c if32 union will be
- * stored and reloaded as a 32-bit IEEE-754 float with round-to-nearest rounding. This is always the
- * case in an IEEE-754 compliant system, however not every system or compilation mode is actually
- * IEEE-754 compliant. This normally fails if the code is compiled with fast math enabled.
+ * The codec is written with the assumption that float bit patterns are valid
+ * IEEE754 values that are stored and reloaded with round-to-nearest rounding.
+ * This is always the case in an IEEE-754 compliant system, however not every
+ * system or compilation mode is actually IEEE-754 compliant. This normally
+ * fails if the code is compiled with fast math enabled, for example.
  *
- * @return Return @c ASTCENC_SUCCESS if validated, otherwise an error on failure.
+ * @return Return @c ASTCENC_SUCCESS if validated, an error on failure.
  */
 static astcenc_error validate_cpu_float()
 {
-	if32 p;
 	volatile float xprec_testval = 2.51f;
-	p.f = xprec_testval + 12582912.0f;
-	float q = p.f - 12582912.0f;
+	float store = xprec_testval + 12582912.0f;
+	float q = store - 12582912.0f;
 
 	if (q != 3.0f)
 	{
@@ -380,6 +448,10 @@ static astcenc_error validate_config(
 		return status;
 	}
 
+	// A block_z of zero is accepted to mean 2D. Normalize to 1u so later code paths
+	// can safely use it as a divisor or loop limit
+	config.block_z = astc::max(config.block_z, 1u);
+
 	status = validate_block_size(config.block_x, config.block_y, config.block_z);
 	if (status != ASTCENC_SUCCESS)
 	{
@@ -395,6 +467,9 @@ static astcenc_error validate_config(
 #endif
 
 	config.rgbm_m_scale = astc::max(config.rgbm_m_scale, 1.0f);
+
+	// Clamp alpha-scale kernel radius to put an upper bound on memory use
+	config.a_scale_radius = astc::min(config.a_scale_radius, ALPHASCALE_MAX_RADIUS);
 
 	config.tune_partition_count_limit = astc::clamp(config.tune_partition_count_limit, 1u, 4u);
 	config.tune_2partition_index_limit = astc::clamp(config.tune_2partition_index_limit, 1u, BLOCK_MAX_PARTITIONINGS);
@@ -450,12 +525,13 @@ astcenc_error astcenc_config_init(
 		return status;
 	}
 
-	// Zero init all config fields; although most of will be over written
+	// Zero init all config fields; although most of will be overwritten
 	astcenc_config& config = *configp;
 	std::memset(&config, 0, sizeof(config));
 
 	// Process the block size
-	block_z = astc::max(block_z, 1u); // For 2D blocks Z==0 is accepted, but convert to 1
+	// For 2D blocks Z==0 is accepted, but convert to 1
+	block_z = astc::max(block_z, 1u);
 	status = validate_block_size(block_x, block_y, block_z);
 	if (status != ASTCENC_SUCCESS)
 	{
@@ -479,7 +555,7 @@ astcenc_error astcenc_config_init(
 	}
 
 	static const std::array<astcenc_preset_config, 6>* preset_configs;
-	int texels_int = block_x * block_y * block_z;
+	size_t texels_int = block_x * block_y * block_z;
 	if (texels_int < 25)
 	{
 		preset_configs = &preset_configs_high;
@@ -610,8 +686,8 @@ astcenc_error astcenc_config_init(
 	if (flags & ASTCENC_FLG_MAP_NORMAL)
 	{
 		// Normal map encoding uses L+A blocks, so allow one more partitioning
-		// than normal. We need need fewer bits for endpoints, so more likely
-		// to be able to use more partitions than an RGB/RGBA block
+		// than usual. We need fewer bits for endpoints, so are more likely
+		// to be able to use more partitions
 		config.tune_partition_count_limit = astc::min(config.tune_partition_count_limit + 1u, 4u);
 
 		config.cw_g_weight = 0.0f;
@@ -620,8 +696,8 @@ astcenc_error astcenc_config_init(
 		config.tune_3partition_early_out_limit_factor *= 1.5f;
 		config.tune_2plane_early_out_limit_correlation = 0.99f;
 
-		// Normals are prone to blocking artifacts on smooth curves
-		// so force compressor to try harder here ...
+		// Normals are prone to blocking artifacts on smooth curves so force
+		// compressor to try harder
 		config.tune_db_limit *= 1.03f;
 	}
 	else if (flags & ASTCENC_FLG_MAP_RGBM)
@@ -657,10 +733,10 @@ astcenc_error astcenc_config_init(
 astcenc_error astcenc_context_alloc(
 	const astcenc_config* configp,
 	unsigned int thread_count,
-	astcenc_context** context
+	astcenc_context** context,
+	const astcenc_context* parent_context
 ) {
 	astcenc_error status;
-	const astcenc_config& config = *configp;
 
 	status = validate_cpu_float();
 	if (status != ASTCENC_SUCCESS)
@@ -674,17 +750,31 @@ astcenc_error astcenc_context_alloc(
 	}
 
 #if defined(ASTCENC_DIAGNOSTICS)
-	// Force single threaded compressor use in diagnostic mode.
+	// Force single threaded compressor use in diagnostic mode
 	if (thread_count != 1)
 	{
 		return ASTCENC_ERR_BAD_PARAM;
 	}
 #endif
 
+	// Exactly one of config or parent_context must be set
+	bool has_config = configp != nullptr;
+	bool has_parent = parent_context != nullptr;
+	if (!(has_config ^ has_parent))
+	{
+		return ASTCENC_ERR_BAD_PARAM;
+	}
+
+	if (has_parent)
+	{
+		configp = &parent_context->context.config;
+	}
+
+	const astcenc_config& config = *configp;
 	astcenc_context* ctxo = new astcenc_context;
 	astcenc_contexti* ctx = &ctxo->context;
 	ctx->thread_count = thread_count;
-	ctx->config = config;
+	ctx->config = *configp;
 	ctx->working_buffers = nullptr;
 
 	// These are allocated per-compress, as they depend on image size
@@ -698,19 +788,30 @@ astcenc_error astcenc_context_alloc(
 		return status;
 	}
 
-	ctx->bsd = aligned_malloc<block_size_descriptor>(sizeof(block_size_descriptor), ASTCENC_VECALIGN);
-	if (!ctx->bsd)
+	if (!parent_context)
 	{
-		delete ctxo;
-		return ASTCENC_ERR_OUT_OF_MEM;
-	}
+		block_size_descriptor* bsd = aligned_malloc<block_size_descriptor>(sizeof(block_size_descriptor), ASTCENC_VECALIGN);
+		if (!bsd)
+		{
+			delete ctxo;
+			return ASTCENC_ERR_OUT_OF_MEM;
+		}
 
-	bool can_omit_modes = static_cast<bool>(config.flags & ASTCENC_FLG_SELF_DECOMPRESS_ONLY);
-	init_block_size_descriptor(config.block_x, config.block_y, config.block_z,
-	                           can_omit_modes,
-	                           config.tune_partition_count_limit,
-	                           static_cast<float>(config.tune_block_mode_limit) / 100.0f,
-	                           *ctx->bsd);
+		bool can_omit_modes = static_cast<bool>(config.flags & ASTCENC_FLG_SELF_DECOMPRESS_ONLY);
+		init_block_size_descriptor(config.block_x, config.block_y, config.block_z,
+		                           can_omit_modes,
+		                           config.tune_partition_count_limit,
+		                           static_cast<float>(config.tune_block_mode_limit) / 100.0f,
+		                           *bsd);
+
+		ctx->owns_bsd = true;
+		ctx->bsd = bsd;
+	}
+	else
+	{
+		ctx->owns_bsd = false;
+		ctx->bsd = parent_context->context.bsd;
+	}
 
 #if !defined(ASTCENC_DECOMPRESS_ONLY)
 	// Do setup only needed by compression
@@ -732,7 +833,10 @@ astcenc_error astcenc_context_alloc(
 		              "compression_working_buffers size must be multiple of vector alignment");
 		if (!ctx->working_buffers)
 		{
-			aligned_free<block_size_descriptor>(ctx->bsd);
+			if (ctx->owns_bsd)
+			{
+				aligned_free<const block_size_descriptor>(ctx->bsd);
+			}
 			delete ctxo;
 			*context = nullptr;
 			return ASTCENC_ERR_OUT_OF_MEM;
@@ -761,7 +865,16 @@ astcenc_error astcenc_context_alloc(
 	return ASTCENC_SUCCESS;
 }
 
-/* See header dor documentation. */
+/* See header for documentation. */
+astcenc_error astcenc_context_alloc(
+	const astcenc_config* configp,
+	unsigned int thread_count,
+	astcenc_context** context
+) {
+	return astcenc_context_alloc(configp, thread_count, context, nullptr);
+}
+
+/* See header for documentation. */
 void astcenc_context_free(
 	astcenc_context* ctxo
 ) {
@@ -769,7 +882,10 @@ void astcenc_context_free(
 	{
 		astcenc_contexti* ctx = &ctxo->context;
 		aligned_free<compression_working_buffers>(ctx->working_buffers);
-		aligned_free<block_size_descriptor>(ctx->bsd);
+		if (ctx->owns_bsd)
+		{
+			aligned_free<const block_size_descriptor>(ctx->bsd);
+		}
 #if defined(ASTCENC_DIAGNOSTICS)
 		delete ctx->trace_log;
 #endif
@@ -784,7 +900,7 @@ void astcenc_context_free(
  *
  * @param[out] ctxo           The compressor context.
  * @param      thread_index   The thread index.
- * @param      image          The intput image.
+ * @param      image          The input image.
  * @param      swizzle        The input swizzle.
  * @param[out] buffer         The output array for the compressed data.
  */
@@ -799,24 +915,28 @@ static void compress_image(
 	const block_size_descriptor& bsd = *ctx.bsd;
 	astcenc_profile decode_mode = ctx.config.profile;
 
-	image_block blk;
+	image_block blk {};
 
-	int block_x = bsd.xdim;
-	int block_y = bsd.ydim;
-	int block_z = bsd.zdim;
+	size_t block_x = bsd.dim_x;
+	size_t block_y = bsd.dim_y;
+	size_t block_z = bsd.dim_z;
 	blk.texel_count = static_cast<uint8_t>(block_x * block_y * block_z);
 
-	int dim_x = image.dim_x;
-	int dim_y = image.dim_y;
-	int dim_z = image.dim_z;
+	size_t dim_x = image.dim_x;
+	size_t dim_y = image.dim_y;
+	size_t dim_z = image.dim_z;
 
-	int xblocks = (dim_x + block_x - 1) / block_x;
-	int yblocks = (dim_y + block_y - 1) / block_y;
-	int zblocks = (dim_z + block_z - 1) / block_z;
-	int block_count = zblocks * yblocks * xblocks;
+	size_t blocks_x = astc::get_block_count_safe(dim_x, block_x);
+	size_t blocks_y = astc::get_block_count_safe(dim_y, block_y);
+	size_t blocks_z = astc::get_block_count_safe(dim_z, block_z);
 
-	int row_blocks = xblocks;
-	int plane_blocks = xblocks * yblocks;
+	size_t block_count = get_blocks_count(blocks_x, blocks_y, blocks_z);
+	// Should never fail here - tested in caller before calling here
+	assert(block_count > 0);
+
+
+	size_t row_blocks = blocks_x;
+	size_t plane_blocks = blocks_x * blocks_y;
 
 	blk.decode_unorm8 = ctxo.context.config.flags & ASTCENC_FLG_USE_DECODE_UNORM8;
 
@@ -851,46 +971,45 @@ static void compress_image(
 	// All threads run this processing loop until there is no work remaining
 	while (true)
 	{
-		unsigned int count;
-		unsigned int base = ctxo.manage_compress.get_task_assignment(16, count);
+		size_t count;
+		size_t base = ctxo.manage_compress.get_task_assignment(16, count);
 		if (!count)
 		{
 			break;
 		}
 
-		for (unsigned int i = base; i < base + count; i++)
+		for (size_t i = base; i < base + count; i++)
 		{
 			// Decode i into x, y, z block indices
-			int z = i / plane_blocks;
-			unsigned int rem = i - (z * plane_blocks);
-			int y = rem / row_blocks;
-			int x = rem - (y * row_blocks);
+			size_t z = i / plane_blocks;
+			size_t rem = i - (z * plane_blocks);
+			size_t y = rem / row_blocks;
+			size_t x = rem - (y * row_blocks);
 
 			// Test if we can apply some basic alpha-scale RDO
 			bool use_full_block = true;
 			if (ctx.config.a_scale_radius != 0 && block_z == 1)
 			{
-				int start_x = x * block_x;
-				int end_x = astc::min(dim_x, start_x + block_x);
+				size_t start_x = x * block_x;
+				size_t end_x = astc::min(dim_x, start_x + block_x);
 
-				int start_y = y * block_y;
-				int end_y = astc::min(dim_y, start_y + block_y);
+				size_t start_y = y * block_y;
+				size_t end_y = astc::min(dim_y, start_y + block_y);
 
 				// SATs accumulate error, so don't test exactly zero. Test for
 				// less than 1 alpha in the expanded block footprint that
 				// includes the alpha radius.
-				int x_footprint = block_x + 2 * (ctx.config.a_scale_radius - 1);
-
-				int y_footprint = block_y + 2 * (ctx.config.a_scale_radius - 1);
+				size_t x_footprint = block_x + 2 * (ctx.config.a_scale_radius - 1);
+				size_t y_footprint = block_y + 2 * (ctx.config.a_scale_radius - 1);
 
 				float footprint = static_cast<float>(x_footprint * y_footprint);
 				float threshold = 0.9f / (255.0f * footprint);
 
 				// Do we have any alpha values?
 				use_full_block = false;
-				for (int ay = start_y; ay < end_y; ay++)
+				for (size_t ay = start_y; ay < end_y; ay++)
 				{
-					for (int ax = start_x; ax < end_x; ax++)
+					for (size_t ax = start_x; ax < end_x; ax++)
 					{
 						float a_avg = ctx.input_alpha_averages[ay * dim_x + ax];
 						if (a_avg > threshold)
@@ -930,7 +1049,7 @@ static void compress_image(
 				blk.grayscale = true;
 			}
 
-			int offset = ((z * yblocks + y) * xblocks + x) * 16;
+			size_t offset = ((z * blocks_y + y) * blocks_x + x) * 16;
 			uint8_t *bp = buffer + offset;
 			compress_block(ctx, blk, bp, temp_buffers);
 		}
@@ -957,29 +1076,32 @@ static void compute_averages(
 	pixel_region_args arg = ag.arg;
 	arg.work_memory = new vfloat4[ag.work_memory_size];
 
-	int size_x = ag.img_size_x;
-	int size_y = ag.img_size_y;
-	int size_z = ag.img_size_z;
+	size_t size_x = ag.img_size_x;
+	size_t size_y = ag.img_size_y;
+	size_t size_z = ag.img_size_z;
 
-	int step_xy = ag.blk_size_xy;
-	int step_z = ag.blk_size_z;
+	size_t step_xy = ag.blk_size_xy;
+	size_t step_z = ag.blk_size_z;
 
-	int y_tasks = (size_y + step_xy - 1) / step_xy;
+	size_t tasks_y = (size_y + step_xy - 1) / step_xy;
 
 	// All threads run this processing loop until there is no work remaining
 	while (true)
 	{
-		unsigned int count;
-		unsigned int base = ctx.manage_avg.get_task_assignment(16, count);
+		size_t count;
+		size_t base = ctx.manage_avg.get_task_assignment(16, count);
 		if (!count)
 		{
 			break;
 		}
 
-		for (unsigned int i = base; i < base + count; i++)
+		for (size_t i = base; i < base + count; i++)
 		{
-			int z = (i / (y_tasks)) * step_z;
-			int y = (i - (z * y_tasks)) * step_xy;
+			size_t z_task = i / tasks_y;
+			size_t y_task = i - (z_task * tasks_y);
+
+			size_t z = z_task * step_z;
+			size_t y = y_task * step_xy;
 
 			arg.size_z = astc::min(step_z, size_z - z);
 			arg.offset_z = z;
@@ -987,7 +1109,7 @@ static void compute_averages(
 			arg.size_y = astc::min(step_xy, size_y - y);
 			arg.offset_y = y;
 
-			for (int x = 0; x < size_x; x += step_xy)
+			for (size_t x = 0; x < size_x; x += step_xy)
 			{
 				arg.size_x = astc::min(step_xy, size_x - x);
 				arg.offset_x = x;
@@ -1041,16 +1163,35 @@ astcenc_error astcenc_compress_image(
 		return ASTCENC_ERR_BAD_PARAM;
 	}
 
-	unsigned int block_x = ctx->config.block_x;
-	unsigned int block_y = ctx->config.block_y;
-	unsigned int block_z = ctx->config.block_z;
+	size_t dim_x = image.dim_x;
+	size_t dim_y = image.dim_y;
+	size_t dim_z = image.dim_z;
 
-	unsigned int xblocks = (image.dim_x + block_x - 1) / block_x;
-	unsigned int yblocks = (image.dim_y + block_y - 1) / block_y;
-	unsigned int zblocks = (image.dim_z + block_z - 1) / block_z;
+	size_t texel_count = get_texels_count(dim_x, dim_y, dim_z);
+	// Cumulative texel sizes would overflow a size_t
+	if (texel_count == 0)
+	{
+		return ASTCENC_ERR_BAD_PARAM;
+	}
 
-	// Check we have enough output space (16 bytes per block)
-	size_t size_needed = xblocks * yblocks * zblocks * 16;
+	size_t block_x = ctx->config.block_x;
+	size_t block_y = ctx->config.block_y;
+	size_t block_z = ctx->config.block_z;
+
+	size_t blocks_x = astc::get_block_count_safe(dim_x, block_x);
+	size_t blocks_y = astc::get_block_count_safe(dim_y, block_y);
+	size_t blocks_z = astc::get_block_count_safe(dim_z, block_z);
+
+	size_t block_count = get_blocks_count(blocks_x, blocks_y, blocks_z);
+	// Cumulative block sizes would overflow a size_t
+	if (block_count == 0)
+	{
+		return ASTCENC_ERR_BAD_PARAM;
+	}
+
+	// Check we have enough output space, size_needed calc cannot overflow as
+	// get_blocks_count() already validated that a byte count would fit
+	size_t size_needed = block_count * 16;
 	if (data_len < size_needed)
 	{
 		return ASTCENC_ERR_OUT_OF_MEM;
@@ -1066,9 +1207,8 @@ astcenc_error astcenc_compress_image(
 	{
 		// First thread to enter will do setup, other threads will subsequently
 		// enter the critical section but simply skip over the initialization
-		auto init_avg = [ctx, &image, swizzle]() {
+		auto init_avg = [ctx, &image, swizzle, texel_count]() {
 			// Perform memory allocations for the destination buffers
-			size_t texel_count = image.dim_x * image.dim_y * image.dim_z;
 			ctx->input_alpha_averages = new float[texel_count];
 
 			return init_compute_averages(
@@ -1171,24 +1311,42 @@ astcenc_error astcenc_decompress_image(
 		return status;
 	}
 
-	unsigned int block_x = ctx->config.block_x;
-	unsigned int block_y = ctx->config.block_y;
-	unsigned int block_z = ctx->config.block_z;
+	size_t dim_x = image_out.dim_x;
+	size_t dim_y = image_out.dim_y;
+	size_t dim_z = image_out.dim_z;
 
-	unsigned int xblocks = (image_out.dim_x + block_x - 1) / block_x;
-	unsigned int yblocks = (image_out.dim_y + block_y - 1) / block_y;
-	unsigned int zblocks = (image_out.dim_z + block_z - 1) / block_z;
-	unsigned int block_count = zblocks * yblocks * xblocks;
+	size_t texel_count = get_texels_count(dim_x, dim_y, dim_z);
+	// Cumulative texel sizes would overflow a size_t
+	if (texel_count == 0)
+	{
+		return ASTCENC_ERR_BAD_PARAM;
+	}
 
-	int row_blocks = xblocks;
-	int plane_blocks = xblocks * yblocks;
+	size_t block_x = ctx->config.block_x;
+	size_t block_y = ctx->config.block_y;
+	size_t block_z = ctx->config.block_z;
 
-	// Check we have enough output space (16 bytes per block)
-	size_t size_needed = xblocks * yblocks * zblocks * 16;
+	size_t blocks_x = astc::get_block_count_safe(dim_x, block_x);
+	size_t blocks_y = astc::get_block_count_safe(dim_y, block_y);
+	size_t blocks_z = astc::get_block_count_safe(dim_z, block_z);
+
+	size_t block_count = get_blocks_count(blocks_x, blocks_y, blocks_z);
+	// Cumulative block sizes would overflow a size_t
+	if (block_count == 0)
+	{
+		return ASTCENC_ERR_BAD_PARAM;
+	}
+
+	// Check we have enough output space, size_needed calc cannot overflow as
+	// get_blocks_count() already validated that a byte count would fit
+	size_t size_needed = block_count * 16;
 	if (data_len < size_needed)
 	{
 		return ASTCENC_ERR_OUT_OF_MEM;
 	}
+
+	size_t row_blocks = blocks_x;
+	size_t plane_blocks = blocks_x * blocks_y;
 
 	image_block blk {};
 	blk.texel_count = static_cast<uint8_t>(block_x * block_y * block_z);
@@ -1208,22 +1366,22 @@ astcenc_error astcenc_decompress_image(
 	// All threads run this processing loop until there is no work remaining
 	while (true)
 	{
-		unsigned int count;
-		unsigned int base = ctxo->manage_decompress.get_task_assignment(128, count);
+		size_t count;
+		size_t base = ctxo->manage_decompress.get_task_assignment(128, count);
 		if (!count)
 		{
 			break;
 		}
 
-		for (unsigned int i = base; i < base + count; i++)
+		for (size_t i = base; i < base + count; i++)
 		{
 			// Decode i into x, y, z block indices
-			int z = i / plane_blocks;
-			unsigned int rem = i - (z * plane_blocks);
-			int y = rem / row_blocks;
-			int x = rem - (y * row_blocks);
+			size_t z = i / plane_blocks;
+			size_t rem = i - (z * plane_blocks);
+			size_t y = rem / row_blocks;
+			size_t x = rem - (y * row_blocks);
 
-			unsigned int offset = (((z * yblocks + y) * xblocks) + x) * 16;
+			size_t offset = (((z * blocks_y + y) * blocks_x) + x) * 16;
 			const uint8_t* bp = data + offset;
 
 			symbolic_compressed_block scb;
@@ -1231,11 +1389,14 @@ astcenc_error astcenc_decompress_image(
 			physical_to_symbolic(*ctx->bsd, bp, scb);
 
 			decompress_symbolic_block(ctx->config.profile, *ctx->bsd,
-			                          x * block_x, y * block_y, z * block_z,
+			                          x * block_x,
+			                          y * block_y,
+			                          z * block_z,
 			                          scb, blk);
 
 			store_image_block(image_out, blk, *ctx->bsd,
-			                  x * block_x, y * block_y, z * block_z, *swizzle);
+			                  x * block_x, y * block_y, z * block_z,
+			                  *swizzle);
 		}
 
 		ctxo->manage_decompress.complete_task_assignment(count);
@@ -1271,7 +1432,7 @@ astcenc_error astcenc_get_block_info(
 	physical_to_symbolic(*ctx->bsd, data, scb);
 
 	// Fetch the appropriate partition and decimation tables
-	block_size_descriptor& bsd = *ctx->bsd;
+	const block_size_descriptor& bsd = *ctx->bsd;
 
 	// Start from a clean slate
 	memset(info, 0, sizeof(*info));
@@ -1300,7 +1461,7 @@ astcenc_error astcenc_get_block_info(
 	}
 
 	// Otherwise handle a full block ; known to be valid after conditions above have been checked
-	int partition_count = scb.partition_count;
+	unsigned int partition_count = scb.partition_count;
 	const auto& pi = bsd.get_partition_info(partition_count, scb.partition_index);
 
 	const block_mode& bm = bsd.get_block_mode(scb.block_mode);
@@ -1320,7 +1481,7 @@ astcenc_error astcenc_get_block_info(
 	info->weight_level_count = get_quant_level(bm.get_weight_quant_mode());
 
 	// Unpack color endpoints for each active partition
-	for (unsigned int i = 0; i < scb.partition_count; i++)
+	for (size_t i = 0; i < scb.partition_count; i++)
 	{
 		bool rgb_hdr;
 		bool a_hdr;
@@ -1338,7 +1499,7 @@ astcenc_error astcenc_get_block_info(
 
 		// Store the unpacked and decoded color endpoint
 		vmask4 hdr_mask(rgb_hdr, rgb_hdr, rgb_hdr, a_hdr);
-		for (int j = 0; j < 2; j++)
+		for (size_t j = 0; j < 2; j++)
 		{
 			vint4 color_lns = lns_to_sf16(endpnt[j]);
 			vint4 color_unorm = unorm16_to_sf16(endpnt[j]);
@@ -1352,7 +1513,7 @@ astcenc_error astcenc_get_block_info(
 	int weight_plane2[BLOCK_MAX_TEXELS];
 
 	unpack_weights(bsd, scb, di, bm.is_dual_plane, weight_plane1, weight_plane2);
-	for (unsigned int i = 0; i < bsd.texel_count; i++)
+	for (size_t i = 0; i < bsd.texel_count; i++)
 	{
 		info->weight_values_plane1[i] = static_cast<float>(weight_plane1[i]) * (1.0f / WEIGHTS_TEXEL_SUM);
 		if (info->is_dual_plane_block)
@@ -1362,7 +1523,7 @@ astcenc_error astcenc_get_block_info(
 	}
 
 	// Unpack partition assignments for each texel
-	for (unsigned int i = 0; i < bsd.texel_count; i++)
+	for (size_t i = 0; i < bsd.texel_count; i++)
 	{
 		info->partition_assignment[i] = pi.partition_of_texel[i];
 	}

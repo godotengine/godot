@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2025 Arm Limited
+// Copyright 2019-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -764,6 +764,8 @@ ASTCENC_SIMD_INLINE vfloat4 operator/(vfloat4 a, vfloat4 b)
 
 /**
  * @brief Overload: vector by vector equality.
+ *
+ * Returns vector of false mask values if a or b is NaN.
  */
 ASTCENC_SIMD_INLINE vmask4 operator==(vfloat4 a, vfloat4 b)
 {
@@ -775,6 +777,8 @@ ASTCENC_SIMD_INLINE vmask4 operator==(vfloat4 a, vfloat4 b)
 
 /**
  * @brief Overload: vector by vector inequality.
+ *
+ * Returns vector of true mask values if a or b is NaN.
  */
 ASTCENC_SIMD_INLINE vmask4 operator!=(vfloat4 a, vfloat4 b)
 {
@@ -1056,8 +1060,10 @@ ASTCENC_SIMD_INLINE float float16_to_float(uint16_t a)
  */
 ASTCENC_SIMD_INLINE vint4 float_as_int(vfloat4 a)
 {
+	static_assert(sizeof(int) == sizeof(float), "int must be 32-bit");
+
 	vint4 r;
-	std::memcpy(r.m, a.m, 4 * 4);
+	std::memcpy(r.m, a.m, 4 * sizeof(int));
 	return r;
 }
 
@@ -1071,7 +1077,7 @@ ASTCENC_SIMD_INLINE vint4 float_as_int(vfloat4 a)
 ASTCENC_SIMD_INLINE vfloat4 int_as_float(vint4 a)
 {
 	vfloat4 r;
-	std::memcpy(r.m, a.m, 4 * 4);
+	std::memcpy(r.m, a.m, 4 * sizeof(float));
 	return r;
 }
 

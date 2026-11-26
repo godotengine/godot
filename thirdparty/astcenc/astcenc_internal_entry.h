@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2025 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -113,13 +113,13 @@ private:
 	std::condition_variable m_complete;
 
 	/** @brief Number of tasks started, but not necessarily finished. */
-	std::atomic<unsigned int> m_start_count;
+	std::atomic<size_t> m_start_count;
 
 	/** @brief Number of tasks finished. */
-	unsigned int m_done_count;
+	size_t m_done_count;
 
 	/** @brief Number of tasks that need to be processed. */
-	unsigned int m_task_count;
+	size_t m_task_count;
 
 	/** @brief Progress callback (optional). */
 	astcenc_progress_callback m_callback;
@@ -178,7 +178,7 @@ public:
 	 * @param init_func   Callable which executes the stage initialization. It must return the
 	 *                    total number of tasks in the stage.
 	 */
-	void init(std::function<unsigned int(void)> init_func)
+	void init(std::function<size_t(void)> init_func)
 	{
 		std::lock_guard<std::mutex> lck(m_lock);
 		if (!m_init_done)
@@ -197,7 +197,7 @@ public:
 	 * @param task_count   Total number of tasks needing processing.
 	 * @param callback     Function pointer for progress status callbacks.
 	 */
-	void init(unsigned int task_count, astcenc_progress_callback callback)
+	void init(size_t task_count, astcenc_progress_callback callback)
 	{
 		std::lock_guard<std::mutex> lck(m_lock);
 		if (!m_init_done)
@@ -222,9 +222,9 @@ public:
 	 *
 	 * @return Task index of the first assigned task; assigned tasks increment from this.
 	 */
-	unsigned int get_task_assignment(unsigned int granule, unsigned int& count)
+	size_t get_task_assignment(size_t granule, size_t& count)
 	{
-		unsigned int base = m_start_count.fetch_add(granule, std::memory_order_relaxed);
+		size_t base = m_start_count.fetch_add(granule, std::memory_order_relaxed);
 		if (m_is_cancelled || base >= m_task_count)
 		{
 			count = 0;
@@ -243,11 +243,11 @@ public:
 	 *
 	 * @param count   The number of completed tasks.
 	 */
-	void complete_task_assignment(unsigned int count)
+	void complete_task_assignment(size_t count)
 	{
 		// Note: m_done_count cannot use an atomic without the mutex; this has a race between the
 		// update here and the wait() for other threads
-		unsigned int local_count;
+		size_t local_count;
 		float local_last_value;
 		{
 			std::unique_lock<std::mutex> lck(m_lock);

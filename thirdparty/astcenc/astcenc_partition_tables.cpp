@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -280,6 +280,11 @@ static bool generate_one_partition_info_entry(
 	unsigned int partition_remap_index,
 	partition_info& pi
 ) {
+#if defined(ASTCENC_DECOMPRESS_ONLY)
+	// Suppress unused parameter warning
+	(void)partition_remap_index;
+#endif
+
 	int texels_per_block = bsd.texel_count;
 	bool small_block = texels_per_block < 32;
 
@@ -288,11 +293,11 @@ static bool generate_one_partition_info_entry(
 	// Assign texels to partitions
 	int texel_idx = 0;
 	int counts[BLOCK_MAX_PARTITIONS] { 0 };
-	for (unsigned int z = 0; z < bsd.zdim; z++)
+	for (unsigned int z = 0; z < bsd.dim_z; z++)
 	{
-		for (unsigned int y = 0; y <  bsd.ydim; y++)
+		for (unsigned int y = 0; y <  bsd.dim_y; y++)
 		{
-			for (unsigned int x = 0; x <  bsd.xdim; x++)
+			for (unsigned int x = 0; x <  bsd.dim_x; x++)
 			{
 				uint8_t part = select_partition(partition_index, x, y, z, partition_count, small_block);
 				pi.texels_of_partition[part][counts[part]++] = static_cast<uint8_t>(texel_idx++);
@@ -337,6 +342,15 @@ static bool generate_one_partition_info_entry(
 	// Populate the partition index
 	pi.partition_index = static_cast<uint16_t>(partition_index);
 
+	for (unsigned int i = 0; i < BLOCK_MAX_PARTITIONS; i++)
+	{
+		pi.partition_texel_count[i] = static_cast<uint8_t>(counts[i]);
+	}
+
+	// Valid partitionings have texels in all of the requested partitions
+	bool valid = pi.partition_count == partition_count;
+
+#if !defined(ASTCENC_DECOMPRESS_ONLY)
 	// Populate the coverage bitmaps for 2/3/4 partitions
 	uint64_t* bitmaps { nullptr };
 	if (partition_count == 2)
@@ -351,14 +365,6 @@ static bool generate_one_partition_info_entry(
 	{
 		bitmaps = bsd.coverage_bitmaps_4[partition_remap_index];
 	}
-
-	for (unsigned int i = 0; i < BLOCK_MAX_PARTITIONS; i++)
-	{
-		pi.partition_texel_count[i] = static_cast<uint8_t>(counts[i]);
-	}
-
-	// Valid partitionings have texels in all of the requested partitions
-	bool valid = pi.partition_count == partition_count;
 
 	if (bitmaps)
 	{
@@ -375,6 +381,7 @@ static bool generate_one_partition_info_entry(
 			bitmaps[pi.partition_of_texel[idx]] |= 1ULL << i;
 		}
 	}
+#endif
 
 	return valid;
 }
@@ -390,6 +397,15 @@ static void build_partition_table_for_one_partition_count(
 	unsigned int next_index = 0;
 	bsd.partitioning_count_selected[partition_count - 1] = 0;
 	bsd.partitioning_count_all[partition_count - 1] = 0;
+
+	// Mark all partitionings as unused; the loops below overwrite the entries
+	// that are actually kept. Partitionings dropped in self-decompress mode
+	// must retain this known-bad value so that decoding an unknown raw
+	// partition index does not result in a bad packed index.
+	for (unsigned int i = 0; i < BLOCK_MAX_PARTITIONINGS; i++)
+	{
+		bsd.partitioning_packed_index[partition_count - 2][i] = BLOCK_BAD_PARTITIONING;
+	}
 
 	// Skip tables larger than config max partition count if we can omit modes
 	if (can_omit_partitionings && (partition_count > partition_count_cutoff))

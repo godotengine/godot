@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -27,11 +27,11 @@
  *     * Mode: LDR or HDR
  *     * Quantization level
  *     * Channel count: L, LA, RGB, or RGBA
- *     * Endpoint 2 type: Direct color endcode, or scaled from endpoint 1.
+ *     * Endpoint 2 type: Direct color encoding, or scaled from endpoint 1.
  *
  * However, this leaves a number of decisions about exactly how to pack the endpoints open. In
- * particular we need to determine if blue contraction can be used, or/and if delta encoding can be
- * used. If they can be applied these will allow us to maintain higher precision in the endpoints
+ * particular we need to determine if blue contraction, delta encoding, or both can be used. If
+ * they can be applied these will allow us to maintain higher precision in the endpoints
  * without needing additional storage.
  */
 

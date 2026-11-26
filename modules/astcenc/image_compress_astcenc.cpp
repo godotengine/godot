@@ -130,7 +130,7 @@ void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::Compres
 	// Context allocation.
 	astcenc_context *context;
 	const unsigned int thread_count = 1; // Godot compresses multiple images each on a thread, which is more efficient for large amount of images imported.
-	status = astcenc_context_alloc(&config, thread_count, &context);
+	status = astcenc_context_alloc(&config, thread_count, &context, nullptr);
 	ERR_FAIL_COND_MSG(status != ASTCENC_SUCCESS,
 			vformat("astcenc: Context allocation failed: %s.", astcenc_get_error_string(status)));
 
@@ -253,7 +253,7 @@ void _decompress_astc(Image *r_img) {
 	astcenc_context *context = nullptr;
 	const unsigned int thread_count = 1;
 
-	status = astcenc_context_alloc(&config, thread_count, &context);
+	status = astcenc_context_alloc(&config, thread_count, &context, nullptr);
 	ERR_FAIL_COND_MSG(status != ASTCENC_SUCCESS,
 			vformat("astcenc: Context allocation failed: %s.", astcenc_get_error_string(status)));
 

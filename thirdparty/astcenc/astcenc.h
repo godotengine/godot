@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2020-2025 Arm Limited
+// Copyright 2020-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -37,7 +37,9 @@
  * Multi-threading can be used two ways.
  *
  *     * An application wishing to process multiple images in parallel can allocate multiple
- *       contexts and assign each context to a thread.
+ *       contexts and assign each context to a thread. Parallel contexts that use the same
+ *       compressor configuration can share read-only data tables by inheriting them from a
+ *       parent context.
  *     * An application wishing to process a single image in using multiple threads can configure
  *       contexts for multi-threaded use, and invoke astcenc_compress/decompress() once per thread
  *       for faster processing. The caller is responsible for creating the worker threads, and
@@ -64,7 +66,7 @@
  *
  *     // Allocate working state given config and thread_count
  *     astcenc_context* my_context;
- *     astcenc_context_alloc(&my_config, thread_count, &my_context);
+ *     astcenc_context_alloc(&my_config, thread_count, &my_context, nullptr);
  *
  *     // Compress each image using these config settings
  *     foreach image:
@@ -112,14 +114,14 @@
  *         | 4 components | RGBA             | .rgba            |
  *
  * The 1 and 2 component modes recommend sampling from "g" to recover the luminance value as this
- * provide best compatibility with other texture formats where the green component may be stored at
- * higher precision than the others, such as RGB565. For ASTC any of the RGB components can be used;
- * the luminance endpoint component will be returned for all three.
+ * provides the best compatibility with other texture formats where the green component may be
+ * stored at higher precision than the others, such as RGB565. For ASTC any of the RGB components
+ * can be used; the luminance endpoint component will be returned for all three.
  *
  * When using the normal map compression mode ASTC will store normals as a two component X+Y map.
- * Input images must contain unit-length normalized and should be passed in using a two component
+ * Input images must contain unit-length normals and they should be passed in using a two component
  * swizzle. The astcenc command line tool defaults to an RRRG swizzle, but some developers prefer
- * to use GGGR for compatability with BC5n which will work just as well. The Z component can be
+ * to use GGGR for compatibility with BC5n which will work just as well. The Z component can be
  * recovered programmatically in shader code, using knowledge that the vector is unit length and
  * that Z must be positive for a tangent-space normal map.
  *
@@ -167,16 +169,27 @@
 #ifndef ASTCENC_INCLUDED
 #define ASTCENC_INCLUDED
 
-#include <cstddef>
-#include <cstdint>
+#if defined(__cplusplus)
+	#include <cstddef>
+	#include <cstdint>
+
+	#define ASTCENC_EXTERN_C extern "C"
+#else
+	#include <stddef.h>
+	#include <stdint.h>
+	#include <stdbool.h>
+
+	#define ASTCENC_EXTERN_C
+#endif
 
 #if defined(ASTCENC_DYNAMIC_LIBRARY)
 	#if defined(_MSC_VER)
-		#define ASTCENC_PUBLIC extern "C" __declspec(dllexport)
+		#define ASTCENC_PUBLIC ASTCENC_EXTERN_C __declspec(dllexport)
 	#else
-		#define ASTCENC_PUBLIC extern "C" __attribute__ ((visibility ("default")))
+		#define ASTCENC_PUBLIC ASTCENC_EXTERN_C __attribute__ ((visibility ("default")))
 	#endif
 #else
+	// Godot: Keep C++ linkage, prebuilt ANGLE links against the mangled API of this copy.
 	#define ASTCENC_PUBLIC
 #endif
 
@@ -282,13 +295,13 @@ enum astcenc_swz
 struct astcenc_swizzle
 {
 	/** @brief The red component selector. */
-	astcenc_swz r;
+	enum astcenc_swz r;
 	/** @brief The green component selector. */
-	astcenc_swz g;
+	enum astcenc_swz g;
 	/** @brief The blue component selector. */
-	astcenc_swz b;
+	enum astcenc_swz b;
 	/** @brief The alpha component selector. */
-	astcenc_swz a;
+	enum astcenc_swz a;
 };
 
 /**
@@ -307,12 +320,12 @@ enum astcenc_type
 /**
  * @brief Function pointer type for compression progress reporting callback.
  */
-extern "C" typedef void (*astcenc_progress_callback)(float);
+ASTCENC_EXTERN_C typedef void (*astcenc_progress_callback)(float);
 
 /**
  * @brief Enable normal map compression.
  *
- * Input data will be treated a two component normal map, storing X and Y, and the codec will
+ * Input data will be treated as a two component normal map, storing X and Y, and the codec will
  * optimize for angular error rather than simple linear PSNR. In this mode the input swizzle should
  * be e.g. rrrg (the default ordering for ASTC normals on the command line) or gggr (the ordering
  * used by BC5n).
@@ -415,7 +428,7 @@ static const unsigned int ASTCENC_ALL_FLAGS =
 struct astcenc_config
 {
 	/** @brief The color profile. */
-	astcenc_profile profile;
+	enum astcenc_profile profile;
 
 	/** @brief The set of set flags. */
 	unsigned int flags;
@@ -574,7 +587,7 @@ struct astcenc_config
 	/**
 	 * @brief The progress callback, can be @c nullptr.
 	 *
-	 * If this is specified the codec will peridocially report progress for
+	 * If this is specified the codec will periodically report progress for
 	 * compression as a percentage between 0 and 100. The callback is called from one
 	 * of the compressor threads, so doing significant work in the callback will
 	 * reduce compression performance.
@@ -610,7 +623,7 @@ struct astcenc_image
 	unsigned int dim_z;
 
 	/** @brief The data type per component. */
-	astcenc_type data_type;
+	enum astcenc_type data_type;
 
 	/** @brief The array of 2D slices, of length @c dim_z. */
 	void** data;
@@ -625,7 +638,7 @@ struct astcenc_image
 struct astcenc_block_info
 {
 	/** @brief The block encoding color profile. */
-	astcenc_profile profile;
+	enum astcenc_profile profile;
 
 	/** @brief The number of texels in the X dimension. */
 	unsigned int block_x;
@@ -701,7 +714,7 @@ struct astcenc_block_info
  * @param      block_y   ASTC block size Y dimension.
  * @param      block_z   ASTC block size Z dimension.
  * @param      quality   Search quality preset / effort level. Either an
- *                       @c ASTCENC_PRE_* value, or a effort level between 0
+ *                       @c ASTCENC_PRE_* value, or an effort level between 0
  *                       and 100. Performance is not linear between 0 and 100.
 
  * @param      flags     A valid set of @c ASTCENC_FLG_* flag bits.
@@ -710,14 +723,14 @@ struct astcenc_block_info
  * @return @c ASTCENC_SUCCESS on success, or an error if the inputs are invalid
  * either individually, or in combination.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_config_init(
-	astcenc_profile profile,
+ASTCENC_PUBLIC enum astcenc_error astcenc_config_init(
+	enum astcenc_profile profile,
 	unsigned int block_x,
 	unsigned int block_y,
 	unsigned int block_z,
 	float quality,
 	unsigned int flags,
-	astcenc_config* config);
+	struct astcenc_config* config);
 
 /**
  * @brief Allocate a new codec context based on a config.
@@ -726,21 +739,38 @@ ASTCENC_PUBLIC astcenc_error astcenc_config_init(
  * slow, so it is recommended that contexts are reused to serially compress or decompress multiple
  * images to amortize setup cost.
  *
+ * A standalone "root" context can be created by passing @c nullptr for @c parent_context.
+ * Alternatively, a child context, that shares resources with a root context, is created by passing
+ * another context using the same target configuration into @c parent_context. A child will use the
+ * read-only data tables it needs from the ancestor "root" context, rather than creating its own,
+ * which saves a considerable amount of memory per child. You must only free the root context once
+ * all descendant contexts have been freed. When you pass a @c parent_context the config is taken
+ * from the parent, and so @c config must be @c nullptr.
+ *
  * Contexts can be allocated to support only decompression using the @c ASTCENC_FLG_DECOMPRESS_ONLY
  * flag when creating the configuration. The compression functions will fail if invoked. For a
  * decompress-only library build the @c ASTCENC_FLG_DECOMPRESS_ONLY flag must be set when creating
  * any context.
  *
- * @param[in]  config         Codec config.
- * @param      thread_count   Thread count to configure for.
- * @param[out] context        Location to store an opaque context pointer.
+ * @param[in]  config           Codec config, must be @c nullptr if a @c parent_context is passed.
+ * @param      thread_count     Thread count to configure for.
+ * @param[out] context          Location to store an opaque context pointer.
+ * @param[in]  parent_context   Optional parent context from which to inherit read-only data tables.
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if context creation failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_context_alloc(
-	const astcenc_config* config,
+ASTCENC_PUBLIC enum astcenc_error astcenc_context_alloc(
+	const struct astcenc_config* config,
 	unsigned int thread_count,
-	astcenc_context** context);
+	struct astcenc_context** context,
+	const struct astcenc_context* parent_context);
+
+// Godot: Pre-5.4.0 signature used by prebuilt ANGLE. Must stay in astcenc_entry.cpp, otherwise
+// the linker falls back to the copy of astcenc in ANGLE, which clashes with this one.
+ASTCENC_PUBLIC enum astcenc_error astcenc_context_alloc(
+	const struct astcenc_config* config,
+	unsigned int thread_count,
+	struct astcenc_context** context);
 
 /**
  * @brief Compress an image.
@@ -760,10 +790,10 @@ ASTCENC_PUBLIC astcenc_error astcenc_context_alloc(
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if compression failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_compress_image(
-	astcenc_context* context,
-	astcenc_image* image,
-	const astcenc_swizzle* swizzle,
+ASTCENC_PUBLIC enum astcenc_error astcenc_compress_image(
+	struct astcenc_context* context,
+	struct astcenc_image* image,
+	const struct astcenc_swizzle* swizzle,
 	uint8_t* data_out,
 	size_t data_len,
 	unsigned int thread_index);
@@ -781,8 +811,8 @@ ASTCENC_PUBLIC astcenc_error astcenc_compress_image(
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if reset failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_compress_reset(
-	astcenc_context* context);
+ASTCENC_PUBLIC enum astcenc_error astcenc_compress_reset(
+	struct astcenc_context* context);
 
 /**
  * @brief Cancel any pending compression operation.
@@ -795,8 +825,8 @@ ASTCENC_PUBLIC astcenc_error astcenc_compress_reset(
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if cancellation failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_compress_cancel(
-	astcenc_context* context);
+ASTCENC_PUBLIC enum astcenc_error astcenc_compress_cancel(
+	struct astcenc_context* context);
 
 /**
  * @brief Decompress an image.
@@ -810,12 +840,12 @@ ASTCENC_PUBLIC astcenc_error astcenc_compress_cancel(
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if decompression failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_decompress_image(
-	astcenc_context* context,
+ASTCENC_PUBLIC enum astcenc_error astcenc_decompress_image(
+	struct astcenc_context* context,
 	const uint8_t* data,
 	size_t data_len,
-	astcenc_image* image_out,
-	const astcenc_swizzle* swizzle,
+	struct astcenc_image* image_out,
+	const struct astcenc_swizzle* swizzle,
 	unsigned int thread_index);
 
 /**
@@ -831,8 +861,8 @@ ASTCENC_PUBLIC astcenc_error astcenc_decompress_image(
  *
  * @return @c ASTCENC_SUCCESS on success, or an error if reset failed.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_decompress_reset(
-	astcenc_context* context);
+ASTCENC_PUBLIC enum astcenc_error astcenc_decompress_reset(
+	struct astcenc_context* context);
 
 /**
  * Free the compressor context.
@@ -840,7 +870,7 @@ ASTCENC_PUBLIC astcenc_error astcenc_decompress_reset(
  * @param context   The codec context.
  */
 ASTCENC_PUBLIC void astcenc_context_free(
-	astcenc_context* context);
+	struct astcenc_context* context);
 
 /**
  * @brief Provide a high level summary of a block's encoding.
@@ -856,19 +886,19 @@ ASTCENC_PUBLIC void astcenc_context_free(
  *         function will return success even if the block itself was an error block encoding, as the
  *         decode was correctly handled.
  */
-ASTCENC_PUBLIC astcenc_error astcenc_get_block_info(
-	astcenc_context* context,
+ASTCENC_PUBLIC enum astcenc_error astcenc_get_block_info(
+	struct astcenc_context* context,
 	const uint8_t data[16],
-	astcenc_block_info* info);
+	struct astcenc_block_info* info);
 
 /**
- * @brief Get a printable string for specific status code.
+ * @brief Get a printable string for a specific status code.
  *
  * @param status   The status value.
  *
  * @return A human readable nul-terminated string.
  */
 ASTCENC_PUBLIC const char* astcenc_get_error_string(
-	astcenc_error status);
+	enum astcenc_error status);
 
 #endif

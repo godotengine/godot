@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -27,7 +27,7 @@
 /**
  * @brief Loader pipeline function type for data fetch from memory.
  */
-using pixel_loader = vfloat4(*)(const void*, int);
+using pixel_loader = vfloat4(*)(const void*, size_t);
 
 /**
  * @brief Loader pipeline function type for swizzling data in a vector.
@@ -40,14 +40,14 @@ using pixel_swizzler = vfloat4(*)(vfloat4, const astcenc_swizzle&);
 using pixel_converter = vfloat4(*)(vfloat4, vmask4);
 
 /**
- * @brief Load a 8-bit UNORM texel from a data array.
+ * @brief Load an 8-bit UNORM texel from a data array.
  *
  * @param data          The data pointer.
  * @param base_offset   The index offset to the start of the pixel.
  */
 static vfloat4 load_texel_u8(
 	const void* data,
-	int base_offset
+	size_t base_offset
 ) {
 	const uint8_t* data8 = static_cast<const uint8_t*>(data);
 	return int_to_float(vint4(data8 + base_offset)) / 255.0f;
@@ -61,7 +61,7 @@ static vfloat4 load_texel_u8(
  */
 static vfloat4 load_texel_f16(
 	const void* data,
-	int base_offset
+	size_t base_offset
 ) {
 	const uint16_t* data16 = static_cast<const uint16_t*>(data);
 	int r = data16[base_offset    ];
@@ -79,7 +79,7 @@ static vfloat4 load_texel_f16(
  */
 static vfloat4 load_texel_f32(
 	const void* data,
-	int base_offset
+	size_t base_offset
 ) {
 	const float* data32 = static_cast<const float*>(data);
 	return vfloat4(data32 + base_offset);
@@ -121,28 +121,39 @@ static vfloat4 swz_texel(
 /**
  * @brief Encode a texel that is entirely LDR linear.
  *
+ * Out-of-range inputs will be clamped to the valid UNORM range.
+ *
  * @param data       The RGBA data to encode.
- * @param lns_mask   The mask for the HDR channels than need LNS encoding.
+ * @param lns_mask   The mask for the HDR channels that need LNS encoding.
  */
 static vfloat4 encode_texel_unorm(
 	vfloat4 data,
 	vmask4 lns_mask
 ) {
 	(void)lns_mask;
-	return data * 65535.0f;
+	vfloat4 raw_value = data * 65535.0f;
+
+	// Unorm data must be in 0-1 range, so clamp because data can come from an
+	// unconstrained float. This will replace NaNs with zero.
+	return clamp(0.0f, 65535.0f, raw_value);
 }
 
 /**
  * @brief Encode a texel that includes at least some HDR LNS texels.
  *
+ * Out-of-range inputs will be clamped to the valid LNS or UNORM range,
+ * depending on @c lns_mask.
+ *
  * @param data       The RGBA data to encode.
- * @param lns_mask   The mask for the HDR channels than need LNS encoding.
+ * @param lns_mask   The mask for the HDR channels that need LNS encoding.
  */
 static vfloat4 encode_texel_lns(
 	vfloat4 data,
 	vmask4 lns_mask
 ) {
-	vfloat4 datav_unorm = data * 65535.0f;
+	vfloat4 datav_unorm = encode_texel_unorm(data, lns_mask);
+
+	// Out-of-range inputs are clamped inside float_to_lns
 	vfloat4 datav_lns = float_to_lns(data);
 	return select(datav_unorm, datav_lns, lns_mask);
 }
@@ -153,30 +164,29 @@ void load_image_block(
 	const astcenc_image& img,
 	image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz
 ) {
-	unsigned int xsize = img.dim_x;
-	unsigned int ysize = img.dim_y;
-	unsigned int zsize = img.dim_z;
+	size_t size_x = img.dim_x;
+	size_t size_y = img.dim_y;
+	size_t size_z = img.dim_z;
 
-	blk.xpos = xpos;
-	blk.ypos = ypos;
-	blk.zpos = zpos;
+	blk.pos_x = pos_x;
+	blk.pos_y = pos_y;
+	blk.pos_z = pos_z;
 
 	// True if any non-identity swizzle
 	bool needs_swz = (swz.r != ASTCENC_SWZ_R) || (swz.g != ASTCENC_SWZ_G) ||
 	                 (swz.b != ASTCENC_SWZ_B) || (swz.a != ASTCENC_SWZ_A);
-
-	int idx = 0;
 
 	vfloat4 data_min(1e38f);
 	vfloat4 data_mean(0.0f);
 	vfloat4 data_mean_scale(1.0f / static_cast<float>(bsd.texel_count));
 	vfloat4 data_max(-1e38f);
 	vmask4 grayscalev(true);
+	size_t idx = 0;
 
 	// This works because we impose the same choice everywhere during encode
 	uint8_t rgb_lns = (decode_mode == ASTCENC_PRF_HDR) ||
@@ -208,20 +218,20 @@ void load_image_block(
 		converter = encode_texel_lns;
 	}
 
-	for (unsigned int z = 0; z < bsd.zdim; z++)
+	for (size_t z = 0; z < bsd.dim_z; z++)
 	{
-		unsigned int zi = astc::min(zpos + z, zsize - 1);
+		size_t zi = astc::min(pos_z + z, size_z - 1);
 		void* plane = img.data[zi];
 
-		for (unsigned int y = 0; y < bsd.ydim; y++)
+		for (size_t y = 0; y < bsd.dim_y; y++)
 		{
-			unsigned int yi = astc::min(ypos + y, ysize - 1);
+			size_t yi = astc::min(pos_y + y, size_y - 1);
 
-			for (unsigned int x = 0; x < bsd.xdim; x++)
+			for (size_t x = 0; x < bsd.dim_x; x++)
 			{
-				unsigned int xi = astc::min(xpos + x, xsize - 1);
+				size_t xi = astc::min(pos_x + x, size_x - 1);
 
-				vfloat4 datav = loader(plane, (4 * xsize * yi) + (4 * xi));
+				vfloat4 datav = loader(plane, (4 * size_x * yi) + (4 * xi));
 				datav = swizzler(datav, swz);
 				datav = converter(datav, lns_mask);
 
@@ -270,37 +280,37 @@ void load_image_block_fast_ldr(
 	const astcenc_image& img,
 	image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz
 ) {
 	(void)swz;
 	(void)decode_mode;
 
-	unsigned int xsize = img.dim_x;
-	unsigned int ysize = img.dim_y;
+	size_t size_x = img.dim_x;
+	size_t size_y = img.dim_y;
 
-	blk.xpos = xpos;
-	blk.ypos = ypos;
-	blk.zpos = zpos;
+	blk.pos_x = pos_x;
+	blk.pos_y = pos_y;
+	blk.pos_z = pos_z;
 
 	vfloat4 data_min(1e38f);
 	vfloat4 data_mean = vfloat4::zero();
 	vfloat4 data_max(-1e38f);
 	vmask4 grayscalev(true);
-	int idx = 0;
+	size_t idx = 0;
 
 	const uint8_t* plane = static_cast<const uint8_t*>(img.data[0]);
-	for (unsigned int y = ypos; y < ypos + bsd.ydim; y++)
+	for (size_t y = pos_y; y < pos_y + bsd.dim_y; y++)
 	{
-		unsigned int yi = astc::min(y, ysize - 1);
+		size_t yi = astc::min(y, size_y - 1);
 
-		for (unsigned int x = xpos; x < xpos + bsd.xdim; x++)
+		for (size_t x = pos_x; x < pos_x + bsd.dim_x; x++)
 		{
-			unsigned int xi = astc::min(x, xsize - 1);
+			size_t xi = astc::min(x, size_x - 1);
 
-			vint4 datavi = vint4(plane + (4 * xsize * yi) + (4 * xi));
+			vint4 datavi = vint4(plane + (4 * size_x * yi) + (4 * xi));
 			vfloat4 datav = int_to_float(datavi) * (65535.0f / 255.0f);
 
 			// Compute block metadata
@@ -336,26 +346,28 @@ void store_image_block(
 	astcenc_image& img,
 	const image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz
 ) {
-	unsigned int x_size = img.dim_x;
-	unsigned int x_start = xpos;
-	unsigned int x_end = astc::min(x_size, xpos + bsd.xdim);
-	unsigned int x_count = x_end - x_start;
-	unsigned int x_nudge = bsd.xdim - x_count;
+	size_t size_x = img.dim_x;
+	size_t start_x = pos_x;
+	size_t end_x = astc::min(size_x, pos_x + bsd.dim_x);
+	size_t count_x = end_x - start_x;
+	size_t nudge_x = bsd.dim_x - count_x;
 
-	unsigned int y_size = img.dim_y;
-	unsigned int y_start = ypos;
-	unsigned int y_end = astc::min(y_size, ypos + bsd.ydim);
-	unsigned int y_count = y_end - y_start;
-	unsigned int y_nudge = (bsd.ydim - y_count) * bsd.xdim;
+	size_t size_y = img.dim_y;
+	size_t start_y = pos_y;
+	size_t end_y = astc::min(size_y, pos_y + bsd.dim_y);
+	size_t count_y = end_y - start_y;
+	size_t nudge_y = (bsd.dim_y - count_y) * bsd.dim_x;
 
-	unsigned int z_size = img.dim_z;
-	unsigned int z_start = zpos;
-	unsigned int z_end = astc::min(z_size, zpos + bsd.zdim);
+	size_t size_z = img.dim_z;
+	size_t start_z = pos_z;
+	size_t end_z = astc::min(size_z, pos_z + bsd.dim_z);
+
+	size_t idx = 0;
 
 	// True if any non-identity swizzle
 	bool needs_swz = (swz.r != ASTCENC_SWZ_R) || (swz.g != ASTCENC_SWZ_G) ||
@@ -365,22 +377,21 @@ void store_image_block(
 	bool needs_z = (swz.r == ASTCENC_SWZ_Z) || (swz.g == ASTCENC_SWZ_Z) ||
 	               (swz.b == ASTCENC_SWZ_Z) || (swz.a == ASTCENC_SWZ_Z);
 
-	int idx = 0;
 	if (img.data_type == ASTCENC_TYPE_U8)
 	{
-		for (unsigned int z = z_start; z < z_end; z++)
+		for (size_t z = start_z; z < end_z; z++)
 		{
 			// Fetch the image plane
 			uint8_t* data8 = static_cast<uint8_t*>(img.data[z]);
 
-			for (unsigned int y = y_start; y < y_end; y++)
+			for (size_t y = start_y; y < end_y; y++)
 			{
-				uint8_t* data8_row = data8 + (4 * x_size * y) + (4 * x_start);
+				uint8_t* data8_row = data8 + (4 * size_x * y) + (4 * start_x);
 
-				for (unsigned int x = 0; x < x_count; x += ASTCENC_SIMD_WIDTH)
+				for (size_t x = 0; x < count_x; x += ASTCENC_SIMD_WIDTH)
 				{
-					unsigned int max_texels = ASTCENC_SIMD_WIDTH;
-					unsigned int used_texels = astc::min(x_count - x, max_texels);
+					size_t max_texels = ASTCENC_SIMD_WIDTH;
+					size_t used_texels = astc::min(count_x - x, max_texels);
 
 					// Unaligned load as rows are not always SIMD_WIDTH long
 					vfloat data_r(blk.data_r + idx);
@@ -388,10 +399,13 @@ void store_image_block(
 					vfloat data_b(blk.data_b + idx);
 					vfloat data_a(blk.data_a + idx);
 
-					vint data_ri = float_to_int_rtn(min(data_r, 1.0f) * 255.0f);
-					vint data_gi = float_to_int_rtn(min(data_g, 1.0f) * 255.0f);
-					vint data_bi = float_to_int_rtn(min(data_b, 1.0f) * 255.0f);
-					vint data_ai = float_to_int_rtn(min(data_a, 1.0f) * 255.0f);
+					// Clamp values to [0.0, 1.0] range before unorm conversion
+					//   - Values > 1.0 are possible for all HDR blocks
+					//   - Values < 0.0 are possible for HDR void-extent blocks
+					vint data_ri = float_to_int_rtn(clampzo(data_r) * 255.0f);
+					vint data_gi = float_to_int_rtn(clampzo(data_g) * 255.0f);
+					vint data_bi = float_to_int_rtn(clampzo(data_b) * 255.0f);
+					vint data_ai = float_to_int_rtn(clampzo(data_a) * 255.0f);
 
 					if (needs_swz)
 					{
@@ -432,29 +446,30 @@ void store_image_block(
 					}
 
 					vint data_rgbai = interleave_rgba8(data_ri, data_gi, data_bi, data_ai);
-					vmask store_mask = vint::lane_id() < vint(used_texels);
+					// Static cast must be safe, as used_texels must be less than vector length
+					vmask store_mask = vint::lane_id() < vint(static_cast<int>(used_texels));
 					store_lanes_masked(data8_row, data_rgbai, store_mask);
 
 					data8_row += ASTCENC_SIMD_WIDTH * 4;
 					idx += used_texels;
 				}
-				idx += x_nudge;
+				idx += nudge_x;
 			}
-			idx += y_nudge;
+			idx += nudge_y;
 		}
 	}
 	else if (img.data_type == ASTCENC_TYPE_F16)
 	{
-		for (unsigned int z = z_start; z < z_end; z++)
+		for (size_t z = start_z; z < end_z; z++)
 		{
 			// Fetch the image plane
 			uint16_t* data16 = static_cast<uint16_t*>(img.data[z]);
 
-			for (unsigned int y = y_start; y < y_end; y++)
+			for (size_t y = start_y; y < end_y; y++)
 			{
-				uint16_t* data16_row = data16 + (4 * x_size * y) + (4 * x_start);
+				uint16_t* data16_row = data16 + (4 * size_x * y) + (4 * start_x);
 
-				for (unsigned int x = 0; x < x_count; x++)
+				for (size_t x = 0; x < count_x; x++)
 				{
 					vint4 color;
 
@@ -498,25 +513,25 @@ void store_image_block(
 					data16_row += 4;
 					idx++;
 				}
-				idx += x_nudge;
+				idx += nudge_x;
 			}
-			idx += y_nudge;
+			idx += nudge_y;
 		}
 	}
 	else // if (img.data_type == ASTCENC_TYPE_F32)
 	{
 		assert(img.data_type == ASTCENC_TYPE_F32);
 
-		for (unsigned int z = z_start; z < z_end; z++)
+		for (size_t z = start_z; z < end_z; z++)
 		{
 			// Fetch the image plane
 			float* data32 = static_cast<float*>(img.data[z]);
 
-			for (unsigned int y = y_start; y < y_end; y++)
+			for (size_t y = start_y; y < end_y; y++)
 			{
-				float* data32_row = data32 + (4 * x_size * y) + (4 * x_start);
+				float* data32_row = data32 + (4 * size_x * y) + (4 * start_x);
 
-				for (unsigned int x = 0; x < x_count; x++)
+				for (size_t x = 0; x < count_x; x++)
 				{
 					vfloat4 color = blk.texel(idx);
 
@@ -550,9 +565,9 @@ void store_image_block(
 					data32_row += 4;
 					idx++;
 				}
-				idx += x_nudge;
+				idx += nudge_x;
 			}
-			idx += y_nudge;
+			idx += nudge_y;
 		}
 	}
 }
