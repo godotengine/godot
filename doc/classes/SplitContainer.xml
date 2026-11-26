@@ -39,6 +39,21 @@
 				[b]Warning:[/b] These are required internal nodes, removing or freeing them may cause a crash.
 			</description>
 		</method>
+		<method name="get_split_offset" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" default="0" />
+			<description>
+				Returns the split offset at the given index [param index]. See [member split_offsets] for more information.
+			</description>
+		</method>
+		<method name="set_split_offset">
+			<return type="void" />
+			<param index="0" name="offset" type="int" />
+			<param index="1" name="index" type="int" default="0" />
+			<description>
+				Sets the split offset at the given index [param index]. See [member split_offsets] for more information.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
@@ -65,13 +80,13 @@
 		<member name="dragging_enabled" type="bool" setter="set_dragging_enabled" getter="is_dragging_enabled" default="true">
 			Enables or disables split dragging.
 		</member>
-		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0" deprecated="Use [member split_offsets] instead. The first element of the array is the split offset between the first two children.">
+		<member name="split_offset" type="int" setter="set_split_offset_first" getter="get_split_offset_first" default="0" deprecated="Use [member split_offsets], [method get_split_offset], or [method set_split_offset] instead. The first element of the array is the split offset between the first two children.">
 			The first element of [member split_offsets].
 		</member>
 		<member name="split_offsets" type="PackedInt32Array" setter="set_split_offsets" getter="get_split_offsets" default="PackedInt32Array(0)">
 			Offsets for each dragger in pixels. Each one is the offset of the split between the [Control] nodes before and after the dragger, with [code]0[/code] being the default position. The default position is based on the [Control] nodes expand flags and minimum sizes. See [member Control.size_flags_horizontal], [member Control.size_flags_vertical], and [member Control.size_flags_stretch_ratio].
 			If none of the [Control] nodes before the dragger are expanded, the default position will be at the start of the [SplitContainer]. If none of the [Control] nodes after the dragger are expanded, the default position will be at the end of the [SplitContainer]. If the dragger is in between expanded [Control] nodes, the default position will be in the middle, based on the [member Control.size_flags_stretch_ratio]s and minimum sizes.
-			[b]Note:[/b] If the split offsets cause [Control] nodes to overlap, the first split will take priority when resolving the positions.
+			[b]Note:[/b] If the split offsets cause [Control] nodes to overlap, the first split will take priority when resolving the positions. [method clamp_split_offset] can be used to prioritize a different split offset.
 		</member>
 		<member name="touch_dragger_enabled" type="bool" setter="set_touch_dragger_enabled" getter="is_touch_dragger_enabled" default="false">
 			If [code]true[/code], a touch-friendly drag handle will be enabled for better usability on smaller screens. Unlike the standard grabber, this drag handle overlaps the [SplitContainer]'s children and does not affect their minimum separation. The standard grabber will no longer be drawn when this option is enabled.
