@@ -95,6 +95,7 @@ private:
 	};
 
 	HashMap<Ref<Material>, MaterialCache> material_cache;
+	HashMap<Ref<Mesh>, Array> mesh_surface_cache;
 	float exposure_normalization = 1.0;
 	AABB original_bounds;
 	AABB po2_bounds;
@@ -115,14 +116,15 @@ private:
 	void _plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb);
 	void _fixup_plot(int p_idx, int p_level);
 	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx);
+	Array _get_surface_arrays(Ref<Mesh> &p_mesh);
 
 	bool sorted = false;
 	void _sort();
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization);
-	int get_bake_steps(Ref<Mesh> &p_mesh) const;
-	BakeResult plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_function);
+	int get_bake_steps(Ref<Mesh> &p_mesh);
+	BakeResult plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, Callable p_bake_step_function);
 	void end_bake();
 
 	int get_voxel_gi_octree_depth() const;
@@ -131,7 +133,7 @@ public:
 	Vector<uint8_t> get_voxel_gi_octree_cells() const;
 	Vector<uint8_t> get_voxel_gi_data_cells() const;
 	Vector<int> get_voxel_gi_level_cell_count() const;
-	BakeResult get_sdf_3d_image(Vector<uint8_t> &r_image, BakeStepFunc p_bake_step_function) const;
+	BakeResult get_sdf_3d_image(Vector<uint8_t> &r_image, Callable p_bake_step_function) const;
 
 	Ref<MultiMesh> create_debug_multimesh();
 
