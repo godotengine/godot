@@ -278,6 +278,7 @@ void FileDialog::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			update_filters();
+			_update_option_translations();
 			[[fallthrough]];
 		}
 
@@ -1934,8 +1935,9 @@ TypedArray<Dictionary> FileDialog::_get_options() const {
 	TypedArray<Dictionary> out;
 	for (const FileDialog::Option &opt : options) {
 		Dictionary dict;
-		dict["name"] = opt.name;
-		dict["values"] = opt.values;
+		dict["id"] = opt.name;
+		dict["name"] = opt.xl_name;
+		dict["values"] = opt.xl_values;
 		dict["default"] = (int)selected_options.get(opt.name, opt.default_idx);
 		out.push_back(dict);
 	}
@@ -1995,6 +1997,23 @@ void FileDialog::_update_option_controls() {
 			grid_select_options->add_child(ob);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
+		}
+	}
+	_update_option_translations();
+}
+
+void FileDialog::_update_option_translations() {
+	if (!use_native_dialog) {
+		return;
+	}
+
+	for (Option &option : options) {
+		option.xl_name = atr(option.name);
+
+		option.xl_values.clear();
+		option.xl_values.reserve_exact(option.values.size());
+		for (const String &value : option.values) {
+			option.xl_values.append(atr(value));
 		}
 	}
 }
@@ -2321,6 +2340,9 @@ void FileDialog::set_get_thumbnail_callback(const Callable &p_callback) {
 
 void FileDialog::set_use_native_dialog(bool p_native) {
 	use_native_dialog = p_native;
+	if (use_native_dialog && is_inside_tree()) {
+		_update_option_translations();
+	}
 
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {

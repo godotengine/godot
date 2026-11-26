@@ -522,7 +522,7 @@ public:
 		root = p_root;
 	}
 
-	void add_option(IFileDialogCustomize *p_pfdc, const String &p_name, const Vector<String> &p_options, int p_default) {
+	void add_option(IFileDialogCustomize *p_pfdc, const String &p_id, const String &p_name, const Vector<String> &p_options, int p_default) {
 		int gid = ctl_id++;
 		int cid = ctl_id++;
 
@@ -532,7 +532,7 @@ public:
 			p_pfdc->AddCheckButton(cid, (LPCWSTR)p_name.utf16().get_data(), p_default);
 			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
 			p_pfdc->EndVisualGroup();
-			selected[p_name] = (bool)p_default;
+			selected[p_id] = (bool)p_default;
 		} else {
 			// Add combo box.
 			p_pfdc->StartVisualGroup(gid, (LPCWSTR)p_name.utf16().get_data());
@@ -543,9 +543,9 @@ public:
 			}
 			p_pfdc->SetSelectedControlItem(cid, p_default);
 			p_pfdc->EndVisualGroup();
-			selected[p_name] = p_default;
+			selected[p_id] = p_default;
 		}
-		ctls[cid] = p_name;
+		ctls[cid] = p_id;
 	}
 
 	virtual ~FileDialogEventHandler() {}
@@ -687,7 +687,11 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			if (!item.has("name") || !item.has("values") || !item.has("default")) {
 				continue;
 			}
-			event_handler->add_option(pfdc, item["name"], item["values"], item["default"]);
+			if (item.has("id")) {
+				event_handler->add_option(pfdc, item["id"], item["name"], item["values"], item["default"]);
+			} else {
+				event_handler->add_option(pfdc, item["name"], item["name"], item["values"], item["default"]);
+			}
 		}
 		event_handler->set_root(fd->root);
 
