@@ -845,26 +845,16 @@ public:
 
 	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
-	void call_deferred_thread_group(const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void call_deferred_thread_group(const StringName &p_method, const VarArgs &...p_args) {
+		call_deferred_thread_groupp(p_method, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 	void set_deferred_thread_group(const StringName &p_property, const Variant &p_value);
 	void notify_deferred_thread_group(int p_notification);
 
 	void call_thread_safep(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
-	void call_thread_safe(const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void call_thread_safe(const StringName &p_method, const VarArgs &...p_args) {
+		call_deferred_thread_groupp(p_method, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);

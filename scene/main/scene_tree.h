@@ -318,23 +318,13 @@ public:
 
 	template <typename... VarArgs>
 	// `call_group()` is immediate by default since Godot 4.0.
-	void call_group(const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		call_group_flagsp(GROUP_CALL_DEFAULT, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void call_group(const StringName &p_group, const StringName &p_function, const VarArgs &...p_args) {
+		call_group_flagsp(GROUP_CALL_DEFAULT, p_group, p_function, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 
 	template <typename... VarArgs>
-	void call_group_flags(uint32_t p_flags, const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		call_group_flagsp(p_flags, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void call_group_flags(uint32_t p_flags, const StringName &p_group, const StringName &p_function, const VarArgs &...p_args) {
+		call_group_flagsp(p_flags, p_group, p_function, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 
 	void flush_transform_notifications();
