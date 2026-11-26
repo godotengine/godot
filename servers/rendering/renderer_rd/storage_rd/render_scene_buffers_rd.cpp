@@ -291,6 +291,7 @@ bool RenderSceneBuffersRD::has_texture(const StringName &p_context, const String
 
 RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique, bool p_discardable) {
 	// Keep some useful data, we use default values when these are 0.
+
 	Size2i size = p_size == Size2i(0, 0) ? internal_size : p_size;
 	uint32_t layers = p_layers == 0 ? view_count : p_layers;
 	uint32_t mipmaps = p_mipmaps == 0 ? 1 : p_mipmaps;
