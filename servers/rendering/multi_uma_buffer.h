@@ -395,7 +395,7 @@ public:
 		can_upload[p_idx] = false;
 #endif
 		RenderingDevice *rd = RD::RenderingDevice::get_singleton();
-		return rd->buffer_persistent_map_advance(buffers[curr_idx * NUM_BUFFERS + p_idx]);
+		return rd->buffer_persistent_map(buffers[curr_idx * NUM_BUFFERS + p_idx]);
 	}
 
 	RID get_for_upload(uint32_t p_idx) {
