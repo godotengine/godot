@@ -10,6 +10,10 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="advanced_rdp" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], a slower [url=https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm]Ramer Douglas Peuker Algorithm[/url] is used that does not self-intersect.
+			[b]Note:[/b] Only effective if [member import_mode] is [b]Mesh2D[/b].
+		</member>
 		<member name="atlas_file" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the atlas spritesheet. This [i]must[/i] be set to valid path to a PNG image. Otherwise, the atlas will fail to import.
 		</member>
