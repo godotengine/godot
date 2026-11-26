@@ -452,6 +452,12 @@ void GDScriptCache::remove_static_script(const String &p_fqcn) {
 	singleton->static_gdscript_cache.erase(p_fqcn);
 }
 
+void GDScriptCache::get_static_scripts(List<Ref<GDScript>> *r_scripts) {
+	for (const KeyValue<String, Ref<GDScript>> &KV : singleton->static_gdscript_cache) {
+		r_scripts->push_back(KV.value);
+	}
+}
+
 void GDScriptCache::clear() {
 	if (singleton == nullptr) {
 		return;

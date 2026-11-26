@@ -115,6 +115,11 @@
 				Returns the source associated with a given debug stack position.
 			</description>
 		</method>
+		<method name="_debug_get_static_variables" qualifiers="virtual">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
 		<method name="_debug_parse_stack_level_expression" qualifiers="virtual required">
 			<return type="String" />
 			<param index="0" name="level" type="int" />

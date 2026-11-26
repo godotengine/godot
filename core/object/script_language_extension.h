@@ -661,6 +661,27 @@ public:
 		}
 	}
 
+	GDVIRTUAL0R(Dictionary, _debug_get_static_variables)
+	virtual void debug_get_static_variables(List<String> *r_names, List<Variant> *r_values) override {
+		Dictionary ret;
+		GDVIRTUAL_CALL(_debug_get_static_variables, ret);
+		if (ret.is_empty()) {
+			return;
+		}
+		if (r_names != nullptr && ret.has("static_names")) {
+			PackedStringArray strings = ret["static_names"];
+			for (int i = 0; i < strings.size(); i++) {
+				r_names->push_back(strings[i]);
+			}
+		}
+		if (r_values != nullptr && ret.has("values")) {
+			Array values = ret["values"];
+			for (const Variant &value : values) {
+				r_values->push_back(value);
+			}
+		}
+	}
+
 	EXBIND4R(String, debug_parse_stack_level_expression, int, const String &, int, int)
 
 	GDVIRTUAL0R_REQUIRED(TypedArray<Dictionary>, _debug_get_current_stack_info)
