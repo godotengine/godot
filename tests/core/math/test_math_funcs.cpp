@@ -530,6 +530,9 @@ TEST_CASE("[Math] snapped") {
 	CHECK(Math::snapped(-0.5, -1.0) == doctest::Approx(-1.0));
 	CHECK(Math::snapped(0.0, -1.0) == doctest::Approx(0));
 	CHECK(Math::snapped(128'000.025, -1.0) == doctest::Approx(128'000.0));
+
+	CHECK(Math::snapped(5.0, 2.0) == doctest::Approx(6.0));
+	CHECK(Math::snapped(5.0, -2.0) == doctest::Approx(4.0));
 }
 
 TEST_CASE("[Math] larger_prime") {
