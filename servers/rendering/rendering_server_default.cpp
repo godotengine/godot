@@ -359,10 +359,6 @@ bool RenderingServerDefault::has_feature(RSE::Features p_feature) const {
 }
 #endif
 
-void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
-}
-
 void RenderingServerDefault::set_print_gpu_profile(bool p_enable) {
 	RSG::utilities->capturing_timestamps = p_enable;
 	print_gpu_profile = p_enable;

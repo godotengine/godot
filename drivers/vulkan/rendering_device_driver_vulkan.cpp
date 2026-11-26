@@ -2809,7 +2809,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	return supported;
 }
 
-bool RenderingDeviceDriverVulkan::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+bool RenderingDeviceDriverVulkan::texture_can_make_shared_with_format(DataFormat p_base_format, DataFormat p_format, bool &r_raw_reinterpretation) {
 	r_raw_reinterpretation = false;
 	return true;
 }

@@ -709,7 +709,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverMetal::texture_get_usages_s
 	return supported;
 }
 
-bool RenderingDeviceDriverMetal::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+bool RenderingDeviceDriverMetal::texture_can_make_shared_with_format(DataFormat p_base_format, DataFormat p_format, bool &r_raw_reinterpretation) {
 	r_raw_reinterpretation = false;
 	return true;
 }

@@ -3095,21 +3095,84 @@
 			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false" keywords="size">
-			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
+			If [code]true[/code], renders [VoxelGI] and Dynamic GI ([member Environment.dynamic_gi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or Dynamic GI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
-			The number of frames to use for converging signed distance field global illumination. Higher values lead to a less noisy result, at the cost of taking a longer time to fully converge. This means the scene's global illumination will be too dark for a longer period of time, especially when the camera moves fast. The actual convergence speed depends on rendered framerate. For example, with the default setting of 30 frames, rendering at 60 FPS will make SDFGI fully converge after 0.5 seconds. See also [member rendering/global_illumination/sdfgi/frames_to_update_lights] and [member rendering/global_illumination/sdfgi/probe_ray_count].
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI convergence speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_converge] instead.
+		<member name="rendering/global_illumination/hddagi/fast_light_updates" type="bool" setter="" getter="" default="true">
+			Updates all surface lighting cells in a cascade when its dynamic light parameters change, including light removal. Static frames retain the cadence configured by [member rendering/global_illumination/hddagi/frames_to_update_lights]. Continuous light animation can increase the surface-lighting cost. Does not invalidate probe geometry hit caches.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
-			The number of frames over which dynamic lights should be updated in signed distance field global illumination. Higher values take more time to update indirect lighting coming from dynamic lights, but result in better performance when many dynamic lights are present. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/probe_ray_count].
+		<member name="rendering/global_illumination/hddagi/frames_to_converge" type="int" setter="" getter="" default="1">
+			The number of frames used to converge Dynamic GI (HDDAGI). Higher values improve quality and reduce noise, but increase latency and memory usage when lighting changes.
+			[b]Note:[/b] This property is only read when the project starts. To control Dynamic GI convergence speed at runtime, call [method RenderingServer.environment_set_hddagi_frames_to_converge] instead.
+		</member>
+		<member name="rendering/global_illumination/hddagi/frames_to_update_inactive_probes" type="int" setter="" getter="" default="3">
+			The number of frames over which inactive Dynamic GI probes are updated. Inactive probes are not connected to geometry and are not visible to the camera. Higher values reduce GPU work, but make those probes respond more slowly when they become relevant.
+			[b]Note:[/b] This property is only read when the project starts. To control inactive probe updates at runtime, call [method RenderingServer.environment_set_hddagi_inactive_probe_frames] instead.
+		</member>
+		<member name="rendering/global_illumination/hddagi/frames_to_update_lights" type="int" setter="" getter="" default="2">
+			The number of frames over which dynamic lights are updated in Dynamic GI (HDDAGI). Higher values reduce GPU work, but indirect lighting from dynamic lights responds more slowly.
 			[b]Note:[/b] This only affects [Light3D] nodes whose [member Light3D.light_bake_mode] is [constant Light3D.BAKE_DYNAMIC] (which is the default). Consider making non-moving lights use the [constant Light3D.BAKE_STATIC] bake mode to improve performance.
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI light update speed at runtime, call [method RenderingServer.environment_set_sdfgi_frames_to_update_light] instead.
+			[b]Note:[/b] This property is only read when the project starts. To control Dynamic GI light update speed at runtime, call [method RenderingServer.environment_set_hddagi_frames_to_update_light] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
-			The number of rays to throw per frame when computing signed distance field global illumination. Higher values lead to a less noisy result, at the cost of performance. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/frames_to_update_lights].
-			[b]Note:[/b] This property is only read when the project starts. To control SDFGI quality at runtime, call [method RenderingServer.environment_set_sdfgi_ray_count] instead.
+		<member name="rendering/global_illumination/hddagi/light_region_culling" type="bool" setter="" getter="" default="true">
+			Culls dynamic lights per voxel region when a cascade contains at least eight lights. The mask is rebuilt when the cascade moves or its dynamic light data changes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/reflection_half_resolution" type="bool" setter="" getter="" default="false">
+			Shares legacy HDDAGI reflection traces across continuous 2×2 surface blocks at the current GI resolution. Mirrors, silhouettes and roughness boundaries keep individual traces. Applies to full-trace reflection quality without VRS or mixed VoxelGI.
+		</member>
+		<member name="rendering/global_illumination/hddagi/reflection_quality" type="int" setter="" getter="" default="0">
+			Controls the legacy HDDAGI receiver reflections independently of diffuse GI. [code]0[/code] traces glossy reflections and uses probes for rough surfaces. [code]1[/code] uses world probes for all roughness values, reducing cost and sharp detail. [code]2[/code] disables this reflection contribution, allowing other environment reflection sources to remain visible.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_candidate_count" type="int" setter="" getter="" default="1">
+			Scales the ray budget for diffuse screen probes. Uniform sampling traces this many rays per direction. Importance sampling distributes the budget across directions based on their contribution. Higher values can reduce noise at a higher GPU cost.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_denoiser_quality" type="int" setter="" getter="" default="2">
+			Controls SVGF quality for screen probe diffuse lighting and GGX reflections. Higher values reduce noise at higher GPU cost.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_detail_trace" type="bool" setter="" getter="" default="false">
+			Uses visible screen-space geometry for short-range detail tracing.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_detail_trace_quality" type="int" setter="" getter="" default="0">
+			Quality of screen-space detail tracing.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames" type="int" setter="" getter="" default="64">
+			Maximum effective frame count for per-pixel SVGF accumulation of Directional Gather diffuse lighting, from 1 to 255. Higher values reduce noise in stable lighting and respond more slowly to changes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_directional_adaptive" type="bool" setter="" getter="" default="false">
+			Places additional diffuse screen probes on surfaces poorly covered by the regular grid, such as geometry edges. This increases GPU time and memory usage.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_importance_sampling" type="bool" setter="" getter="" default="false">
+			Uses incoming radiance to importance sample high-contrast Directional Gather probes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao" type="bool" setter="" getter="" default="false">
+			Adds contact occlusion from nearby visible geometry to screen-probe indirect diffuse lighting after denoising. An active [member Environment.ssao_enabled] with positive intensity takes precedence.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao_intensity" type="float" setter="" getter="" default="0.6">
+			Strength of [member rendering/global_illumination/hddagi/screen_probe_short_range_ao]. A value of [code]0.0[/code] disables the effect.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao_radius" type="float" setter="" getter="" default="0.3">
+			Maximum distance in meters at which visible surfaces contribute to [member rendering/global_illumination/hddagi/screen_probe_short_range_ao].
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_spacing" type="int" setter="" getter="" default="16">
+			Distance between diffuse screen probes in GI buffer pixels. Higher values trace fewer probes and can reduce indirect lighting detail. Enabling [member rendering/global_illumination/gi/use_half_resolution] increases the distance between probes on screen. Diffuse resolve and denoising run at the viewport's internal 3D resolution.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_specular_max_history_frames" type="int" setter="" getter="" default="64">
+			Maximum effective frame count for per-pixel SVGF accumulation of GGX reflections, from 1 to 255.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_specular_reflections" type="bool" setter="" getter="" default="false">
+			Uses GGX-sampled reflections with SVGF when HDDAGI screen probes are enabled. Rays that miss use the HDDAGI voxels or the sky. Reflections fade to the environment or legacy HDDAGI reflection between roughness 0.30 and 0.40.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter" type="bool" setter="" getter="" default="true">
+			Offsets Directional Gather screen probes using an eight-frame sampling sequence.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_history_mode" type="int" setter="" getter="" default="0">
+			Selects a finite moving average (0) or an exponential moving average (1) for world-probe radiance. Exponential mode uses less memory and weights new samples by [code]2 / (history_size + 1)[/code]. Both modes retain the geometry hit cache. Changing this setting requires restarting the renderer.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_light_response" type="float" setter="" getter="" default="0.25">
+			Minimum weight given to a new radiance sample when lighting at a cached ray endpoint changes. Applies to the finite moving average in [member rendering/global_illumination/hddagi/world_probe_history_mode]. Set to 0 to disable the faster response.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_validity" type="bool" setter="" getter="" default="false">
+			Skips opaque world probes whose eight adjacent voxels are solid and renormalizes the interpolation weights. If all candidates are rejected, uses the original interpolation.
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.

@@ -73,6 +73,7 @@ public:
 		bool use_taa = false;
 		bool use_debanding = false;
 		bool force_motion_vectors = false;
+		bool hddagi_screen_probe_motion_vectors = false;
 
 		RendererSceneRender::CameraData prev_camera_data;
 		uint64_t prev_camera_data_frame = 0;
@@ -207,6 +208,7 @@ private:
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
 	void _viewport_set_force_motion_vectors(Viewport *p_viewport, bool p_force_motion_vectors);
+	void _viewport_set_hddagi_screen_probe_motion_vectors(Viewport *p_viewport, bool p_enabled);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);

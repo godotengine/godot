@@ -39,6 +39,8 @@
 // API definition for our RenderGeometryInstance class so we can expose this through GDExtension in the near future
 class RenderGeometryInstance {
 public:
+	uint64_t surface_revision = 0;
+
 	virtual ~RenderGeometryInstance() {}
 
 	virtual void _mark_dirty() = 0;

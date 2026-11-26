@@ -275,7 +275,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["scp"] = "SCP";
 	capitalize_string_remaps["scrcpy"] = "scrcpy";
 	capitalize_string_remaps["sdf"] = "SDF";
-	capitalize_string_remaps["sdfgi"] = "SDFGI";
+	capitalize_string_remaps["hddagi"] = "HDDAGI";
 	capitalize_string_remaps["sdk"] = "SDK";
 	capitalize_string_remaps["sec"] = "(sec)"; // Unit.
 	capitalize_string_remaps["signtool"] = "signtool";

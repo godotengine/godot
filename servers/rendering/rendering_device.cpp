@@ -1858,7 +1858,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
-		create_shared = driver->texture_can_make_shared_with_format(texture.driver_id, p_view.format_override, raw_reintepretation);
+		create_shared = driver->texture_can_make_shared_with_format(texture.format, p_view.format_override, raw_reintepretation);
 	}
 	tv.swizzle_r = p_view.swizzle_r;
 	tv.swizzle_g = p_view.swizzle_g;
@@ -2023,7 +2023,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
-		create_shared = driver->texture_can_make_shared_with_format(texture.driver_id, p_view.format_override, raw_reintepretation);
+		create_shared = driver->texture_can_make_shared_with_format(texture.format, p_view.format_override, raw_reintepretation);
 	}
 
 	tv.swizzle_r = p_view.swizzle_r;
@@ -3207,6 +3207,11 @@ Error RenderingDevice::texture_clear(RID p_texture, const Color &p_color, uint32
 	_texture_clear_color(p_texture, src_tex, p_color, p_base_mipmap, p_mipmaps, p_base_layer, p_layers);
 
 	return OK;
+}
+
+bool RenderingDevice::texture_can_share_format(DataFormat p_format, DataFormat p_view_format) const {
+	bool raw_reinterpretation = false;
+	return driver->texture_can_make_shared_with_format(p_format, p_view_format, raw_reinterpretation);
 }
 
 bool RenderingDevice::texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const {

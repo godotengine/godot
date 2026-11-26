@@ -505,12 +505,14 @@ void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 
 		} break;
+		case GI_MODE_RIGID:
 		case GI_MODE_DYNAMIC: {
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
 		} break;
 	}
 
+	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_HDDAGI_RIGID, p_mode == GI_MODE_RIGID);
 	gi_mode = p_mode;
 }
 
@@ -628,7 +630,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 
 	ADD_GROUP("Global Illumination", "gi_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic,Rigid"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_texel_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_texel_scale", "get_lightmap_texel_scale");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×"), PROPERTY_USAGE_NONE), "set_lightmap_scale", "get_lightmap_scale");
@@ -649,6 +651,7 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
 	BIND_ENUM_CONSTANT(GI_MODE_DYNAMIC);
+	BIND_ENUM_CONSTANT(GI_MODE_RIGID);
 
 	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);
 	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_2X);

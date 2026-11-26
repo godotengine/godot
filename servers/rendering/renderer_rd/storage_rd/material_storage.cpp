@@ -2467,6 +2467,7 @@ void MaterialStorage::_update_queued_materials() {
 
 	while (SelfList<Material> *E = copy.first()) {
 		Material *material = E->self();
+		material->revision = ++material_revision;
 		copy.remove(E);
 		bool uniforms_changed = false;
 

@@ -878,6 +878,11 @@ void main() {
 #include "../half_inc.glsl"
 #include "scene_forward_clustered_inc.glsl"
 
+#ifdef MODE_RENDER_SDF
+#include "../environment/hddagi_emission_inc.glsl"
+#include "../environment/hddagi_voxel_metadata_inc.glsl"
+#endif
+
 /* Varyings */
 
 #if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
@@ -1681,8 +1686,9 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 indirect_specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
+	float hddagi_reflection_coverage = 1.0;
 #ifndef MODE_UNSHADED
-	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
+	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
 #endif
 
@@ -1940,76 +1946,17 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #else
 
-	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
-
-		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI) && hddagi.max_cascades > 0) {
+		vec3 cam_vertex = mat3(inv_view_matrix) * vertex;
 		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
 		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
 
-		//apply y-mult
-		cam_pos.y *= sdfgi.y_mult;
-		cam_normal.y *= sdfgi.y_mult;
-		cam_normal = normalize(cam_normal);
-		cam_reflection.y *= sdfgi.y_mult;
-		cam_normal = normalize(cam_normal);
-		cam_reflection = normalize(cam_reflection);
+		vec4 ret_ambient;
+		vec4 ret_reflection;
+		hddagi_process(cam_vertex, cam_normal, cam_reflection, roughness, ret_ambient, ret_reflection);
 
-		vec4 light_accum = vec4(0.0);
-		float weight_accum = 0.0;
-
-		vec4 light_blend_accum = vec4(0.0);
-		float weight_blend_accum = 0.0;
-
-		float blend = -1.0;
-
-		// helper constants, compute once
-
-		uint cascade = 0xFFFFFFFF;
-		vec3 cascade_pos;
-		vec3 cascade_normal;
-
-		for (uint i = 0; i < sdfgi.max_cascades; i++) {
-			cascade_pos = (cam_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_probe;
-
-			if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, sdfgi.cascade_probe_size))) {
-				continue; //skip cascade
-			}
-
-			cascade = i;
-			break;
-		}
-
-		if (cascade < SDFGI_MAX_CASCADES) {
-			bool use_specular = true;
-			float blend;
-			vec3 diffuse, specular;
-			sdfgi_process(cascade, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse, specular, blend);
-
-			if (blend > 0.0) {
-				//blend
-				if (cascade == sdfgi.max_cascades - 1) {
-					diffuse = mix(diffuse, ambient_light, blend);
-					if (use_specular) {
-						indirect_specular_light = mix(specular, indirect_specular_light, blend);
-					}
-				} else {
-					vec3 diffuse2, specular2;
-					float blend2;
-					cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
-					sdfgi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse2, specular2, blend2);
-					diffuse = mix(diffuse, diffuse2, blend);
-					if (use_specular) {
-						specular = mix(specular, specular2, blend);
-					}
-				}
-			}
-
-			ambient_light = diffuse;
-			if (use_specular) {
-				indirect_specular_light = specular;
-			}
-		}
+		ambient_light = mix(ambient_light, ret_ambient.rgb, ret_ambient.a);
+		indirect_specular_light = mix(indirect_specular_light, ret_reflection.rgb, ret_reflection.a);
 	}
 
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
@@ -2083,12 +2030,17 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
 		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec2 buffer_blend = textureLod(sampler2DArray(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0).rg;
 #else // USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
 		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec2 buffer_blend = textureLod(sampler2D(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0).rg;
 #endif // USE_MULTIVIEW
 
+		buffer_ambient.a = buffer_blend.r;
+		buffer_reflection.a = buffer_blend.g;
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
+		hddagi_reflection_coverage = buffer_reflection.a;
 		indirect_specular_light = mix(indirect_specular_light, buffer_reflection.rgb, buffer_reflection.a);
 	}
 #endif // !USE_LIGHTMAP
@@ -2251,6 +2203,9 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		float specular_occlusion = area / (M_TAU * (1.0 - cos_a_s));
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #else // BENT_NORMAL_MAP_USED
 		float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
@@ -2260,6 +2215,9 @@ void fragment_shader(in SceneData scene_data) {
 		// 10.0 is a magic number, it gives the intended effect in most scenarios.
 		// Low enough for occlusion, high enough for reaction to lights and shadows.
 		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #endif // BENT_NORMAL_MAP_USED
 #endif // SPECULAR_OCCLUSION_DISABLED
@@ -2276,6 +2234,8 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		//process ssr
+		bool hddagi_unified_specular = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_HDDAGI_UNIFIED_SPECULAR) &&
+				!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI);
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
 			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
 
@@ -2303,6 +2263,10 @@ void fragment_shader(in SceneData scene_data) {
 
 			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
 			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+			if (hddagi_unified_specular) {
+				const float unified_specular_authority = 1.0 - smoothstep(0.30, 0.40, roughness);
+				ssr *= 1.0 - hddagi_reflection_coverage * unified_specular_authority;
+			}
 
 			// Alpha is premultiplied.
 			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
@@ -2999,93 +2963,70 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef MODE_RENDER_SDF
 
 	{
+		// Compute geometric normal.
+		vec3 ddx_vertex = dFdx(vertex);
+		vec3 ddy_vertex = dFdy(vertex);
+		vec3 geometric_normal = normalize(cross(ddx_vertex, ddy_vertex));
+
 		vec3 local_pos = (implementation_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
-		ivec3 grid_pos = implementation_data.sdf_offset + ivec3(local_pos * vec3(implementation_data.sdf_size));
+		vec3 grid_pos = vec3(implementation_data.sdf_offset) + local_pos * vec3(implementation_data.sdf_size);
+		ivec3 igrid_pos = ivec3(grid_pos);
 
-		uint albedo16 = 0x1; //solid flag
-		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
-		albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
-		albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
+		// Compute normal bits. Lower 6 are inclusive axis facings, upper 26 are exclusive normal directions.
+		const int facing_direction_count = 26;
 
-		imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
+		vec3 cam_normal = normalize(normal_interp);
+		vec3 cam_geom_normal = geometric_normal;
+		uint axis = implementation_data.sdf_capture_axis;
+		if (axis == 0u) {
+			cam_normal = mat3(inv_view_matrix) * cam_normal;
+			cam_geom_normal = mat3(inv_view_matrix) * cam_geom_normal;
+		} else if (axis == 1u) {
+			cam_normal = cam_normal.zxy;
+			cam_geom_normal = cam_geom_normal.zxy;
+		} else if (axis == 2u) {
+			cam_normal = cam_normal.yzx;
+			cam_geom_normal = cam_geom_normal.yzx;
+		}
+		if (gl_FrontFacing) {
+			cam_geom_normal = -cam_geom_normal;
+		}
 
-		uint facing_bits = 0;
-		const vec3 aniso_dir[6] = vec3[](
-				vec3(1, 0, 0),
-				vec3(0, 1, 0),
-				vec3(0, 0, 1),
-				vec3(-1, 0, 0),
-				vec3(0, -1, 0),
-				vec3(0, 0, -1));
+		uint bit_normal = 0;
+		const float exclusive_threshold = 0.7;
+		const float inclusive_threshold = 0.001;
+		for (int i = 0; i < facing_direction_count; i++) {
+			float dp = dot(cam_geom_normal, hddagi_surface_normal(uint(i)));
 
-		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
+			if (i < 6 && dp > inclusive_threshold) {
+				bit_normal |= uint(1 << i);
+			}
 
-		float closest_dist = -1e20;
-
-		for (uint i = 0; i < 6; i++) {
-			float d = dot(cam_normal, aniso_dir[i]);
-			if (d > closest_dist) {
-				closest_dist = d;
-				facing_bits = (1 << i);
+			if (dp > exclusive_threshold) {
+				bit_normal |= uint(1 << (i + 6));
 			}
 		}
 
 #ifdef NO_IMAGE_ATOMICS
-		imageStore(geom_facing_grid, grid_pos, uvec4(imageLoad(geom_facing_grid, grid_pos).r | facing_bits)); //store facing bits
+		imageStore(geom_normal_bits, igrid_pos, uvec4(imageLoad(geom_normal_bits, igrid_pos).r | bit_normal));
 #else
-		imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
+		imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal);
 #endif
 
+		vec3 diffuse_albedo = clamp(albedo * (1.0 - metallic), 0.0, 1.0);
+		uvec3 channels = uvec3(round(diffuse_albedo * vec3(31.0, 63.0, 31.0)));
+		uint albedo16 = channels.r | (channels.g << 5u) | (channels.b << 11u);
+		for (int i = 0; i < 6; i++) {
+			float d = dot(cam_normal, vec3(hddagi_axis_direction(uint(i))));
+			if (d > 0.0) {
+				ivec3 store_pos = igrid_pos >> 1;
+				store_pos.z = store_pos.z * 6 + i;
+				imageStore(albedo_volume_grid, store_pos, uvec4(albedo16));
+			}
+		}
+
 		if (length(emission) > 0.001) {
-			float lumas[6];
-			vec3 light_total = vec3(0);
-
-			for (int i = 0; i < 6; i++) {
-				float strength = max(0.0, dot(cam_normal, aniso_dir[i]));
-				vec3 light = emission * strength;
-				light_total += light;
-				lumas[i] = max(light.r, max(light.g, light.b));
-			}
-
-			float luma_total = max(light_total.r, max(light_total.g, light_total.b));
-
-			uint light_aniso = 0;
-
-			for (int i = 0; i < 6; i++) {
-				light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
-			}
-
-			//compress to RGBE9995 to save space
-
-			const float pow2to9 = 512.0f;
-			const float B = 15.0f;
-			const float N = 9.0f;
-			const float LN2 = 0.6931471805599453094172321215;
-
-			float cRed = clamp(light_total.r, 0.0, 65408.0);
-			float cGreen = clamp(light_total.g, 0.0, 65408.0);
-			float cBlue = clamp(light_total.b, 0.0, 65408.0);
-
-			float cMax = max(cRed, max(cGreen, cBlue));
-
-			float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
-
-			float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
-
-			float exps = expp + 1.0f;
-
-			if (0.0 <= sMax && sMax < pow2to9) {
-				exps = expp;
-			}
-
-			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-			//store as 8985 to have 2 extra neighbor bits
-			uint light_rgbe = ((uint(sRed) & 0x1FFu) >> 1) | ((uint(sGreen) & 0x1FFu) << 8) | (((uint(sBlue) & 0x1FFu) >> 1) << 17) | ((uint(exps) & 0x1Fu) << 25);
-
-			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
-			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
+			hddagi_store_emission(igrid_pos >> 1, rgbe_encode(emission), -cam_normal, cam_normal);
 		}
 	}
 

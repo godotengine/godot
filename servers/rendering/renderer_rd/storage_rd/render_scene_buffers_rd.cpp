@@ -96,7 +96,7 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 }
 
 void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
-	if (p_named_texture.texture.is_valid()) {
+	if (p_named_texture.texture.is_valid() && RD::get_singleton()->texture_is_valid(p_named_texture.texture)) {
 		RD::get_singleton()->free_rid(p_named_texture.texture);
 	}
 	p_named_texture.texture = RID();
@@ -868,7 +868,7 @@ RD::DataFormat RenderSceneBuffersRD::get_velocity_format() {
 }
 
 uint32_t RenderSceneBuffersRD::get_velocity_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {
-	return get_color_usage_bits(p_resolve, p_msaa, p_storage);
+	return get_color_usage_bits(p_resolve, p_msaa, p_storage) | (p_msaa ? 0 : RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT);
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {

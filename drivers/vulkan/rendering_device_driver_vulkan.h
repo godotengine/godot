@@ -305,7 +305,7 @@ public:
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
-	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
+	virtual bool texture_can_make_shared_with_format(DataFormat p_base_format, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 	/*****************/
 	/**** SAMPLER ****/
