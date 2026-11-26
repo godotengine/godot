@@ -19,12 +19,8 @@ namespace Godot;
 /// </summary>
 public static class CustomGCHandle
 {
-    // ConditionalWeakTable uses DependentHandle, so it stores weak references.
-    // Having the assembly load context as key won't prevent it from unloading.
-    private static ConditionalWeakTable<AssemblyLoadContext, object?> _alcsBeingUnloaded = new();
-
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static bool IsAlcBeingUnloaded(AssemblyLoadContext alc) => _alcsBeingUnloaded.TryGetValue(alc, out _);
+    public static bool IsAlcBeingUnloaded(AssemblyLoadContext alc) => AlcTracker.IsAlcBeingUnloaded(alc);
 
     private static ConcurrentDictionary<
         AssemblyLoadContext,
@@ -34,7 +30,7 @@ public static class CustomGCHandle
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void OnAlcUnloading(AssemblyLoadContext alc)
     {
-        _alcsBeingUnloaded.Add(alc, null);
+        AlcTracker.RegisterUnloadingAlc(alc);
 
         if (_strongReferencesByAlc.TryRemove(alc, out var strongReferences))
         {
@@ -56,7 +52,7 @@ public static class CustomGCHandle
             {
                 var weakHandle = GCHandle.Alloc(value, GCHandleType.Weak);
 
-                if (!IsAlcBeingUnloaded(alc))
+                if (!AlcTracker.IsAlcBeingUnloaded(alc))
                 {
                     var strongReferences = _strongReferencesByAlc.GetOrAdd(alc,
                         static alc =>
