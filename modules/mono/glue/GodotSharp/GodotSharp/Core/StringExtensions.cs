@@ -1793,5 +1793,36 @@ namespace Godot
         {
             return SecurityElement.FromString(instance)?.Text;
         }
+
+        /// <summary>
+        /// Encodes a Unicode string to Internationalized Domain Names in Applications (IDNA) format.
+        /// Each dot-separated label that contains non-ASCII characters is encoded using Punycode and
+        /// prefixed with <c>xn--</c>. Pure ASCII labels are passed through unchanged.
+        /// </summary>
+        /// <param name="instance">The string to encode.</param>
+        /// <returns>The encoded string.</returns>
+        public static string IdnaEncode(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_idna_encode(instanceStr, out godot_string idnaEncoded);
+            using (idnaEncoded)
+                return Marshaling.ConvertStringToManaged(idnaEncoded);
+        }
+
+        /// <summary>
+        /// Decodes a string in Internationalized Domain Names in Applications (IDNA) format back to its
+        /// Unicode representation. Punycode-encoded labels (prefixed with <c>xn--</c>) are decoded to
+        /// their original Unicode characters. Labels that are not Punycode-encoded are passed through
+        /// unchanged. Returns an empty string if decoding fails.
+        /// </summary>
+        /// <param name="instance">The string to decode.</param>
+        /// <returns>The decoded string.</returns>
+        public static string IdnaDecode(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_idna_decode(instanceStr, out godot_string idnaDecoded);
+            using (idnaDecoded)
+                return Marshaling.ConvertStringToManaged(idnaDecoded);
+        }
     }
 }
