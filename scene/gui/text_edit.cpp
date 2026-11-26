@@ -4021,15 +4021,13 @@ void TextEdit::_font_changed() {
 }
 
 void TextEdit::_update_caches(bool p_invalidate_all) {
-	if (observed_font != theme_cache.font) {
-		if (observed_font.is_valid()) {
-			observed_font->disconnect_changed(callable_mp(this, &TextEdit::_font_changed));
+	if (text.get_font() != theme_cache.font) {
+		if (text.get_font().is_valid()) {
+			text.get_font()->disconnect_changed(callable_mp(this, &TextEdit::_font_changed));
 		}
 
-		observed_font = theme_cache.font;
-
-		if (observed_font.is_valid()) {
-			observed_font->connect_changed(callable_mp(this, &TextEdit::_font_changed));
+		if (theme_cache.font.is_valid()) {
+			theme_cache.font->connect_changed(callable_mp(this, &TextEdit::_font_changed));
 		}
 	}
 	/* Text properties. */
