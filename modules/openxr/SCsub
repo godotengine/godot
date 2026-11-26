@@ -19,7 +19,7 @@ if env["platform"] == "android":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
     env_openxr.AppendUnique(CPPDEFINES=[("JSON_USE_EXCEPTION", 0)])
 elif env["platform"] == "linuxbsd":
-    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
+    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_LINUX", "XR_USE_TIMESPEC"])
 
     if env["x11"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])

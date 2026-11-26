@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_server.h"
@@ -72,6 +73,7 @@
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/platform/openxr_headless_extension.h"
 #include "extensions/spatial_container/openxr_spatial_container_extension.h"
 
 #ifndef DISABLE_DEPRECATED
@@ -303,16 +305,20 @@ OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
-	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-		if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
-			// For now, don't start OpenXR when the editor starts up. In the future, this may change
-			// if we want to integrate more XR features into the editor experience.
+	switch (XRServer::get_xr_mode()) {
+		case XRServer::XRMODE_DEFAULT:
+			if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
+				// For now, don't start OpenXR when the editor starts up. In the future, this may change
+				// if we want to integrate more XR features into the editor experience.
+				return false;
+			} else {
+				return GLOBAL_GET("xr/openxr/enabled");
+			}
+		case XRServer::XRMODE_ON:
+		case XRServer::XRMODE_HEADLESS:
+			return true;
+		default:
 			return false;
-		} else {
-			return GLOBAL_GET("xr/openxr/enabled");
-		}
-	} else {
-		return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 	}
 }
 
@@ -1284,6 +1290,10 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 
+	if (graphics_extension->is_headless()) {
+		return true;
+	}
+
 	{
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
@@ -1759,7 +1769,10 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		return false;
 	}
 
-	if (p_rendering_driver == "vulkan") {
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_HEADLESS) {
+		graphics_extension = memnew(OpenXRHeadlessExtension);
+		register_extension_wrapper(graphics_extension);
+	} else if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
 		graphics_extension = memnew(OpenXRVulkanExtension);
 		register_extension_wrapper(graphics_extension);
@@ -2752,6 +2765,8 @@ bool OpenXRAPI::process() {
 	}
 	last_wait_frame_error = XR_SUCCESS;
 
+	graphics_extension->post_wait_frame(&frame_wait_info, &frame_state);
+
 	if (frame_state.predictedDisplayPeriod > 500000000) {
 		// display period more then 0.5 seconds? must be wrong data
 		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
@@ -2799,7 +2814,7 @@ void OpenXRAPI::pre_render() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || graphics_extension->is_headless()) {
 		return;
 	}
 
@@ -3000,7 +3015,7 @@ void OpenXRAPI::end_frame() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || graphics_extension->is_headless()) {
 		return;
 	}
 
