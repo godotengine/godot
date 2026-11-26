@@ -584,7 +584,8 @@ bool AnimationMixer::is_dummy() const {
 /* -------------------------------------------- */
 
 void AnimationMixer::_clear_caches(bool p_clear_track_cache) {
-	_init_root_motion_cache();
+	// The root_motion should be able to be retrieved even on the end frame when after the mixer stopped.
+	callable_mp(this, &AnimationMixer::_init_root_motion_cache).call_deferred();
 	_clear_audio_streams();
 	_clear_playing_caches();
 	capture_cache.clear();
