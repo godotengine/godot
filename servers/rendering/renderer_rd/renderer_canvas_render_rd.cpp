@@ -1130,6 +1130,23 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	RD::get_singleton()->draw_list_end();
 }
 
+void RendererCanvasRenderRD::light_clear_shadow(RID p_rid, int p_shadow_index, float p_far) {
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!cl->shadow.enabled);
+
+	_update_shadow_atlas();
+
+	cl->shadow.z_far = p_far;
+	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(MAX_LIGHTS_PER_RENDER * 2);
+
+	Color zero_depth(0, 0, 0, 1.0);
+	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
+	RD::get_singleton()->draw_list_begin(
+			state.shadow_fb, RD::DRAW_CLEAR_ALL,
+			VectorView(&zero_depth, 1), 1.0f, 0, rect);
+	RD::get_singleton()->draw_list_end();
+}
+
 void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
