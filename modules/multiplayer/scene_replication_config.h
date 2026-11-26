@@ -63,9 +63,9 @@ private:
 	};
 
 	List<ReplicationProperty> properties;
-	List<NodePath> spawn_props;
-	List<NodePath> sync_props;
-	List<NodePath> watch_props;
+	LocalVector<NodePath> spawn_props;
+	LocalVector<NodePath> sync_props;
+	LocalVector<NodePath> watch_props;
 	bool dirty = false;
 
 	void _update();
@@ -99,9 +99,9 @@ public:
 	ReplicationMode property_get_replication_mode(const NodePath &p_path);
 	void property_set_replication_mode(const NodePath &p_path, ReplicationMode p_mode);
 
-	const List<NodePath> &get_spawn_properties();
-	const List<NodePath> &get_sync_properties();
-	const List<NodePath> &get_watch_properties();
+	const LocalVector<NodePath> &get_spawn_properties();
+	const LocalVector<NodePath> &get_sync_properties();
+	const LocalVector<NodePath> &get_watch_properties();
 
 	SceneReplicationConfig() {}
 };
