@@ -142,6 +142,9 @@
 		<member name="collision_result" type="Array" setter="" getter="get_collision_result" default="[]">
 			Returns the complete collision information from the collision sweep. The data returned is the same as in the [method PhysicsDirectSpaceState2D.get_rest_info] method.
 		</member>
+		<member name="debug_shape_colliding_custom_color" type="Color" setter="set_debug_shape_colliding_custom_color" getter="get_debug_shape_colliding_custom_color" default="Color(1, 0.01, 0, 1)">
+			The custom color used for the shape at run-time when the [ShapeCast2D] collides with an object, if [b]Visible Collision Shapes[/b] is enabled in the [b]Debug[/b] menu.
+		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], collisions will be reported.
 		</member>
