@@ -5436,23 +5436,24 @@ void DisplayServerX11::process_events() {
 						_set_input_focus(wd.x11_window, RevertToPointerRoot);
 					}
 
-					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
+					if (mb->get_button_index() < MouseButton::WHEEL_UP || mb->get_button_index() > MouseButton::WHEEL_RIGHT) {
+						uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
-					if (mb->get_button_index() == last_click_button_index) {
-						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
-							last_click_ms = 0;
-							last_click_pos = Point2i(-100, -100);
-							last_click_button_index = MouseButton::NONE;
-							mb->set_double_click(true);
+						if (mb->get_button_index() == last_click_button_index) {
+							if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
+								last_click_ms = 0;
+								last_click_pos = Point2i(-100, -100);
+								last_click_button_index = MouseButton::NONE;
+								mb->set_double_click(true);
+							}
+						} else {
+							last_click_button_index = mb->get_button_index();
 						}
 
-					} else if (mb->get_button_index() < MouseButton::WHEEL_UP || mb->get_button_index() > MouseButton::WHEEL_RIGHT) {
-						last_click_button_index = mb->get_button_index();
-					}
-
-					if (!mb->is_double_click()) {
-						last_click_ms += diff;
-						last_click_pos = Point2i(event.xbutton.x, event.xbutton.y);
+						if (!mb->is_double_click()) {
+							last_click_ms += diff;
+							last_click_pos = Point2i(event.xbutton.x, event.xbutton.y);
+						}
 					}
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
