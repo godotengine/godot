@@ -178,25 +178,13 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		}
 	} else {
 		if (Animation::is_less_approx(cur_time, 0)) {
-			cur_delta += cur_time;
+			cur_delta -= cur_time; // Means cur_delta += 0 - cur_time;
 			cur_time = 0;
 		} else if (Animation::is_greater_approx(cur_time, cur_len)) {
-			cur_delta += cur_time - cur_len;
+			cur_delta += cur_len - cur_time;
 			cur_time = cur_len;
 		}
 		cur_backward = false;
-		// If ended, don't progress AnimationNode. So set delta to 0.
-		if (!Math::is_zero_approx(cur_delta)) {
-			if (play_mode == PLAY_MODE_FORWARD) {
-				if (Animation::is_greater_or_equal_approx(prev_time, cur_len)) {
-					cur_delta = 0;
-				}
-			} else {
-				if (Animation::is_less_or_equal_approx(prev_time, 0)) {
-					cur_delta = 0;
-				}
-			}
-		}
 	}
 
 	// 2. For return, store "AnimationNode" time info here, not "Animation" time info as below.
