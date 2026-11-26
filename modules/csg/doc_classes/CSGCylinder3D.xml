@@ -17,9 +17,6 @@
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The height of the cylinder.
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material used to render the cylinder.
-		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The radius of the cylinder.
 		</member>
