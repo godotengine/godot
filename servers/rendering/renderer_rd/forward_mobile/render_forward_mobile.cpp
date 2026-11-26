@@ -829,10 +829,12 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 		}
 
 		if (p_render_data->directional_shadows.size()) {
-			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
-			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
-			RD::get_singleton()->draw_list_end();
+			if (!single_pass_directional_shadows) {
+				// Clear the whole atlas in a separate pass; splits are then drawn without clearing.
+				RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
+				RD::get_singleton()->draw_list_end();
+			}
 		}
 	}
 
@@ -1730,9 +1732,35 @@ void RenderForwardMobile::_render_shadow_process() {
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
+	// All directional splits go into one render pass that clears the atlas on begin, each with its own viewport.
+	RID directional_fb = single_pass_directional_shadows ? RendererRD::LightStorage::get_singleton()->direction_shadow_get_fb() : RID();
+	RD::DrawListID directional_draw_list = RD::INVALID_ID;
+
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+
+		if (directional_fb.is_valid() && shadow_pass.framebuffer == directional_fb) {
+			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(directional_fb);
+			render_list_parameters.framebuffer_format = fb_format;
+			if (directional_draw_list == RD::INVALID_ID) {
+				directional_draw_list = RD::get_singleton()->draw_list_begin(directional_fb, RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
+			}
+			RD::get_singleton()->draw_list_set_viewport(directional_draw_list, shadow_pass.rect);
+			// Scissor back to the viewport.
+			RD::get_singleton()->draw_list_disable_scissor(directional_draw_list);
+			_render_list(directional_draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+			continue;
+		}
+
+		if (directional_draw_list != RD::INVALID_ID) {
+			RD::get_singleton()->draw_list_end();
+			directional_draw_list = RD::INVALID_ID;
+		}
 		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
+	}
+
+	if (directional_draw_list != RD::INVALID_ID) {
+		RD::get_singleton()->draw_list_end();
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -3616,6 +3644,10 @@ RenderForwardMobile::RenderForwardMobile() {
 	} else {
 		print_verbose("Ubershaders: Enabled");
 	}
+
+	// On Apple GPUs, one clearing pass for all splits avoids storing the cleared atlas and loading it back per split.
+	// Mali was slower with this (GH-100321), so other GPUs keep separate passes.
+	single_pass_directional_shadows = RD::get_singleton()->get_device_vendor_name() == "Apple";
 
 	sky.set_texture_format(_render_buffers_get_preferred_color_format());
 
