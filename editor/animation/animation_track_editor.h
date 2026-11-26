@@ -586,7 +586,7 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTrackEditor *editor = nullptr;
 
 	bool hovered = false;
-	LocalVector<AnimationTrackEdit *> track_edits;
+	LocalVector<AnimationTrackEdit *, int> track_edits;
 	void _zoom_changed();
 
 protected:
@@ -601,6 +601,7 @@ public:
 	void set_root(Node *p_root);
 	void set_editor(AnimationTrackEditor *p_editor);
 	String get_node_name() const;
+	Node *get_node() const;
 
 	AnimationTrackEditGroup();
 };
@@ -659,8 +660,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *inactive_player_warning = nullptr;
 	void _show_inactive_player_warning();
 
+	void _show_sort_settings();
+
 	void _snap_mode_changed(int p_mode);
-	Vector<AnimationTrackEdit *> track_edits;
+	LocalVector<AnimationTrackEdit *, int> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 
 	bool animation_changing_awaiting_update = false;
@@ -668,6 +671,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	int _get_track_selected();
 	void _animation_changed();
 	void _update_tracks();
+	void _sort_groups(LocalVector<VBoxContainer *> &p_groups);
+	void _sort_tracks(LocalVector<AnimationTrackEdit *, int> &p_track_edits);
 	void _redraw_tracks();
 	void _redraw_groups();
 	void _check_bezier_exist();
@@ -852,9 +857,13 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _view_group_toggle();
 
-	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
-	Button *alphabetic_sorting = nullptr;
+	Button *sort_settings_button = nullptr;
+
+	Popup *sort_settings_popup = nullptr;
+	CheckBox *group_tracks = nullptr;
+	OptionButton *group_sort = nullptr;
+	OptionButton *track_sort = nullptr;
 
 	void _auto_fit();
 	void _auto_fit_bezier();
@@ -958,6 +967,18 @@ public:
 		EDIT_GOTO_PREV_KEYFRAME,
 	};
 
+	enum GroupSort {
+		SORT_GROUPS_BY_NAME_ASCENDING,
+		SORT_GROUPS_BY_NAME_DESCENDING,
+		SORT_GROUPS_AS_SCENE_TREE,
+	};
+
+	enum TrackSort {
+		SORT_TRACKS_UPDATE_ORDER,
+		SORT_TRACKS_BY_NAME_ASCENDING,
+		SORT_TRACKS_BY_NAME_DESCENDING,
+	};
+
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
@@ -1001,7 +1022,8 @@ public:
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
-	bool is_sorting_alphabetically();
+	GroupSort get_group_sort_order();
+	TrackSort get_track_sort_order();
 	PackedStringArray get_selected_section() const;
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
