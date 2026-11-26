@@ -242,7 +242,6 @@ private:
 				is_file(p_is_file) {}
 	};
 	FileOrFolder to_rename;
-	FileOrFolder to_duplicate;
 	Vector<FileOrFolder> to_move;
 	String to_move_path;
 	bool to_move_or_copy = false;
@@ -331,12 +330,11 @@ private:
 	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
 	void _rename_operation_confirm(bool p_from_tree);
-	void _duplicate_operation_confirm(const String &p_path);
 	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	void _convert_dialog_action();
-	Vector<String> _check_existing();
-	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
+	Vector<String> _check_existing(const String &p_new_name_or_empty);
+	void _move_operation_confirm(const String &p_to_path, const String &p_new_name_or_empty = "", bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
