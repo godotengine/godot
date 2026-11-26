@@ -712,9 +712,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// File Dialog
 
 	theme->set_constant("thumbnail_size", "FileDialog", 64);
-	theme->set_icon("load", "FileDialog", icons["load"]);
-	theme->set_icon("save", "FileDialog", icons["save"]);
-	theme->set_icon("clear", "FileDialog", icons["clear"]);
 	theme->set_icon("parent_folder", "FileDialog", icons["folder_up"]);
 	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
 	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
@@ -1137,6 +1134,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("picker_cursor_bg", "ColorPicker", icons["color_picker_cursor_bg"]);
 	theme->set_icon("color_script", "ColorPicker", icons["script"]);
 	theme->set_icon("color_copy", "ColorPicker", icons["action_copy"]);
+	theme->set_icon("palette_save", "ColorPicker", icons["save"]);
+	theme->set_icon("palette_load", "ColorPicker", icons["load"]);
+	theme->set_icon("palette_clear", "ColorPicker", icons["clear"]);
 
 	{
 		const int precision = 7;

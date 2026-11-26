@@ -342,6 +342,12 @@ private:
 
 		Ref<Texture2D> color_script;
 		Ref<Texture2D> color_copy;
+		Ref<Texture2D> palette_save;
+		Ref<Texture2D> palette_load;
+		Ref<Texture2D> palette_clear;
+#ifdef TOOLS_ENABLED
+		Ref<Texture2D> palette_quick_load;
+#endif
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
