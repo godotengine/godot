@@ -641,6 +641,7 @@ public:
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
+	String bbcode_escape() const;
 	String uri_encode() const;
 	String uri_decode() const;
 	String uri_file_decode() const;

@@ -36,6 +36,12 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="bbcode_escape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string with square brackets escaped to [code][lb][/code] and [code][rb][/code].
+			</description>
+		</method>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
