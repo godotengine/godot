@@ -151,7 +151,9 @@ struct _RigidBody2DInOut {
 
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	Transform2D new_transform = p_state->get_transform();
-	if (likely(new_transform != get_global_transform())) {
+	// Parent changes can require recomputing the local transform even when global transforms match.
+	bool inherits_parent_transform = get_parent_item() && !is_set_as_top_level();
+	if (likely(inherits_parent_transform || new_transform != get_global_transform())) {
 		set_block_transform_notify(true);
 		set_global_transform(new_transform);
 		set_block_transform_notify(false);
