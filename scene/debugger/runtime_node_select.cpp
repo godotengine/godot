@@ -389,7 +389,7 @@ bool RuntimeNodeSelect::_point_selected_ci_callback(const Variant &p_node, bool 
 	return selected_ci_nodes.has(node->get_instance_id());
 }
 
-bool RuntimeNodeSelect::_get_selection_ci_callback(Array r_selection) {
+bool RuntimeNodeSelect::_get_selection_ci_callback(Array r_selection, bool p_only_top) {
 	bool has_locked_items = false;
 	for (const KeyValue<ObjectID, Dictionary> &kv : selected_ci_nodes) {
 		Object *obj = ObjectDB::get_instance(kv.key);
@@ -400,7 +400,7 @@ bool RuntimeNodeSelect::_get_selection_ci_callback(Array r_selection) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(obj);
 		if (ci->is_visible_in_tree() && !CanvasItemManipulator::is_node_locked(ci)) {
 			// Ignore items with parents that are already selected.
-			if (!selected_ci_nodes.has(ci->get_parent()->get_instance_id())) {
+			if (!p_only_top || !selected_ci_nodes.has(ci->get_parent()->get_instance_id())) {
 				r_selection.append(obj);
 			}
 		} else {
