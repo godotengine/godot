@@ -200,6 +200,10 @@ void MultiplayerSpawner::_update_spawn_node() {
 		if (get_spawnable_scene_count()) {
 			node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
+		for (int i = 0; i < node->get_child_count(); i += 1) {
+			Node *initial_node = node->get_child(i);
+			_node_added(initial_node);
+		}
 	} else {
 		spawn_node = ObjectID();
 	}
