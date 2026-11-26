@@ -154,6 +154,7 @@ class EditorHelp : public VBoxContainer {
 	void _emit_request_save_new_history(const Dictionary &p_state);
 
 	void _add_text(const String &p_bbcode);
+	void _add_script_link(const String &p_script_path, const String &p_prefix = String(), const String &p_suffix = String());
 	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
