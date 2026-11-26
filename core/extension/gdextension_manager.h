@@ -50,12 +50,12 @@ class GDExtensionManager : public Object {
 	static inline GDExtensionManager *singleton = nullptr;
 
 public:
-	enum LoadStatus {
-		LOAD_STATUS_OK,
-		LOAD_STATUS_FAILED,
-		LOAD_STATUS_ALREADY_LOADED,
-		LOAD_STATUS_NOT_LOADED,
-		LOAD_STATUS_NEEDS_RESTART,
+	enum class LoadStatus {
+		OK,
+		FAILED,
+		ALREADY_LOADED,
+		NOT_LOADED,
+		NEEDS_RESTART,
 	};
 
 private:
