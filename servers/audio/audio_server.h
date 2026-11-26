@@ -61,6 +61,7 @@ private:
 	uint32_t buffer_size = 0;
 	uint64_t mix_count = 0;
 	uint64_t mix_frames = 0;
+	double absolute_time = 0.0;
 #ifdef DEBUG_ENABLED
 	SafeNumeric<uint64_t> prof_time;
 #endif
@@ -305,6 +306,7 @@ public:
 
 	uint64_t get_mix_count() const;
 	uint64_t get_mixed_frames() const;
+	double get_absolute_time() const;
 
 	String get_driver_name() const;
 

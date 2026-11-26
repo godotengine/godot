@@ -39,6 +39,9 @@ class AudioStreamWAV;
 class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackWAV, AudioStreamPlaybackResampled);
 
+	uint64_t delay_frames = 0;
+	uint64_t end_frame = std::numeric_limits<uint64_t>::max();
+
 	struct IMA_ADPCM_State {
 		int16_t step_index = 0;
 		int32_t predictor = 0;
@@ -58,6 +61,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
 	} qoa;
 
 	int64_t offset = 0;
+	uint32_t frames_mixed = 0;
 	int8_t sign = 1;
 	bool active = false;
 	friend class AudioStreamWAV;
@@ -82,6 +86,10 @@ public:
 
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
+
+	virtual bool set_delay(double p_delay) override;
+	virtual double get_delay() const override;
+	virtual bool set_end_position(double p_end_position) override;
 
 	virtual void tag_used_streams() override;
 

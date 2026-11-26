@@ -29,6 +29,13 @@
 				Adds an [AudioEffect] effect to the bus [param bus_idx] at [param at_position].
 			</description>
 		</method>
+		<method name="get_absolute_time" qualifiers="const" experimental="">
+			<return type="float" />
+			<description>
+				Returns the absolute time in seconds of the [AudioServer]'s timeline, based on the number of audio frames mixed. Used to schedule sounds to be played with high precision timing, such as with [method ScheduledAudioStreamPlayer.play_absolute].
+				[b]Note:[/b] This value only updates each time an audio chunk is mixed and should not be relied on as an accurate "current" time of the [AudioServer].
+			</description>
+		</method>
 		<method name="generate_bus_layout" qualifiers="const">
 			<return type="AudioBusLayout" />
 			<description>
