@@ -164,6 +164,8 @@ public:
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;
 	void remove_singleton(const StringName &p_name);
+	void register_singleton(const StringName &p_name, Object *p_object);
+	void unregister_singleton(const StringName &p_name);
 	bool is_singleton_user_created(const StringName &p_name) const;
 	bool is_singleton_editor_only(const StringName &p_name) const;
 
