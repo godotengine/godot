@@ -225,6 +225,27 @@ void ScenePaint2DEditor::_add_instance(bool p_show) {
 	} else if (selected_scene && instance_container && !instance) {
 		HashMap<const Node *, Node *> duplimap;
 		instance = Object::cast_to<Node2D>(selected_scene->duplicate_from_editor(duplimap));
+
+		// Remember original process mode of the instance and set it to DISABLED, to avoid unexpected events.
+		original_instance_process_mode = instance->get_process_mode();
+		instance->set_process_mode(PROCESS_MODE_DISABLED);
+
+		// HACK: Disable mouse filter of Control nodes, as they could interfere with painting.
+		// This can affect the scene if Editable Children are enabled, so a better solution would be nice.
+		LocalVector<Node *> nodes_to_fix = { instance };
+		while (!nodes_to_fix.is_empty()) {
+			Node *node_to_fix = nodes_to_fix[nodes_to_fix.size() - 1];
+			nodes_to_fix.remove_at(nodes_to_fix.size() - 1);
+
+			Control *control = Object::cast_to<Control>(node_to_fix);
+			if (control) {
+				control->set_mouse_filter(MOUSE_FILTER_IGNORE);
+			}
+			for (Node *child : node_to_fix->iterate_children()) {
+				nodes_to_fix.push_back(child);
+			}
+		}
+
 		instance_container->add_child(instance, true);
 		instance->set_position(Point2());
 	}
@@ -386,6 +407,7 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 	if (!node_2d) {
 		return;
 	}
+	node_2d->set_process_mode(original_instance_process_mode);
 
 	if (scene) {
 		node->add_child(node_2d, true);
