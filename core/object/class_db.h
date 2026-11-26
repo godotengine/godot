@@ -234,62 +234,25 @@ private:
 	static Variant _class_get_cached_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 
 public:
-	template <typename T>
-	static void register_class(bool p_virtual = false) {
+	template <typename T, bool is_virtual = false, bool is_abstract = false, bool is_exposed = true, bool is_runtime = false>
+	static void register_class() {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
-		t->exposed = true;
-		t->is_virtual = p_virtual;
+		if constexpr (is_runtime) {
+			ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
+		}
+		t->exposed = is_exposed;
+		t->is_virtual = is_virtual;
+		t->is_runtime = is_runtime;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
-		T::register_custom_data_to_otdb();
-	}
-
-	template <typename T>
-	static void register_abstract_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
-		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->exposed = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		//nothing
-	}
-
-	template <typename T>
-	static void register_internal_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
-		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->exposed = false;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
-	}
-
-	template <typename T>
-	static void register_runtime_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
-		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
-		t->creation_func = &creator<T>;
-		t->exposed = true;
-		t->is_virtual = false;
-		t->is_runtime = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		if constexpr (!is_abstract) {
+			t->creation_func = &creator<T>;
+			T::register_custom_data_to_otdb();
+		}
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
@@ -568,19 +531,19 @@ public:
 	}
 #define GDREGISTER_VIRTUAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_class<m_class>(true); \
+		::ClassDB::register_class<m_class, true>(); \
 	}
 #define GDREGISTER_ABSTRACT_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_abstract_class<m_class>(); \
+		::ClassDB::register_class<m_class, false, true>(); \
 	}
 #define GDREGISTER_INTERNAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_internal_class<m_class>(); \
+		::ClassDB::register_class<m_class, false, false, false>(); \
 	}
 #define GDREGISTER_RUNTIME_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_runtime_class<m_class>(); \
+		::ClassDB::register_class<m_class, false, false, true, true>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
