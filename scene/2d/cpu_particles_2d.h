@@ -168,7 +168,7 @@ private:
 
 	EmissionShape emission_shape = EMISSION_SHAPE_POINT;
 	real_t emission_sphere_radius = 1.0;
-	Vector2 emission_rect_extents = Vector2(1, 1);
+	Vector2 emission_rect_size = Vector2(2, 2);
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
@@ -300,7 +300,10 @@ public:
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(real_t p_radius);
-	void set_emission_rect_extents(Vector2 p_extents);
+	void set_emission_rect_size(const Vector2 &p_size);
+#ifndef DISABLE_DEPRECATED
+	void set_emission_rect_extents(Vector2 p_extents) { set_emission_rect_size(p_extents * 2.0); }
+#endif
 	void set_emission_points(const Vector<Vector2> &p_points);
 	void set_emission_normals(const Vector<Vector2> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
@@ -312,7 +315,10 @@ public:
 
 	EmissionShape get_emission_shape() const;
 	real_t get_emission_sphere_radius() const;
-	Vector2 get_emission_rect_extents() const;
+	Vector2 get_emission_rect_size() const { return emission_rect_size; }
+#ifndef DISABLE_DEPRECATED
+	Vector2 get_emission_rect_extents() const { return emission_rect_size * 0.5; }
+#endif
 	Vector<Vector2> get_emission_points() const;
 	Vector<Vector2> get_emission_normals() const;
 	Vector<Color> get_emission_colors() const;

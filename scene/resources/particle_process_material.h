@@ -273,7 +273,7 @@ private:
 		StringName velocity_pivot;
 
 		StringName emission_sphere_radius;
-		StringName emission_box_extents;
+		StringName emission_box_size;
 		StringName emission_texture_point_count;
 		StringName emission_texture_points;
 		StringName emission_texture_normal;
@@ -342,7 +342,7 @@ private:
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius = 0.0f;
-	Vector3 emission_box_extents;
+	Vector3 emission_box_size;
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
@@ -463,7 +463,10 @@ public:
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(real_t p_radius);
-	void set_emission_box_extents(Vector3 p_extents);
+	void set_emission_box_size(const Vector3 &p_size);
+#ifndef DISABLE_DEPRECATED
+	void set_emission_box_extents(Vector3 p_extents) { set_emission_box_size(p_extents * 2.0); }
+#endif
 	void set_emission_point_texture(const Ref<Texture2D> &p_points);
 	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
 	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
@@ -476,7 +479,10 @@ public:
 
 	EmissionShape get_emission_shape() const;
 	real_t get_emission_sphere_radius() const;
-	Vector3 get_emission_box_extents() const;
+	Vector3 get_emission_box_size() const;
+#ifndef DISABLE_DEPRECATED
+	Vector3 get_emission_box_extents() const { return emission_box_size * 0.5; }
+#endif
 	Ref<Texture2D> get_emission_point_texture() const;
 	Ref<Texture2D> get_emission_normal_texture() const;
 	Ref<Texture2D> get_emission_color_texture() const;
