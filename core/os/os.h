@@ -96,6 +96,7 @@ private:
 	bool _writing_movie = false;
 	bool _in_editor = false;
 	bool _embedded_in_editor = false;
+	bool _custom_scene = false;
 
 	CompositeLogger *_logger = nullptr;
 
