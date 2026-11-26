@@ -206,6 +206,7 @@ void MultiMesh::set_buffer(const Vector<float> &p_buffer) {
 	ERR_FAIL_COND_MSG(stride * instance_count != p_buffer.size(), "Cannot set a buffer on a Multimesh that is a different size from the Multimesh's existing buffer.");
 
 	RS::get_singleton()->multimesh_set_buffer(multimesh, p_buffer);
+	emit_changed();
 }
 
 Vector<float> MultiMesh::get_buffer() const {
@@ -214,6 +215,7 @@ Vector<float> MultiMesh::get_buffer() const {
 
 void MultiMesh::set_buffer_interpolated(const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) {
 	RS::get_singleton()->multimesh_set_buffer_interpolated(multimesh, p_buffer_curr, p_buffer_prev);
+	emit_changed();
 }
 
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -244,6 +246,7 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 	ERR_FAIL_COND(p_count > instance_count);
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, p_count);
 	visible_instance_count = p_count;
+	emit_changed();
 }
 
 int MultiMesh::get_visible_instance_count() const {
@@ -284,6 +287,7 @@ void MultiMesh::set_instance_color(int p_instance, const Color &p_color) {
 	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
 	ERR_FAIL_COND_MSG(!use_colors, "Can't set instance color on a Multimesh that isn't using colors. Ensure that you have `use_colors` property of this Multimesh set to `true`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_color(multimesh, p_instance, p_color);
+	emit_changed();
 }
 
 Color MultiMesh::get_instance_color(int p_instance) const {
@@ -296,6 +300,7 @@ void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_d
 	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
 	ERR_FAIL_COND_MSG(!use_custom_data, "Can't get instance custom data on a Multimesh that isn't using custom data. Ensure that you have `use_custom_data` property of this Multimesh set to `true`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_custom_data(multimesh, p_instance, p_custom_data);
+	emit_changed();
 }
 
 Color MultiMesh::get_instance_custom_data(int p_instance) const {
