@@ -105,9 +105,13 @@ private:
 	Vector3 previous_velocity;
 	Vector3 previous_position;
 
-	void _attach_sub_emitter();
+	NodePath skeletal_mesh = NodePath();
+	Ref<Texture2D> emission_texture;
+	int emission_texture_points_count = 512;
 
 	void _skinning_changed();
+	void _attach_sub_emitter();
+	void _fetch_skin();
 
 protected:
 	static void _bind_methods();
@@ -193,6 +197,13 @@ public:
 
 	void set_transform_align_axis(RSE::ParticlesTransformAlignAxis p_axis);
 	RSE::ParticlesTransformAlignAxis get_transform_align_axis() const;
+
+	void set_skeletal_mesh(const NodePath &p_remote_node);
+	NodePath get_skeletal_mesh() const;
+	void set_emission_texture(const Ref<Texture2D> &p_emission_texture);
+	Ref<Texture2D> get_emission_texture() const;
+	void set_emission_texture_points_count(int p_points_count);
+	int get_emission_texture_points_count() const;
 
 	void restart(bool p_keep_seed = false);
 

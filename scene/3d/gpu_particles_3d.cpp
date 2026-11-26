@@ -36,6 +36,8 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/mesh.h"
@@ -310,6 +312,75 @@ Ref<Mesh> GPUParticles3D::get_draw_pass_mesh(int p_pass) const {
 
 	return draw_passes[p_pass];
 }
+
+//----------------------- Skeletal emission
+
+void GPUParticles3D::set_skeletal_mesh(const NodePath &p_skeletal_mesh) {
+	if (!is_inside_tree()) {
+		skeletal_mesh = p_skeletal_mesh;
+		return;
+	}
+
+	Node *prev_node = get_node(skeletal_mesh);
+	MeshInstance3D *prev_mi = Object::cast_to<MeshInstance3D>(prev_node);
+
+	if (prev_mi && prev_mi->is_connected(SNAME("skin_reference_changed"), callable_mp(this, &GPUParticles3D::_fetch_skin))) {
+		prev_mi->disconnect(SNAME("skin_reference_changed"), callable_mp(this, &GPUParticles3D::_fetch_skin));
+	}
+	skeletal_mesh = p_skeletal_mesh;
+	_fetch_skin();
+}
+
+void GPUParticles3D::_fetch_skin() {
+	Node *node = get_node(skeletal_mesh);
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node);
+
+	if (!mi) {
+		RS::get_singleton()->particles_set_skeleton(particles, RID());
+	} else {
+		if (!mi->is_connected(SNAME("skin_reference_changed"), callable_mp(this, &GPUParticles3D::_fetch_skin))) {
+			mi->connect(SNAME("skin_reference_changed"), callable_mp(this, &GPUParticles3D::_fetch_skin));
+		}
+		if (mi->get_skin_reference().is_null()) {
+			RS::get_singleton()->particles_set_skeleton(particles, RID());
+		} else {
+			Ref<SkinReference> skeletal_mesh_skin = mi->get_skin_reference();
+			RS::get_singleton()->particles_set_skeleton(particles, skeletal_mesh_skin->get_skeleton());
+		}
+	}
+}
+
+NodePath GPUParticles3D::get_skeletal_mesh() const {
+	return skeletal_mesh;
+}
+
+void GPUParticles3D::set_emission_texture(const Ref<Texture2D> &p_emission_texture) {
+	emission_texture = p_emission_texture;
+	if (emission_texture.is_valid()) {
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, emission_texture->get_rid(), emission_texture_points_count);
+	} else {
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, RID(), emission_texture_points_count);
+	}
+}
+
+void GPUParticles3D::set_emission_texture_points_count(int p_points_count) {
+	emission_texture_points_count = p_points_count;
+	if (emission_texture.is_valid()) {
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, emission_texture->get_rid(), emission_texture_points_count);
+	} else {
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, RID(), emission_texture_points_count);
+	}
+}
+
+Ref<Texture2D> GPUParticles3D::get_emission_texture() const {
+	return emission_texture;
+}
+
+int GPUParticles3D::get_emission_texture_points_count() const {
+	return emission_texture_points_count;
+}
+
+//--------------------------------------------------------
 
 void GPUParticles3D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;
@@ -588,6 +659,7 @@ void GPUParticles3D::_notification(int p_what) {
 			previous_position = get_global_transform().origin;
 			set_process_internal(true);
 			set_physics_process_internal(true);
+			set_skeletal_mesh(skeletal_mesh);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -831,6 +903,15 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_draw_passes"), &GPUParticles3D::get_draw_passes);
 	ClassDB::bind_method(D_METHOD("get_draw_pass_mesh", "pass"), &GPUParticles3D::get_draw_pass_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_skeletal_mesh", "skeletal_mesh"), &GPUParticles3D::set_skeletal_mesh);
+	ClassDB::bind_method(D_METHOD("get_skeletal_mesh"), &GPUParticles3D::get_skeletal_mesh);
+
+	ClassDB::bind_method(D_METHOD("set_emission_texture", "emission_texture"), &GPUParticles3D::set_emission_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_texture"), &GPUParticles3D::get_emission_texture);
+
+	ClassDB::bind_method(D_METHOD("set_emission_texture_points_count", "emission_points_count"), &GPUParticles3D::set_emission_texture_points_count);
+	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &GPUParticles3D::get_emission_texture_points_count);
+
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &GPUParticles3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &GPUParticles3D::get_skin);
 
@@ -889,6 +970,9 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:m"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeletal_mesh", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "MeshInstance3D"), "set_skeletal_mesh", "get_skeletal_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_texture", "get_emission_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_emission_texture_points_count", "get_emission_point_count");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Billboard,Align to Velocity,Trails,Local Billboard"), "set_transform_align", "get_transform_align");

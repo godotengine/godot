@@ -126,7 +126,7 @@ private:
 
 		float particle_size;
 		float amount_ratio;
-		float pad1;
+		uint32_t emission_points_count;
 		float pad2;
 
 		uint32_t random_seed;
@@ -171,6 +171,11 @@ private:
 
 		RID process_material;
 		uint32_t frame_counter = 0;
+
+		RID skeleton;
+		GLuint bones_texture = 0;
+		uint32_t emission_points_count = 512u;
+		GLuint emission_points_texture = 0;
 
 		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 		RSE::ParticlesTransformAlignAxis transform_align_axis = RSE::PARTICLES_ALIGN_AXIS_Y;
@@ -356,6 +361,9 @@ public:
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;
 
 	virtual void particles_restart(RID p_particles) override;
+
+	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) override;
+	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture, int p_points_count) override;
 
 	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override;
 

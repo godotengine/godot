@@ -80,7 +80,7 @@ layout(std140) uniform FrameData { //ubo:0
 
 	float particle_size;
 	float amount_ratio;
-	float pad1;
+	uint emission_points_count;
 	float pad2;
 
 	uint random_seed;
@@ -159,6 +159,8 @@ out highp vec4 out_userdata6; //tfb:USERDATA6_USED
 #endif
 
 uniform sampler2D height_field_texture; //texunit:0
+uniform sampler2D bones_texture; //texunit:1
+uniform sampler2D skinned_emission_texture; //texunit:2
 
 uniform float lifetime;
 uniform bool clear;
@@ -183,6 +185,69 @@ vec3 safe_normalize(vec3 direction) {
 // Needed whenever 2D sdf texture is read from as it is packed in RGBA8.
 float vec4_to_float(vec4 p_vec) {
 	return dot(p_vec, vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0)) * 2.0 - 1.0;
+}
+
+#define TEX(m) texelFetch(bones_texture, ivec2(m % 256u, m / 256u), 0)
+#define GET_BONE_MATRIX(a, b, c) mat4(TEX(a), TEX(b), TEX(c), vec4(0.0, 0.0, 0.0, 1.0))
+
+mat4 get_bone_transform(uint idx) {
+	mat4 t = mat4(
+			vec4(1.0, 0.0, 0.0, 0.0),
+			vec4(0.0, 1.0, 0.0, 0.0),
+			vec4(0.0, 0.0, 1.0, 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+
+	uint bones = idx * 3u;
+	uint bones_a = bones + 1u;
+	uint bones_b = bones + 2u;
+
+	t = GET_BONE_MATRIX(bones, bones_a, bones_b);
+	t = transpose(t);
+
+	return t;
+}
+
+void get_skinned_position(uint point, out vec3 position) {
+	int tex_size = 2048;
+	uint point_count = emission_points_count;
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
+	vec4 pos = texelFetch(skinned_emission_texture, point_uv, 0);
+	pos.w = 1.0;
+	vec4 bones1 = texelFetch(skinned_emission_texture, bones_uv, 0);
+	vec4 bones2 = texelFetch(skinned_emission_texture, bones_uv2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = (bones)*pos;
+	position = pos.xyz;
+}
+
+void get_skinned_position_and_normal(uint point, out vec3 position, out vec3 normal) {
+	int tex_size = 2048;
+	uint point_count = emission_points_count;
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+	ivec2 normal_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size + rows);
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
+	vec4 pos = texelFetch(skinned_emission_texture, point_uv, 0);
+	pos.w = 1.0;
+	vec4 nor = texelFetch(skinned_emission_texture, normal_uv, 0);
+	nor.w = 0.0;
+	vec4 bones1 = texelFetch(skinned_emission_texture, bones_uv, 0);
+	vec4 bones2 = texelFetch(skinned_emission_texture, bones_uv2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = (bones)*pos;
+	nor = (bones)*nor;
+	position = pos.xyz;
+	normal = nor.xyz;
 }
 
 #GLOBALS

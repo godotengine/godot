@@ -54,7 +54,7 @@ ParticlesStorage::ParticlesStorage() {
 	{
 		String global_defines;
 		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
-		material_storage->shaders.particles_process_shader.initialize(global_defines, 1);
+		material_storage->shaders.particles_process_shader.initialize(global_defines, 2);
 	}
 	{
 		// default material and shader for particles shader
@@ -382,6 +382,32 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 	particles->restart_request = true;
 }
 
+void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	// FIXME actually implement this method
+	if (p_skeleton.is_valid()) {
+		particles->skeleton = p_skeleton;
+	} else if (particles->skeleton.is_valid()) {
+		particles->skeleton = RID(); // Clear skeleton
+	}
+}
+
+void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture, int p_points_count) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	particles->emission_points_count = p_points_count;
+	if (p_emission_texture.is_valid()) {
+		GLES3::Texture *tex = texture_storage->get_texture(p_emission_texture);
+		particles->emission_points_texture = tex->tex_id;
+	} else {
+		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_BLACK));
+		particles->emission_points_texture = tex->tex_id;
+	}
+}
+
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	if (p_subemitter_particles.is_valid()) {
 		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle sub-emitters.");
@@ -562,7 +588,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	frame_params.cycle = p_particles->cycle_number;
 	frame_params.frame = p_particles->frame_counter++;
 	frame_params.amount_ratio = p_particles->amount_ratio;
-	frame_params.pad1 = 0;
+	frame_params.emission_points_count = p_particles->emission_points_count;
 	frame_params.pad2 = 0;
 	frame_params.interp_to_end = p_particles->interp_to_end;
 	frame_params.emitter_velocity[0] = p_particles->emitter_velocity.x;
@@ -734,6 +760,29 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, heightmap);
+	}
+
+	if (p_particles->skeleton.is_valid()) {
+		GLuint bones = p_particles->bones_texture;
+		Skeleton *skel = MeshStorage::get_singleton()->get_skeleton(p_particles->skeleton);
+		p_particles->bones_texture = skel->transforms_texture;
+		if (p_particles->bones_texture == 0) {
+			GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_BLACK));
+			bones = tex->tex_id;
+		} else {
+			bones = p_particles->bones_texture;
+		}
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bones);
+	}
+	{
+		GLuint emission_tex = p_particles->emission_points_texture;
+		if (p_particles->emission_points_texture == 0) {
+			GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_BLACK));
+			emission_tex = tex->tex_id;
+		}
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, emission_tex);
 	}
 
 	if (p_particles->frame_params_ubo == 0) {

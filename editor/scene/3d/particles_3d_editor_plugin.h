@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/scene/particles_editor_plugin.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 	GDCLASS(Particles3DEditorPlugin, ParticlesEditorPlugin);
@@ -46,18 +47,20 @@ class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 	SceneTreeDialog *emission_tree_dialog = nullptr;
 	ConfirmationDialog *emission_dialog = nullptr;
 	SpinBox *emission_amount = nullptr;
-	OptionButton *emission_fill = nullptr;
 
 	void _generate_aabb();
 	void _node_selected(const NodePath &p_path);
 
 protected:
 	Vector<Face3> geometry;
+	MeshInstance3D *selected_instance;
+
+	OptionButton *emission_fill = nullptr;
 
 	virtual void _menu_callback(int p_idx) override;
 	virtual void _add_menu_options(PopupMenu *p_menu) override;
 
-	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals);
+	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, Vector<int> &r_bones, Vector<real_t> &r_weights);
 	virtual bool _can_generate_points() const = 0;
 	virtual void _generate_emission_points() = 0;
 

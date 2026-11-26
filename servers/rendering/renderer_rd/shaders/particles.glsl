@@ -68,8 +68,8 @@ struct FrameParams {
 
 	uint frame;
 	float amount_ratio;
-	uint pad1;
-	uint pad2;
+	uint skeleton_bone_count;
+	uint emission_points_count;
 
 	uint random_seed;
 	uint attractor_count;
@@ -77,6 +77,7 @@ struct FrameParams {
 	float particle_size;
 
 	mat4 emission_transform;
+
 	vec3 emitter_velocity;
 	float interp_to_end;
 
@@ -158,6 +159,13 @@ layout(set = 1, binding = 3, std430) restrict buffer DestEmission {
 }
 dst_particles;
 
+layout(set = 1, binding = 4, std430) buffer restrict readonly SkeletonData {
+	vec4 data[];
+}
+bone_transforms;
+
+layout(set = 1, binding = 5) uniform texture2D skinned_emission_texture;
+
 /* SET 2: COLLIDER/ATTRACTOR TEXTURES */
 
 #define MAX_3D_TEXTURES 7
@@ -223,6 +231,70 @@ vec3 safe_normalize(vec3 direction) {
 		return vec3(0.0);
 	}
 	return normalize(direction);
+}
+
+mat4 get_bone_transform(uint idx) {
+	mat4 t = mat4(
+			vec4(1.0, 0.0, 0.0, 0.0),
+			vec4(0.0, 1.0, 0.0, 0.0),
+			vec4(0.0, 0.0, 1.0, 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+
+	//if (frame.skeleton_2d) {
+	//} else {
+	uint bone_idx = idx * 3;
+	t = mat4(
+			bone_transforms.data[bone_idx],
+			bone_transforms.data[bone_idx + 1],
+			bone_transforms.data[bone_idx + 2],
+			vec4(0.0, 0.0, 0.0, 1.0));
+	t = transpose(t);
+	//}
+	return t;
+}
+
+void get_skinned_position(uint point, out vec3 position) {
+	int tex_size = 2048;
+	uint point_count = frame_history.data[0].emission_points_count;
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
+	vec4 pos = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), point_uv, 0);
+	pos.w = 1.0;
+	vec4 bones1 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv, 0);
+	vec4 bones2 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = (bones)*pos;
+	position = pos.xyz;
+}
+
+void get_skinned_position_and_normal(uint point, out vec3 position, out vec3 normal) {
+	int tex_size = 2048;
+	uint point_count = frame_history.data[0].emission_points_count;
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+	ivec2 normal_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size + rows);
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
+	vec4 pos = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), point_uv, 0);
+	pos.w = 1.0;
+	vec4 nor = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), normal_uv, 0);
+	nor.w = 0.0;
+	vec4 bones1 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv, 0);
+	vec4 bones2 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = bones * pos;
+	nor = bones * nor;
+	position = pos.xyz;
+	normal = nor.xyz;
 }
 
 #GLOBALS
@@ -443,6 +515,7 @@ void main() {
 	bool particle_active = bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE);
 
 	uint particle_number = (PARTICLE.flags >> PARTICLE_FRAME_SHIFT) * uint(params.total_particles) + index;
+	uint emission_points_count = frame_history.data[0].emission_points_count;
 
 	if (restart && particle_active) {
 #CODE : START
