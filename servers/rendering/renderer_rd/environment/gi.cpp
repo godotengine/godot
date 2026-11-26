@@ -2432,13 +2432,13 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 	update_cascades();
 
 	SDFGIShader::Light lights[SDFGI::MAX_STATIC_LIGHTS];
-	uint32_t light_count[SDFGI::MAX_STATIC_LIGHTS];
+	uint32_t light_count[SDFGI::MAX_CASCADES];
 
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
-		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
+		uint32_t cascade_index = p_cascade_indices[i];
+		ERR_CONTINUE(cascade_index >= cascades.size());
 
-		SDFGI::Cascade &cc = cascades[p_cascade_indices[i]];
-
+		SDFGI::Cascade &cc = cascades[cascade_index];
 		{ //fill light buffer
 
 			AABB cascade_aabb;
@@ -2446,13 +2446,12 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 			cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cc.cell_size;
 
 			int idx = 0;
-
-			for (uint32_t j = 0; j < (uint32_t)p_positional_light_cull_result[i].size(); j++) {
+			for (uint32_t j = 0; j < (uint32_t)p_positional_light_cull_result[cascade_index].size(); j++) {
 				if (idx == SDFGI::MAX_STATIC_LIGHTS) {
 					break;
 				}
 
-				RID light_instance = p_positional_light_cull_result[i][j];
+				RID light_instance = p_positional_light_cull_result[cascade_index][j];
 				ERR_CONTINUE(!light_storage->owns_light_instance(light_instance));
 
 				RID light = light_storage->light_instance_get_base_light(light_instance);
@@ -2460,7 +2459,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 
 				uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(light);
-				if (p_cascade_indices[i] > max_sdfgi_cascade) {
+				if (cascade_index > max_sdfgi_cascade) {
 					continue;
 				}
 
