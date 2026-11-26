@@ -115,6 +115,7 @@ class SceneThemeEditorPreview : public ThemeEditorPreview {
 	Button *reload_scene_button = nullptr;
 
 	void _reload_scene();
+	void _add_custom_scene_to_view(Control *p_control_instance);
 
 protected:
 	void _notification(int p_what);
