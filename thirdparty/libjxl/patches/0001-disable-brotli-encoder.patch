@@ -1,0 +1,62 @@
+diff --git a/thirdparty/libjxl/lib/jxl/encode.cc b/thirdparty/libjxl/lib/jxl/encode.cc
+--- a/thirdparty/libjxl/lib/jxl/encode.cc
++++ b/thirdparty/libjxl/lib/jxl/encode.cc
+@@ -3,7 +3,9 @@
+ // Use of this source code is governed by a BSD-style
+ // license that can be found in the LICENSE file.
+ 
++#if JPEGXL_ENABLE_BOXES
+ #include <brotli/encode.h>
++#endif
+ #include <jxl/cms.h>
+ #include <jxl/cms_interface.h>
+ #include <jxl/codestream_header.h>
+@@ -504,6 +506,9 @@
+ // TODO(lode): share this code and the Brotli compression code in enc_jpeg_data
+ JxlEncoderStatus BrotliCompress(int quality, const uint8_t* in, size_t in_size,
+                                 jxl::PaddedBytes* out) {
++#if !JPEGXL_ENABLE_BOXES
++  return JXL_API_ERROR_NOSET("Brotli compression is not available");
++#else
+   JxlMemoryManager* memory_manager = out->memory_manager();
+   std::unique_ptr<BrotliEncoderState, decltype(BrotliEncoderDestroyInstance)*>
+       enc(BrotliEncoderCreateInstance(nullptr, nullptr, nullptr),
+@@ -546,6 +551,7 @@
+   }
+ 
+   return JxlErrorOrStatus::Success();
++#endif
+ }
+ 
+ // The JXL codestream can have level 5 or level 10. Levels have certain
+diff --git a/thirdparty/libjxl/lib/jxl/jpeg/enc_jpeg_data.cc b/thirdparty/libjxl/lib/jxl/jpeg/enc_jpeg_data.cc
+--- a/thirdparty/libjxl/lib/jxl/jpeg/enc_jpeg_data.cc
++++ b/thirdparty/libjxl/lib/jxl/jpeg/enc_jpeg_data.cc
+@@ -5,7 +5,9 @@
+ 
+ #include "lib/jxl/jpeg/enc_jpeg_data.h"
+ 
++#if JPEGXL_ENABLE_TRANSCODE_JPEG
+ #include <brotli/encode.h>
++#endif
+ #include <jxl/cms.h>
+ #include <jxl/memory_manager.h>
+ #include <jxl/types.h>
+@@ -286,6 +288,9 @@
+ Status EncodeJPEGData(JxlMemoryManager* memory_manager, JPEGData& jpeg_data,
+                       std::vector<uint8_t>* bytes,
+                       const CompressParams& cparams) {
++#if !JPEGXL_ENABLE_TRANSCODE_JPEG
++  return JXL_FAILURE("JPEG transcoding is not available");
++#else
+   bytes->clear();
+   jpeg_data.app_marker_type.resize(jpeg_data.app_data.size(),
+                                    AppMarkerType::kUnknown);
+@@ -359,6 +364,7 @@
+   BrotliEncoderDestroyInstance(brotli_enc);
+   bytes->resize(initial_size + enc_size);
+   return true;
++#endif
+ }
+ 
+ StatusOr<std::unique_ptr<JPEGData>> ParseJPG(JxlMemoryManager* memory_manager,
