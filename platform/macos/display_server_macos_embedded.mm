@@ -209,8 +209,8 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	CGFloat display_scale = state.screen_max_scale;
 	CGFloat render_scale = screen_get_max_scale();
 	layer.contentsScale = render_scale;
-	layer.magnificationFilter = kCAFilterNearest;
-	layer.minificationFilter = kCAFilterNearest;
+	layer.magnificationFilter = kCAFilterLinear;
+	layer.minificationFilter = kCAFilterLinear;
 	transparent = ((p_flags & DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT) == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT);
 	layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
