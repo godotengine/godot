@@ -1,7 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -31,6 +32,7 @@ namespace Godot
         /// The basis matrix's X vector (column 0).
         /// </summary>
         /// <value>Equivalent to <see cref="Column0"/> and array index <c>[0]</c>.</value>
+        [JsonInclude]
         public Vector3 X
         {
             readonly get => Column0;
@@ -41,6 +43,7 @@ namespace Godot
         /// The basis matrix's Y vector (column 1).
         /// </summary>
         /// <value>Equivalent to <see cref="Column1"/> and array index <c>[1]</c>.</value>
+        [JsonInclude]
         public Vector3 Y
         {
             readonly get => Column1;
@@ -51,6 +54,7 @@ namespace Godot
         /// The basis matrix's Z vector (column 2).
         /// </summary>
         /// <value>Equivalent to <see cref="Column2"/> and array index <c>[2]</c>.</value>
+        [JsonInclude]
         public Vector3 Z
         {
             readonly get => Column2;
@@ -62,6 +66,7 @@ namespace Godot
         /// to the X direction. Rows are not very useful for user code,
         /// but are more efficient for some internal calculations.
         /// </summary>
+        [JsonIgnore]
         public Vector3 Row0;
 
         /// <summary>
@@ -69,6 +74,7 @@ namespace Godot
         /// to the Y direction. Rows are not very useful for user code,
         /// but are more efficient for some internal calculations.
         /// </summary>
+        [JsonIgnore]
         public Vector3 Row1;
 
         /// <summary>
@@ -76,12 +82,14 @@ namespace Godot
         /// to the Z direction. Rows are not very useful for user code,
         /// but are more efficient for some internal calculations.
         /// </summary>
+        [JsonIgnore]
         public Vector3 Row2;
 
         /// <summary>
         /// Column 0 of the basis matrix (the X vector).
         /// </summary>
         /// <value>Equivalent to <see cref="X"/> and array index <c>[0]</c>.</value>
+        [JsonIgnore]
         public Vector3 Column0
         {
             readonly get => new Vector3(Row0.X, Row1.X, Row2.X);
@@ -97,6 +105,7 @@ namespace Godot
         /// Column 1 of the basis matrix (the Y vector).
         /// </summary>
         /// <value>Equivalent to <see cref="Y"/> and array index <c>[1]</c>.</value>
+        [JsonIgnore]
         public Vector3 Column1
         {
             readonly get => new Vector3(Row0.Y, Row1.Y, Row2.Y);
@@ -112,6 +121,7 @@ namespace Godot
         /// Column 2 of the basis matrix (the Z vector).
         /// </summary>
         /// <value>Equivalent to <see cref="Z"/> and array index <c>[2]</c>.</value>
+        [JsonIgnore]
         public Vector3 Column2
         {
             readonly get => new Vector3(Row0.Z, Row1.Z, Row2.Z);
@@ -127,6 +137,7 @@ namespace Godot
         /// Assuming that the matrix is the combination of a rotation and scaling,
         /// return the absolute value of scaling factors along each axis.
         /// </summary>
+        [JsonIgnore]
         public readonly Vector3 Scale
         {
             get
@@ -149,6 +160,7 @@ namespace Godot
         /// <paramref name="column"/> is not 0, 1, 2 or 3.
         /// </exception>
         /// <value>The basis column.</value>
+        [JsonIgnore]
         public Vector3 this[int column]
         {
             readonly get
@@ -190,6 +202,7 @@ namespace Godot
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
         /// <value>The matrix element.</value>
+        [JsonIgnore]
         public real_t this[int column, int row]
         {
             readonly get
