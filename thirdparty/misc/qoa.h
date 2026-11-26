@@ -8,7 +8,7 @@ QOA - The "Quite OK Audio" format for fast, lossy audio compression
 
 -- Data Format
 
-QOA encodes pulse-code modulated (PCM) audio data with up to 255 channels, 
+QOA encodes pulse-code modulated (PCM) audio data with up to 31 channels, 
 sample rates from 1 up to 16777215 hertz and a bit depth of 16 bits.
 
 The compression method employed in QOA is lossy; it discards some information
@@ -571,7 +571,10 @@ unsigned int qoa_decode_header(const unsigned char *bytes, int size, qoa_desc *q
 	qoa->channels   = (frame_header >> 56) & 0x0000ff;
 	qoa->samplerate = (frame_header >> 32) & 0xffffff;
 
-	if (qoa->channels == 0 || qoa->samples == 0 || qoa->samplerate == 0) {
+	if (
+		qoa->channels == 0 || qoa->samples == 0 || qoa->samplerate == 0 ||
+		qoa->channels > QOA_MAX_CHANNELS
+	) {
 		return 0;
 	}
 
@@ -595,15 +598,18 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 	unsigned int samples    = (frame_header >> 16) & 0x00ffff;
 	unsigned int frame_size = (frame_header      ) & 0x00ffff;
 
-	unsigned int data_size = frame_size - 8 - QOA_LMS_LEN * 4 * channels;
-	unsigned int num_slices = data_size / 8;
-	unsigned int max_total_samples = num_slices * QOA_SLICE_LEN;
-
+	unsigned int header_size = 8 + QOA_LMS_LEN * 4 * channels;
+	unsigned int data_size = frame_size - header_size;
+	unsigned int max_total_slices = data_size / 8;
+	unsigned int num_slices = (samples + QOA_SLICE_LEN - 1) / QOA_SLICE_LEN;
+	
 	if (
 		channels != qoa->channels || 
 		samplerate != qoa->samplerate ||
+		frame_size < header_size ||
 		frame_size > size ||
-		samples * channels > max_total_samples
+		num_slices > QOA_SLICES_PER_FRAME ||
+		num_slices * channels > max_total_slices
 	) {
 		return 0;
 	}
@@ -659,9 +665,15 @@ short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *qoa) {
 		return NULL;
 	}
 
-	/* Calculate the required size of the sample buffer and allocate */
-	int total_samples = qoa->samples * qoa->channels;
+	/* Calculate the required size of the sample buffer and allocate, round up to full frames */
+	unsigned long long num_frames = ((unsigned long long)qoa->samples + QOA_FRAME_LEN - 1) / QOA_FRAME_LEN;
+	unsigned long long total_samples_ull = num_frames * QOA_FRAME_LEN * (unsigned long long)qoa->channels;
+
+	if (total_samples_ull > 0x7fffffff) { return NULL; }
+
+	unsigned int total_samples = (unsigned int)total_samples_ull;
 	short *sample_data = QOA_MALLOC(total_samples * sizeof(short));
+	if (!sample_data) { return NULL; }
 
 	unsigned int sample_index = 0;
 	unsigned int frame_len;
@@ -674,7 +686,7 @@ short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *qoa) {
 
 		p += frame_size;
 		sample_index += frame_len;
-	} while (frame_size && sample_index < qoa->samples);
+	} while (frame_len == QOA_FRAME_LEN && sample_index < qoa->samples);
 
 	qoa->samples = sample_index;
 	return sample_data;
