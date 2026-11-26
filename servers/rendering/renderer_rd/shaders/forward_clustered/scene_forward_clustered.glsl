@@ -1695,6 +1695,19 @@ void fragment_shader(in SceneData scene_data) {
 #else
 	vec3 indirect_normal = normal;
 #endif
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_XEGTAO_BENT_NORMALS)) {
+#ifdef USE_MULTIVIEW
+		vec3 gtao_bent_normal = texture(sampler2DArray(xegtao_bent_normal_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, ViewIndex)).xyz * 2.0 - 1.0;
+#else
+		vec3 gtao_bent_normal = texture(sampler2D(xegtao_bent_normal_buffer, SAMPLER_LINEAR_CLAMP), screen_uv).xyz * 2.0 - 1.0;
+#endif
+		gtao_bent_normal = normalize(gtao_bent_normal);
+#ifdef BENT_NORMAL_MAP_USED
+		indirect_normal = normalize(indirect_normal + gtao_bent_normal - normal);
+#else
+		indirect_normal = gtao_bent_normal;
+#endif
+	}
 
 	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
 #ifdef LIGHT_ANISOTROPY_USED

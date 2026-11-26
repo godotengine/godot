@@ -329,6 +329,7 @@ bool Environment::is_ssao_enabled() const {
 void Environment::set_ssao_algorithm(SSAOAlgorithm p_algorithm) {
 	ssao_algorithm = p_algorithm;
 	RS::get_singleton()->environment_set_ssao_use_xegtao(environment, ssao_algorithm == SSAO_ALGORITHM_XEGTAO);
+	notify_property_list_changed();
 }
 
 Environment::SSAOAlgorithm Environment::get_ssao_algorithm() const {
@@ -1201,6 +1202,13 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 			}
 			return;
 		}
+	}
+
+	if (p_property.name == "ssao_detail" || p_property.name == "ssao_horizon") {
+		if (ssao_algorithm == SSAO_ALGORITHM_XEGTAO) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		return;
 	}
 
 	if (p_property.name == "background_color") {

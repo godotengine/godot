@@ -15,6 +15,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(set = 0, binding = 0) uniform sampler2D source_viewspace_depth;
 layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
 layout(rg8, set = 1, binding = 0) uniform restrict writeonly image2D dest_working;
+layout(rgba8, set = 1, binding = 1) uniform restrict writeonly image2D dest_bent_normal;
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -52,6 +53,15 @@ float pack_edges(vec4 p_edges) {
 
 vec3 safe_normalize(vec3 p_value) {
 	return p_value * inversesqrt(max(dot(p_value, p_value), 0.00000001));
+}
+
+vec3 rotate_from_to(vec3 p_value, vec3 p_from, vec3 p_to) {
+	float cosine = dot(p_from, p_to);
+	if (abs(cosine) > 0.9997) {
+		return p_value;
+	}
+	vec3 axis = cross(p_from, p_to);
+	return p_value + cross(axis, p_value) + cross(axis, cross(axis, p_value)) / (1.0 + cosine);
 }
 
 float fast_acos(float p_value) {
@@ -119,6 +129,7 @@ void main() {
 	normal.z = -normal.z;
 	if (viewspace_z >= 65000.0 || viewspace_z <= 0.0) {
 		imageStore(dest_working, pix_coord, vec4(1.0 / XE_GTAO_OCCLUSION_TERM_SCALE, pack_edges(vec4(1.0)), 0.0, 0.0));
+		imageStore(dest_bent_normal, pix_coord, vec4(normal * 0.5 + 0.5, 1.0));
 		return;
 	}
 
@@ -161,6 +172,7 @@ void main() {
 	float min_sample = 1.3 / max(screen_space_radius, 0.0001);
 	vec2 noise = spatio_temporal_noise(uvec2(pix_coord), params.noise_index);
 	float visibility = clamp((10.0 - screen_space_radius) / 100.0, 0.0, 1.0) * 0.5;
+	vec3 bent_normal = vec3(0.0);
 
 	for (int slice = 0; slice < slice_count; slice++) {
 		float slice_k = (float(slice) + noise.x) / float(slice_count);
@@ -221,6 +233,11 @@ void main() {
 		float iarc0 = (cos_norm + 2.0 * h0 * sin(n) - cos(2.0 * h0 - n)) * 0.25;
 		float iarc1 = (cos_norm + 2.0 * h1 * sin(n) - cos(2.0 * h1 - n)) * 0.25;
 		visibility += projected_normal_length * (iarc0 + iarc1);
+
+		float t0 = (6.0 * sin(h0 - n) - sin(3.0 * h0 - n) + 6.0 * sin(h1 - n) - sin(3.0 * h1 - n) + 16.0 * sin(n) - 3.0 * (sin(h0 + n) + sin(h1 + n))) / 12.0;
+		float t1 = (-cos(3.0 * h0 - n) - cos(3.0 * h1 - n) + 8.0 * cos(n) - 3.0 * (cos(h0 + n) + cos(h1 + n))) / 12.0;
+	vec3 local_bent_normal = vec3(direction_vec.xy * t0, -t1);
+		bent_normal += rotate_from_to(local_bent_normal, vec3(0.0, 0.0, -1.0), view_vec) * projected_normal_length;
 	}
 
 	visibility /= float(slice_count);
@@ -230,4 +247,6 @@ void main() {
 	float obscurance = clamp((1.0 - visibility) * intensity, 0.0, 0.97);
 	visibility = clamp(1.0 - obscurance * fadeout, 0.0, 1.0);
 	imageStore(dest_working, pix_coord, vec4(clamp(visibility / XE_GTAO_OCCLUSION_TERM_SCALE, 0.0, 1.0), pack_edges(edges), 0.0, 0.0));
+	vec3 bent_direction = dot(bent_normal, bent_normal) > 0.0000001 ? safe_normalize(bent_normal) : normal;
+	imageStore(dest_bent_normal, pix_coord, vec4(bent_direction * 0.5 + 0.5, 1.0));
 }

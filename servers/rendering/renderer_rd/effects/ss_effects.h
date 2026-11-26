@@ -63,6 +63,10 @@
 #define RB_XEGTAO_WORKING SNAME("xegtao_working")
 #define RB_XEGTAO_DENOISE_A SNAME("xegtao_denoise_a")
 #define RB_XEGTAO_DENOISE_B SNAME("xegtao_denoise_b")
+#define RB_XEGTAO_BENT_WORKING SNAME("xegtao_bent_working")
+#define RB_XEGTAO_BENT_DENOISE_A SNAME("xegtao_bent_denoise_a")
+#define RB_XEGTAO_BENT_DENOISE_B SNAME("xegtao_bent_denoise_b")
+#define RB_XEGTAO_BENT_FINAL SNAME("xegtao_bent_final")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")

@@ -14,7 +14,9 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform sampler2D source_working;
 layout(set = 0, binding = 1) uniform sampler2D source_ao;
+layout(set = 0, binding = 2) uniform sampler2D source_bent_normal;
 layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_final;
+layout(rgba8, set = 1, binding = 1) uniform restrict writeonly image2D dest_bent_normal;
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -38,6 +40,11 @@ vec2 load_working(ivec2 p_coord) {
 
 float load_ao(ivec2 p_coord) {
 	return texelFetch(source_ao, clamp(p_coord, ivec2(0), params.screen_size - 1), 0).r;
+}
+
+vec3 load_bent_normal(ivec2 p_coord) {
+	vec3 encoded = texelFetch(source_bent_normal, clamp(p_coord, ivec2(0), params.screen_size - 1), 0).xyz;
+	return normalize(encoded * 2.0 - 1.0);
 }
 
 void main() {
@@ -84,6 +91,12 @@ void main() {
 	sum += load_ao(coord + ivec2(-1, -1)) * weight_tl + load_ao(coord + ivec2(1, -1)) * weight_tr + load_ao(coord + ivec2(-1, 1)) * weight_bl + load_ao(coord + ivec2(1, 1)) * weight_br;
 	sum_weight += weight_tl + weight_tr + weight_bl + weight_br;
 
+	vec3 bent_sum = load_bent_normal(coord) * max(params.blur_beta, 0.001);
+	bent_sum += load_bent_normal(coord + ivec2(-1, 0)) * weight_left + load_bent_normal(coord + ivec2(1, 0)) * weight_right + load_bent_normal(coord + ivec2(0, -1)) * weight_top + load_bent_normal(coord + ivec2(0, 1)) * weight_bottom;
+	bent_sum += load_bent_normal(coord + ivec2(-1, -1)) * weight_tl + load_bent_normal(coord + ivec2(1, -1)) * weight_tr + load_bent_normal(coord + ivec2(-1, 1)) * weight_bl + load_bent_normal(coord + ivec2(1, 1)) * weight_br;
+
 	float visibility = clamp((sum / max(sum_weight, 0.0001)) * params.output_scale, 0.0, 1.0);
 	imageStore(dest_final, coord, vec4(visibility));
+	vec3 bent_normal = normalize(bent_sum / max(sum_weight, 0.0001));
+	imageStore(dest_bent_normal, coord, vec4(bent_normal * 0.5 + 0.5, 1.0));
 }

@@ -1537,6 +1537,10 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_WORKING, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_A, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_B, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_WORKING, RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_DENOISE_A, RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_DENOISE_B, RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, screen_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_FINAL, RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_FINAL, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, view_count);
 
 	Projection correction;
@@ -1669,11 +1673,13 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 		RID shader = xegtao.shader.version_get_shader(xegtao.shader_version, 0);
 		RID depth_view = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DEPTH, p_view, 0, 1, mip_count);
 		RID working = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_WORKING, p_view, 0);
+		RID bent_working = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_WORKING, p_view, 0);
 		RD::Uniform u_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ xegtao.depth_sampler, depth_view }));
 		RD::Uniform u_normal(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_normal_buffer }));
 		RD::Uniform u_working(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ working }));
+		RD::Uniform u_bent_working(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ bent_working }));
 		RID source_set = uniform_set_cache->get_cache(shader, 0, u_depth, u_normal);
-		RID dest_set = uniform_set_cache->get_cache(shader, 1, u_working);
+		RID dest_set = uniform_set_cache->get_cache(shader, 1, u_working, u_bent_working);
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.pipeline.get_rid());
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
@@ -1690,20 +1696,29 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 		RID final = p_render_buffers->get_texture_slice(RB_SCOPE_SSAO, RB_FINAL, p_view, 0);
 		RID denoise_a = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_A, p_view, 0);
 		RID denoise_b = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_DENOISE_B, p_view, 0);
+		RID bent_working = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_WORKING, p_view, 0);
+		RID bent_denoise_a = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_DENOISE_A, p_view, 0);
+		RID bent_denoise_b = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_DENOISE_B, p_view, 0);
+		RID bent_final = p_render_buffers->get_texture_slice(RB_SCOPE_XEGTAO, RB_XEGTAO_BENT_FINAL, p_view, 0);
 		RID ao_source = working;
+		RID bent_source = bent_working;
 		RID low_resolution_result = working;
+		RID low_resolution_bent_result = bent_working;
 
 		for (int pass = 0; pass < denoise_passes; pass++) {
 			bool last_pass = pass == denoise_passes - 1;
 			RID destination = (last_pass && !ssao_half_size) ? final : ((pass % 2 == 0) ? denoise_a : denoise_b);
+			RID bent_destination = (last_pass && !ssao_half_size) ? bent_final : ((pass % 2 == 0) ? bent_denoise_a : bent_denoise_b);
 			float final_blur_beta = ssao_blur_passes <= 0 ? 10000.0f : MAX(0.1f, 1.2f * p_settings.sharpness);
 			xegtao.denoise_push_constant.blur_beta = last_pass ? final_blur_beta : final_blur_beta / 5.0f;
 			xegtao.denoise_push_constant.output_scale = (last_pass && !ssao_half_size) ? 1.5f : 1.0f;
 			RD::Uniform u_working(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ xegtao.depth_sampler, working }));
 			RD::Uniform u_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ xegtao.depth_sampler, ao_source }));
+			RD::Uniform u_bent(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 2, Vector<RID>({ xegtao.depth_sampler, bent_source }));
 			RD::Uniform u_destination(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ destination }));
-			RID source_set = uniform_set_cache->get_cache(shader, 0, u_working, u_ao);
-			RID dest_set = uniform_set_cache->get_cache(shader, 1, u_destination);
+			RD::Uniform u_bent_destination(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ bent_destination }));
+			RID source_set = uniform_set_cache->get_cache(shader, 0, u_working, u_ao, u_bent);
+			RID dest_set = uniform_set_cache->get_cache(shader, 1, u_destination, u_bent_destination);
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, xegtao.denoise_pipeline.get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_set, 0);
@@ -1713,8 +1728,10 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 			ao_source = destination;
+			bent_source = bent_destination;
 			if (ssao_half_size && last_pass) {
 				low_resolution_result = destination;
+				low_resolution_bent_result = bent_destination;
 			}
 		}
 
@@ -1723,9 +1740,11 @@ void SSEffects::generate_xegtao(Ref<RenderSceneBuffersRD> p_render_buffers, uint
 			RID full_normal = p_normal_buffer;
 			RD::Uniform u_low_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, low_resolution_result }));
 			RD::Uniform u_normal(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ full_normal }));
+			RD::Uniform u_low_bent(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 2, Vector<RID>({ default_sampler, low_resolution_bent_result }));
 			RD::Uniform u_final(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ final }));
-			RID source_set = uniform_set_cache->get_cache(upsample_shader, 0, u_low_ao, u_normal);
-			RID dest_set = uniform_set_cache->get_cache(upsample_shader, 1, u_final);
+			RD::Uniform u_bent_final(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ bent_final }));
+			RID source_set = uniform_set_cache->get_cache(upsample_shader, 0, u_low_ao, u_normal, u_low_bent);
+			RID dest_set = uniform_set_cache->get_cache(upsample_shader, 1, u_final, u_bent_final);
 
 			xegtao.upsample_push_constant.screen_size[0] = full_size.x;
 			xegtao.upsample_push_constant.screen_size[1] = full_size.y;

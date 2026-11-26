@@ -202,6 +202,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
 #define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS (1 << 4)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_XEGTAO_BENT_NORMALS (1 << 5)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -443,6 +444,7 @@ layout(set = 1, binding = 24) uniform texture2DArray depth_buffer;
 layout(set = 1, binding = 25) uniform texture2DArray color_buffer;
 layout(set = 1, binding = 26) uniform texture2DArray normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2DArray ao_buffer;
+layout(set = 1, binding = 39) uniform texture2DArray xegtao_bent_normal_buffer;
 layout(set = 1, binding = 28) uniform texture2DArray ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2DArray reflection_buffer;
 #define multiviewSampler sampler2DArray
@@ -451,6 +453,7 @@ layout(set = 1, binding = 24) uniform texture2D depth_buffer;
 layout(set = 1, binding = 25) uniform texture2D color_buffer;
 layout(set = 1, binding = 26) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2D ao_buffer;
+layout(set = 1, binding = 39) uniform texture2D xegtao_bent_normal_buffer;
 layout(set = 1, binding = 28) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2D reflection_buffer;
 #define multiviewSampler sampler2D
