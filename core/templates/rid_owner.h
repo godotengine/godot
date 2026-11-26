@@ -171,6 +171,19 @@ class RID_Alloc : public RID_AllocBase {
 		return _make_from_id(id);
 	}
 
+	// Clears the uninitialized bit; only called once the element is constructed.
+	// The release store pairs with the acquire load in get_owned_list(), so a
+	// thread that lists the element also sees it built.
+	_FORCE_INLINE_ void _mark_initialized(const RID &p_rid) {
+		uint32_t idx = uint32_t(p_rid.get_id() & 0xFFFFFFFF);
+		uint32_t &validator = chunks[idx / elements_in_chunk][idx % elements_in_chunk].validator;
+		if constexpr (THREAD_SAFE) {
+			((std::atomic<uint32_t> *)&validator)->store(validator & 0x7FFFFFFF, std::memory_order_release);
+		} else {
+			validator &= 0x7FFFFFFF;
+		}
+	}
+
 public:
 	RID make_rid() {
 		RID rid = _allocate_rid();
@@ -240,7 +253,7 @@ public:
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
 			}
 
-			c.validator &= 0x7FFFFFFF; //initialized
+			// The bit stays set until initialize_rid() has constructed the element.
 
 		} else if (unlikely(c.validator != validator)) {
 			if ((c.validator & 0x80000000) && c.validator != 0xFFFFFFFF) {
@@ -275,8 +288,9 @@ public:
 #ifdef TSAN_ENABLED
 			__tsan_release(mem);
 #endif
-			SYNC_RELEASE;
 		}
+
+		_mark_initialized(p_rid);
 	}
 
 	void initialize_rid(RID p_rid, const T &p_value) {
@@ -295,8 +309,9 @@ public:
 #ifdef TSAN_ENABLED
 			__tsan_release(mem);
 #endif
-			SYNC_RELEASE;
 		}
+
+		_mark_initialized(p_rid);
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
@@ -377,8 +392,17 @@ public:
 			mutex.lock();
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
-			uint64_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
-			if (validator != 0xFFFFFFFF) {
+			uint32_t *slot_validator = &chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
+			uint64_t validator;
+			if constexpr (THREAD_SAFE) {
+				// Pairs with the release store in _mark_initialized().
+				validator = ((std::atomic<uint32_t> *)slot_validator)->load(std::memory_order_acquire);
+			} else {
+				validator = *slot_validator;
+			}
+			// Skip free slots (0xFFFFFFFF) and ones allocated but not initialized yet,
+			// whose memory isn't a constructed element.
+			if (!(validator & 0x80000000)) {
 				owned.push_back(_make_from_id((validator << 32) | i));
 			}
 		}
