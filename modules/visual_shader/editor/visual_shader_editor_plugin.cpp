@@ -6232,7 +6232,8 @@ bool VisualShaderEditor::_is_type_disallowed_in_group_context(const StringName &
 				p_type_name == VisualShaderNodeParameterRef::get_class_static() ||
 				p_type_name == VisualShaderNodeVaryingGetter::get_class_static() ||
 				p_type_name == VisualShaderNodeVaryingSetter::get_class_static() ||
-				p_type_name == VisualShaderNodeGlobalExpression::get_class_static()) {
+				p_type_name == VisualShaderNodeGlobalExpression::get_class_static() ||
+				p_type_name == VisualShaderNodeInput::get_class_static()) {
 			return true;
 		}
 	} else {
