@@ -1167,9 +1167,7 @@ vec3 encode24(vec3 v) {
 }
 #endif // MODE_RENDER_NORMAL_ROUGHNESS
 
-void fragment_shader(in SceneData scene_data) {
-	uint instance_index = instance_index_interp;
-
+void fragment_shader(in SceneData scene_data, uint instance_index) {
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha = 1.0;
 #endif // PREMUL_ALPHA_USED
@@ -1385,8 +1383,6 @@ void fragment_shader(in SceneData scene_data) {
 			// Reduce atomic contention using subgroup operations.
 			// Find maximum inverted mip level across all invocations in the subgroup, then only
 			// one invocation performs the atomic write.
-			// Right now this assumes all invocations will have the same instance index.
-			// If that is not true then probably need a subgroupAllEqual check first + fallback.
 			uint subgroup_max_mip = subgroupMax(required_mip);
 			if (subgroupElect()) {
 				const uint material_feedback_index = instances.data[instance_index].material_feedback_index;
@@ -3222,5 +3218,15 @@ void main() {
 	}
 #endif
 
-	fragment_shader(scene_data_block.data);
+	uint instance_index = sc_multimesh() ? draw_call.instance_index : instance_index_interp;
+
+	// Non multimesh instanced draws can pack fragments of several instances into one subgroup, so the instance index can't simply be broadcast
+	// Iterate over them and perform one unique instance index at a time. Should hopefuilly still be faster than using VGPRs.
+	for (;;) {
+		uint uniform_instance_index = subgroupBroadcastFirst(instance_index);
+		if (uniform_instance_index == instance_index) {
+			fragment_shader(scene_data_block.data, uniform_instance_index);
+			break;
+		}
+	}
 }
