@@ -182,10 +182,9 @@ public:
 
 		primary_grid_step_x = memnew(SpinBox);
 		primary_grid_step_x->set_min(1);
-		primary_grid_step_x->set_step(1);
 		primary_grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_x->set_allow_greater(true);
-		primary_grid_step_x->set_format_with_plural("%d step", "%d steps"); // TTRN("%s step", "%s steps")
+		primary_grid_step_x->set_format_with_plural("%s step", "%s steps"); // TTRN("%s step", "%s steps")
 		primary_grid_step_x->set_format_auto_translate_mode(AUTO_TRANSLATE_MODE_INHERIT);
 		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_x->set_select_all_on_focus(true);
@@ -194,10 +193,9 @@ public:
 
 		primary_grid_step_y = memnew(SpinBox);
 		primary_grid_step_y->set_min(1);
-		primary_grid_step_y->set_step(1);
 		primary_grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_y->set_allow_greater(true);
-		primary_grid_step_y->set_format_with_plural("%d step", "%d steps"); // TTRN("%s step", "%s steps")
+		primary_grid_step_y->set_format_with_plural("%s step", "%s steps"); // TTRN("%s step", "%s steps")
 		primary_grid_step_y->set_format_auto_translate_mode(AUTO_TRANSLATE_MODE_INHERIT);
 		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_y->set_select_all_on_focus(true);
