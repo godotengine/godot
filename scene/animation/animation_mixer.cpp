@@ -1635,10 +1635,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					bool force_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 					if (!is_discrete || force_continuous) {
 						t->use_continuous = true;
+						bool value_backward = is_discrete && force_continuous && backward;
 
 						Variant value;
 						if (t->is_variant_interpolatable) {
-							value = is_value ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
+							value = is_value ? a->value_track_interpolate(i, time, value_backward) : Variant(a->bezier_track_interpolate(i, time));
 							value = post_process_key_value(a, i, value, t->object_id);
 							if (value == Variant()) {
 								continue;
@@ -1646,7 +1647,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						} else {
 							// Discrete track sets the value in the current _blend_process() function,
 							// but Force Continuous track does not set the value here because the value must be set in the _blend_apply() function later.
-							int idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, false, backward);
+							int idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, false, value_backward);
 							if (idx < 0) {
 								continue;
 							}
