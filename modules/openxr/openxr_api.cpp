@@ -625,12 +625,16 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 		extension_ptrs.push_back(extension);
 	}
 
+	// Godot 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
+	uint32_t engine_version = GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH;
+
 	// Attempt to create our OpenXR instance for the requested version.
 	XrApplicationInfo application_info{
-		"Godot Engine", // applicationName, if we're running a game we'll update this down below.
-		1, // applicationVersion, we don't currently have this
+		// If we're running a game, we'll replace applicationName and applicationVersion below.
+		"Godot Engine", // applicationName
+		engine_version, // applicationVersion
 		"Godot Engine", // engineName
-		GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
+		engine_version, // engineVersion
 		p_version // apiVersion
 	};
 
@@ -655,12 +659,23 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 		extension_ptrs.ptr() // enabledExtensionNames
 	};
 
-	// Get our project name.
-	String project_name = GLOBAL_GET("application/config/name");
-	if (!project_name.is_empty()) {
-		// On SteamVR, if applicationName contains slashes, controllers won't work!
-		project_name = project_name.replace_char('/', '-');
-		copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		String application_name = GLOBAL_GET("xr/openxr/application_name");
+		if (application_name.is_empty()) {
+			String project_name = GLOBAL_GET("application/config/name");
+			if (!project_name.is_empty()) {
+				// On SteamVR, if applicationName contains slashes, controllers won't work!
+				application_name = project_name.replace_char('/', '-');
+			}
+		}
+		if (!application_name.is_empty()) {
+			copy_string_to_char_buffer(application_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
+		}
+
+		int application_version = GLOBAL_GET("xr/openxr/application_version");
+		if (application_version > 0) {
+			instance_create_info.applicationInfo.applicationVersion = application_version;
+		}
 	}
 
 	XrResult result = xrCreateInstance(&instance_create_info, &instance);

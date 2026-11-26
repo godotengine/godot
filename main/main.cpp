@@ -2888,6 +2888,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifndef _3D_DISABLED
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "xr/openxr/application_name"), "");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "xr/openxr/application_version", PROPERTY_HINT_RANGE, "1,2147483647,1"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "xr/openxr/target_api_version"), "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");

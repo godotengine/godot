@@ -3620,6 +3620,13 @@
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
 			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
 		</member>
+		<member name="xr/openxr/application_name" type="String" setter="" getter="" default="&quot;&quot;">
+			The application name registered with OpenXR. If empty, [member application/config/name] will be used.
+			This is used by some OpenXR runtimes (for example, SteamVR) to associate settings with your application. Keeping it consistent after changing your application name ensures that users don't lose their settings.
+		</member>
+		<member name="xr/openxr/application_version" type="int" setter="" getter="" default="1">
+			The application version registered with OpenXR.
+		</member>
 		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.
 		</member>
