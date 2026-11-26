@@ -72,6 +72,10 @@
 			The bus on which this audio is playing.
 			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
+		<member name="doppler_scale" type="float" setter="set_doppler_scale" getter="get_doppler_scale" default="1.0">
+			Scale of the Doppler effect. Negative values will have an "inverted" effect, where approaching sounds have a higher pitch and departing sounds have a lower pitch.
+			The final scale is determined by multiplying this with [member AudioStreamPlayer3D.doppler_scale].
+		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
 			Decides in which step the Doppler effect should be calculated.
 			[b]Note:[/b] If [member doppler_tracking] is not [constant DOPPLER_TRACKING_DISABLED] but the current [Camera3D]/[AudioListener3D] has doppler tracking disabled, the Doppler effect will be heard but will not take the movement of the current listener into account. If accurate Doppler effect is desired, doppler tracking should be enabled on both the [AudioStreamPlayer3D] and the current [Camera3D]/[AudioListener3D].
