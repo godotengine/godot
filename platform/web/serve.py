@@ -33,7 +33,7 @@ def shell_open(url):
         os.startfile(url)
     else:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
-        subprocess.call([opener, url])
+        subprocess.Popen([opener, url])
 
 
 def generate_snakeoil():
