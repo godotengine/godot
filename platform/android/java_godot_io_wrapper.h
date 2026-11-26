@@ -46,6 +46,8 @@ private:
 	jmethodID _get_cache_dir = nullptr;
 	jmethodID _get_data_dir = nullptr;
 	jmethodID _get_temp_dir = nullptr;
+	jmethodID _get_audio_output_sample_rate = nullptr;
+	jmethodID _get_audio_output_buffer_size = nullptr;
 	jmethodID _get_display_cutouts = nullptr;
 	jmethodID _get_display_rotation = nullptr;
 	jmethodID _get_display_safe_area = nullptr;
@@ -75,6 +77,8 @@ public:
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
+	int get_audio_output_sample_rate();
+	int get_audio_output_buffer_size();
 	float get_scaled_density();
 	float get_screen_refresh_rate(float fallback);
 	TypedArray<Rect2> get_display_cutouts();

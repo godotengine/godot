@@ -38,6 +38,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -100,6 +101,54 @@ public class GodotIO {
 	/////////////////////////
 	// MISCELLANEOUS OS IO
 	/////////////////////////
+
+	public int getAudioOutputSampleRate() {
+		AudioManager audioManager = (AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
+		if (audioManager != null) {
+			String sampleRateStr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+			if (sampleRateStr != null) {
+				try {
+					int sampleRate = Integer.parseInt(sampleRateStr);
+					if (sampleRate > 0) {
+						return sampleRate;
+					} else {
+						Log.w(TAG, "Invalid sample rate from AudioManager");
+					}
+				} catch (NumberFormatException e) {
+					Log.w(TAG, "Failed to parse sample rate from AudioManager", e);
+				}
+			} else {
+				Log.w(TAG, "Sample rate not available from AudioManager");
+			}
+		} else {
+			Log.w(TAG, "AudioManager not available");
+		}
+		return 0;
+	}
+
+	public int getAudioOutputBufferSize() {
+		AudioManager audioManager = (AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
+		if (audioManager != null) {
+			String bufferSizeStr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+			if (bufferSizeStr != null) {
+				try {
+					int bufferSize = Integer.parseInt(bufferSizeStr);
+					if (bufferSize > 0) {
+						return bufferSize;
+					} else {
+						Log.w(TAG, "Invalid buffer size from AudioManager");
+					}
+				} catch (NumberFormatException e) {
+					Log.w(TAG, "Failed to parse buffer size from AudioManager", e);
+				}
+			} else {
+				Log.w(TAG, "Buffer size not available from AudioManager");
+			}
+		} else {
+			Log.w(TAG, "AudioManager not available");
+		}
+		return 0;
+	}
 
 	public int openURI(String uriString) {
 		try {
