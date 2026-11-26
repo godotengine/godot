@@ -3994,6 +3994,17 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
+// Match the Windows display server: no text should be produced while Ctrl, Alt or
+// Meta is held, since those combinations are meant to trigger shortcuts. The only
+// exception is AltGr (reported on X11 as Ctrl+Alt), which international layouts use
+// to type characters.
+bool DisplayServerX11::_is_text_suppressed(unsigned int p_x11_state) {
+	const bool ctrl = p_x11_state & ControlMask;
+	const bool alt = p_x11_state & Mod1Mask;
+	const bool meta = p_x11_state & Mod4Mask;
+	return (ctrl || alt || meta) && !(ctrl && alt && !meta);
+}
+
 void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
 	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
@@ -4122,7 +4133,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 				} else {
 					k->set_key_label(keycode);
 				}
-				if (keypress) {
+				if (keypress && !_is_text_suppressed(xkeyevent->state)) {
 					k->set_unicode(fix_unicode(tmp[i]));
 				}
 
@@ -4202,7 +4213,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 					} else {
 						k->set_key_label(keycode);
 					}
-					if (keypress) {
+					if (keypress && !_is_text_suppressed(xkeyevent->state)) {
 						k->set_unicode(fix_unicode(tmp[i]));
 					}
 
@@ -4340,7 +4351,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 	} else {
 		k->set_key_label(keycode);
 	}
-	if (keypress) {
+	if (keypress && !_is_text_suppressed(xkeyevent->state)) {
 		k->set_unicode(fix_unicode(unicode));
 	}
 
