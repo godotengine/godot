@@ -125,6 +125,7 @@ public:
 
 	// Extras
 	void get_peers(List<Ref<ENetPacketPeer>> &r_peers);
+	IPAddress get_local_address() const;
 	int get_local_port() const;
 
 	// Godot additions
