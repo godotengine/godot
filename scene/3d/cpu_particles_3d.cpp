@@ -35,6 +35,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/viewport.h"
@@ -1380,11 +1381,13 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles3D::_update_render_thread() {
-	MutexLock lock(update_mutex);
+	if (OS::get_singleton()->is_update_pending(true)) {
+		MutexLock lock(update_mutex);
+		if (can_update.is_set()) {
+			RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 
-	if (can_update.is_set()) {
-		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
-		can_update.clear(); //wait for next time
+			can_update.clear(); //wait for next time
+		}
 	}
 }
 
