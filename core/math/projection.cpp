@@ -848,7 +848,7 @@ void Projection::invert() {
 	m1 = r1[2]; /* now back substitute row 1 */
 	s = 1.0 / r1[1];
 	r1[4] = s * (r1[4] - r2[4] * m1);
-	r1[5] = s * (r1[5] - r2[5] * m1),
+	r1[5] = s * (r1[5] - r2[5] * m1);
 	r1[6] = s * (r1[6] - r2[6] * m1);
 	r1[7] = s * (r1[7] - r2[7] * m1);
 	m0 = r0[2];
@@ -860,7 +860,7 @@ void Projection::invert() {
 	m0 = r0[1]; /* now back substitute row 0 */
 	s = 1.0 / r0[0];
 	r0[4] = s * (r0[4] - r1[4] * m0);
-	r0[5] = s * (r0[5] - r1[5] * m0),
+	r0[5] = s * (r0[5] - r1[5] * m0);
 	r0[6] = s * (r0[6] - r1[6] * m0);
 	r0[7] = s * (r0[7] - r1[7] * m0);
 
