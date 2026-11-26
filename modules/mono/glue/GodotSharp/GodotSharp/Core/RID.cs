@@ -11,6 +11,8 @@ namespace Godot
     /// </summary>
     public sealed partial class RID : IDisposable
     {
+        private static RID Null { get; } = new RID(null);
+
         private bool _disposed = false;
 
         internal IntPtr ptr;
@@ -18,7 +20,7 @@ namespace Godot
         internal static IntPtr GetPtr(RID instance)
         {
             if (instance == null)
-                throw new NullReferenceException($"The instance of type {nameof(RID)} is null.");
+                return Null.ptr;
 
             if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
