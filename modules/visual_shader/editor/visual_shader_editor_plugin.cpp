@@ -3194,6 +3194,12 @@ void VisualShaderEditor::_edit_group_in_graph(int p_idx) {
 	edited_shader_graph = group->get_graph().ptr();
 	group_edit_stack.push_back(group_node->get_group());
 
+	edit_type_particles->set_disabled(true);
+	edit_type_standard->set_disabled(true);
+	edit_type_sky->set_disabled(true);
+	edit_type_fog->set_disabled(true);
+	edit_type_texture_blit->set_disabled(true);
+
 	_update_available_nodes();
 	_update_graph();
 
@@ -3232,6 +3238,12 @@ void VisualShaderEditor::_exit_group() {
 			}
 		}
 	}
+
+	edit_type_particles->set_disabled(false);
+	edit_type_standard->set_disabled(false);
+	edit_type_sky->set_disabled(false);
+	edit_type_fog->set_disabled(false);
+	edit_type_texture_blit->set_disabled(false);
 
 	_update_available_nodes();
 	_update_graph();
