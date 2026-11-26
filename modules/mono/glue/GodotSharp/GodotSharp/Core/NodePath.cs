@@ -47,6 +47,7 @@ namespace Godot
         internal godot_node_path.movable NativeValue;
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private bool _disposed;
 
         ~NodePath()
         {
@@ -64,6 +65,13 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
@@ -147,7 +155,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="NodePath"/>.</returns>
         public override string ToString()
         {
-            if (IsEmpty)
+            if (_disposed || IsEmpty)
                 return string.Empty;
 
             var src = (godot_node_path)NativeValue;
@@ -173,6 +181,8 @@ namespace Godot
         /// <returns>The <see cref="NodePath"/> as a pure property path.</returns>
         public NodePath GetAsPropertyPath()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             godot_node_path propertyPath = default;
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_as_property_path(self, ref propertyPath);
@@ -191,6 +201,8 @@ namespace Godot
         /// <returns>The names concatenated with <c>/</c>.</returns>
         public string GetConcatenatedNames()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_concatenated_names(self, out godot_string names);
             using (names)
@@ -210,6 +222,8 @@ namespace Godot
         /// <returns>The subnames concatenated with <c>:</c>.</returns>
         public string GetConcatenatedSubNames()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_concatenated_subnames(self, out godot_string subNames);
             using (subNames)
@@ -231,6 +245,8 @@ namespace Godot
         /// <returns>The name at the given index <paramref name="idx"/>.</returns>
         public string GetName(int idx)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_name(self, idx, out godot_string name);
             using (name)
@@ -245,6 +261,8 @@ namespace Godot
         /// <returns>The number of node names which make up the path.</returns>
         public int GetNameCount()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             return NativeFuncs.godotsharp_node_path_get_name_count(self);
         }
@@ -256,6 +274,8 @@ namespace Godot
         /// <returns>The subname at the given index <paramref name="idx"/>.</returns>
         public string GetSubName(int idx)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_subname(self, idx, out godot_string subName);
             using (subName)
@@ -270,6 +290,8 @@ namespace Godot
         /// <returns>The number of subnames in the path.</returns>
         public int GetSubNameCount()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             return NativeFuncs.godotsharp_node_path_get_subname_count(self);
         }
@@ -283,6 +305,8 @@ namespace Godot
         /// <returns>If the <see cref="NodePath"/> is an absolute path.</returns>
         public bool IsAbsolute()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             var self = (godot_node_path)NativeValue;
             return NativeFuncs.godotsharp_node_path_is_absolute(self).ToBool();
         }
@@ -291,7 +315,7 @@ namespace Godot
         /// Returns <see langword="true"/> if the node path is empty.
         /// </summary>
         /// <returns>If the <see cref="NodePath"/> is empty.</returns>
-        public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
+        public bool IsEmpty => _disposed || NativeValue.DangerousSelfRef.IsEmpty;
 
         public static bool operator ==(NodePath? left, NodePath? right)
         {
@@ -309,6 +333,13 @@ namespace Godot
         {
             if (other is null)
                 return false;
+
+            if (_disposed)
+                return other._disposed;
+
+            if (other._disposed)
+                return false;
+
             var self = (godot_node_path)NativeValue;
             var otherNative = (godot_node_path)other.NativeValue;
             return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
@@ -321,6 +352,11 @@ namespace Godot
 
         public override int GetHashCode()
         {
+            if (_disposed)
+            {
+                return 0;
+            }
+
             var self = (godot_node_path)NativeValue;
             return NativeFuncs.godotsharp_node_path_hash(self);
         }

@@ -18,6 +18,7 @@ namespace Godot
         internal godot_string_name.movable NativeValue;
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private bool _disposed;
 
         ~StringName()
         {
@@ -35,6 +36,13 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
@@ -93,7 +101,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="StringName"/>.</returns>
         public override string ToString()
         {
-            if (IsEmpty)
+            if (_disposed || IsEmpty)
                 return string.Empty;
 
             var src = (godot_string_name)NativeValue;
@@ -106,7 +114,7 @@ namespace Godot
         /// Check whether this <see cref="StringName"/> is empty.
         /// </summary>
         /// <returns>If the <see cref="StringName"/> is empty.</returns>
-        public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
+        public bool IsEmpty => _disposed || NativeValue.DangerousSelfRef.IsEmpty;
 
         public static bool operator ==(StringName? left, StringName? right)
         {
@@ -124,6 +132,13 @@ namespace Godot
         {
             if (other is null)
                 return false;
+
+            if (_disposed)
+                return other._disposed;
+
+            if (other._disposed)
+                return false;
+
             return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
         }
 
@@ -161,6 +176,11 @@ namespace Godot
 
         public override int GetHashCode()
         {
+            if (_disposed)
+            {
+                return 0;
+            }
+
             return NativeValue.DangerousSelfRef.GetHashCode();
         }
     }
