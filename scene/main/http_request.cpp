@@ -76,34 +76,29 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 }
 
 bool HTTPRequest::has_header(const PackedStringArray &p_headers, const String &p_header_name) {
-	bool exists = false;
-
 	String lower_case_header_name = p_header_name.to_lower();
-	for (int i = 0; i < p_headers.size() && !exists; i++) {
-		String sanitized = p_headers[i].strip_edges().to_lower();
-		if (sanitized.begins_with(lower_case_header_name)) {
-			exists = true;
-		}
-	}
-
-	return exists;
-}
-
-String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const String &p_header_name) {
-	String value = "";
-
-	String lowwer_case_header_name = p_header_name.to_lower();
-	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find_char(':') > 0) {
-			Vector<String> parts = p_headers[i].split(":", false, 1);
-			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
-				value = parts[1].strip_edges();
-				break;
+	for (const String &header : p_headers) {
+		if (header.find_char(':') > 0) {
+			Vector<String> parts = header.split(":", false, 1);
+			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lower_case_header_name) {
+				return true;
 			}
 		}
 	}
+	return false;
+}
 
-	return value;
+String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const String &p_header_name) {
+	String lower_case_header_name = p_header_name.to_lower();
+	for (const String &header : p_headers) {
+		if (header.find_char(':') > 0) {
+			Vector<String> parts = header.split(":", false, 1);
+			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lower_case_header_name) {
+				return parts[1].strip_edges();
+			}
+		}
+	}
+	return String();
 }
 
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, HTTPClient::Method p_method, const String &p_request_data) {
