@@ -215,6 +215,11 @@ void SpinBox::_text_changed(const String &p_string) {
 	}
 }
 
+void SpinBox::_focus_entered() {
+	line_edit->set_focus_next(find_next_valid_focus()->get_path());
+	line_edit->set_focus_previous(find_prev_valid_focus()->get_path());
+}
+
 String SpinBox::_get_xl_format() const {
 	bool translated = false;
 	if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
@@ -581,6 +586,10 @@ void SpinBox::_notification(int p_what) {
 			connect(CoreStringName(changed), callable_mp(this, &SpinBox::_update_buttons_state_for_current_value));
 		} break;
 
+		case NOTIFICATION_FOCUS_ENTER: {
+			line_edit->grab_focus();
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED:
 			drag.allowed = false;
 			[[fallthrough]];
@@ -902,10 +911,14 @@ void SpinBox::_bind_methods() {
 }
 
 SpinBox::SpinBox() {
+	set_focus_mode(FOCUS_ALL);
+
 	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
+	line_edit->set_focus_mode(FOCUS_CLICK);
 	line_edit->set_use_parent_material(true);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
+	line_edit->connect(SceneStringName(focus_entered), callable_mp(this, &SpinBox::_focus_entered));
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

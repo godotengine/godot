@@ -75,6 +75,7 @@ class SpinBox : public Range {
 	void _set_error(const String &p_error);
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
+	void _focus_entered();
 
 	String format;
 	String plural_format;
