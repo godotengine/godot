@@ -15,6 +15,12 @@
 		<link title="2D Platformer Demo">https://store.godotengine.org/asset/godot-foundation/platformer-2d-demo/</link>
 	</tutorials>
 	<methods>
+		<method name="get_audio_bus_uid" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the area's audio bus, or [code]0[/code] if unset.
+			</description>
+		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
 			<return type="Area2D[]" />
 			<description>
@@ -58,6 +64,13 @@
 				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area2D], [code]false[/code] otherwise.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 				The [param body] argument can either be a [PhysicsBody2D] or a [TileMap] instance. While TileMaps are not physics bodies themselves, they register their tiles with collision shapes as a virtual physics body.
+			</description>
+		</method>
+		<method name="set_audio_bus_uid">
+			<return type="void" />
+			<param index="0" name="uid" type="int" />
+			<description>
+				Sets the unique ID of the area's audio bus. Used internally for serialization.
 			</description>
 		</method>
 	</methods>

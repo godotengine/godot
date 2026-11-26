@@ -302,13 +302,13 @@ void EditorAudioBus::update_send() {
 		send->add_item(TTRC("Speakers"));
 	} else {
 		send->set_disabled(false);
-		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
-		int current_send_index = 0; //by default to master
+		uint64_t current_send_uid = AudioServer::get_singleton()->get_bus_send_uid(get_index());
+		int current_send_index = 0;
 
 		for (int i = 0; i < get_index(); i++) {
-			StringName send_name = AudioServer::get_singleton()->get_bus_name(i);
-			send->add_item(send_name);
-			if (send_name == current_send) {
+			send->add_item(AudioServer::get_singleton()->get_bus_name(i));
+			send->set_item_metadata(i, (uint64_t)AudioServer::get_singleton()->get_bus_uid(i));
+			if (AudioServer::get_singleton()->get_bus_uid(i) == current_send_uid) {
 				current_send_index = i;
 			}
 		}
@@ -402,13 +402,6 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", get_index(), attempt);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", get_index(), current);
-
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_send(i) == current) {
-			ur->add_do_method(AudioServer::get_singleton(), "set_bus_send", i, attempt);
-			ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", i, current);
-		}
-	}
 
 	ur->add_do_method(buses, "_update_bus", get_index());
 	ur->add_undo_method(buses, "_update_bus", get_index());
@@ -586,8 +579,8 @@ void EditorAudioBus::_send_selected(int p_which) {
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Select Audio Bus Send"));
-	ur->add_do_method(AudioServer::get_singleton(), "set_bus_send", get_index(), send->get_item_text(p_which));
-	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", get_index(), AudioServer::get_singleton()->get_bus_send(get_index()));
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_send_uid", get_index(), (uint64_t)send->get_item_metadata(p_which));
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send_uid", get_index(), AudioServer::get_singleton()->get_bus_send_uid(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
 	ur->add_undo_method(buses, "_update_bus", get_index());
 	ur->commit_action();
@@ -1372,6 +1365,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	ur->create_action(TTR("Delete Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "remove_bus", index);
 	ur->add_undo_method(AudioServer::get_singleton(), "add_bus", index);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_uid", index, AudioServer::get_singleton()->get_bus_uid(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", index, AudioServer::get_singleton()->get_bus_name(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_volume_db", index, AudioServer::get_singleton()->get_bus_volume_db(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", index, AudioServer::get_singleton()->get_bus_send(index));

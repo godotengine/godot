@@ -73,6 +73,13 @@
 				Returns the index of the bus with the name [param bus_name]. Returns [code]-1[/code] if no bus with the specified name exist.
 			</description>
 		</method>
+		<method name="get_bus_index_by_uid" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="uid" type="int" />
+			<description>
+				Returns the index of the bus with the unique ID [param uid]. Returns [code]-1[/code] if no bus with the specified UID exists.
+			</description>
+		</method>
 		<method name="get_bus_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="bus_idx" type="int" />
@@ -101,6 +108,20 @@
 			<param index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the name of the bus that the bus at index [param bus_idx] sends to.
+			</description>
+		</method>
+		<method name="get_bus_send_uid" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<description>
+				Returns the unique ID of the bus that the bus at index [param bus_idx] sends to.
+			</description>
+		</method>
+		<method name="get_bus_uid" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="bus_idx" type="int" />
+			<description>
+				Returns the unique ID of the bus at index [param bus_idx].
 			</description>
 		</method>
 		<method name="get_bus_volume_db" qualifiers="const">
@@ -318,12 +339,28 @@
 				Connects the output of the bus at [param bus_idx] to the bus named [param send].
 			</description>
 		</method>
+		<method name="set_bus_send_uid">
+			<return type="void" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Connects the output of the bus at [param bus_idx] to the bus with the unique ID [param uid].
+			</description>
+		</method>
 		<method name="set_bus_solo">
 			<return type="void" />
 			<param index="0" name="bus_idx" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [param bus_idx] is in solo mode.
+			</description>
+		</method>
+		<method name="set_bus_uid">
+			<return type="void" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Sets the unique ID of the bus at index [param bus_idx]. Used internally to restore bus identity (e.g. on undo).
 			</description>
 		</method>
 		<method name="set_bus_volume_db">

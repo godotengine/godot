@@ -17,6 +17,12 @@
 		<link title="Audio Spectrum Visualizer Demo">https://store.godotengine.org/asset/godot-foundation/audio-spectrum-demo/</link>
 	</tutorials>
 	<methods>
+		<method name="get_bus_uid" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the target audio bus, or [code]0[/code] if unset.
+			</description>
+		</method>
 		<method name="get_playback_position">
 			<return type="float" />
 			<description>
@@ -49,6 +55,13 @@
 			<param index="0" name="to_position" type="float" />
 			<description>
 				Restarts all sounds to be played from the given [param to_position], in seconds. Does nothing if no sounds are playing.
+			</description>
+		</method>
+		<method name="set_bus_uid">
+			<return type="void" />
+			<param index="0" name="uid" type="int" />
+			<description>
+				Sets the unique ID of the target audio bus. Used internally for serialization.
 			</description>
 		</method>
 		<method name="stop">

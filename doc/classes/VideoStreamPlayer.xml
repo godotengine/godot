@@ -12,6 +12,12 @@
 		<link title="Playing videos">$DOCS_URL/tutorials/animation/playing_videos.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_bus_uid" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the target audio bus, or [code]0[/code] if unset.
+			</description>
+		</method>
 		<method name="get_stream_length" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -43,6 +49,13 @@
 			<description>
 				Starts the video playback from the beginning, unless the video is already playing.
 				[b]Note:[/b] If the video is paused, this will not unpause the video.
+			</description>
+		</method>
+		<method name="set_bus_uid">
+			<return type="void" />
+			<param index="0" name="uid" type="int" />
+			<description>
+				Sets the unique ID of the target audio bus. Used internally for serialization.
 			</description>
 		</method>
 		<method name="stop">

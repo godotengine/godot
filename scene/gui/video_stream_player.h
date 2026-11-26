@@ -65,6 +65,7 @@ class VideoStreamPlayer : public Control {
 	int bus_index = 0;
 
 	StringName bus;
+	uint64_t bus_uid = 0;
 
 	void _mix_audio();
 	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
@@ -119,6 +120,9 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	void set_bus_uid(uint64_t p_uid);
+	uint64_t get_bus_uid() const;
 
 	~VideoStreamPlayer();
 };

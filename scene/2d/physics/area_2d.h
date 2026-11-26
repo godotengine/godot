@@ -132,6 +132,7 @@ private:
 
 	bool audio_bus_override = false;
 	StringName audio_bus;
+	uint64_t audio_bus_uid = 0;
 
 protected:
 	static void _bind_methods();
@@ -193,6 +194,9 @@ public:
 
 	void set_audio_bus_name(const StringName &p_audio_bus);
 	StringName get_audio_bus_name() const;
+
+	void set_audio_bus_uid(uint64_t p_uid);
+	uint64_t get_audio_bus_uid() const;
 
 	Area2D();
 	~Area2D();

@@ -112,7 +112,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale, !can_process());
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->get_bus(), _get_volume_vector(), p_from_pos, internal->pitch_scale, !can_process());
 	internal->ensure_playback_limit();
 
 	// Sample handling.
@@ -144,6 +144,8 @@ float AudioStreamPlayer::get_playback_position() {
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 	internal->bus = p_bus;
+	int idx = AudioServer::get_singleton()->get_bus_index(p_bus);
+	internal->bus_uid = (idx >= 0) ? AudioServer::get_singleton()->get_bus_uid(idx) : 0;
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, p_bus, _get_volume_vector());
 	}
@@ -151,6 +153,18 @@ void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 
 StringName AudioStreamPlayer::get_bus() const {
 	return internal->get_bus();
+}
+
+void AudioStreamPlayer::set_bus_uid(uint64_t p_uid) {
+	internal->bus_uid = p_uid;
+	int idx = AudioServer::get_singleton()->get_bus_index_by_uid(p_uid);
+	if (idx >= 0) {
+		internal->bus = AudioServer::get_singleton()->get_bus_name(idx);
+	}
+}
+
+uint64_t AudioStreamPlayer::get_bus_uid() const {
+	return internal->bus_uid;
 }
 
 void AudioStreamPlayer::set_autoplay(bool p_enable) {
@@ -257,6 +271,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_bus_uid", "uid"), &AudioStreamPlayer::set_bus_uid);
+	ClassDB::bind_method(D_METHOD("get_bus_uid"), &AudioStreamPlayer::get_bus_uid);
+
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
 
@@ -287,6 +304,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_uid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_bus_uid", "get_bus_uid");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));

@@ -40,6 +40,7 @@ class AudioBusLayout : public Resource {
 	friend class AudioServer;
 
 	struct Bus {
+		uint64_t uid = 0;
 		StringName name;
 		bool solo = false;
 		bool mute = false;
@@ -54,6 +55,7 @@ class AudioBusLayout : public Resource {
 
 		float volume_db = 0.0f;
 		StringName send;
+		uint64_t send_uid = 0;
 
 		Bus() {}
 	};

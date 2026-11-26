@@ -83,6 +83,7 @@ private:
 	int input_buffer_ofs = 0;
 
 	struct Bus {
+		uint64_t uid = 0;
 		StringName name;
 		bool solo = false;
 		bool mute = false;
@@ -114,6 +115,8 @@ private:
 		Vector<Effect> effects;
 		float volume_db = 0.0f;
 		StringName send;
+		uint64_t send_uid = 0;
+
 		int index_cache = 0;
 	};
 
@@ -177,6 +180,7 @@ private:
 	Vector<AudioFrame> mix_buffer;
 	Vector<Bus *> buses;
 	HashMap<StringName, Bus *> bus_map;
+	HashMap<uint64_t, Bus *> bus_id_map;
 
 	void _update_bus_effects(int p_bus);
 
@@ -228,6 +232,7 @@ public:
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
+	int thread_find_bus_index_by_uid(uint64_t p_uid);
 
 #ifdef DEBUG_ENABLED
 	void set_debug_mute(bool p_mute);
@@ -242,9 +247,14 @@ public:
 
 	void move_bus(int p_bus, int p_to_pos);
 
+	void set_bus_uid(int p_bus, uint64_t p_uid);
+	uint64_t get_bus_uid(int p_bus) const;
+
 	void set_bus_name(int p_bus, const String &p_name);
 	String get_bus_name(int p_bus) const;
+
 	int get_bus_index(const StringName &p_bus_name) const;
+	int get_bus_index_by_uid(uint64_t p_uid) const;
 
 	int get_bus_channels(int p_bus) const;
 
@@ -256,6 +266,9 @@ public:
 
 	void set_bus_send(int p_bus, const StringName &p_send);
 	StringName get_bus_send(int p_bus) const;
+
+	void set_bus_send_uid(int p_bus, uint64_t p_send_uid);
+	uint64_t get_bus_send_uid(int p_bus) const;
 
 	void set_bus_solo(int p_bus, bool p_enable);
 	bool is_bus_solo(int p_bus) const;

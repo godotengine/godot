@@ -85,7 +85,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 #ifndef PHYSICS_2D_DISABLED
 	if (area_mask == 0) {
-		return internal->bus;
+		return internal->get_bus();
 	}
 
 	Vector2 global_pos = get_global_position();
@@ -122,7 +122,7 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	}
 #endif // PHYSICS_2D_DISABLED
 
-	return internal->bus;
+	return internal->get_bus();
 }
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process
@@ -285,10 +285,24 @@ float AudioStreamPlayer2D::get_playback_position() {
 
 void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 	internal->bus = p_bus; // This will be pushed to the audio server during the next physics timestep, which is fast enough.
+	int idx = AudioServer::get_singleton()->get_bus_index(p_bus);
+	internal->bus_uid = (idx >= 0) ? AudioServer::get_singleton()->get_bus_uid(idx) : 0;
 }
 
 StringName AudioStreamPlayer2D::get_bus() const {
 	return internal->get_bus();
+}
+
+void AudioStreamPlayer2D::set_bus_uid(uint64_t p_uid) {
+	internal->bus_uid = p_uid;
+	int idx = AudioServer::get_singleton()->get_bus_index_by_uid(p_uid);
+	if (idx >= 0) {
+		internal->bus = AudioServer::get_singleton()->get_bus_name(idx);
+	}
+}
+
+uint64_t AudioStreamPlayer2D::get_bus_uid() const {
+	return internal->bus_uid;
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
@@ -404,6 +418,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer2D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer2D::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_bus_uid", "uid"), &AudioStreamPlayer2D::set_bus_uid);
+	ClassDB::bind_method(D_METHOD("get_bus_uid"), &AudioStreamPlayer2D::get_bus_uid);
+
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer2D::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer2D::is_autoplay_enabled);
 
@@ -445,6 +462,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_uid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_bus_uid", "get_bus_uid");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
