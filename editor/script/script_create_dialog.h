@@ -44,8 +44,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
 	enum {
-		MSG_ID_SCRIPT,
+		MSG_ID_BASE_CLASS,
 		MSG_ID_PATH,
+		MSG_ID_SCRIPT,
 		MSG_ID_BUILT_IN,
 		MSG_ID_TEMPLATE,
 	};
