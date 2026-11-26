@@ -30,7 +30,9 @@
 
 #include "import_dock.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
@@ -45,120 +47,304 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/main/timer.h"
 
-class ImportDockParameters : public Object {
-	GDCLASS(ImportDockParameters, Object);
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
-public:
-	HashMap<StringName, Variant> values;
-	List<PropertyInfo> properties;
-	Ref<ResourceImporter> importer;
-	Vector<String> paths;
-	HashSet<StringName> checked;
-	bool checking = false;
-	bool skip = false;
-	String base_options_path;
+bool ImportDockParameters::_set(const StringName &p_name, const Variant &p_value) {
+	if (values.has(p_name)) {
+		values[p_name] = p_value;
+		if (checking) {
+			checked.insert(p_name);
+		}
+		return true;
+	}
+	return false;
+}
 
-	bool _set(const StringName &p_name, const Variant &p_value) {
-		if (values.has(p_name)) {
-			values[p_name] = p_value;
-			if (checking) {
-				checked.insert(p_name);
+bool ImportDockParameters::_get(const StringName &p_name, Variant &r_ret) const {
+	if (values.has(p_name)) {
+		r_ret = values[p_name];
+		return true;
+	}
+	return false;
+}
+
+void ImportDockParameters::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const PropertyInfo &E : properties) {
+		if (!importer->get_option_visibility(base_options_path, E.name, values)) {
+			continue;
+		}
+		PropertyInfo pi = E;
+		if (checking) {
+			pi.usage |= PROPERTY_USAGE_CHECKABLE;
+			if (checked.has(E.name)) {
+				pi.usage |= PROPERTY_USAGE_CHECKED;
 			}
-			return true;
+		}
+		p_list->push_back(pi);
+	}
+}
+
+void ImportDockParameters::update() {
+	notify_property_list_changed();
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+void ImportDockLoader::_process() {
+	ERR_FAIL_COND(file_paths.is_empty());
+
+	HashSet<String> extensions;
+	String import_type;
+
+	bool is_first_file = true;
+
+	for (const String &path : file_paths) {
+		if (exit_requested.is_set()) {
+			return;
 		}
 
-		return false;
-	}
+		files_loaded.increment();
 
-	bool _get(const StringName &p_name, Variant &r_ret) const {
-		if (values.has(p_name)) {
-			r_ret = values[p_name];
-			return true;
+		extensions.insert(path.get_extension());
+
+		Ref<ConfigFile> config;
+		config.instantiate();
+		Error err = config->load(path + ".import");
+		ERR_FAIL_COND(err != OK);
+
+		const String type = config->get_value("remap", "type", String());
+		if (import_type.is_empty()) {
+			import_type = type;
+		} else if (import_type != type) {
+			// All should be the same type.
+			return;
 		}
 
-		return false;
-	}
-	void _get_property_list(List<PropertyInfo> *p_list) const {
-		for (const PropertyInfo &E : properties) {
-			if (!importer->get_option_visibility(base_options_path, E.name, values)) {
-				continue;
+		if (is_first_file) {
+			is_first_file = false;
+			importer_name = config->get_value("remap", "importer", String());
+			if (importer_name.is_empty()) {
+				return;
 			}
-			PropertyInfo pi = E;
-			if (checking) {
-				pi.usage |= PROPERTY_USAGE_CHECKABLE;
-				if (checked.has(E.name)) {
-					pi.usage |= PROPERTY_USAGE_CHECKED;
-				}
+			options_base_path = path;
+			first_loaded_file = config;
+		}
+
+		if (!config->has_section("params")) {
+			continue;
+		}
+
+		Vector<String> keys = config->get_section_keys("params");
+
+		for (const String &E : keys) {
+			if (!value_frequency.has(E)) {
+				value_frequency[E] = Dictionary();
 			}
-			p_list->push_back(pi);
+
+			Variant value = config->get_value("params", E);
+
+			if (value_frequency[E].has(value)) {
+				value_frequency[E][value] = int(value_frequency[E][value]) + 1;
+			} else {
+				value_frequency[E][value] = 1;
+			}
 		}
 	}
 
-	void update() {
-		notify_property_list_changed();
+	if (extensions.size() != 1) {
+		return;
 	}
-};
+
+	success = true;
+}
+
+void ImportDockLoader::run_blocking() {
+	stop();
+
+	files_loaded.set(0);
+	exit_requested.clear();
+	success = false;
+	value_frequency.clear();
+	importer_name = "";
+	options_base_path = "";
+	first_loaded_file.unref();
+
+	_process();
+}
+
+void ImportDockLoader::start() {
+	stop();
+
+	files_loaded.set(0);
+	exit_requested.clear();
+	success = false;
+	value_frequency.clear();
+	importer_name = "";
+	options_base_path = "";
+	first_loaded_file.unref();
+
+	task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &ImportDockLoader::_process));
+}
+
+void ImportDockLoader::stop() {
+	if (task_id == WorkerThreadPool::INVALID_TASK_ID) {
+		return;
+	}
+
+	exit_requested.set();
+
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+	task_id = WorkerThreadPool::INVALID_TASK_ID;
+
+	exit_requested.clear();
+}
+
+void ImportDockLoader::tick() {
+	if (task_id != WorkerThreadPool::INVALID_TASK_ID && WorkerThreadPool::get_singleton()->is_task_completed(task_id)) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+		task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
+}
+
+bool ImportDockLoader::is_running() {
+	return task_id != WorkerThreadPool::INVALID_TASK_ID;
+}
+
+void ImportDockLoader::wait() {
+	if (task_id == WorkerThreadPool::INVALID_TASK_ID) {
+		return;
+	}
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+	task_id = WorkerThreadPool::INVALID_TASK_ID;
+}
+
+void ImportDockLoader::reset() {
+	if (is_running()) {
+		stop();
+	}
+
+	value_frequency.clear();
+	file_paths.clear();
+	importer_name = "";
+	options_base_path = "";
+	success = false;
+	files_loaded.set(0);
+	exit_requested.clear();
+	first_loaded_file.unref();
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 ImportDock *ImportDock::singleton = nullptr;
 
 void ImportDock::set_edit_path(const String &p_path) {
-	Ref<ConfigFile> config;
-	config.instantiate();
-	Error err = config->load(p_path + ".import");
-	if (err != OK) {
-		clear();
-		return;
+	clear();
+	loader->reset();
+
+	loader->file_paths.clear();
+	loader->file_paths.push_back(p_path);
+
+	loader->run_blocking();
+
+	if (!loader->success) {
+		loader->reset();
+		ERR_FAIL_COND(!loader->success);
 	}
 
-	String importer_name = config->get_value("remap", "importer");
-	if (importer_name == "keep") {
+	_finish_set_edit(loader->first_loaded_file);
+
+	loader->reset();
+}
+
+void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
+	clear();
+	loader->reset();
+
+	ERR_FAIL_COND(p_paths.is_empty());
+
+	loader->file_paths = p_paths;
+	loader->start();
+
+	select_a_resource->hide();
+	loader_vbox->show();
+
+	loader_bar->set_value(0.0);
+	loader_bar->set_max((double)p_paths.size());
+
+	loader_file_count_label->set_text(vformat(TTR("%d Files"), p_paths.size()));
+
+	loader_min_display_timer->start();
+	loader_start_frame = Engine::get_singleton()->get_frames_drawn();
+
+	set_process(true);
+}
+
+bool ImportDock::_finish_set_edit(const Ref<ConfigFile> &p_config) {
+	params->paths = loader->file_paths;
+	bool is_single_file = params->paths.size() < 2;
+
+	params->base_options_path = loader->options_base_path;
+
+	if (loader->importer_name == "keep") {
 		params->importer.unref();
 		params->skip = false;
-	} else if (importer_name == "skip") {
+	} else if (loader->importer_name == "skip") {
 		params->importer.unref();
 		params->skip = true;
 	} else {
-		params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+		params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(loader->importer_name);
 		params->skip = false;
 	}
 
-	params->paths.clear();
-	params->paths.push_back(p_path);
-	params->base_options_path = p_path;
+	if (!is_single_file && params->importer.is_null()) {
+		clear();
+		return false;
+	}
 
-	_update_options(p_path, config);
+	_update_options(loader->options_base_path, p_config);
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_path, &importers);
-	List<Pair<String, String>> importer_names;
+	ResourceFormatImporter::get_singleton()->get_importers_for_file(params->base_options_path, &importers);
 
+	List<Pair<String, String>> importer_names;
 	for (const Ref<ResourceImporter> &E : importers) {
 		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
 	}
-
 	importer_names.sort_custom<PairSort<String, String>>();
 
 	import_as->clear();
-
 	for (const Pair<String, String> &E : importer_names) {
 		import_as->add_item(E.first);
 		import_as->set_item_metadata(-1, E.second);
-		if (E.second == importer_name) {
+		if (E.second == loader->importer_name) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
 	}
 
-	_add_keep_import_option(importer_name);
+	_add_keep_import_option(loader->importer_name);
 
 	import->set_disabled(false);
-	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 	content->show();
 	select_a_resource->hide();
 
-	imported->set_text(p_path.get_file());
+	if (is_single_file) {
+		imported->set_text(params->base_options_path.get_file());
+	} else {
+		imported->set_text(vformat(TTR("%d Files"), params->paths.size()));
+	}
+
+	return true;
 }
 
 void ImportDock::_add_keep_import_option(const String &p_importer_name) {
@@ -188,14 +374,29 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 		params->importer->get_import_options(p_path, &options);
 	}
 
-	params->properties.clear();
-	params->values.clear();
-	params->checking = params->paths.size() > 1;
-	params->checked.clear();
 	params->base_options_path = p_path;
 
+	params->checking = params->paths.size() > 1;
+	params->checked.clear();
+
 	HashMap<StringName, Variant> import_options;
-	if (p_config.is_valid() && p_config->has_section("params")) {
+	if (!loader->value_frequency.is_empty()) {
+		for (const KeyValue<String, Dictionary> &E : loader->value_frequency) {
+			int max_freq = 0;
+			Variant value;
+			for (const KeyValue<Variant, Variant> &kv : E.value) {
+				int freq = kv.value;
+				if (freq > max_freq) {
+					max_freq = freq;
+					value = kv.key;
+				}
+			}
+			import_options[E.key] = value;
+		}
+		if (params->importer.is_valid()) {
+			params->importer->handle_compatibility_options(import_options);
+		}
+	} else if (p_config.is_valid() && p_config->has_section("params")) {
 		Vector<String> section_keys = p_config->get_section_keys("params");
 		for (const String &section_key : section_keys) {
 			import_options[section_key] = p_config->get_value("params", section_key);
@@ -205,9 +406,11 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 		}
 	}
 
+	params->properties.clear();
+	params->values.clear();
 	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
-		if (p_config.is_valid() && import_options.has(E.option.name)) {
+		if (import_options.has(E.option.name)) {
 			params->values[E.option.name] = import_options[E.option.name];
 		} else {
 			params->values[E.option.name] = E.default_value;
@@ -227,161 +430,32 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 	}
 }
 
-void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
-	clear();
-
-	// Use the value that is repeated the most.
-	HashMap<String, Dictionary> value_frequency;
-	HashSet<String> extensions;
-
-	String import_type;
-
-	for (int i = 0; i < p_paths.size(); i++) {
-		Ref<ConfigFile> config;
-		config.instantiate();
-		extensions.insert(p_paths[i].get_extension());
-		Error err = config->load(p_paths[i] + ".import");
-		ERR_CONTINUE(err != OK);
-
-		const String type = config->get_value("remap", "type", String());
-		if (import_type.is_empty()) {
-			import_type = type;
-		} else if (import_type != type) {
-			// All should be the same type.
-			clear();
-			return;
-		}
-
-		if (i == 0) {
-			String importer_name = config->get_value("remap", "importer");
-			if (importer_name == "keep") {
-				params->importer.unref();
-				params->skip = false;
-			} else if (importer_name == "skip") {
-				params->importer.unref();
-				params->skip = true;
-			} else {
-				params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
-				params->skip = false;
-			}
-			if (params->importer.is_null()) {
-				clear();
-				return;
-			}
-		}
-
-		if (!config->has_section("params")) {
-			continue;
-		}
-
-		Vector<String> keys = config->get_section_keys("params");
-
-		for (const String &E : keys) {
-			if (!value_frequency.has(E)) {
-				value_frequency[E] = Dictionary();
-			}
-
-			Variant value = config->get_value("params", E);
-
-			if (value_frequency[E].has(value)) {
-				value_frequency[E][value] = int(value_frequency[E][value]) + 1;
-			} else {
-				value_frequency[E][value] = 1;
-			}
-		}
-	}
-
-	ERR_FAIL_COND(params->importer.is_null());
-
-	String base_path;
-	if (extensions.size() == 1 && p_paths.size() > 0) {
-		base_path = p_paths[0];
-	}
-	List<ResourceImporter::ImportOption> options;
-	params->importer->get_import_options(base_path, &options);
-
-	params->properties.clear();
-	params->values.clear();
-	params->checking = true;
-	params->checked.clear();
-	params->base_options_path = base_path;
-
-	for (const ResourceImporter::ImportOption &E : options) {
-		params->properties.push_back(E.option);
-
-		if (value_frequency.has(E.option.name)) {
-			Dictionary d = value_frequency[E.option.name];
-			int freq = 0;
-			Variant value;
-			for (const KeyValue<Variant, Variant> &kv : d) {
-				int f = kv.value;
-				if (f > freq) {
-					freq = f;
-					value = kv.key;
-				}
-			}
-
-			params->values[E.option.name] = value;
-		} else {
-			params->values[E.option.name] = E.default_value;
-		}
-	}
-
-	params->update();
-
-	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_paths[0], &importers);
-	List<Pair<String, String>> importer_names;
-
-	for (const Ref<ResourceImporter> &E : importers) {
-		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
-	}
-
-	importer_names.sort_custom<PairSort<String, String>>();
-
-	import_as->clear();
-
-	for (const Pair<String, String> &E : importer_names) {
-		import_as->add_item(E.first);
-		import_as->set_item_metadata(-1, E.second);
-		if (E.second == params->importer->get_importer_name()) {
-			import_as->select(import_as->get_item_count() - 1);
-		}
-	}
-
-	_add_keep_import_option(params->importer->get_importer_name());
-
-	_update_preset_menu();
-
-	params->paths = p_paths;
-	import->set_disabled(false);
-	_set_dirty(false);
-	import_as->set_disabled(false);
-	preset->set_disabled(false);
-	content->show();
-	select_a_resource->hide();
-
-	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
-
-	if (params->paths.size() == 1 && params->importer->has_advanced_options()) {
-		advanced->show();
-		advanced_spacer->show();
-	} else {
-		advanced->hide();
-		advanced_spacer->hide();
-	}
-}
-
 void ImportDock::reimport_resources(const Vector<String> &p_paths) {
+	loader->reset();
+
 	switch (p_paths.size()) {
 		case 0:
 			ERR_FAIL_MSG("You need to select files to reimport them.");
 		case 1:
 			set_edit_path(p_paths[0]);
+			ERR_FAIL_COND(params->paths.is_empty());
 			break;
-		default:
+		default: {
 			set_edit_multiple_paths(p_paths);
-			break;
+
+			set_process(false);
+			loader_min_display_timer->stop();
+			loader_vbox->hide();
+
+			loader->wait();
+
+			bool load_success = loader->success;
+			if (load_success) {
+				load_success = _finish_set_edit();
+			}
+			loader->reset();
+			ERR_FAIL_COND(!load_success);
+		} break;
 	}
 
 	_reimport_attempt();
@@ -431,8 +505,8 @@ void ImportDock::_importer_selected(int i_idx) {
 		params->importer = importer;
 		params->skip = false;
 		Ref<ConfigFile> config;
-		if (params->paths.size()) {
-			String path = params->paths[0];
+		if (params->paths.size() == 1) {
+			String path = params->base_options_path;
 			config.instantiate();
 			Error err = config->load(path + ".import");
 			if (err != OK) {
@@ -511,16 +585,24 @@ void ImportDock::_preset_selected(int p_idx) {
 }
 
 void ImportDock::clear() {
+	set_process(false);
+	loader->reset();
 	imported->set_text("");
 	import->set_disabled(true);
 	import_as->clear();
 	import_as->set_disabled(true);
 	preset->set_disabled(true);
+	params->skip = false;
+	params->base_options_path = "";
+	params->paths.clear();
 	params->values.clear();
 	params->properties.clear();
+	params->checked.clear();
+	params->checking = false;
 	params->update();
 	preset->get_popup()->clear();
 	content->hide();
+	loader_vbox->hide();
 	select_a_resource->show();
 }
 
@@ -713,16 +795,33 @@ void ImportDock::_reimport() {
 
 void ImportDock::_notification(int p_what) {
 	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				imported->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
-				_set_dirty(dirty);
-			}
+		case NOTIFICATION_THEME_CHANGED: {
+			imported->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+			loader_file_count_label->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+			_set_dirty(dirty);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			import_opts->edit(params);
 			label_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			loader->tick();
+
+			if (!loader->is_running() && (loader_min_display_timer->is_stopped() || loader_start_frame == Engine::get_singleton()->get_frames_drawn())) {
+				set_process(false);
+				if (loader->success) {
+					_finish_set_edit();
+				} else {
+					clear();
+				}
+				loader->reset();
+				loader_vbox->hide();
+				return;
+			}
+
+			loader_bar->set_value((double)loader->files_loaded.get());
 		} break;
 	}
 }
@@ -781,7 +880,6 @@ ImportDock::ImportDock() {
 
 	imported = memnew(Label);
 	imported->set_focus_mode(FOCUS_ACCESSIBILITY);
-	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -846,6 +944,31 @@ ImportDock::ImportDock() {
 
 	params = memnew(ImportDockParameters);
 
+	loader = memnew(ImportDockLoader);
+
+	loader_vbox = memnew(VBoxContainer);
+	loader_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	loader_vbox->hide();
+	main_vb->add_child(loader_vbox);
+
+	loader_file_count_label = memnew(Label);
+	loader_file_count_label->set_clip_text(true);
+	loader_vbox->add_child(loader_file_count_label);
+
+	Label *loader_label = memnew(Label);
+	loader_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	loader_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	loader_label->set_text(TTRC("Loading import files..."));
+	loader_vbox->add_child(loader_label);
+
+	loader_bar = memnew(ProgressBar);
+	loader_vbox->add_child(loader_bar);
+
+	loader_min_display_timer = memnew(Timer);
+	loader_min_display_timer->set_wait_time(0.2);
+	loader_min_display_timer->set_one_shot(true);
+	loader_vbox->add_child(loader_min_display_timer);
+
 	select_a_resource = memnew(Label);
 	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
@@ -859,6 +982,8 @@ ImportDock::ImportDock() {
 }
 
 ImportDock::~ImportDock() {
+	loader->reset();
 	singleton = nullptr;
 	memdelete(params);
+	memdelete(loader);
 }
