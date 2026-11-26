@@ -734,81 +734,81 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 static GDExtensionVariantGetInternalPtrFunc gdextension_variant_get_ptr_internal_getter(GDExtensionVariantType p_type) {
 	switch (p_type) {
 		case GDEXTENSION_VARIANT_TYPE_BOOL:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<bool *(*)(Variant *)>(VariantInternal::get_bool));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<bool>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_INT:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<int64_t *(*)(Variant *)>(VariantInternal::get_int));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<int64_t>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_FLOAT:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<double *(*)(Variant *)>(VariantInternal::get_float));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<double>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_STRING:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<String *(*)(Variant *)>(VariantInternal::get_string));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<String>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR2:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector2 *(*)(Variant *)>(VariantInternal::get_vector2));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector2>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR2I:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector2i *(*)(Variant *)>(VariantInternal::get_vector2i));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector2i>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_RECT2:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Rect2 *(*)(Variant *)>(VariantInternal::get_rect2));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Rect2>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_RECT2I:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Rect2i *(*)(Variant *)>(VariantInternal::get_rect2i));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Rect2i>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR3:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector3 *(*)(Variant *)>(VariantInternal::get_vector3));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector3>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR3I:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector3i *(*)(Variant *)>(VariantInternal::get_vector3i));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector3i>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_TRANSFORM2D:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Transform2D *(*)(Variant *)>(VariantInternal::get_transform2d));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Transform2D>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector4 *(*)(Variant *)>(VariantInternal::get_vector4));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector4>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_VECTOR4I:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Vector4i *(*)(Variant *)>(VariantInternal::get_vector4i));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Vector4i>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PLANE:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Plane *(*)(Variant *)>(VariantInternal::get_plane));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Plane>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_QUATERNION:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Quaternion *(*)(Variant *)>(VariantInternal::get_quaternion));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Quaternion>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_AABB:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<AABB *(*)(Variant *)>(VariantInternal::get_aabb));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<AABB>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_BASIS:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Basis *(*)(Variant *)>(VariantInternal::get_basis));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Basis>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_TRANSFORM3D:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Transform3D *(*)(Variant *)>(VariantInternal::get_transform));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Transform3D>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PROJECTION:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Projection *(*)(Variant *)>(VariantInternal::get_projection));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Projection>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_COLOR:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Color *(*)(Variant *)>(VariantInternal::get_color));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Color>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_STRING_NAME:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<StringName *(*)(Variant *)>(VariantInternal::get_string_name));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<StringName>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_NODE_PATH:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<NodePath *(*)(Variant *)>(VariantInternal::get_node_path));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<NodePath>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_RID:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<RID *(*)(Variant *)>(VariantInternal::get_rid));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<RID>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_OBJECT:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Object **(*)(Variant *)>(VariantInternal::get_object));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return VariantInternal::get_object(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_CALLABLE:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Callable *(*)(Variant *)>(VariantInternal::get_callable));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Callable>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_SIGNAL:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Signal *(*)(Variant *)>(VariantInternal::get_signal));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Signal>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_DICTIONARY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Dictionary *(*)(Variant *)>(VariantInternal::get_dictionary));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Dictionary>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Array *(*)(Variant *)>(VariantInternal::get_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedByteArray *(*)(Variant *)>(VariantInternal::get_byte_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedByteArray>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedInt32Array *(*)(Variant *)>(VariantInternal::get_int32_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedInt32Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_INT64_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedInt64Array *(*)(Variant *)>(VariantInternal::get_int64_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedInt64Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT32_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedFloat32Array *(*)(Variant *)>(VariantInternal::get_float32_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedFloat32Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT64_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedFloat64Array *(*)(Variant *)>(VariantInternal::get_float64_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedFloat64Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedStringArray *(*)(Variant *)>(VariantInternal::get_string_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedStringArray>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedVector2Array *(*)(Variant *)>(VariantInternal::get_vector2_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedVector2Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedVector3Array *(*)(Variant *)>(VariantInternal::get_vector3_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedVector3Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedColorArray *(*)(Variant *)>(VariantInternal::get_color_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedColorArray>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
-			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<PackedVector4Array *(*)(Variant *)>(VariantInternal::get_vector4_array));
+			return [](GDExtensionVariantPtr p_variant) -> void * { return &VariantInternalAccessor<PackedVector4Array>::get(static_cast<Variant *>(p_variant)); };
 		case GDEXTENSION_VARIANT_TYPE_NIL:
 		case GDEXTENSION_VARIANT_TYPE_VARIANT_MAX:
 			ERR_FAIL_V_MSG(nullptr, "Getting Variant get internal pointer function with invalid type.");
