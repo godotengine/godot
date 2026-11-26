@@ -142,7 +142,7 @@ static thread_local HashSet<StringName> __tracing_system_call;
 struct PerfettoScriptTracer {
 	StringName name;
 	bool is_system_call;
-	bool tracing;
+	bool tracing = false;
 
 	PerfettoScriptTracer(const StringName &p_file, const StringName &p_function, const StringName &p_name, int p_line, bool p_system_call) : name(p_name), is_system_call(p_system_call) {
 		if (is_system_call || !__tracing_system_call.erase(name)) {
