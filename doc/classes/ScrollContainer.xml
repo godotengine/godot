@@ -133,7 +133,7 @@
 			Scroll hints will be shown at the top (if vertical), or the left (if horizontal).
 		</constant>
 		<constant name="SCROLL_HINT_MODE_BOTTOM_AND_RIGHT" value="3" enum="ScrollHintMode">
-			Scroll hints will be shown at the bottom (if horizontal), or the right (if horizontal).
+			Scroll hints will be shown at the bottom (if vertical), or the right (if horizontal).
 		</constant>
 		<constant name="SCROLL_HINT_MODE_TOP_AND_BOTTOM" value="4" enum="ScrollHintMode">
 			Scroll hints will be shown at the top and bottom.
