@@ -1626,6 +1626,30 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 		}
 	}
 
+	// Create all small allocation pools at initialization, as they barely occupy any memory by default.
+	for (uint32_t i = 0; i < memory_properties->memoryTypeCount; i++) {
+		VmaPool &pool = small_allocs_pools[i];
+
+		VmaPoolCreateInfo pci = {};
+		pci.memoryTypeIndex = i;
+		pci.flags = 0;
+		pci.blockSize = 0;
+		pci.minBlockCount = 0;
+		pci.maxBlockCount = SIZE_MAX;
+		pci.priority = 0.5f;
+		pci.minAllocationAlignment = 0;
+		pci.pMemoryAllocateNext = nullptr;
+		err = vmaCreatePool(allocator, &pci, &pool);
+
+		// This error is OK. It means VMA forbids the memory type.
+		if (err == VK_ERROR_FEATURE_NOT_PRESENT) {
+			continue;
+		}
+
+		// Any other error is unexpected.
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("Couldn't create Vulkan memory allocator pool (VkResult error %d)", err));
+	}
+
 	return OK;
 }
 
@@ -1962,30 +1986,6 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
 
-VmaPool RenderingDeviceDriverVulkan::_find_or_create_small_allocs_pool(uint32_t p_mem_type_index) {
-	if (small_allocs_pools.has(p_mem_type_index)) {
-		return small_allocs_pools[p_mem_type_index];
-	}
-
-	print_verbose("Creating VMA small objects pool for memory type index " + itos(p_mem_type_index));
-
-	VmaPoolCreateInfo pci = {};
-	pci.memoryTypeIndex = p_mem_type_index;
-	pci.flags = 0;
-	pci.blockSize = 0;
-	pci.minBlockCount = 0;
-	pci.maxBlockCount = SIZE_MAX;
-	pci.priority = 0.5f;
-	pci.minAllocationAlignment = 0;
-	pci.pMemoryAllocateNext = nullptr;
-	VmaPool pool = VK_NULL_HANDLE;
-	VkResult res = vmaCreatePool(allocator, &pci, &pool);
-	small_allocs_pools[p_mem_type_index] = pool; // Don't try to create it again if failed the first time.
-	ERR_FAIL_COND_V_MSG(res, pool, vformat("Couldn't create Vulkan memory allocator pool (VkResult error %d)", res));
-
-	return pool;
-}
-
 /*****************/
 /**** BUFFERS ****/
 /*****************/
@@ -2064,14 +2064,15 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
 				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
-				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
+				alloc_create_info.pool = small_allocs_pools[mem_type_index];
 			}
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE: {
 			if (device_local_host_visible_host_coherent_memory_support) {
 				vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
-				alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+				alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+				alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			} else {
 				ERR_FAIL_V_MSG(BufferID(), "GPU mappable buffers are unsupported on this device.");
 			}
@@ -2086,11 +2087,19 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 		alloc_create_info.preferredFlags &= ~vma_flags_to_remove;
 		alloc_create_info.usage = vma_usage;
 		VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+		if (err && alloc_create_info.pool != VK_NULL_HANDLE) {
+			alloc_create_info.pool = VK_NULL_HANDLE;
+			err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+		}
 		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't create buffer of size: %d (VkResult error %d).", p_size, err));
 	} else {
 		VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
 		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't create buffer of size: %d (VkResult error %d).", p_size, err));
 		err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+		if (err && alloc_create_info.pool != VK_NULL_HANDLE) {
+			alloc_create_info.pool = VK_NULL_HANDLE;
+			err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+		}
 		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't allocate memory for buffer of size: %d (VkResult error %d).", p_size, err));
 		err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
 		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't bind memory to buffer of size: %d (VkResult error %d).", p_size, err));
@@ -2431,7 +2440,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
-		alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
+		alloc_create_info.pool = small_allocs_pools[mem_type_index];
 	}
 
 	// Create.
@@ -2443,11 +2452,19 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
 		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 		VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image in memory for use with extra GPU memory tracking (VkResult error %d).", err));
+		if (err && alloc_create_info.pool != VK_NULL_HANDLE) {
+			alloc_create_info.pool = VK_NULL_HANDLE;
+			err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
+		}
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image (VkResult error %d).", err));
 	} else {
 		VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image (VkResult error %d).", err));
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image in memory for use with extra GPU memory tracking (VkResult error %d).", err));
 		err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
+		if (err && alloc_create_info.pool != VK_NULL_HANDLE) {
+			alloc_create_info.pool = VK_NULL_HANDLE;
+			err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
+		}
 		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't allocate memory for Vulkan image (VkResult error %d).", err));
 		err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't bind memory to Vulkan image (VkResult error %d).", err));
@@ -7583,10 +7600,8 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 
 	memdelete(powervr_rogue_shader_crash_workaround_mutex);
 
-	while (small_allocs_pools.size()) {
-		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();
-		vmaDestroyPool(allocator, E->value);
-		small_allocs_pools.remove(E);
+	for (VmaPool &pool : small_allocs_pools) {
+		vmaDestroyPool(allocator, pool);
 	}
 	vmaDestroyAllocator(allocator);
 
