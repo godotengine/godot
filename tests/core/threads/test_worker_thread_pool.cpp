@@ -35,6 +35,8 @@ TEST_FORCE_LINK(test_worker_thread_pool)
 #include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/templates/command_queue_mt.h"
 
 namespace TestWorkerThreadPool {
 
@@ -171,6 +173,148 @@ TEST_CASE("[WorkerThreadPool] Run a yielding daemon as the only hope for other t
 		}
 	}
 	CHECK_MESSAGE(all_needed_yield, "All legit tasks should have needed the daemon yielding to run.");
+}
+
+struct PumpServer {
+	CommandQueueMT command_queue;
+	SafeFlag exit;
+	SafeNumeric<int> loops;
+
+	void thread_loop() {
+		while (!exit.is_set()) {
+			WorkerThreadPool::get_singleton()->yield();
+			command_queue.flush_all();
+			loops.increment();
+		}
+	}
+	void no_op() {}
+
+	SafeNumeric<int> jobs_run;
+	static void job(void *p_arg) {
+		((PumpServer *)p_arg)->jobs_run.increment();
+	}
+	void step_with_job() {
+		WorkerThreadPool::TaskID job_id = WorkerThreadPool::get_singleton()->add_native_task(&PumpServer::job, this, true);
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(job_id);
+	}
+};
+
+static PumpServer *pump_server = nullptr;
+static void static_pump_loop() {
+	pump_server->thread_loop();
+}
+
+static SafeFlag syncer_done;
+static SafeFlag syncer_may_finish;
+
+static void static_wait_for_syncer(void *p_arg) {
+	while (!syncer_may_finish.is_set()) {
+		OS::get_singleton()->delay_usec(100);
+	}
+}
+
+static void static_sync_with_pump(void *p_arg) {
+	PumpServer *server = (PumpServer *)p_arg;
+	server->command_queue.push_and_sync(server, &PumpServer::no_op);
+	syncer_done.set();
+}
+
+static bool sync_with_pump_within(PumpServer *p_server, uint64_t p_msec) {
+	syncer_done.clear();
+	Thread syncer;
+	syncer.start(static_sync_with_pump, p_server);
+	uint64_t deadline = OS::get_singleton()->get_ticks_msec() + p_msec;
+	while (!syncer_done.is_set() && OS::get_singleton()->get_ticks_msec() < deadline) {
+		OS::get_singleton()->delay_usec(1000);
+	}
+	bool done = syncer_done.is_set();
+	if (!done) {
+		syncer_may_finish.set();
+		exit.set();
+	}
+	syncer.wait_to_finish();
+	return done;
+}
+
+TEST_CASE("[WorkerThreadPool] A yielding pump task keeps serving its queue while other tasks are queued") {
+	exit.clear();
+	syncer_done.clear();
+	syncer_may_finish.clear();
+
+	PumpServer server;
+	pump_server = &server;
+	WorkerThreadPool::TaskID pump_id = WorkerThreadPool::get_singleton()->add_task(callable_mp_static(static_pump_loop), true, "Test pump task", true);
+	server.command_queue.set_pump_task_id(pump_id);
+	while (server.loops.get() == 0) {
+		server.command_queue.push(&server, &PumpServer::no_op);
+		OS::get_singleton()->delay_usec(100);
+	}
+
+	int num_threads = WorkerThreadPool::get_singleton()->get_thread_count();
+	LocalVector<WorkerThreadPool::TaskID> busy_ids;
+	for (int i = 0; i < num_threads - 1; i++) {
+		busy_ids.push_back(WorkerThreadPool::get_singleton()->add_native_task(static_busy_task, nullptr, true));
+	}
+	OS::get_singleton()->delay_usec(50000);
+
+	WorkerThreadPool::TaskID waiter_id = WorkerThreadPool::get_singleton()->add_native_task(static_wait_for_syncer, nullptr, true);
+	Thread syncer;
+	syncer.start(static_sync_with_pump, &server);
+
+	uint64_t deadline = OS::get_singleton()->get_ticks_msec() + 5000;
+	while (!syncer_done.is_set() && OS::get_singleton()->get_ticks_msec() < deadline) {
+		OS::get_singleton()->delay_usec(1000);
+	}
+	CHECK_MESSAGE(syncer_done.is_set(), "The pump should flush its queue instead of running a task that waits on the syncing thread.");
+
+	syncer_may_finish.set();
+	exit.set();
+	syncer.wait_to_finish();
+	for (uint32_t i = 0; i < busy_ids.size(); i++) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(busy_ids[i]);
+	}
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(waiter_id);
+	server.exit.set();
+	WorkerThreadPool::get_singleton()->notify_yield_over(pump_id);
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(pump_id);
+}
+
+TEST_CASE("[WorkerThreadPool] A pump task waiting on its own task only runs that task") {
+	exit.clear();
+	syncer_may_finish.clear();
+
+	PumpServer server;
+	pump_server = &server;
+	WorkerThreadPool::TaskID pump_id = WorkerThreadPool::get_singleton()->add_task(callable_mp_static(static_pump_loop), true, "Test pump task", true);
+	server.command_queue.set_pump_task_id(pump_id);
+	while (server.loops.get() == 0) {
+		server.command_queue.push(&server, &PumpServer::no_op);
+		OS::get_singleton()->delay_usec(100);
+	}
+
+	int num_threads = WorkerThreadPool::get_singleton()->get_thread_count();
+	LocalVector<WorkerThreadPool::TaskID> busy_ids;
+	for (int i = 0; i < num_threads - 1; i++) {
+		busy_ids.push_back(WorkerThreadPool::get_singleton()->add_native_task(static_busy_task, nullptr, true));
+	}
+	OS::get_singleton()->delay_usec(50000);
+
+	WorkerThreadPool::TaskID waiter_id = WorkerThreadPool::get_singleton()->add_native_task(static_wait_for_syncer, nullptr, true);
+	server.command_queue.push(&server, &PumpServer::step_with_job);
+
+	CHECK_MESSAGE(sync_with_pump_within(&server, 5000), "While waiting on its job, the pump should run only that job, not the unrelated queued task.");
+	CHECK_MESSAGE(server.jobs_run.get() == 1, "The pump should have run its job itself, since every other thread was busy.");
+	CHECK_MESSAGE(sync_with_pump_within(&server, 5000), "After running its job inline, the yielding pump should still leave the unrelated task alone.");
+
+	syncer_may_finish.set();
+	exit.set();
+	for (uint32_t i = 0; i < busy_ids.size(); i++) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(busy_ids[i]);
+	}
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(waiter_id);
+	server.exit.set();
+	WorkerThreadPool::get_singleton()->notify_yield_over(pump_id);
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(pump_id);
 }
 
 } // namespace TestWorkerThreadPool

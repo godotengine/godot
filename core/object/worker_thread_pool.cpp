@@ -59,6 +59,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
 	ThreadData &curr_thread = threads[pool_thread_index];
 	Task *prev_task = nullptr; // In case this is recursively called.
+	bool prev_has_pump_task = false;
 
 	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
 	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
@@ -78,7 +79,8 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
-		curr_thread.has_pump_task = p_task->is_pump_task;
+		prev_has_pump_task = curr_thread.has_pump_task;
+		curr_thread.has_pump_task = prev_has_pump_task || p_task->is_pump_task;
 		if (p_task->pending_notify_yield_over) {
 			curr_thread.yield_is_over = true;
 		}
@@ -165,6 +167,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
 	{
 		curr_thread.current_task = prev_task;
+		curr_thread.has_pump_task = prev_has_pump_task;
 		if (low_priority) {
 			low_priority_threads_used--;
 
@@ -538,7 +541,22 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 
 			if (p_caller_pool_thread->pool->task_queue.first()) {
 				task_to_process = task_queue.first()->self();
-				if ((p_task == ThreadData::YIELDING || p_caller_pool_thread->has_pump_task == true) && task_to_process->is_pump_task) {
+				if (p_caller_pool_thread->has_pump_task) {
+					task_to_process = nullptr;
+					if (p_task != ThreadData::YIELDING) {
+						for (SelfList<Task> *E = task_queue.first(); E; E = E->next()) {
+							if (E->self() == p_task) {
+								task_to_process = p_task;
+								break;
+							}
+						}
+					}
+					if (task_to_process) {
+						task_queue.remove(&task_to_process->task_elem);
+					} else {
+						_notify_threads(p_caller_pool_thread, 1, 0);
+					}
+				} else if (p_task == ThreadData::YIELDING && task_to_process->is_pump_task) {
 					task_to_process = nullptr;
 					_notify_threads(p_caller_pool_thread, 1, 0);
 				} else {
