@@ -74,6 +74,16 @@ namespace Godot.Bridge
         private static ConcurrentDictionary<IntPtr, (string? assemblyName, string classFullName)>
             _scriptDataForReload = new();
 
+        internal static Type GetManagedScriptType(IntPtr scriptPtr)
+        {
+            if (!_scriptTypeBiMap.TryGetScriptType(scriptPtr, out Type? type))
+            {
+                throw new InvalidOperationException($"Script type not found for script pointer: {scriptPtr}");
+            }
+
+            return type;
+        }
+
         [UnmanagedCallersOnly]
         internal static void FrameCallback()
         {
