@@ -1737,7 +1737,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	}
 
 	// preallocate slots for uniform set 3
-	state.batch_texture_uniforms.resize(4);
+	state.batch_texture_uniforms.resize(5);
 
 	{ //shader variants
 
@@ -2058,6 +2058,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	default_texture_info.normal = info.normal;
 	default_texture_info.specular = info.specular;
 	default_texture_info.sampler = info.sampler;
+	default_texture_info.slug = info.slug;
 
 	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
@@ -2429,7 +2430,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					modulated = modulated.srgb_to_linear();
 				}
 
-				bool has_blend = bool(rect->flags & CANVAS_RECT_LCD);
+				bool has_blend = bool((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_LCD);
 				// Start a new batch if the blend mode has changed,
 				// or blend mode is enabled and the modulation has changed.
 				if (has_blend != r_current_batch->has_blend || (has_blend && modulated != r_current_batch->modulate)) {
@@ -2440,7 +2441,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
 				}
 
-				bool has_msdf = bool(rect->flags & CANVAS_RECT_MSDF);
+				bool has_msdf = bool((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_MSDF);
 				TextureState tex_state(rect->texture, texture_filter, rect_repeat, has_msdf, use_linear_colors);
 				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
 				if (!tex_info) {
@@ -2451,14 +2452,48 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				if (has_msdf != r_current_batch->use_msdf || rect->px_range != r_current_batch->msdf_pix_range || rect->outline != r_current_batch->msdf_outline) {
 					r_current_batch = _new_batch(r_batch_broken);
 					r_current_batch->use_msdf = has_msdf;
-					r_current_batch->msdf_pix_range = rect->px_range;
-					r_current_batch->msdf_outline = rect->outline;
+					if (r_current_batch->use_msdf) {
+						r_current_batch->use_slug = false;
+						r_current_batch->use_slug_color = false;
+						r_current_batch->use_lcd = false;
+						r_current_batch->msdf_pix_range = rect->px_range;
+						r_current_batch->msdf_outline = rect->outline;
+					}
 				}
 
-				bool has_lcd = bool(rect->flags & CANVAS_RECT_LCD);
+				bool has_lcd = bool((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_LCD);
 				if (has_lcd != r_current_batch->use_lcd) {
 					r_current_batch = _new_batch(r_batch_broken);
 					r_current_batch->use_lcd = has_lcd;
+					if (r_current_batch->use_lcd) {
+						r_current_batch->use_slug = false;
+						r_current_batch->use_slug_color = false;
+						r_current_batch->use_msdf = false;
+					}
+				}
+
+				bool has_slug = bool((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_SLUG);
+				if (has_slug != r_current_batch->use_slug || rect->scale != r_current_batch->slug_scale) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->use_slug = has_slug;
+					if (r_current_batch->use_slug) {
+						r_current_batch->use_slug_color = false;
+						r_current_batch->use_lcd = false;
+						r_current_batch->use_msdf = false;
+						r_current_batch->slug_scale = rect->scale;
+					}
+				}
+
+				bool has_slug_color = bool((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_SLUG_COLOR);
+				if (has_slug_color != r_current_batch->use_slug_color || rect->scale != r_current_batch->slug_scale) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->use_slug_color = has_slug_color;
+					if (r_current_batch->use_slug_color) {
+						r_current_batch->use_slug = false;
+						r_current_batch->use_lcd = false;
+						r_current_batch->use_msdf = false;
+						r_current_batch->slug_scale = rect->scale;
+					}
 				}
 
 				if (r_current_batch->tex_info != tex_info) {
@@ -2514,6 +2549,13 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					src_rect = Rect2(0, 0, 1, 1);
 				}
 
+				if (has_slug || has_slug_color) {
+					src_rect = rect->source;
+				}
+
+				instance_data->offset[0] = rect->offset;
+				instance_data->offset[1] = 0;
+
 				instance_data->modulation[0] = modulated.r;
 				instance_data->modulation[1] = modulated.g;
 				instance_data->modulation[2] = modulated.b;
@@ -2528,6 +2570,9 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				instance_data->dst_rect[1] = dst_rect.position.y;
 				instance_data->dst_rect[2] = dst_rect.size.width;
 				instance_data->dst_rect[3] = dst_rect.size.height;
+
+				instance_data->offset[0] = rect->offset;
+				instance_data->offset[1] = 0;
 
 				_add_to_batch(r_batch_broken, r_current_batch);
 			} break;
@@ -2545,6 +2590,8 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->flags = 0;
 					r_current_batch->use_msdf = false;
 					r_current_batch->use_lcd = false;
+					r_current_batch->use_slug = false;
+					r_current_batch->use_slug_color = false;
 				}
 
 				TextureState tex_state(np->texture, texture_filter, texture_repeat, false, use_linear_colors);
@@ -2622,6 +2669,8 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->flags = 0;
 				r_current_batch->use_msdf = false;
 				r_current_batch->use_lcd = false;
+				r_current_batch->use_slug = false;
+				r_current_batch->use_slug_color = false;
 
 				TextureState tex_state(polygon->texture, texture_filter, texture_repeat, false, use_linear_colors);
 				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
@@ -2750,6 +2799,8 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->flags = 0;
 				r_current_batch->use_msdf = false;
 				r_current_batch->use_lcd = false;
+				r_current_batch->use_slug = false;
+				r_current_batch->use_slug_color = false;
 
 				InstanceData *instance_data = nullptr;
 
@@ -3018,6 +3069,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			uniform_ptrw[1] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_batch->tex_info->normal);
 			uniform_ptrw[2] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_batch->tex_info->specular);
 			uniform_ptrw[3] = RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, p_batch->tex_info->sampler);
+			uniform_ptrw[4] = RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, Vector<RID>({ p_batch->tex_info->sampler, p_batch->tex_info->slug }));
 
 			RID rid = RD::get_singleton()->uniform_set_create(state.batch_texture_uniforms, shader.default_version_rd_shader, BATCH_UNIFORM_SET);
 			ERR_FAIL_COND_MSG(rid.is_null(), "Failed to create uniform set for batch.");
@@ -3052,8 +3104,17 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 	pipeline_key.variant = p_batch->shader_variant;
 	pipeline_key.render_primitive = p_batch->render_primitive;
 	pipeline_key.shader_specialization.use_lighting = p_batch->use_lighting;
-	pipeline_key.shader_specialization.use_msdf = p_batch->use_msdf;
-	pipeline_key.shader_specialization.use_lcd = p_batch->use_lcd;
+	if (p_batch->use_msdf) {
+		pipeline_key.shader_specialization.special_mode = 1;
+	} else if (p_batch->use_lcd) {
+		pipeline_key.shader_specialization.special_mode = 2;
+	} else if (p_batch->use_slug) {
+		pipeline_key.shader_specialization.special_mode = 3;
+	} else if (p_batch->use_slug_color) {
+		pipeline_key.shader_specialization.special_mode = 4;
+	} else {
+		pipeline_key.shader_specialization.special_mode = 0;
+	}
 	pipeline_key.lcd_blend = p_batch->has_blend;
 
 	switch (p_batch->command_type) {
@@ -3334,6 +3395,7 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 	p_info->normal = info.normal;
 	p_info->specular = info.specular;
 	p_info->sampler = info.sampler;
+	p_info->slug = info.slug;
 
 	// cache values to be copied to instance data
 	if (info.specular_color.a < 0.999) {

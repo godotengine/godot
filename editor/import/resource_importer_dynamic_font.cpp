@@ -68,28 +68,43 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 
 void ResourceImporterDynamicFont::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
 	Ref<FontFile> font = ResourceLoader::load(p_path);
-	if (font.is_valid() && font->is_multichannel_signed_distance_field()) {
+	if (font.is_valid() && font->get_render_mode() == TextServer::FONT_RENDER_MSDF) {
 		r_dependencies->insert("module_msdfgen_enabled");
 	}
 }
 
 bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
-	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "msdf_pixel_range" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_MSDF) {
 		return false;
 	}
-	if (p_option == "msdf_size" && !bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "msdf_size" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_MSDF) {
 		return false;
 	}
-	if (p_option == "antialiasing" && bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "antialiasing" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_RASTER) {
 		return false;
 	}
-	if (p_option == "oversampling" && bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "oversampling" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_RASTER) {
 		return false;
 	}
-	if (p_option == "subpixel_positioning" && bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "subpixel_positioning" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_RASTER) {
 		return false;
 	}
-	if (p_option == "keep_rounding_remainders" && bool(p_options["multichannel_signed_distance_field"])) {
+	if (p_option == "keep_rounding_remainders" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_RASTER) {
+		return false;
+	}
+	if (p_option == "disable_embedded_bitmaps" && int(p_options["render_mode"]) != TextServer::FONT_RENDER_RASTER) {
+		return false;
+	}
+	if (p_option == "generate_mipmaps" && int(p_options["render_mode"]) == TextServer::FONT_RENDER_HB_SLUG) {
+		return false;
+	}
+	if (p_option == "hinting" && int(p_options["render_mode"]) == TextServer::FONT_RENDER_HB_SLUG) {
+		return false;
+	}
+	if (p_option == "force_autohinter" && int(p_options["render_mode"]) == TextServer::FONT_RENDER_HB_SLUG) {
+		return false;
+	}
+	if (p_option == "modulate_color_glyphs" && int(p_options["render_mode"]) == TextServer::FONT_RENDER_HB_SLUG) {
 		return false;
 	}
 	return true;
@@ -105,20 +120,28 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 			return TTR("Dynamically rendered TrueType/OpenType font");
 		case PRESET_MSDF:
 			return TTR("Prerendered multichannel(+true) signed distance field");
+		case PRESET_HB_SLUG:
+			return TTR("Dynamically rendered HarfBuzz/SLUG font");
 		default:
 			return String();
 	}
 }
 
 void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	bool msdf = p_preset == PRESET_MSDF;
+	TextServer::FontRenderMode mode = TextServer::FONT_RENDER_RASTER;
+	if (p_preset == PRESET_MSDF) {
+		mode = TextServer::FONT_RENDER_MSDF;
+	}
+	if (p_preset == PRESET_HB_SLUG) {
+		mode = TextServer::FONT_RENDER_HB_SLUG;
+	}
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (msdf) ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "render_mode", PROPERTY_HINT_ENUM, "Raster,MSDF,HarfBuzz/SLUG"), mode));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 
@@ -156,7 +179,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	int antialiasing = p_options["antialiasing"];
 	bool generate_mipmaps = p_options["generate_mipmaps"];
 	bool disable_embedded_bitmaps = p_options["disable_embedded_bitmaps"];
-	bool msdf = p_options["multichannel_signed_distance_field"];
+	TextServer::FontRenderMode mode = p_options["render_mode"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
 	Dictionary ot_ov = p_options["opentype_features"];
@@ -170,6 +193,12 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	real_t oversampling = p_options["oversampling"];
 	Array fallbacks = p_options["fallbacks"];
 
+	if (mode == TextServer::FONT_RENDER_HB_SLUG) {
+		autohinter = false;
+		hinting = 0;
+		generate_mipmaps = false;
+	}
+
 	// Load base font data.
 	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_source_file);
 
@@ -180,9 +209,9 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_antialiasing((TextServer::FontAntialiasing)antialiasing);
 	font->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 	font->set_generate_mipmaps(generate_mipmaps);
-	font->set_multichannel_signed_distance_field(msdf);
+	font->set_render_mode(mode);
 	font->set_msdf_pixel_range(px_range);
-	font->set_msdf_size(px_size);
+	font->set_source_size(px_size);
 	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);

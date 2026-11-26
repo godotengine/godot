@@ -212,6 +212,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				case GL_RGBA16UI:
 					format = Image::FORMAT_RGBA16I;
 					break;
+				case GL_RGBA16I:
+					format = Image::FORMAT_RGBA16SI;
+					break;
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 					format = Image::FORMAT_DXT1;
@@ -437,6 +440,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					break;
 				case VK_FORMAT_R16G16B16A16_UINT:
 					format = Image::FORMAT_RGBA16I;
+					break;
+				case VK_FORMAT_R16G16B16A16_SINT:
+					format = Image::FORMAT_RGBA16SI;
 					break;
 				case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
 				case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:

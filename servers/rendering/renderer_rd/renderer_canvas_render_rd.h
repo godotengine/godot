@@ -119,8 +119,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 			struct {
 				uint32_t use_lighting : 1;
-				uint32_t use_msdf : 1;
-				uint32_t use_lcd : 1;
+				uint32_t special_mode : 3;
 			};
 		};
 	};
@@ -363,7 +362,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 				float ninepatch_margins[4];
 				float dst_rect[4];
 				float src_rect[4];
-				float pad[2];
+				int32_t offset[2];
 			};
 			//primitive
 			struct {
@@ -470,6 +469,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID normal;
 		RID specular;
 		RID sampler;
+		RID slug;
 		Vector2 texpixel_size;
 		uint32_t specular_shininess = 0;
 		uint32_t flags = 0;
@@ -526,7 +526,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		TextureInfo *tex_info;
 
 		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
-		float msdf_pix_range = 0.0;
+		union {
+			float msdf_pix_range = 0.0;
+			float slug_scale;
+		};
 		float msdf_outline = 0.0;
 
 		Item *clip = nullptr;
@@ -541,6 +544,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		bool use_lighting = false;
 		bool use_msdf = false;
 		bool use_lcd = false;
+		bool use_slug = false;
+		bool use_slug_color = false;
 		bool has_blend = false;
 
 		// batch-specific data
