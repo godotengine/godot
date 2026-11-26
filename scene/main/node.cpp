@@ -1750,6 +1750,11 @@ void Node::remove_child(RequiredParam<Node> p_child) {
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
 	ERR_FAIL_COND(child->data.parent != this);
 
+	_remove_child_nocheck<true>(child);
+}
+
+template <bool p_notify_order_changed>
+void Node::_remove_child_nocheck(Node *p_child) {
 	/**
 	 *  Do not change the data.internal_children*cache counters here.
 	 *  Because if nodes are re-added, the indices can remain
@@ -1761,19 +1766,19 @@ void Node::remove_child(RequiredParam<Node> p_child) {
 	 */
 
 	data.blocked++;
-	child->_set_tree(nullptr);
+	p_child->_set_tree(nullptr);
 
-	remove_child_notify(child);
-	child->notification(NOTIFICATION_UNPARENTED);
+	remove_child_notify(p_child);
+	p_child->notification(NOTIFICATION_UNPARENTED);
 
 	data.blocked--;
 
-	if (!data.children_cache_dirty && !data.children_cache.is_empty() && data.children_cache[data.children_cache.size() - 1] == child) {
+	if (!data.children_cache_dirty && !data.children_cache.is_empty() && data.children_cache[data.children_cache.size() - 1] == p_child) {
 		// Removing the last child keeps the cache and the counters valid, so pop it
 		// instead of dirtying the cache. This keeps interleaving removals with reads
 		// (like get_child()) linear, as long as children are removed back to front.
 		data.children_cache.resize(data.children_cache.size() - 1);
-		switch (child->data.internal_mode) {
+		switch (p_child->data.internal_mode) {
 			case INTERNAL_MODE_DISABLED: {
 				data.external_children_count_cache--;
 			} break;
@@ -1787,17 +1792,19 @@ void Node::remove_child(RequiredParam<Node> p_child) {
 	} else {
 		data.children_cache_dirty = true;
 	}
-	bool success = data.children.erase(child->data.name);
+	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
-	child->data.parent = nullptr;
-	child->data.index = -1;
+	p_child->data.parent = nullptr;
+	p_child->data.index = -1;
 
-	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
-	emit_signal(SNAME("child_order_changed"));
+	if constexpr (p_notify_order_changed) {
+		notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+		emit_signal(SNAME("child_order_changed"));
+	}
 
 	if (data.tree) {
-		child->_propagate_after_exit_tree();
+		p_child->_propagate_after_exit_tree();
 	}
 }
 
@@ -3512,6 +3519,42 @@ void Node::queue_free() {
 	}
 }
 
+void Node::queue_free_children(bool p_include_internal) {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"queue_free_children\").");
+	ERR_THREAD_GUARD
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `queue_free_children()` can't be called at this time. Consider using `queue_free_children.call_deferred()` instead.");
+
+	SceneTree *tree = data.tree ? data.tree : SceneTree::get_singleton();
+	ERR_FAIL_NULL_MSG(tree, "Can't queue free children when no SceneTree is available.");
+
+	_update_children_cache();
+	const uint32_t start = p_include_internal ? 0 : data.internal_children_front_count_cache;
+	const uint32_t end = data.children_cache.size() - (p_include_internal ? 0 : data.internal_children_back_count_cache);
+	if (start == end) {
+		return;
+	}
+
+	// Callbacks fired during removal can free or move other children, so store IDs instead of pointers.
+	LocalVector<ObjectID> child_ids;
+	child_ids.reserve(end - start);
+	for (uint32_t i = start; i < end; i++) {
+		child_ids.push_back(data.children_cache[i]->get_instance_id());
+	}
+
+	// Remove back to front so the children cache isn't rebuilt between removals.
+	for (uint32_t i = child_ids.size(); i > 0; i--) {
+		Node *child = ObjectDB::get_instance<Node>(child_ids[i - 1]);
+		if (!child || child->data.parent != this) {
+			continue;
+		}
+		_remove_child_nocheck<false>(child);
+		tree->queue_delete(child);
+	}
+
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
+}
+
 #ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
@@ -3912,6 +3955,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
+	ClassDB::bind_method(D_METHOD("queue_free_children", "include_internal"), &Node::queue_free_children, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 	ClassDB::bind_method(D_METHOD("is_node_ready"), &Node::is_ready);
