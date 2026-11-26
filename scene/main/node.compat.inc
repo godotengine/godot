@@ -42,9 +42,33 @@ Variant Node::_get_rpc_config_bind_compat_106848() const {
 	return _get_node_rpc_config_bind();
 }
 
+Variant Node::_call_deferred_thread_group_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	_call_deferred_thread_group_bind(p_args, p_argcount, r_error);
+	return Variant();
+}
+
+Variant Node::_call_thread_safe_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	_call_thread_safe_bind(p_args, p_argcount, r_error);
+	return Variant();
+}
+
 void Node::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_name", "name"), &Node::_set_name_bind_compat_76560);
 	ClassDB::bind_compatibility_method(D_METHOD("get_rpc_config"), &Node::_get_rpc_config_bind_compat_106848);
+	{
+		MethodInfo mi;
+		mi.name = "call_deferred_thread_group";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+
+		ClassDB::bind_compatibility_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred_thread_group", &Node::_call_deferred_thread_group_bind_compat_125169, mi, varray());
+	}
+	{
+		MethodInfo mi;
+		mi.name = "call_thread_safe";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+
+		ClassDB::bind_compatibility_vararg_method(METHOD_FLAGS_DEFAULT, "call_thread_safe", &Node::_call_thread_safe_bind_compat_125169, mi, varray());
+	}
 }
 
 #endif // DISABLE_DEPRECATED

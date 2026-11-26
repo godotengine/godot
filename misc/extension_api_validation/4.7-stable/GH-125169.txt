@@ -1,0 +1,5 @@
+Validate extension JSON: Missing field in current API 'classes/Node/methods/call_deferred_thread_group': return_value. This is a bug.
+Validate extension JSON: Missing field in current API 'classes/Node/methods/call_thread_safe': return_value. This is a bug.
+Validate extension JSON: Missing field in current API 'classes/Object/methods/call_deferred': return_value. This is a bug.
+
+Applied void returns correctly if they are bound with variant void return to `ClassDB`. Compatibility methods registered.

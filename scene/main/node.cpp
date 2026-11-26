@@ -3666,18 +3666,18 @@ void Node::unhandled_input(const Ref<InputEvent> &p_event) {
 void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
-Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
-		return Variant();
+		return;
 	}
 
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -3685,22 +3685,20 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 	StringName method = *p_args[0];
 
 	call_deferred_thread_groupp(method, &p_args[1], p_argcount - 1, true);
-
-	return Variant();
 }
 
-Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
-		return Variant();
+		return;
 	}
 
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -3708,8 +3706,6 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 	StringName method = *p_args[0];
 
 	call_thread_safep(method, &p_args[1], p_argcount - 1, true);
-
-	return Variant();
 }
 
 void Node::call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
@@ -3964,7 +3960,7 @@ void Node::_bind_methods() {
 		mi.name = "call_deferred_thread_group";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred_thread_group", &Node::_call_deferred_thread_group_bind, mi, varray(), false);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred_thread_group", &Node::_call_deferred_thread_group_bind, mi, varray());
 	}
 	ClassDB::bind_method(D_METHOD("set_deferred_thread_group", "property", "value"), &Node::set_deferred_thread_group);
 	ClassDB::bind_method(D_METHOD("notify_deferred_thread_group", "what"), &Node::notify_deferred_thread_group);
@@ -3974,7 +3970,7 @@ void Node::_bind_methods() {
 		mi.name = "call_thread_safe";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_thread_safe", &Node::_call_thread_safe_bind, mi, varray(), false);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_thread_safe", &Node::_call_thread_safe_bind, mi, varray());
 	}
 	ClassDB::bind_method(D_METHOD("set_thread_safe", "property", "value"), &Node::set_thread_safe);
 	ClassDB::bind_method(D_METHOD("notify_thread_safe", "what"), &Node::notify_thread_safe);

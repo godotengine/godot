@@ -361,8 +361,8 @@ private:
 
 	static thread_local Node *current_process_thread_group;
 
-	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	// Editor only signal to keep the SceneTreeEditor in sync.
 #ifdef TOOLS_ENABLED
@@ -448,6 +448,8 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
 	Variant _get_rpc_config_bind_compat_106848() const;
+	Variant _call_deferred_thread_group_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_thread_safe_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	static void _bind_compatibility_methods();
 #endif
 
