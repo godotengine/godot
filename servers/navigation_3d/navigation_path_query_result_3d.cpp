@@ -147,3 +147,7 @@ void NavigationPathQueryResult3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);
 }
+
+NavigationPathQueryResult3D::NavigationPathQueryResult3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryResult3D);
+}

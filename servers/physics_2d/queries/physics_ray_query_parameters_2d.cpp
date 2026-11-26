@@ -92,3 +92,7 @@ void PhysicsRayQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 }
+
+PhysicsRayQueryParameters2D::PhysicsRayQueryParameters2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsRayQueryParameters2D);
+}

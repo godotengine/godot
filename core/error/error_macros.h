@@ -875,3 +875,24 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID((uint64_t)UINT64_MAX), m_string)
+
+/**
+ * Per-physics-tick allocation warnings.
+ */
+
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+#define PER_PHYSICS_TICK_ALLOCATION_WARNING(m_class) \
+	if (true) { \
+		static uint64_t consecutive_allocs = 0; \
+		static uint64_t last_alloc_tick = UINT64_MAX; \
+		static bool warning_shown = false; \
+		if (unlikely(!warning_shown)) { \
+			_per_physics_tick_allocation_warning(m_class::get_class_static().get_data(), consecutive_allocs, last_alloc_tick, warning_shown); \
+		} \
+	} else \
+		((void)0)
+
+void _per_physics_tick_allocation_warning(const char32_t *p_class_name, uint64_t &r_consecutive_allocs, uint64_t &r_last_alloc_tick, bool &r_warning_shown);
+#else
+#define PER_PHYSICS_TICK_ALLOCATION_WARNING(m_class)
+#endif
