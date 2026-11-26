@@ -93,3 +93,6 @@ a3088fecf1837aa22fcf2bccae413598a2e91766
 
 # Style: Apply left qualifier alignment rule
 eb1b8e8edacc3c7449ea8ac894812720e7ee48bf
+
+# [gdscript] AST extraction step 2, qualification changes, shouldn't appear in git blame
+b041b02cd058d4ea6f76239ce77ef83efb7498f3

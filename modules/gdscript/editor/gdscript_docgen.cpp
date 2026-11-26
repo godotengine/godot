@@ -35,6 +35,8 @@
 #include "core/config/project_settings.h"
 #include "core/doc_data.h"
 
+namespace AST = GDScriptAST;
+
 HashMap<String, String> GDScriptDocGen::singletons;
 
 String GDScriptDocGen::_get_script_name(const String &p_path) {
@@ -45,8 +47,8 @@ String GDScriptDocGen::_get_script_name(const String &p_path) {
 	return p_path.trim_prefix("res://").quote();
 }
 
-String GDScriptDocGen::_get_class_name(const GDP::ClassNode &p_class) {
-	const GDP::ClassNode *curr_class = &p_class;
+String GDScriptDocGen::_get_class_name(const AST::ClassNode &p_class) {
+	const AST::ClassNode *curr_class = &p_class;
 	if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
 		return _get_script_name(curr_class->fqcn);
 	}
@@ -307,7 +309,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	}
 }
 
-String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_expression) {
+String GDScriptDocGen::docvalue_from_expression(const AST::ExpressionNode *p_expression) {
 	ERR_FAIL_NULL_V(p_expression, String());
 
 	if (p_expression->is_constant) {
@@ -315,27 +317,27 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 	}
 
 	switch (p_expression->type) {
-		case GDP::Node::ARRAY: {
-			const GDP::ArrayNode *array = static_cast<const GDP::ArrayNode *>(p_expression);
+		case AST::Node::ARRAY: {
+			const AST::ArrayNode *array = static_cast<const AST::ArrayNode *>(p_expression);
 			return array->elements.is_empty() ? "[]" : "[...]";
 		} break;
-		case GDP::Node::CALL: {
-			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
-			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
+		case AST::Node::CALL: {
+			const AST::CallNode *call = static_cast<const AST::CallNode *>(p_expression);
+			if (call->get_callee_type() == AST::Node::IDENTIFIER) {
 				return call->function_name.string() + (call->arguments.is_empty() ? "()" : "(...)");
 			}
 		} break;
-		case GDP::Node::DICTIONARY: {
-			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
+		case AST::Node::DICTIONARY: {
+			const AST::DictionaryNode *dict = static_cast<const AST::DictionaryNode *>(p_expression);
 			return dict->elements.is_empty() ? "{}" : "{...}";
 		} break;
-		case GDP::Node::IDENTIFIER: {
-			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
+		case AST::Node::IDENTIFIER: {
+			const AST::IdentifierNode *id = static_cast<const AST::IdentifierNode *>(p_expression);
 			return id->name;
 		} break;
-		case GDP::Node::LAMBDA: {
-			const GDP::LambdaNode *lambda = static_cast<const GDP::LambdaNode *>(p_expression);
-			const GDP::IdentifierNode *id = lambda->function->identifier;
+		case AST::Node::LAMBDA: {
+			const AST::LambdaNode *lambda = static_cast<const AST::LambdaNode *>(p_expression);
+			const AST::IdentifierNode *id = lambda->function->identifier;
 			return id != nullptr ? id->name : "<anonymous lambda>";
 		} break;
 		default: {
@@ -346,7 +348,7 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 	return "<unknown>";
 }
 
-void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
+void GDScriptDocGen::_generate_docs(GDScript *p_script, const AST::ClassNode *p_class) {
 	p_script->_clear_doc();
 
 	DocData::ClassDoc &doc = p_script->doc;
@@ -378,10 +380,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 	doc.is_experimental = p_class->doc_data.is_experimental;
 	doc.experimental_message = p_class->doc_data.experimental_message;
 
-	for (const GDP::ClassNode::Member &member : p_class->members) {
+	for (const AST::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
-			case GDP::ClassNode::Member::CLASS: {
-				const GDP::ClassNode *inner_class = member.m_class;
+			case AST::ClassNode::Member::CLASS: {
+				const AST::ClassNode *inner_class = member.m_class;
 				const StringName &class_name = inner_class->identifier->name;
 
 				p_script->member_lines[class_name] = inner_class->start_line;
@@ -391,8 +393,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				GDScriptDocGen::_generate_docs(*p_script->subclasses[class_name], inner_class);
 			} break;
 
-			case GDP::ClassNode::Member::CONSTANT: {
-				const GDP::ConstantNode *m_const = member.constant;
+			case AST::ClassNode::Member::CONSTANT: {
+				const AST::ConstantNode *m_const = member.constant;
 				const StringName &const_name = member.constant->identifier->name;
 
 				p_script->member_lines[const_name] = m_const->start_line;
@@ -410,8 +412,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				doc.constants.push_back(const_doc);
 			} break;
 
-			case GDP::ClassNode::Member::FUNCTION: {
-				const GDP::FunctionNode *m_func = member.function;
+			case AST::ClassNode::Member::FUNCTION: {
+				const AST::FunctionNode *m_func = member.function;
 				const StringName &func_name = m_func->identifier->name;
 
 				p_script->member_lines[func_name] = m_func->start_line;
@@ -453,7 +455,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.return_type = "Variant";
 				}
 
-				for (const GDP::ParameterNode *p : m_func->parameters) {
+				for (const AST::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_datatype(p->type_constraint, arg_doc.type, arg_doc.enumeration);
@@ -466,8 +468,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				doc.methods.push_back(method_doc);
 			} break;
 
-			case GDP::ClassNode::Member::SIGNAL: {
-				const GDP::SignalNode *m_signal = member.signal;
+			case AST::ClassNode::Member::SIGNAL: {
+				const AST::SignalNode *m_signal = member.signal;
 				const StringName &signal_name = m_signal->identifier->name;
 
 				p_script->member_lines[signal_name] = m_signal->start_line;
@@ -480,7 +482,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
 				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
-				for (const GDP::ParameterNode *p : m_signal->parameters) {
+				for (const AST::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_datatype(p->type_constraint, arg_doc.type, arg_doc.enumeration);
@@ -490,8 +492,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				doc.signals.push_back(signal_doc);
 			} break;
 
-			case GDP::ClassNode::Member::VARIABLE: {
-				const GDP::VariableNode *m_var = member.variable;
+			case AST::ClassNode::Member::VARIABLE: {
+				const AST::VariableNode *m_var = member.variable;
 				const StringName &var_name = m_var->identifier->name;
 
 				p_script->member_lines[var_name] = m_var->start_line;
@@ -506,9 +508,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				_doctype_from_datatype(m_var->type_constraint, prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {
-					case GDP::VariableNode::PROP_NONE:
+					case AST::VariableNode::PROP_NONE:
 						break;
-					case GDP::VariableNode::PROP_INLINE:
+					case AST::VariableNode::PROP_INLINE:
 						if (m_var->setter != nullptr) {
 							prop_doc.setter = m_var->setter->identifier->name;
 						}
@@ -516,7 +518,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 							prop_doc.getter = m_var->getter->identifier->name;
 						}
 						break;
-					case GDP::VariableNode::PROP_SETGET:
+					case AST::VariableNode::PROP_SETGET:
 						if (m_var->setter_pointer != nullptr) {
 							prop_doc.setter = m_var->setter_pointer->name;
 						}
@@ -535,8 +537,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				doc.properties.push_back(prop_doc);
 			} break;
 
-			case GDP::ClassNode::Member::ENUM: {
-				const GDP::EnumNode *m_enum = member.m_enum;
+			case AST::ClassNode::Member::ENUM: {
+				const AST::EnumNode *m_enum = member.m_enum;
 				StringName name = m_enum->identifier->name;
 
 				p_script->member_lines[name] = m_enum->start_line;
@@ -549,7 +551,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
 				doc.enums[name] = enum_doc;
 
-				for (const GDP::EnumNode::Value &val : m_enum->values) {
+				for (const AST::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
 					const_doc.name = val.identifier->name;
 					const_doc.value = _docvalue_from_variant(val.value);
@@ -567,8 +569,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 			} break;
 
-			case GDP::ClassNode::Member::ENUM_VALUE: {
-				const GDP::EnumNode::Value &m_enum_val = member.enum_value;
+			case AST::ClassNode::Member::ENUM_VALUE: {
+				const AST::EnumNode::Value &m_enum_val = member.enum_value;
 				const StringName &name = m_enum_val.identifier->name;
 
 				p_script->member_lines[name] = m_enum_val.identifier->start_line;
@@ -596,7 +598,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 	p_script->_add_doc(doc);
 }
 
-void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
+void GDScriptDocGen::generate_docs(GDScript *p_script, const AST::ClassNode *p_class) {
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		if (E.value.is_singleton) {
 			singletons[E.value.path] = E.key;

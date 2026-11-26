@@ -30,11 +30,14 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
+#include "../toolchain/gdscript_ast.h"
 
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
+#include "core/templates/vector.h"
 #include "editor/translations/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
@@ -57,23 +60,23 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	StringName fd_set_filter = "set_filters";
 	StringName fd_filters = "filters";
 
-	static bool _is_constant_string(const GDScriptParser::ExpressionNode *p_expression);
+	static bool _is_constant_string(const GDScriptAST::ExpressionNode *p_expression);
 
 	String _parse_comment(int p_line, bool &r_skip) const;
 
 	void _add_id(const String &p_id, int p_line);
 	void _add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line);
 
-	void _traverse_class(const GDScriptParser::ClassNode *p_class);
-	void _traverse_function(const GDScriptParser::FunctionNode *p_func);
-	void _traverse_block(const GDScriptParser::SuiteNode *p_suite);
+	void _traverse_class(const GDScriptAST::ClassNode *p_class);
+	void _traverse_function(const GDScriptAST::FunctionNode *p_func);
+	void _traverse_block(const GDScriptAST::SuiteNode *p_suite);
 
-	void _assess_expression(const GDScriptParser::ExpressionNode *p_expression);
-	void _assess_assignment(const GDScriptParser::AssignmentNode *p_assignment);
-	void _assess_call(const GDScriptParser::CallNode *p_call);
+	void _assess_expression(const GDScriptAST::ExpressionNode *p_expression);
+	void _assess_assignment(const GDScriptAST::AssignmentNode *p_assignment);
+	void _assess_call(const GDScriptAST::CallNode *p_call);
 
-	void _extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression, int p_line);
-	void _extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression);
+	void _extract_fd_filter_string(const GDScriptAST::ExpressionNode *p_expression, int p_line);
+	void _extract_fd_filter_array(const GDScriptAST::ExpressionNode *p_expression);
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<Vector<String>> *r_translations) override;

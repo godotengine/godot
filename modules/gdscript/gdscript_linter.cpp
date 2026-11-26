@@ -32,16 +32,19 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "gdscript_parser.h"
+#include "toolchain/gdscript_ast.h"
+
 #include "core/typedefs.h"
 #include "servers/text/text_server.h"
 
-#include "modules/gdscript/gdscript_parser.h"
+namespace AST = GDScriptAST;
 
 // Checks ===========================================================================
 
 struct ConfusableIdentifier final {
 private:
-	static void check_identifier(const GDScriptParser::IdentifierNode *p_identifier, GDScriptParser &p_sink) {
+	static void check_identifier(const AST::IdentifierNode *p_identifier, GDScriptParser &p_sink) {
 		const Ref<TextServer> &ts = TextServerManager::get_singleton()->get_primary_interface();
 		// Check for synthetic nodes (`start_line != -1`) manually, since this is not called directly by `GDScriptLinter`.
 		if (p_identifier && p_identifier->start_line != -1 && ts->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && ts->spoof_check(p_identifier->name)) {
@@ -50,36 +53,36 @@ private:
 	}
 
 public:
-	static void check_class(const GDScriptParser::ClassNode *p_class, GDScriptParser &p_sink) { check_identifier(p_class->identifier, p_sink); }
-	static void check_assignable(const GDScriptParser::AssignableNode *p_var, GDScriptParser &p_sink) { check_identifier(p_var->identifier, p_sink); }
-	static void check_function(const GDScriptParser::FunctionNode *p_func, GDScriptParser &p_sink) { check_identifier(p_func->identifier, p_sink); }
-	static void check_signal(const GDScriptParser::SignalNode *p_sig, GDScriptParser &p_sink) { check_identifier(p_sig->identifier, p_sink); }
-	static void check_for(const GDScriptParser::ForNode *p_for, GDScriptParser &p_sink) { check_identifier(p_for->variable, p_sink); }
-	static void check_enum(const GDScriptParser::EnumNode *p_enum, GDScriptParser &p_sink) {
+	static void check_class(const AST::ClassNode *p_class, GDScriptParser &p_sink) { check_identifier(p_class->identifier, p_sink); }
+	static void check_assignable(const AST::AssignableNode *p_var, GDScriptParser &p_sink) { check_identifier(p_var->identifier, p_sink); }
+	static void check_function(const AST::FunctionNode *p_func, GDScriptParser &p_sink) { check_identifier(p_func->identifier, p_sink); }
+	static void check_signal(const AST::SignalNode *p_sig, GDScriptParser &p_sink) { check_identifier(p_sig->identifier, p_sink); }
+	static void check_for(const AST::ForNode *p_for, GDScriptParser &p_sink) { check_identifier(p_for->variable, p_sink); }
+	static void check_enum(const AST::EnumNode *p_enum, GDScriptParser &p_sink) {
 		check_identifier(p_enum->identifier, p_sink);
-		for (const GDScriptParser::EnumNode::Value &value : p_enum->values) {
+		for (const AST::EnumNode::Value &value : p_enum->values) {
 			check_identifier(value.identifier, p_sink);
 		}
 	}
-	static void check_pattern(const GDScriptParser::PatternNode *p_pattern, GDScriptParser &p_sink) {
-		if (p_pattern->pattern_type == GDScriptParser::PatternNode::PT_BIND) {
+	static void check_pattern(const AST::PatternNode *p_pattern, GDScriptParser &p_sink) {
+		if (p_pattern->pattern_type == AST::PatternNode::PT_BIND) {
 			check_identifier(p_pattern->bind, p_sink);
 		}
 	}
 };
 
 struct OnreadyWithCast final {
-	static void check_variable(const GDScriptParser::VariableNode *p_variable, GDScriptParser &p_sink) {
-		if (!p_variable->onready || !p_variable->initializer || p_variable->initializer->type != GDScriptParser::Node::CAST) {
+	static void check_variable(const AST::VariableNode *p_variable, GDScriptParser &p_sink) {
+		if (!p_variable->onready || !p_variable->initializer || p_variable->initializer->type != AST::Node::CAST) {
 			return;
 		}
 
-		const GDScriptParser::CastNode *cast = static_cast<const GDScriptParser::CastNode *>(p_variable->initializer);
-		if (!cast->operand || cast->operand->type != GDScriptParser::Node::GET_NODE) {
+		const AST::CastNode *cast = static_cast<const AST::CastNode *>(p_variable->initializer);
+		if (!cast->operand || cast->operand->type != AST::Node::GET_NODE) {
 			return;
 		}
 
-		const GDScriptParser::GetNodeNode *get_node = static_cast<const GDScriptParser::GetNodeNode *>(cast->operand);
+		const AST::GetNodeNode *get_node = static_cast<const AST::GetNodeNode *>(cast->operand);
 		p_sink.push_warning(cast, GDScriptWarning::ONREADY_WITH_CAST, (get_node->use_dollar ? "$" : "%") + get_node->full_path);
 	}
 };
@@ -87,14 +90,14 @@ struct OnreadyWithCast final {
 // Infrastructure ===================================================================
 
 template <typename T>
-void _FORCE_INLINE_ validated(const GDScriptParser::Node *p_node, GDScriptParser &p_sink, GDScriptLinter::Callback<T> *p_callback) {
+void _FORCE_INLINE_ validated(const AST::Node *p_node, GDScriptParser &p_sink, GDScriptLinter::Callback<T> *p_callback) {
 	const T *casted = dynamic_cast<const T *>(p_node);
 	if (casted) {
 		p_callback(casted, p_sink);
 	}
 }
 
-#define LINTER_CHECK(m_method) [](const GDScriptParser::Node *p_node, GDScriptParser &p_sink) { validated(p_node, p_sink, &m_method); }
+#define LINTER_CHECK(m_method) [](const AST::Node *p_node, GDScriptParser &p_sink) { validated(p_node, p_sink, &m_method); }
 
 constexpr GDScriptLinter::CallbackWithValidation *const GDScriptLinter::checks[] = {
 	LINTER_CHECK(ConfusableIdentifier::check_assignable),
@@ -113,7 +116,7 @@ constexpr GDScriptLinter::CallbackWithValidation *const GDScriptLinter::checks[]
 Error GDScriptLinter::lint() {
 	// We use the fact that all nodes form a linked list for memory management purposes to iterate all nodes without actually walking the tree.
 	// The iteration order is undefined, this should not matter since the tree is immutable for the linter.
-	GDScriptParser::Node *curr = tree->list;
+	AST::Node *curr = tree->list;
 	for (; curr != nullptr; curr = curr->next) {
 		if (curr->start_line == -1) {
 			// Sometimes we allocate synthetic nodes with no correspondence in code e.g. identifiers containing the synthetic names of getter functions.
