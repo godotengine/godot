@@ -889,11 +889,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					for (const PropertyInfo &property : properties) {
 						if (property.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
 							undo_redo->add_undo_property(n, property.name, n->get(property.name));
-							if (empty != NULL) {
+							if (empty.is_valid()) {
 								List<PropertyInfo> empty_properties;
 								empty->get_script_property_list(&empty_properties);
 								for (const PropertyInfo &empty_property : empty_properties) {
-									if(empty_property.name == property.name) {
+									if (empty_property.name == property.name) {
 										undo_redo->add_do_property(n, property.name, n->get(property.name));
 									}
 								}
