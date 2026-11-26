@@ -62,6 +62,7 @@ enum GlobalMenuCheckType {
 	int max_states;
 	int state;
 	int indent;
+	bool icon_template;
 	Ref<Image> img;
 }
 

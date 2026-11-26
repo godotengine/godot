@@ -281,6 +281,15 @@
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
+		<method name="get_item_icon_template" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the icon of the item at index [param idx] is marked as template image.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="get_item_indentation_level" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="rid" type="RID" />
@@ -615,6 +624,17 @@
 			<description>
 				Replaces the [Texture2D] icon of the specified [param idx].
 				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is not supported by macOS Dock menu items.
+			</description>
+		</method>
+		<method name="set_item_icon_template">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="template" type="bool" />
+			<description>
+				Marks the icon of the specified [param idx] as template image. Template images should consist of only black color and alpha channel mask. Template images are automatically colored to match system theme.
+				[b]Note:[/b] This method is implemented on macOS.
 				[b]Note:[/b] This method is not supported by macOS Dock menu items.
 			</description>
 		</method>

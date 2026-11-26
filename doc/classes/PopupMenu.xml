@@ -266,6 +266,14 @@
 				Returns a [Color] modulating the item's icon at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_icon_template" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the icon of the item at index [param index] is marked as template image.
+				[b]Note:[/b] This method is implemented for native menus on macOS.
+			</description>
+		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
@@ -528,6 +536,16 @@
 				Sets a modulating [Color] of the item's icon at the given [param index].
 			</description>
 		</method>
+		<method name="set_item_icon_template">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="template" type="bool" />
+			<description>
+				Marks the icon of the specified [param index] as template image. Template images should consist of only black color and alpha channel mask. Template images are automatically colored to match system theme.
+				[b]Note:[/b] This method is implemented for native menus on macOS.
+				[b]Note:[/b] This method is not supported by macOS Dock menu items.
+			</description>
+		</method>
 		<method name="set_item_id">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -699,6 +717,10 @@
 		</member>
 		<member name="item_{index}/icon" type="Texture2D" setter="" getter="">
 			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/icon_template" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the icon of the item at [code]index[/code] is marked as template image. Template images should consist of only black color and alpha channel mask. Template images are automatically colored to match system theme.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
 		<member name="item_{index}/id" type="int" setter="" getter="" default="0">
