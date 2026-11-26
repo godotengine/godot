@@ -41,6 +41,7 @@ protected:
 	bool resizing = false;
 	bool draggable = true;
 	bool selectable = true;
+	bool allow_reselect = false;
 
 	Vector2 drag_from;
 	Vector2 resizing_from;
@@ -87,6 +88,9 @@ public:
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable();
+
+	void set_allow_reselect(bool p_allow);
+	bool get_allow_reselect() const;
 
 	void set_scaling_menus(bool p_scaling_menus);
 	bool is_scaling_menus() const;

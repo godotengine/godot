@@ -104,7 +104,7 @@ Vector2 GraphElement::get_position_offset() const {
 }
 
 void GraphElement::set_selected(bool p_selected) {
-	if (!is_selectable() || selected == p_selected) {
+	if (!is_selectable() || (selected == p_selected && !allow_reselect)) {
 		return;
 	}
 	selected = p_selected;
@@ -201,6 +201,14 @@ void GraphElement::set_selectable(bool p_selectable) {
 
 bool GraphElement::is_selectable() {
 	return selectable;
+}
+
+void GraphElement::set_allow_reselect(bool p_allow) {
+	allow_reselect = p_allow;
+}
+
+bool GraphElement::get_allow_reselect() const {
+	return allow_reselect;
 }
 
 void GraphElement::set_scaling_menus(bool p_scaling_menus) {
