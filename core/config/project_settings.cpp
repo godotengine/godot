@@ -979,7 +979,6 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 	int config_version = 0;
 
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
