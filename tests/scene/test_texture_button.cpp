@@ -293,7 +293,9 @@ TEST_CASE("[SceneTree][TextureButton] has_point with click mask and stretch scal
 	texture_button->set_click_mask(mask);
 	texture_button->set_stretch_mode(TextureButton::STRETCH_SCALE);
 	texture_button->set_size(Size2(40, 40));
+	ERR_PRINT_OFF;
 	texture_button->notification(Control::NOTIFICATION_DRAW);
+	ERR_PRINT_ON;
 
 	Control *control = texture_button;
 	CHECK(control->has_point(Point2(20.0f, 20.0f)));
@@ -316,7 +318,9 @@ TEST_CASE("[SceneTree][TextureButton] has_point with click mask and stretch tile
 	texture_button->set_click_mask(mask);
 	texture_button->set_stretch_mode(TextureButton::STRETCH_TILE);
 	texture_button->set_size(Size2(12, 12));
+	ERR_PRINT_OFF;
 	texture_button->notification(Control::NOTIFICATION_DRAW);
+	ERR_PRINT_ON;
 
 	Control *control = texture_button;
 	CHECK_FALSE(control->has_point(Point2(1.0f, 1.0f)));
@@ -341,7 +345,9 @@ TEST_CASE("[SceneTree][TextureButton] has_point with click mask and stretch keep
 	texture_button->set_click_mask(mask);
 	texture_button->set_stretch_mode(TextureButton::STRETCH_KEEP_ASPECT_COVERED);
 	texture_button->set_size(Size2(20, 20));
+	ERR_PRINT_OFF;
 	texture_button->notification(Control::NOTIFICATION_DRAW);
+	ERR_PRINT_ON;
 
 	Control *control = texture_button;
 	CHECK(control->has_point(Point2(10.0f, 10.0f)));
