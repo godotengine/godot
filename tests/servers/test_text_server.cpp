@@ -58,6 +58,68 @@ TEST_SUITE("[TextServer]") {
 			}
 		}
 
+		SUBCASE("[TextServer] Locale direction") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
+
+				if (!ts->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
+					continue;
+				}
+
+				CHECK_EQ(ts->is_locale_right_to_left("ar"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("bg"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("bn"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ca"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("cs"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("de"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("dv"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("el"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("en"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("eo"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("es"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("et"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("fa"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("fi"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ff"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("fr"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ga"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("he"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("hu"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("id"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("it"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ja"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ka"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ko"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ku"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("nl"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("pl"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("pt"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ro"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ru"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("sk"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("sv"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ta"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("th"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("tok"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("tr"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("uk"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ur"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("va"), false);
+
+				CHECK_EQ(ts->is_locale_right_to_left("ff_Latn"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ff_Adlm"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("ku_Latn"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ku_Arab"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("ku_Cyrl"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("zh_Hans"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("zh_Hant"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("ur_Latn"), false);
+				CHECK_EQ(ts->is_locale_right_to_left("az_IR"), true);
+				CHECK_EQ(ts->is_locale_right_to_left("az_AZ"), false);
+			}
+		}
+
 		SUBCASE("[TextServer] Text layout: Font fallback") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
