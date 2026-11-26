@@ -105,6 +105,190 @@
 #import <IOKit/hid/IOHIDKeys.h>
 #import <IOKit/hid/IOHIDLib.h>
 
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 270000)
+static const int max_touches = 32;
+
+@interface GDRawTouchRecognizer : NSGestureRecognizer
+@end
+
+@implementation GDRawTouchRecognizer {
+	id<NSCopying, NSObject> godot_touches[max_touches];
+}
+
+- (instancetype)initWithTarget:(id)target action:(SEL)action {
+	self = [super initWithTarget:target action:action];
+
+	for (int i = 0; i < max_touches; i++) {
+		self->godot_touches[i] = nullptr;
+	}
+
+	return self;
+}
+
+- (int)getTouchIDForTouch:(NSTouch *)touch {
+	int first = -1;
+	for (int i = 0; i < max_touches; i++) {
+		if (first == -1 && godot_touches[i] == nullptr) {
+			first = i;
+			continue;
+		}
+		if (godot_touches[i] == touch.identity) {
+			return i;
+		}
+	}
+
+	if (first != -1) {
+		godot_touches[first] = touch.identity;
+		return first;
+	}
+
+	return -1;
+}
+
+- (void)removeTouch:(NSTouch *)touch {
+	for (int i = 0; i < max_touches; i++) {
+		if (godot_touches[i] == nullptr) {
+			continue;
+		}
+		if (godot_touches[i] == touch.identity) {
+			godot_touches[i] = nullptr;
+		}
+	}
+}
+
+- (void)touchesBeganWithEvent:(NSEvent *)event {
+	[super touchesBeganWithEvent:event];
+	NSSet<NSTouch *> *touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:self.view];
+	for (NSTouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		if (tid == -1) {
+			continue;
+		}
+		CGPoint touch_point = [touch locationInView:self.view];
+
+		const NSRect content_rect = [self.view frame];
+		const float scale = DisplayServerMacOS::get_singleton()->screen_get_max_scale();
+		touch_point.x = touch_point.x * scale;
+		touch_point.y = (content_rect.size.height - touch_point.y) * scale;
+
+		Ref<InputEventScreenTouch> ev;
+		ev.instantiate();
+
+		ev->set_index(tid);
+		ev->set_pressed(true);
+		ev->set_position(Vector2(touch_point.x, touch_point.y));
+		//ev->set_double_tap(...);
+		//ev->set_long_press(...);
+		Input::get_singleton()->parse_input_event(ev);
+	}
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event {
+	[super touchesMovedWithEvent:event];
+	NSSet<NSTouch *> *touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:self.view];
+	for (NSTouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		if (tid == -1) {
+			continue;
+		}
+		CGPoint touch_point = [touch locationInView:self.view];
+		CGPoint prev_point = [touch previousLocationInView:self.view];
+
+		const NSRect content_rect = [self.view frame];
+		const float scale = DisplayServerMacOS::get_singleton()->screen_get_max_scale();
+		touch_point.x = touch_point.x * scale;
+		touch_point.y = (content_rect.size.height - touch_point.y) * scale;
+
+		prev_point.x = prev_point.x * scale;
+		prev_point.y = (content_rect.size.height - prev_point.y) * scale;
+
+		Ref<InputEventScreenDrag> ev;
+		ev.instantiate();
+
+		ev->set_index(tid);
+		ev->set_pressure(1.0);
+		ev->set_position(Vector2(touch_point.x, touch_point.y));
+		ev->set_relative(Vector2(touch_point.x - prev_point.x, touch_point.y - prev_point.y));
+		ev->set_relative_screen_position(ev->get_relative());
+		//ev->set_double_tap(...);
+		//ev->set_long_press(...);
+		Input::get_singleton()->parse_input_event(ev);
+	}
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event {
+	[super touchesEndedWithEvent:event];
+	NSSet<NSTouch *> *touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:self.view];
+	for (NSTouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		if (tid == -1) {
+			continue;
+		}
+		CGPoint touch_point = [touch locationInView:self.view];
+
+		const NSRect content_rect = [self.view frame];
+		const float scale = DisplayServerMacOS::get_singleton()->screen_get_max_scale();
+		touch_point.x = touch_point.x * scale;
+		touch_point.y = (content_rect.size.height - touch_point.y) * scale;
+
+		Ref<InputEventScreenTouch> ev;
+		ev.instantiate();
+
+		ev->set_index(tid);
+		ev->set_pressed(false);
+		ev->set_position(Vector2(touch_point.x, touch_point.y));
+		Input::get_singleton()->parse_input_event(ev);
+		[self removeTouch:touch];
+	}
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event {
+	[super touchesCancelledWithEvent:event];
+	NSSet<NSTouch *> *touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:self.view];
+	for (NSTouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		if (tid == -1) {
+			continue;
+		}
+		CGPoint touch_point = [touch locationInView:self.view];
+
+		const NSRect content_rect = [self.view frame];
+		const float scale = DisplayServerMacOS::get_singleton()->screen_get_max_scale();
+		touch_point.x = touch_point.x * scale;
+		touch_point.y = (content_rect.size.height - touch_point.y) * scale;
+
+		Ref<InputEventScreenTouch> ev;
+		ev.instantiate();
+
+		ev->set_index(tid);
+		ev->set_pressed(false);
+		ev->set_canceled(true);
+		ev->set_position(Vector2(touch_point.x, touch_point.y));
+		Input::get_singleton()->parse_input_event(ev);
+		[self removeTouch:touch];
+	}
+}
+
+- (NSPoint)locationInView:(NSView *)view {
+	return NSZeroPoint;
+}
+
+@end
+#endif
+
+bool DisplayServerMacOS::is_touchscreen_available() const {
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 270000)
+	if (@available(macOS 27.0, *)) {
+		for (NSScreen *screen in [NSScreen screens]) {
+			if ((screen.touchCapabilities & NSScreenTouchCapabilitiesMultiTouch) == NSScreenTouchCapabilitiesMultiTouch) {
+				return true;
+			}
+		}
+	}
+#endif
+	return false;
+}
+
 DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect) {
 	const float scale = screen_get_max_scale();
 
@@ -149,6 +333,14 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 		}
 		[wd.window_view setWindowID:id];
 		[wd.window_view setWantsLayer:TRUE];
+
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 270000)
+		if (@available(macOS 27.0, *)) {
+			GDRawTouchRecognizer *trec = [[GDRawTouchRecognizer alloc] initWithTarget:nil action:nil];
+			trec.allowedTouchTypes = NSTouchTypeMaskDirect;
+			[wd.window_view addGestureRecognizer:trec];
+		}
+#endif
 
 		[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 		[wd.window_object setContentView:wd.window_view];
