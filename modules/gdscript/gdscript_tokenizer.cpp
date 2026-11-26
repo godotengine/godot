@@ -440,7 +440,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_paren_error(char32_t p_pare
 		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
 	}
 	Token error = make_error(vformat("Closing \"%c\" doesn't match the opening \"%c\".", p_paren, paren_stack.back()->get()));
-	paren_stack.pop_back(); // Remove opening one anyway.
 	return error;
 }
 
