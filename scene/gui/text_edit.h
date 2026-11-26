@@ -204,6 +204,8 @@ private:
 		bool is_indent_wrapped_lines() const;
 
 		void set_font(const Ref<Font> &p_font);
+		Ref<Font> get_font() const { return font; }
+		void mark_font_dirty() { is_dirty = true; }
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
@@ -347,6 +349,7 @@ private:
 	Array st_args;
 
 	void _clear();
+	void _font_changed();
 	void _update_caches(bool p_invalidate_all = false);
 
 	void _close_ime_window();
