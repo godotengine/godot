@@ -263,7 +263,7 @@ public:
 
 	// Used to resize/move the node
 	virtual void _edit_set_rect(const Rect2 &p_rect) {}
-	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); } // LOOKS WEIRD
+	virtual Size2 _edit_get_minimum_size() const { return Size2(); }
 
 	// Used to set a pivot
 	virtual bool _edit_use_pivot() const { return false; }
@@ -277,7 +277,7 @@ public:
 
 	// Used to resize/move the node.
 	virtual bool _edit_use_rect() const { return false; } // Maybe replace with _edit_get_editmode().
-	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); }
+	virtual Rect2 _edit_get_rect() const { return Rect2(); }
 #endif // DEBUG_ENABLED
 
 	void update_draw_order();
