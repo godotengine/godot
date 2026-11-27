@@ -392,6 +392,12 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 				// Push constants belong to the previous shader; RD requires them to be supplied again.
 				render.dirty.clear_flag(RenderState::DIRTY_PUSH);
 				push_constant_binding = MetalPushConstantBinding();
+				if (render.pipeline->shader->uses_argument_buffers != rp->shader->uses_argument_buffers) {
+					// Baked and runtime-compiled shaders can differ in binding model (direct slot vs argument buffers).
+					// Both write the same encoder buffer slots, but each tracks them in its own cache.
+					binding_cache.buffers.clear();
+					render.clear_arg_buffer_cache();
+				}
 			}
 			render.dirty.set_flag((RenderState::DirtyFlag)(RenderState::DIRTY_PIPELINE | RenderState::DIRTY_RASTER));
 			// Mark all uniforms as dirty, as variants of a shader pipeline may have a different entry point ABI,
