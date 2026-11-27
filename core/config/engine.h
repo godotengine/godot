@@ -82,6 +82,8 @@ private:
 	bool accurate_breadcrumbs = false;
 #endif
 	int32_t gpu_idx = -1;
+	uint32_t gpu_vendor_id = 0;
+	uint32_t gpu_device_id = 0;
 
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
@@ -216,6 +218,9 @@ public:
 	bool is_accurate_breadcrumbs_enabled() const;
 #endif
 	int32_t get_gpu_index() const;
+	bool is_gpu_id_specified() const;
+	uint32_t get_gpu_vendor_id() const;
+	uint32_t get_gpu_device_id() const;
 
 	void increment_frames_drawn();
 	bool notify_frame_server_synced();
