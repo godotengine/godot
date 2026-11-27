@@ -2602,6 +2602,7 @@ void CanvasItemEditor::_update_editor_settings() {
 
 	ci_manipulator->set_grab_distance(EDITOR_GET("editors/polygon_editor/point_grab_radius"));
 	ci_manipulator->set_shortcut(CanvasItemManipulator::SHORTCUT_CANCEL_TRANSFORM, ED_GET_SHORTCUT("canvas_item_editor/cancel_transform"));
+	ci_manipulator->set_handle_scale(EDITOR_GET("interface/touchscreen/scale_gizmo_handles"));
 
 	resample_delay = EDITOR_GET("editors/2d/auto_resample_delay");
 	resample_timer->set_wait_time(resample_delay);

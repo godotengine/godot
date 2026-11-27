@@ -563,21 +563,22 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 				};
 
 				DragType resize_drag = DRAG_NONE;
-				real_t radius = (RESIZE_HANDLE_DIAMETER / 2) * 1.5 * scale;
+				real_t handle_ofs = (RESIZE_HANDLE_DIAMETER / 2) * handle_scale * scale;
+				real_t radius = handle_ofs * 1.5;
 
 				for (int i = 0; i < 4; i++) {
 					int prev = (i + 3) % 4;
 					int next = (i + 1) % 4;
 
 					Point2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-					ofs *= RESIZE_HANDLE_DIAMETER / 2;
+					ofs *= handle_ofs;
 					ofs += endpoints[i];
 					if (ofs.distance_to(b->get_position()) < radius) {
 						resize_drag = dragger[i * 2];
 					}
 
 					ofs = (endpoints[i] + endpoints[next]) / 2;
-					ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (RESIZE_HANDLE_DIAMETER / 2);
+					ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * handle_ofs;
 					if (ofs.distance_to(b->get_position()) < radius) {
 						resize_drag = dragger[i * 2 + 1];
 					}
@@ -1046,7 +1047,7 @@ bool CanvasItemManipulator::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 					anchor_pos[3] = Vector2(control->get_anchor(SIDE_LEFT), control->get_anchor(SIDE_BOTTOM));
 
 					Rect2 anchor_rects[4];
-					Size2 handle_size = ANCHOR_HANDLE_SIZE * scale;
+					Size2 handle_size = ANCHOR_HANDLE_SIZE * handle_scale * scale;
 
 					for (int i = 0; i < 4; i++) {
 						anchor_pos[i] = ((Transform2D)global_transform_callback.call() * control->get_screen_transform()).xform(anchor_to_position(control, anchor_pos[i]));

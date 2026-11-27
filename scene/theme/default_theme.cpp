@@ -79,8 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<DPITexture> generate_icon(int p_index) {
-	return DPITexture::create_from_string(default_theme_icons_sources[p_index], scale);
+static Ref<DPITexture> generate_icon(int p_index, float p_scale = 1) {
+	return DPITexture::create_from_string(default_theme_icons_sources[p_index], p_scale * scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -1458,3 +1458,18 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 	ThemeDB::get_singleton()->set_fallback_font(default_font);
 	ThemeDB::get_singleton()->set_fallback_font_size(default_font_size * default_scale);
 }
+
+#ifdef TOOLS_ENABLED
+void regenerate_debug_icons(Ref<Theme> &theme, float p_scale) {
+	for (int i = 0; i < default_theme_icons_count; i++) {
+		String name = default_theme_icons_names[i];
+		if (name == "debug_pivot") {
+			theme->set_icon("pivot", "Debug", generate_icon(i, p_scale));
+		} else if (name == "debug_resize") {
+			theme->set_icon("resize", "Debug", generate_icon(i, p_scale));
+		} else if (name == "debug_anchor") {
+			theme->set_icon("anchor", "Debug", generate_icon(i, p_scale));
+		}
+	}
+}
+#endif

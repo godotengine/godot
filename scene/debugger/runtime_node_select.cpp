@@ -107,6 +107,11 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	axis_x_color = p_settings.get("axis_x_color", Color());
 	axis_y_color = p_settings.get("axis_y_color", Color());
 
+	real_t handle_scale = p_settings.get("interface/touchscreen/scale_gizmo_handles", 1);
+	if (handle_scale * scale != 1) {
+		ThemeDB::get_singleton()->regenerate_debug_icons(handle_scale * scale);
+	}
+
 	const Ref<Theme> theme = ThemeDB::get_singleton()->get_default_theme();
 	pivot_icon = theme->get_icon(SNAME("pivot"), SNAME("Debug"));
 	resize_icon = theme->get_icon(SNAME("resize"), SNAME("Debug"));
@@ -150,6 +155,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 #ifdef TOOLS_ENABLED
 	ci_manipulator->set_show_transformation_gizmos(true);
+	ci_manipulator->set_handle_scale(handle_scale);
 	ci_manipulator->set_shortcut(CanvasItemManipulator::SHORTCUT_CANCEL_TRANSFORM, DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("canvas_item_editor/cancel_transform", Array())));
 
 	ci_manipulator->connect("save_canvas_state_requested", callable_mp(this, &RuntimeNodeSelect::_save_canvas_state_requested));
@@ -1010,7 +1016,8 @@ void RuntimeNodeSelect::_update_selection() {
 					simple_xform *= Transform2D(0.0f, xform_unscaled.get_origin());
 				}
 
-				Size2 pivot_size = pivot_icon->get_size() * scale;
+				// Take out the handle scale from the pivot icon, as it has been scaled with the other debug icons.
+				Size2 pivot_size = pivot_icon->get_size() / ci_manipulator->get_handle_scale();
 				Rect2 rect(simple_xform.get_origin() - (pivot_size / 2.0).floor(), pivot_size);
 				RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, rect, pivot_icon->get_rid());
 			}
@@ -1034,7 +1041,7 @@ void RuntimeNodeSelect::_update_selection() {
 					}
 
 					// Draw the anchors handles.
-					Size2 handle_size = CanvasItemManipulator::ANCHOR_HANDLE_SIZE * scale;
+					Size2 handle_size = CanvasItemManipulator::ANCHOR_HANDLE_SIZE * ci_manipulator->get_handle_scale() * scale;
 					Rect2 anchor_rects[4];
 					if (control->is_layout_rtl()) {
 						anchor_rects[0] = Rect2(anchors_pos[0] - Vector2(0.0, handle_size.y), Point2(-handle_size.x, handle_size.y));
@@ -1064,7 +1071,7 @@ void RuntimeNodeSelect::_update_selection() {
 						xform.xform(rect.position + Point2(0, rect.size.y))
 					};
 
-					Size2 handle_size = Size2(CanvasItemManipulator::RESIZE_HANDLE_DIAMETER, CanvasItemManipulator::RESIZE_HANDLE_DIAMETER) * scale;
+					Size2 handle_size = Size2(CanvasItemManipulator::RESIZE_HANDLE_DIAMETER, CanvasItemManipulator::RESIZE_HANDLE_DIAMETER) * ci_manipulator->get_handle_scale() * scale;
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
 						int next = (i + 1) % 4;

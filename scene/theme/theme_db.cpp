@@ -436,6 +436,13 @@ void ThemeDB::_sort_theme_items() {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+// Debug icons re-scaling.
+void ThemeDB::regenerate_debug_icons(float p_scale) {
+	::regenerate_debug_icons(default_theme, p_scale);
+}
+#endif
+
 // Object methods.
 
 void ThemeDB::_bind_methods() {
