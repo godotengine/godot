@@ -460,13 +460,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 					debugger = dbg;
 				});
 				if (debugger == nullptr) {
-					if (tabs->get_tab_count() <= 4) { // Max 4 debugging sessions active.
-						debugger = _add_debugger();
-					} else {
-						// We already have too many sessions, disconnecting new clients to prevent them from hanging.
-						server->take_connection()->close();
-						return; // Can't add, stop here.
-					}
+					debugger = _add_debugger();
 				}
 
 				EditorRunBar::get_singleton()->get_pause_button()->set_disabled(false);
