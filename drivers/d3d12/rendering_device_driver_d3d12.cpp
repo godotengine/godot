@@ -6350,7 +6350,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 
 	// Example: D3D_FEATURE_LEVEL_12_1 = 0xc100.
 	uint32_t feat_level_major = feat_levels.MaxSupportedFeatureLevel >> 12;
-	uint32_t feat_level_minor = (feat_levels.MaxSupportedFeatureLevel >> 16) & 0xff;
+	uint32_t feat_level_minor = (feat_levels.MaxSupportedFeatureLevel >> 8) & 0xf;
 	feature_level = feat_level_major * 10 + feat_level_minor;
 
 	// Fill device capabilities.
