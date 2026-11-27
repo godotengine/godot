@@ -302,16 +302,18 @@ public:
 
 	template <typename T>
 	static void register_custom_instance_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
-		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->creation_func = &_create_ptr_func<T>;
-		t->exposed = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		if constexpr (GD_IS_CLASS_ENABLED(T)) {
+			Locker::Lock lock(Locker::STATE_WRITE);
+			static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
+			T::initialize_class();
+			ClassInfo *t = classes.getptr(T::get_class_static());
+			ERR_FAIL_NULL(t);
+			t->creation_func = &_create_ptr_func<T>;
+			t->exposed = true;
+			t->class_ptr = T::get_class_ptr_static();
+			t->api = current_api;
+			T::register_custom_data_to_otdb();
+		}
 	}
 
 	static void get_class_list(LocalVector<StringName> &p_classes);
