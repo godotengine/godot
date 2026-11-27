@@ -3472,6 +3472,14 @@ void EditorPropertyResource::_select_resource(const Ref<Resource> &p_resource, b
 	}
 }
 
+Ref<Resource> EditorPropertyResource::_get_edited_resource() {
+	return get_edited_property_display_value();
+}
+
+void EditorPropertyResource::_emit_resource_value(const Ref<Resource> &p_res) {
+	emit_changed(get_edited_property(), p_res);
+}
+
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	Resource *r = Object::cast_to<Resource>(get_edited_object());
 	if (r) {
@@ -3481,7 +3489,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 		bool found = EditorNode::find_recursive_resources(p_resource, resources_found);
 		if (found) {
 			callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(TTR("Recursion detected, unable to assign resource to property."), TTR("Warning!"));
-			emit_changed(get_edited_property(), Ref<Resource>());
+			_emit_resource_value(Ref<Resource>());
 			update_property();
 			return;
 		}
@@ -3515,7 +3523,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 #ifdef MODULE_VISUAL_SHADER_ENABLED
 		if (Object::cast_to<VisualShaderNodeTexture>(r)) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture in a Texture2D node because the texture will not be bound to a scene.\nUse a Texture2DParameter node instead and set the texture in the \"Shader Parameters\" tab."));
-			emit_changed(get_edited_property(), Ref<Resource>());
+			_emit_resource_value(Ref<Resource>());
 			update_property();
 			return;
 		}
@@ -3523,20 +3531,20 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
-			emit_changed(get_edited_property(), Ref<Resource>());
+			_emit_resource_value(Ref<Resource>());
 			update_property();
 			return;
 		}
 
 		if (r && !r->is_local_to_scene()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on this resource because it's not set as local to scene.\nPlease switch on the 'local to scene' property on it (and all resources containing it up to a node)."));
-			emit_changed(get_edited_property(), Ref<Resource>());
+			_emit_resource_value(Ref<Resource>());
 			update_property();
 			return;
 		}
 	}
 
-	emit_changed(get_edited_property(), p_resource);
+	_emit_resource_value(p_resource);
 	update_property();
 
 	if (is_script) {
@@ -3578,7 +3586,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 }
 
 void EditorPropertyResource::_open_editor_pressed() {
-	Ref<Resource> res = get_edited_property_value();
+	Ref<Resource> res = _get_edited_resource();
 	if (res.is_valid()) {
 		EditorNode::get_singleton()->edit_item(res.ptr(), this, user_opened_editor);
 	}
@@ -3714,7 +3722,7 @@ void EditorPropertyResource::make_passthrough(bool p_passthrough) {
 }
 
 void EditorPropertyResource::update_property() {
-	Ref<Resource> res = get_edited_property_display_value();
+	Ref<Resource> res = _get_edited_resource();
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {
@@ -3789,7 +3797,7 @@ void EditorPropertyResource::update_property() {
 	}
 
 	resource_picker->set_edited_resource_no_check(res);
-	const Ref<Resource> &real_res = get_edited_property_value();
+	const Ref<Resource> &real_res = _get_edited_resource();
 	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
 
 	user_opened_editor = false;
@@ -3882,6 +3890,46 @@ void EditorPropertyResource::_bind_methods() {
 EditorPropertyResource::EditorPropertyResource() {
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
 	has_borders = true;
+}
+
+///////////////////// RESOURCE PATH /////////////////////////
+
+Ref<Resource> EditorPropertyResourcePath::_get_edited_resource() {
+	String path = get_edited_property_value();
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::uid_to_path(path);
+	}
+	if (path.is_resource_file()) {
+		return ResourceLoader::load(path);
+	}
+	return Ref<Resource>();
+}
+
+void EditorPropertyResourcePath::_emit_resource_value(const Ref<Resource> &p_res) {
+	String path;
+	if (p_res.is_valid()) {
+		path = p_res->get_path();
+		if (!extensions.is_empty() && !extensions.has("*")) {
+			bool ok = false;
+			for (const String &f : extensions) {
+				if (path.get_extension().nocasecmp_to(f.trim_prefix("*.").trim_prefix("*")) == 0) {
+					ok = true;
+					break;
+				}
+			}
+			if (!ok) {
+				callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(vformat(TTR("File '%s' does not match the allowed filters."), path), TTR("Warning!"));
+				return;
+			}
+		}
+		if (enable_uid) {
+			const ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+			if (id != ResourceUID::INVALID_ID) {
+				path = ResourceUID::get_singleton()->id_to_text(id);
+			}
+		}
+	}
+	emit_changed(get_edited_property(), path);
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////
@@ -4155,6 +4203,20 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
 				bool save = p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
 				bool enable_uid = p_hint == PROPERTY_HINT_FILE;
+				bool preview = extensions.has("preview");
+				if (preview) {
+					extensions.erase("preview");
+				}
+
+				if (preview && (p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_FILE_PATH)) {
+					EditorPropertyResourcePath *editor = memnew(EditorPropertyResourcePath);
+
+					editor->setup(p_object, p_path, "Resource");
+					editor->set_enable_uid(p_hint == PROPERTY_HINT_FILE);
+					editor->set_extensions(extensions);
+					return editor;
+				}
+
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
 				editor->setup(extensions, folder, global, enable_uid);
 				if (save) {

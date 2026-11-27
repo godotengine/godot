@@ -768,6 +768,8 @@ class EditorPropertyResource : public EditorProperty {
 	bool _should_stop_editing() const;
 
 protected:
+	virtual Ref<Resource> _get_edited_resource();
+	virtual void _emit_resource_value(const Ref<Resource> &p_res);
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -792,6 +794,21 @@ public:
 	virtual bool is_colored(ColorationMode p_mode) override;
 
 	EditorPropertyResource();
+};
+
+class EditorPropertyResourcePath : public EditorPropertyResource {
+	GDCLASS(EditorPropertyResourcePath, EditorPropertyResource);
+
+	bool enable_uid = false;
+	Vector<String> extensions;
+
+protected:
+	virtual Ref<Resource> _get_edited_resource() override;
+	virtual void _emit_resource_value(const Ref<Resource> &p_res) override;
+
+public:
+	void set_extensions(const Vector<String> &p_ext) { extensions = p_ext; }
+	void set_enable_uid(bool p_enable) { enable_uid = p_enable; }
 };
 
 ///////////////////////////////////////////////////

@@ -1112,6 +1112,22 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 				}
 			} break;
 		}
+	} else if (p_annotation->name == SNAME("@export_file") || p_annotation->name == SNAME("@export_file_path")) {
+		bool preview_used = false;
+		for (uint32_t i = 0; i < p_argument && i < p_annotation->arguments.size(); i++) {
+			const GDScriptParser::Node *arg = p_annotation->arguments[i];
+			if (arg && arg->type == GDScriptParser::Node::LITERAL) {
+				const Variant &value = static_cast<const GDScriptParser::LiteralNode *>(arg)->value;
+				if (value.is_string() && value == "preview") {
+					preview_used = true;
+					break;
+				}
+			}
+		}
+		if (!preview_used) {
+			EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, "preview");
+			r_result.insert(option.display, option);
+		}
 	} else if (p_annotation->name == SNAME("@warning_ignore") || p_annotation->name == SNAME("@warning_ignore_start") || p_annotation->name == SNAME("@warning_ignore_restore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
 #ifndef DISABLE_DEPRECATED

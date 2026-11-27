@@ -451,10 +451,12 @@
 			<description>
 				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
 				If [param filter] is provided, only matching files will be available for picking.
+				If the [code]"preview"[/code] argument is provided, the property will use a resource picker with a preview thumbnail instead of a file path field. This only works for files that can be loaded as a [Resource].
 				See also [constant PROPERTY_HINT_FILE].
 				[codeblock]
 				@export_file var sound_effect_path: String
 				@export_file("*.txt") var notes_path: String
+				@export_file("*.png", "preview") var texture_path: String
 				@export_file var level_paths: Array[String]
 				[/codeblock]
 				[b]Note:[/b] The file will be stored and referenced as UID, if available. This ensures that the reference is valid even when the file is moved. You can use [ResourceUID] methods to convert it to path.
@@ -465,6 +467,7 @@
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
 				Same as [annotation @export_file], except the file will be stored as a raw path. This means that it may become invalid when the file is moved. If you are exporting a [Resource] path, consider using [annotation @export_file] instead.
+				The [code]"preview"[/code] argument is also supported, see [annotation @export_file].
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
