@@ -163,6 +163,8 @@ class GDScriptAnalyzer {
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
 	void warn_confusable_temporary_modification(GDScriptParser::ExpressionNode *p_expression);
+	void warn_private_member_access(const StringName &p_member_name, const GDScriptParser::DataType &p_base_type, const GDScriptParser::Node *p_source);
+	bool is_private_member_accessible_from_current_class(const GDScriptParser::ClassNode *p_declaring_class) const;
 #endif // DEBUG_ENABLED
 
 public:

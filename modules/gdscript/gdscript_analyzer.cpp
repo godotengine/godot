@@ -3754,6 +3754,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, p_call->function_name);
 		}
 
+		if (!is_self && !is_constructor) {
+			const GDScriptParser::SubscriptNode *callee_subscript = static_cast<const GDScriptParser::SubscriptNode *>(p_call->callee);
+			warn_private_member_access(p_call->function_name, base_type, callee_subscript->attribute);
+		}
+
 		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !is_self) {
 			String caller_type = base_type.to_string();
 
@@ -4940,6 +4945,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			reduce_identifier_from_base(p_subscript->attribute, &base_type);
 			GDScriptParser::DataType attr_type = p_subscript->attribute->type_constraint;
 			if (attr_type.is_set()) {
+#ifdef DEBUG_ENABLED
+				warn_private_member_access(p_subscript->attribute->name, base_type, p_subscript->attribute);
+#endif // DEBUG_ENABLED
 				if (base_type.builtin_type == Variant::DICTIONARY && base_type.has_container_element_types()) {
 					Variant::Type key_type = base_type.get_container_element_type_or_variant(0).builtin_type;
 					valid = key_type == Variant::NIL || key_type == Variant::STRING || key_type == Variant::STRING_NAME;
@@ -6315,6 +6323,67 @@ void GDScriptAnalyzer::warn_confusable_temporary_modification(GDScriptParser::Ex
 
 		current = base;
 	}
+}
+
+static bool is_same_class(const GDScriptParser::ClassNode *p_a, const GDScriptParser::ClassNode *p_b) {
+	return p_a == p_b || p_a->fqcn == p_b->fqcn;
+}
+
+static const GDScriptParser::ClassNode *get_outermost_class(const GDScriptParser::ClassNode *p_class) {
+	const GDScriptParser::ClassNode *outermost_class = p_class;
+	while (outermost_class->outer != nullptr) {
+		outermost_class = outermost_class->outer;
+	}
+	return outermost_class;
+}
+
+static const GDScriptParser::ClassNode *find_class_declaring_member(const GDScriptParser::ClassNode *p_class, const StringName &p_member_name) {
+	for (const GDScriptParser::ClassNode *script_class = p_class; script_class != nullptr; script_class = script_class->base_type.class_type) {
+		if (script_class->has_member(p_member_name)) {
+			return script_class;
+		}
+	}
+	return nullptr;
+}
+
+void GDScriptAnalyzer::warn_private_member_access(const StringName &p_member_name, const GDScriptParser::DataType &p_base_type, const GDScriptParser::Node *p_source) {
+	if (!String(p_member_name).begins_with("_")) {
+		return;
+	}
+	if (!p_base_type.is_hard_type()) {
+		return;
+	}
+	// `SCRIPT` is only used for non-GDScript scripts, which have their own access rules.
+	if (p_base_type.kind != GDScriptParser::DataType::CLASS || p_base_type.class_type == nullptr) {
+		return;
+	}
+
+	const GDScriptParser::ClassNode *declaring_class = find_class_declaring_member(p_base_type.class_type, p_member_name);
+	if (declaring_class == nullptr) {
+		return;
+	}
+	// Overrides of native methods like `_ready()` or `_to_string()` are part of the engine API.
+	MethodInfo native_method_info;
+	if (ClassDB::get_method_info(p_base_type.native_type, p_member_name, &native_method_info)) {
+		return;
+	}
+	if (is_private_member_accessible_from_current_class(declaring_class)) {
+		return;
+	}
+
+	parser->push_warning(p_source, GDScriptWarning::PRIVATE_MEMBER_ACCESS, p_member_name, declaring_class->self_type.to_string());
+}
+
+bool GDScriptAnalyzer::is_private_member_accessible_from_current_class(const GDScriptParser::ClassNode *p_declaring_class) const {
+	if (is_same_class(get_outermost_class(p_declaring_class), get_outermost_class(parser->current_class))) {
+		return true;
+	}
+	for (const GDScriptParser::ClassNode *ancestor_class = parser->current_class; ancestor_class != nullptr; ancestor_class = ancestor_class->base_type.class_type) {
+		if (is_same_class(ancestor_class, p_declaring_class)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 #endif // DEBUG_ENABLED

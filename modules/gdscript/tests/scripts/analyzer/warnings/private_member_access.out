@@ -1,0 +1,13 @@
+GDTEST_OK
+~~ WARNING at line 23: (PRIVATE_MEMBER_ACCESS) The member "_private_variable" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 24: (PRIVATE_MEMBER_ACCESS) The member "_private_variable" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 25: (PRIVATE_MEMBER_ACCESS) The member "_private_method" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 26: (PRIVATE_MEMBER_ACCESS) The member "_private_method" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 27: (PRIVATE_MEMBER_ACCESS) The member "_private_signal" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 28: (PRIVATE_MEMBER_ACCESS) The member "_PRIVATE_CONSTANT" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 29: (PRIVATE_MEMBER_ACCESS) The member "_PrivateEnum" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 30: (PRIVATE_MEMBER_ACCESS) The member "_private_static_variable" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 31: (PRIVATE_MEMBER_ACCESS) The member "_private_static_method" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 32: (PRIVATE_MEMBER_ACCESS) The member "_PrivateInner" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 33: (PRIVATE_MEMBER_ACCESS) The member "_private_variable" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
+~~ WARNING at line 34: (PRIVATE_MEMBER_ACCESS) The member "_private_method" of "PrivateMembers" is private (its name starts with "_") but is accessed from another script.
