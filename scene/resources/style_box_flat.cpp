@@ -228,16 +228,18 @@ real_t StyleBoxFlat::get_aa_size() const {
 	return aa_size;
 }
 
-inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_rect, const real_t corner_radius[4], real_t *inner_corner_radius) {
+inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_rect, const real_t corner_radius[4], real_t *inner_corner_radius, bool p_is_chamfer) {
 	real_t border_left = inner_rect.position.x - style_rect.position.x;
 	real_t border_top = inner_rect.position.y - style_rect.position.y;
 	real_t border_right = style_rect.size.width - inner_rect.size.width - border_left;
 	real_t border_bottom = style_rect.size.height - inner_rect.size.height - border_top;
 
-	inner_corner_radius[0] = MAX(corner_radius[0] - MIN(border_top, border_left), 0); // Top left.
-	inner_corner_radius[1] = MAX(corner_radius[1] - MIN(border_top, border_right), 0); // Top right.
-	inner_corner_radius[2] = MAX(corner_radius[2] - MIN(border_bottom, border_right), 0); // Bottom right.
-	inner_corner_radius[3] = MAX(corner_radius[3] - MIN(border_bottom, border_left), 0); // Bottom left.
+	const real_t factor = p_is_chamfer ? (2.0 - Math::SQRT2) : 1.0;
+
+	inner_corner_radius[0] = MAX(corner_radius[0] - MIN(border_top, border_left) * factor, 0); // Top left.
+	inner_corner_radius[1] = MAX(corner_radius[1] - MIN(border_top, border_right) * factor, 0); // Top right.
+	inner_corner_radius[2] = MAX(corner_radius[2] - MIN(border_bottom, border_right) * factor, 0); // Bottom right.
+	inner_corner_radius[3] = MAX(corner_radius[3] - MIN(border_bottom, border_left) * factor, 0); // Bottom left.
 }
 
 inline void set_corner_scale(const Rect2 &style_rect, const Rect2 &inner_rect, const real_t corner_radius[4], Point2 *inner_scale) {
@@ -319,9 +321,10 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	int adapted_corner_detail = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0) ? corner_detail : 1;
 
 	bool draw_border = !is_filled;
+	bool is_chamfer = adapted_corner_detail == 1;
 
 	real_t ring_corner_radius[4];
-	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
+	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius, is_chamfer);
 
 	Point2 ring_scale[4];
 	set_corner_scale(style_rect, ring_rect, ring_corner_radius, ring_scale);
@@ -335,7 +338,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	};
 
 	real_t inner_corner_radius[4];
-	set_inner_corner_radius(style_rect, inner_rect, corner_radius, inner_corner_radius);
+	set_inner_corner_radius(style_rect, inner_rect, corner_radius, inner_corner_radius, is_chamfer);
 
 	Point2 inner_scale[4];
 	set_corner_scale(style_rect, inner_rect, inner_corner_radius, inner_scale);
@@ -606,7 +609,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		}
 
 		if (draw_border) {
-			// Inner border recct, fully colored side of antialiasing gradient (base inner rect enlarged by AA size)
+			// Inner border rect, fully colored side of antialiasing gradient (base inner rect enlarged by AA size)
 			Rect2 inner_rect_aa_colored = infill_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
 					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
 			// Inner border rect, transparent side of antialiasing gradient (base inner rect shrunk by AA size)
