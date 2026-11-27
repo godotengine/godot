@@ -1902,6 +1902,11 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
+	// Check for Exports
+	if (is_line_code_export_start(p_line)){
+		return true;
+	}
+
 	// Check for code region.
 	if (is_line_code_region_end(p_line)) {
 		return false;
@@ -2020,6 +2025,21 @@ bool CodeEdit::_fold_line(int p_line) {
 				if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
 					break;
 				}
+			}
+		}
+	}
+
+	// Fold code export.
+	if (is_line_code_export_start(p_line)) {
+		int current_check = p_line + 1;
+		if (current_check <= line_count){
+			while (current_check <= line_count && is_export_foldable(current_check, line_count)){
+				current_check += 1;
+			}
+
+			end_line = current_check - 1;
+			while (get_line(end_line).strip_edges() == ""){
+				end_line -= 1;
 			}
 		}
 	}
@@ -2214,6 +2234,56 @@ void CodeEdit::set_code_region_tags(const String &p_start, const String &p_end) 
 	code_region_start_tag = p_start;
 	code_region_end_tag = p_end;
 	_update_code_region_tags();
+}
+
+// gets the line that the carrot is on
+bool CodeEdit::is_line_code_export_start(int p_line) const {
+    String line_text = get_line(p_line).strip_edges();
+
+
+    if (is_in_string(p_line) != -1){
+        return false;
+    }
+
+	if (!line_text.begins_with("@export_category(") && !line_text.begins_with("@export_group(") && !line_text.begins_with("@export_subgroup(")){
+		return false;
+	}
+
+	int check_line = p_line + 1;
+
+	if (check_line < get_line_count() - 1){
+		while (get_line(check_line).strip_edges() == "" || check_line == get_line_count() - 1){
+			if (check_line + 1 < get_line_count() - 1){
+				check_line += 1;
+			}
+		}
+	}
+	
+	String next_line_text = get_line(check_line).strip_edges();
+	if (next_line_text.begins_with("@export_category(") || next_line_text.begins_with("@export_group(") || next_line_text.begins_with("@export_subgroup(") || next_line_text == ""){
+		return false;
+	}
+   
+    return true;
+}
+// checks if the line is able to be folded
+bool CodeEdit::is_export_foldable(int p_line, int line_count) const {
+    String line_text = get_line(p_line).strip_edges();
+
+
+    if (is_in_string(p_line) != -1){
+        return false;
+    }
+
+    if (line_text == ""){
+        return true;
+    }
+
+	if (line_text.begins_with("@export_category(") || line_text.begins_with("@export_group(") || line_text.begins_with("@export_subgroup(")) {
+    	return false;
+	}
+
+    return line_text.begins_with("@export") && !is_line_code_export_start(p_line);
 }
 
 bool CodeEdit::is_line_code_region_start(int p_line) const {
