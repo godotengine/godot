@@ -3940,16 +3940,23 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 
 	// Update page number and page count.
 	page_line_edit->set_text(vformat("%d", page + 1));
-	page_count_label->set_text(vformat("/ %d", max_page + 1));
+	page_count_label->set_text(vformat("%d", max_page + 1));
 }
 
 void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
-			prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
-			next_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageNext")));
-			last_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageLast")));
+			if (get_parent_control()->is_layout_rtl()) {
+				first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageLast")));
+				prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageNext")));
+				next_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
+				last_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
+			} else {
+				first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
+				prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
+				next_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageNext")));
+				last_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageLast")));
+			}
 		} break;
 	}
 }
@@ -3979,6 +3986,12 @@ EditorPaginator::EditorPaginator() {
 	page_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &EditorPaginator::_page_line_edit_text_submitted));
 	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
 	add_child(page_line_edit);
+
+	page_separator_label = memnew(Label);
+	page_separator_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	page_separator_label->set_text(TTRC("/"));
+	page_separator_label->set_translation_context("Editor Paginator");
+	add_child(page_separator_label);
 
 	page_count_label = memnew(Label);
 	page_count_label->set_focus_mode(FOCUS_ACCESSIBILITY);
