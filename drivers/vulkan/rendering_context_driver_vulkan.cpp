@@ -862,6 +862,7 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		Device &driver_device = driver_devices[i];
 		driver_device.name = String::utf8(props.deviceName);
 		driver_device.vendor = props.vendorID;
+		driver_device.device_id = props.deviceID;
 		driver_device.type = DeviceType(props.deviceType);
 
 		uint32_t queue_family_properties_count = 0;

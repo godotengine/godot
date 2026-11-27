@@ -8598,15 +8598,20 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver = context->driver_create();
 
 	print_verbose("Devices:");
-	int32_t device_index = Engine::get_singleton()->get_gpu_index();
+	const Engine *engine = Engine::get_singleton();
 	const uint32_t device_count = context->device_get_count();
-	const bool device_index_out_of_range = (device_index >= int32_t(device_count));
-	const bool detect_device = (device_index < 0) || device_index_out_of_range;
+	const int32_t requested_index = engine->get_gpu_index();
+	const bool index_specified = requested_index >= 0;
+	const bool id_specified = engine->is_gpu_id_specified();
+	const uint32_t requested_vendor_id = engine->get_gpu_vendor_id();
+	const uint32_t requested_device_id = engine->get_gpu_device_id();
 
-	if (device_index_out_of_range) {
-		WARN_PRINT(vformat("The specified GPU index %d is out of range on this system (0-%d). Falling back to automatic device selection.", device_index, device_count - 1));
+	if (index_specified && requested_index >= int32_t(device_count)) {
+		WARN_PRINT(vformat("The specified GPU index %d is out of range on this system (0-%d). Falling back to automatic device selection.", requested_index, device_count - 1));
 	}
 
+	int32_t id_match_index = -1;
+	int32_t detected_index = -1;
 	uint32_t device_type_score = 0;
 	for (uint32_t i = 0; i < device_count; i++) {
 		RenderingContextDriver::Device device_option = context->device_get(i);
@@ -8614,15 +8619,37 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		String vendor = _get_device_vendor_name(device_option);
 		String type = _get_device_type_name(device_option);
 		bool present_supported = main_surface != 0 ? context->device_supports_present(i, main_surface) : false;
-		print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + type);
-		if (detect_device && (present_supported || main_surface == 0)) {
-			// If a window was specified, present must be supported by the device to be available as an option.
-			// Assign a score for each type of device and prefer the device with the higher score.
-			uint32_t option_score = _get_device_type_score(device_option);
-			if (option_score > device_type_score) {
-				device_index = i;
-				device_type_score = option_score;
-			}
+		print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " [" + String::num_uint64(device_option.vendor, 16).lpad(4, "0") + "::" + String::num_uint64(device_option.device_id, 16).lpad(4, "0") + "] - " + (present_supported ? "Supported" : "Unsupported") + ", " + type);
+
+		// If a window was specified, present must be supported by the device to be available as an option.
+		if (!present_supported && main_surface != 0) {
+			continue;
+		}
+
+		if (id_specified && id_match_index < 0 && device_option.vendor == requested_vendor_id && device_option.device_id == requested_device_id) {
+			id_match_index = i;
+		}
+
+		// Assign a score for each type of device and prefer the device with the higher score.
+		uint32_t option_score = _get_device_type_score(device_option);
+		if (option_score > device_type_score) {
+			detected_index = i;
+			device_type_score = option_score;
+		}
+	}
+
+	int32_t device_index = detected_index;
+	if (id_match_index >= 0) {
+		device_index = id_match_index;
+		if (index_specified && requested_index != id_match_index) {
+			WARN_PRINT(vformat("Both --gpu-index %d and --gpu-id were specified. Using device #%d, which matches the GPU ID.", requested_index, id_match_index));
+		}
+	} else {
+		if (id_specified) {
+			WARN_PRINT(vformat("No device with present support matches the specified GPU ID %04x::%04x. Falling back to %s. Run with --verbose to get a list of available devices.", requested_vendor_id, requested_device_id, index_specified ? "the specified GPU index" : "automatic device selection"));
+		}
+		if (index_specified && requested_index < int32_t(device_count)) {
+			device_index = requested_index;
 		}
 	}
 

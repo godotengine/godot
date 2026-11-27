@@ -568,6 +568,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
 	print_help_option("--gpu-index <device_index>", "Use a specific GPU (only available on the Forward+/Mobile renderers; run with --verbose to get a list of available devices).\n");
+	print_help_option("--gpu-id <vendor_id::device_id>", "Use a specific GPU by its hexadecimal PCI vendor and device ID, formatted as \"ffff::ffff\" (only available on the Forward+/Mobile renderers; takes precedence over --gpu-index; run with --verbose to get a list of available devices).\n");
 	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
@@ -1156,7 +1157,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		}
 		// If gpu is specified, both editor and debug instances started from editor will inherit.
-		if (arg == "--gpu-index") {
+		if (arg == "--gpu-index" ||
+				arg == "--gpu-id") {
 			if (N) {
 				const String &next_arg = N->get();
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
@@ -1311,6 +1313,31 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--gpu-id") {
+			if (N) {
+				const String gpu_id = N->get().strip_edges();
+				const Vector<String> parts = gpu_id.split("::");
+				bool valid = parts.size() == 2;
+				uint32_t ids[2] = { 0, 0 };
+				for (int i = 0; valid && i < 2; i++) {
+					const String hex = parts[i].to_lower().trim_prefix("0x");
+					// IDs are 32-bit at most (Vulkan vendor IDs may exceed 16 bits, e.g. Khronos-assigned ones).
+					valid = hex.length() <= 8 && hex.is_valid_hex_number(false) && hex[0] != '+' && hex[0] != '-';
+					if (valid) {
+						ids[i] = uint32_t(hex.hex_to_int());
+					}
+				}
+				if (!valid || ids[0] == 0) {
+					OS::get_singleton()->print("Invalid GPU ID argument \"%s\", expected <vendor_id>::<device_id> in hexadecimal (e.g. \"10de::2684\"), aborting.\n", gpu_id.utf8().get_data());
+					goto error;
+				}
+				Engine::singleton->gpu_vendor_id = ids[0];
+				Engine::singleton->gpu_device_id = ids[1];
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing GPU ID argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "--gpu-validation") {

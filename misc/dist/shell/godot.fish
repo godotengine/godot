@@ -74,6 +74,7 @@ complete -c godot -l audio-output-latency -d "Override audio output latency in m
 complete -c godot -l rendering-method -d "Set the renderer" -x -a "(godot_rendering_method_args)"
 complete -c godot -l rendering-driver -d "Set the rendering driver" -x -a "(godot_rendering_driver_args)"
 complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get available device list)" -x
+complete -c godot -l gpu-id -d "Use a specific GPU by hexadecimal PCI vendor and device ID, e.g. ffff::ffff" -x
 complete -c godot -l text-driver -d "Set the text driver" -x
 complete -c godot -l tablet-driver -d "Set the pen tablet input driver" -x
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"

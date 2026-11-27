@@ -283,6 +283,18 @@ int32_t Engine::get_gpu_index() const {
 	return gpu_idx;
 }
 
+bool Engine::is_gpu_id_specified() const {
+	return gpu_vendor_id != 0;
+}
+
+uint32_t Engine::get_gpu_vendor_id() const {
+	return gpu_vendor_id;
+}
+
+uint32_t Engine::get_gpu_device_id() const {
+	return gpu_device_id;
+}
+
 bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }

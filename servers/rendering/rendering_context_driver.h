@@ -91,6 +91,7 @@ public:
 	struct Device {
 		String name = "Unknown";
 		uint32_t vendor = Vendor::VENDOR_UNKNOWN;
+		uint32_t device_id = 0;
 		DeviceType type = DEVICE_TYPE_OTHER;
 	};
 

@@ -54,6 +54,7 @@ _complete_godot_options() {
 --rendering-method
 --rendering-driver
 --gpu-index
+--gpu-id
 --text-driver
 --tablet-driver
 --headless
