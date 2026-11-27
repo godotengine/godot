@@ -166,6 +166,10 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 14) out vec2 point_coord_interp;
 #endif
 
+#if defined(CLIP_DISTANCE0_USED) || defined(CLIP_DISTANCE1_USED) || defined(CLIP_DISTANCE2_USED) || defined(CLIP_DISTANCE3_USED) || defined(CLIP_DISTANCE4_USED) || defined(CLIP_DISTANCE5_USED)
+#define CLIP_DISTANCES_USED
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -246,6 +250,11 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 #endif
 }
 
+#ifndef CLIP_CULL_DISTANCE_SUPPORTED
+// Rename this to avoid compiler errors when not supported.
+#define gl_ClipDistance em_ClipDistance
+#endif
+
 void vertex_shader(in vec3 vertex,
 #ifdef NORMAL_USED
 		in vec3 normal_highp,
@@ -300,6 +309,11 @@ void vertex_shader(in vec3 vertex,
 
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
+
+#ifndef CLIP_CULL_DISTANCE_SUPPORTED
+	// Define this so we don't get a compiler error, but this functionality will be disabled
+	float em_ClipDistance[8];
+#endif
 
 	if (sc_multimesh()) {
 		//multimesh, instances are for it
@@ -815,6 +829,30 @@ void main() {
 			scene_data_block.data.viewport_size,
 			scene_data_block.data.directional_light_count,
 			screen_position);
+
+#ifdef CLIP_CULL_DISTANCE_SUPPORTED
+	// gl_ClipDistance will discard fragments outside of our clipping volume,
+	// but we'd still be processing all fragments of triangles outside of this volume.
+	// If gl_CullDistance is supported, using the same values will cull those triangles completely.
+#ifdef CLIP_DISTANCE0_USED
+	gl_CullDistance[0] = gl_ClipDistance[0];
+#endif
+#ifdef CLIP_DISTANCE1_USED
+	gl_CullDistance[1] = gl_ClipDistance[1];
+#endif
+#ifdef CLIP_DISTANCE2_USED
+	gl_CullDistance[2] = gl_ClipDistance[2];
+#endif
+#ifdef CLIP_DISTANCE3_USED
+	gl_CullDistance[3] = gl_ClipDistance[3];
+#endif
+#ifdef CLIP_DISTANCE4_USED
+	gl_CullDistance[4] = gl_ClipDistance[4];
+#endif
+#ifdef CLIP_DISTANCE5_USED
+	gl_CullDistance[5] = gl_ClipDistance[5];
+#endif
+#endif
 }
 
 #[fragment]
