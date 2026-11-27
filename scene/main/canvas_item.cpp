@@ -1157,21 +1157,20 @@ void CanvasItem::_notify_transform_deferred() {
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
-	/* This check exists to avoid re-propagating the transform
-	 * notification down the tree on dirty nodes. It provides
-	 * optimization by avoiding redundancy (nodes are dirty, will get the
-	 * notification anyway).
-	 */
-
+	// FIXME: This adds 1ms to frame time in my game (lots of rigid bodies).
+	// This is a prayer for someone who understands what it does to address it.
 	_update_oversampling(false);
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
-		return; //nothing to do
+	if (p_node->xform_change.in_list()) {
+		// This function is the only place that could have triggered an `xform_change_list.add()` for this node.
+		// So if it is on the list, all it's children have already been called by a previous run of this function.
+		// Let's not recurse through the child list again. We probably got here from our parent calling this.
+		return;
 	}
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
+	if (p_node->notify_transform) {
 		if (!p_node->block_transform_notify) {
 			if (p_node->is_inside_tree()) {
 				if (is_accessible_from_caller_thread()) {
