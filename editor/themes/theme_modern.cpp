@@ -127,7 +127,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.font_pressed_color = p_config.mono_color_font * Color(1, 1, 1, 0.85);
 		p_config.font_hover_pressed_color = p_config.mono_color_font;
 		p_config.font_disabled_color = p_config.mono_color_font * Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
-		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.65);
+		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.45);
 		p_config.font_placeholder_color = p_config.font_disabled_color;
 		p_config.font_outline_color = Color(1, 1, 1, 0);
 
@@ -901,7 +901,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		Ref<StyleBoxFlat> text_editor_disabled_style = text_editor_style->duplicate();
 		// Using transparent background for readonly otherwise it looks bad in the master audio bus.
-		text_editor_disabled_style->set_bg_color(p_config.dark_theme ? Color(0, 0, 0, 0.2) : Color(1, 1, 1, 0.5));
+		text_editor_disabled_style->set_bg_color(p_config.dark_theme ? Color(0, 0, 0, 0.3) : Color(1, 1, 1, 0.3));
 
 		// LineEdit.
 
@@ -1873,6 +1873,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		editor_spin_label_bg->set_content_margin_all(EDSCALE_RND(p_config.base_margin));
 		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
 
+		p_theme->set_type_variation("ComponentSpinSlider", "EditorSpinSlider");
+		p_theme->set_stylebox("label_bg", "ComponentSpinSlider", EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
+
 		// TODO: Use separate arrows instead like on SpinBox. Planned for a different PR.
 		p_theme->set_icon("updown", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("updown_disabled", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
@@ -2345,9 +2348,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		style_property_child_bg->set_bg_color(p_config.surface_lower_color);
 		style_property_child_bg->set_content_margin_all(EDSCALE_RND(p_config.base_margin));
 
+		Ref<StyleBoxFlat> style_property_read_only_child_bg = style_property_child_bg->duplicate();
+		style_property_read_only_child_bg->set_bg_color(p_config.dark_theme ? Color(0, 0, 0, 0.3) : Color(1, 1, 1, 0.3));
+
 		p_theme->set_stylebox("bg", "EditorProperty", p_config.base_empty_style);
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg_selected);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
+		p_theme->set_stylebox("read_only_child_bg", "EditorProperty", style_property_read_only_child_bg);
 		p_theme->set_constant("font_offset", "EditorProperty", EDSCALE_RND(8));
 
 		const Color property_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
@@ -2569,6 +2576,12 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// InspectorActionButton.
 		p_theme->set_type_variation("InspectorActionButton", "Button");
 		p_theme->set_constant("h_separation", "InspectorActionButton", EDSCALE_RND(p_config.base_margin * 2));
+
+		// InspectorTextEdit
+		p_theme->set_type_variation("InspectorTextEdit", "TextEdit");
+		p_theme->set_stylebox(CoreStringName(normal), "InspectorTextEdit", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("focus", "InspectorTextEdit", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("read_only", "InspectorTextEdit", p_config.base_empty_wide_style);
 	}
 
 	// Animation Editor.

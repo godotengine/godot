@@ -79,6 +79,7 @@ protected:
 		Ref<StyleBox> background;
 		Ref<StyleBox> background_selected;
 		Ref<StyleBox> child_background;
+		Ref<StyleBox> read_only_child_background;
 		Ref<StyleBox> hover;
 		Ref<StyleBox> sub_inspector_background[17];
 
