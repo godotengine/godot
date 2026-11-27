@@ -117,7 +117,7 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.font_pressed_color = p_config.accent_color;
 		p_config.font_hover_pressed_color = p_config.font_hover_color.lerp(p_config.accent_color, 0.74);
 		p_config.font_disabled_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.35);
-		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.65);
+		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.45);
 		p_config.font_placeholder_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.5);
 		p_config.font_outline_color = Color(0, 0, 0, 0);
 
@@ -2169,9 +2169,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		style_property_child_bg->set_bg_color(p_config.dark_color_2);
 		style_property_child_bg->set_border_width_all(0);
 
+		Ref<StyleBoxFlat> style_property_read_only_child_bg = style_property_child_bg->duplicate();
+		style_property_read_only_child_bg->set_bg_color(p_config.disabled_bg_color);
+
 		p_theme->set_stylebox("bg", "EditorProperty", memnew(StyleBoxEmpty));
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
+		p_theme->set_stylebox("read_only_child_bg", "EditorProperty", style_property_read_only_child_bg);
 		p_theme->set_constant("font_offset", "EditorProperty", EDSCALE_RND(8));
 
 		const Color property_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
@@ -2323,6 +2327,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		style_dictionary_add_item->set_expand_margin(SIDE_LEFT, EDSCALE_RND(2));
 		style_dictionary_add_item->set_expand_margin(SIDE_RIGHT, EDSCALE_RND(2));
 		p_theme->set_stylebox("DictionaryAddItem0", EditorStringName(EditorStyles), style_dictionary_add_item);
+
+		// InspectorTextEdit
+		p_theme->set_type_variation("InspectorTextEdit", "TextEdit");
+		p_theme->set_stylebox(CoreStringName(normal), "InspectorTextEdit", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("focus", "InspectorTextEdit", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("read_only", "InspectorTextEdit", p_config.base_empty_wide_style);
 	}
 
 	// Animation Editor.

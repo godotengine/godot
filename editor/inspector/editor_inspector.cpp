@@ -579,11 +579,18 @@ void EditorProperty::_notification(int p_what) {
 				draw_style_box(selected ? theme_cache.background_selected : theme_cache.background, Rect2(Vector2(), size));
 			}
 
+			bool sub_property = Math::is_zero_approx(get_name_split_ratio());
+			auto style = theme_cache.child_background;
+			// Only parent properties style.
+			if (is_read_only() && !sub_property) {
+				style = theme_cache.read_only_child_background;
+			}
+
 			if (draw_top_bg && right_child_rect != Rect2() && draw_background) {
-				draw_style_box(theme_cache.child_background, right_child_rect);
+				draw_style_box(style, right_child_rect);
 			}
 			if (bottom_child_rect != Rect2() && draw_background) {
-				draw_style_box(theme_cache.child_background, bottom_child_rect);
+				draw_style_box(style, bottom_child_rect);
 			}
 
 			Color color;
@@ -4119,6 +4126,7 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	p_cache.background = p_control->get_theme_stylebox(SNAME("bg"), SNAME("EditorProperty"));
 	p_cache.background_selected = p_control->get_theme_stylebox(SNAME("bg_selected"), SNAME("EditorProperty"));
 	p_cache.child_background = p_control->get_theme_stylebox(SNAME("child_bg"), SNAME("EditorProperty"));
+	p_cache.read_only_child_background = p_control->get_theme_stylebox(SNAME("read_only_child_bg"), SNAME("EditorProperty"));
 	p_cache.hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 
 	p_cache.key_icon = p_control->get_editor_theme_icon(SNAME("Key"));

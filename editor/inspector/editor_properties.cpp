@@ -298,6 +298,7 @@ EditorPropertyText::EditorPropertyText() {
 	text = memnew(LineEdit);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	text->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Prevents translating placeholder.
+	text->set_flat(true);
 	hb->add_child(text);
 	add_focusable(text);
 	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyText::_text_changed));
@@ -434,6 +435,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
 	text = memnew(TextEdit);
 	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_text_changed));
 	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+	text->set_theme_type_variation(SNAME("InspectorTextEdit"));
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2103,6 +2105,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 
 		if (grid) {
 			bc->get_child(i / 2)->add_child(spin[i]);
@@ -2197,6 +2200,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 
 		if (grid) {
 			bc->get_child(i / 2)->add_child(spin[i]);
@@ -2287,6 +2291,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		bc->add_child(spin[i]);
@@ -2458,6 +2463,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		default_layout->add_child(spin[i]);
@@ -2488,6 +2494,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	for (int i = 0; i < 3; i++) {
 		euler[i] = memnew(EditorSpinSlider);
 		euler[i]->set_flat(true);
+		euler[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		euler[i]->set_label(desc[i]);
 		euler[i]->set_accessibility_name(vformat(TTR("Temporary Euler %s"), desc[i]));
 		edit_custom_layout->add_child(euler[i]);
@@ -2578,6 +2585,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2660,6 +2668,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		if (p_include_origin || i % 3 != 2) {
 			g->add_child(spin[i]);
 		}
@@ -2744,6 +2753,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
@@ -2835,6 +2845,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
@@ -2934,6 +2945,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
+		spin[i]->set_theme_type_variation(SNAME("ComponentSpinSlider"));
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
