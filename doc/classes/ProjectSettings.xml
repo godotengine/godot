@@ -1074,17 +1074,21 @@
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
+			[b]Note:[/b] Consider using 640x360 for the viewport width/height, because this upscales cleanly to many common resolutions such as 720p, 1080p, 1440p, and 4K.
 		</member>
 		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1152">
 			Sets the game's main viewport width. On desktop platforms, this is also the initial window width, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_height], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
+			[b]Note:[/b] Consider using 640x360 for the viewport width/height, because this upscales cleanly to many common resolutions such as 720p, 1080p, 1440p, and 4K.
 		</member>
 		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
 			On desktop platforms, overrides the game's initial window height. See also [member display/window/size/window_width_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
-			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and Web.
+			[b]Note:[/b] When set to [code]0[/code], the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and Web.
+			[b]Note:[/b] Consider using 1280x720 for the window width/height override, because this downscales cleanly to 640x360, which is the recommended viewport width/height because it upscales cleanly to many common resolutions such as 720p, 1080p, 1440p, and 4K.
 		</member>
 		<member name="display/window/size/window_width_override" type="int" setter="" getter="" default="0">
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
-			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
+			[b]Note:[/b] When set to [code]0[/code], the initial window width is the [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
+			[b]Note:[/b] Consider using 1280x720 for the window width/height override, because this downscales cleanly to 640x360, which is the recommended viewport width/height because it upscales cleanly to many common resolutions such as 720p, 1080p, 1440p, and 4K.
 		</member>
 		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;" keywords="ignore, keep, keep_width, keep_height, expand">
 			Defines how the aspect ratio of the base size is preserved when stretching to fit the resolution of the window or screen.
