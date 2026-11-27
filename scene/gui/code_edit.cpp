@@ -2263,8 +2263,18 @@ bool CodeEdit::is_line_code_export_start(int p_line) const {
 	if (next_line_text.begins_with("@export_category(") || next_line_text.begins_with("@export_group(") || next_line_text.begins_with("@export_subgroup(") || next_line_text == ""){
 		return false;
 	}
+<<<<<<< HEAD
    
     return true;
+=======
+<<<<<<< HEAD
+   
+    return true;
+=======
+
+    return next_line_text.begins_with("@export");
+>>>>>>> 93ca55d18a (Allow collapsible @export_catagory/group/subgroup in code editor)
+>>>>>>> 8fb903c721 (Allow collapsible @export_catagory/group/subgroup in code editor)
 }
 // checks if the line is able to be folded
 bool CodeEdit::is_export_foldable(int p_line, int line_count) const {
@@ -2283,7 +2293,15 @@ bool CodeEdit::is_export_foldable(int p_line, int line_count) const {
     	return false;
 	}
 
+<<<<<<< HEAD
     return line_text.begins_with("@export") && !is_line_code_export_start(p_line);
+=======
+<<<<<<< HEAD
+    return line_text.begins_with("@export") && !is_line_code_export_start(p_line);
+=======
+    return line_text.begins_with("@export");
+>>>>>>> 93ca55d18a (Allow collapsible @export_catagory/group/subgroup in code editor)
+>>>>>>> 8fb903c721 (Allow collapsible @export_catagory/group/subgroup in code editor)
 }
 
 bool CodeEdit::is_line_code_region_start(int p_line) const {
