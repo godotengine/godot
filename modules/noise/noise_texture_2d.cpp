@@ -38,8 +38,6 @@
 #include "servers/rendering/rendering_server.h"
 
 NoiseTexture2D::NoiseTexture2D() {
-	noise = Ref<Noise>();
-
 	_queue_update();
 }
 
@@ -128,6 +126,11 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 			texture = RS::get_singleton()->texture_2d_create(p_image);
 		}
 		RS::get_singleton()->texture_set_path(texture, get_path());
+	} else {
+		if (texture.is_valid()) {
+			RS::get_singleton()->free_rid(texture);
+		}
+		texture = RID();
 	}
 	emit_changed();
 }

@@ -38,8 +38,6 @@
 #include "servers/rendering/rendering_server.h"
 
 NoiseTexture3D::NoiseTexture3D() {
-	noise = Ref<Noise>();
-
 	_queue_update();
 }
 
@@ -101,7 +99,12 @@ void NoiseTexture3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void NoiseTexture3D::_set_texture_data(const TypedArray<Image> &p_data) {
-	if (!p_data.is_empty()) {
+	if (p_data.is_empty()) {
+		if (texture.is_valid()) {
+			RS::get_singleton()->free_rid(texture);
+		}
+		texture = RID();
+	} else {
 		Vector<Ref<Image>> data;
 
 		data.resize(p_data.size());
