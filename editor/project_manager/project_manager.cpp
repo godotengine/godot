@@ -1595,13 +1595,11 @@ ProjectManager::ProjectManager() {
 				main_menu_bar->add_child(help_menu);
 			}
 		}
-		if (can_expand) {
-			// Spacer to center main toggles.
-			left_spacer = memnew(Control);
-			left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			title_bar->add_child(left_spacer);
-		}
+		// Spacer to center main toggles.
+		left_spacer = memnew(Control);
+		left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		title_bar->add_child(left_spacer);
 
 		main_view_toggles = memnew(HBoxContainer);
 		main_view_toggles->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -1610,13 +1608,11 @@ ProjectManager::ProjectManager() {
 		title_bar->add_child(main_view_toggles);
 		title_bar->set_center_control(main_view_toggles);
 
-		if (can_expand) {
-			// Spacer to center main toggles.
-			right_spacer = memnew(Control);
-			right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			title_bar->add_child(right_spacer);
-		}
+		// Spacer to center main toggles.
+		right_spacer = memnew(Control);
+		right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		title_bar->add_child(right_spacer);
 
 		main_view_toggles_group.instantiate();
 

@@ -86,9 +86,15 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorTitleBar::set_center_control(Control *p_center_control) {
+	if (center_control == p_center_control) {
+		return;
+	}
+	if (center_control) {
+		center_control->set_custom_maximum_size(Size2i(-1, -1));
+	}
 	center_control = p_center_control;
 
-	if (center_control->get_parent() != this) {
+	if (center_control && center_control->get_parent() != this) {
 		center_control->reparent(this);
 	}
 }
@@ -102,6 +108,9 @@ void EditorTitleBar::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			SceneTree::get_singleton()->get_root()->disconnect(SceneStringName(nonclient_window_input), callable_mp(this, &EditorTitleBar::gui_input));
 			get_window()->set_nonclient_area(Rect2i());
+			if (center_control) {
+				center_control->set_custom_maximum_size(Size2i(-1, -1));
+			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			SceneTree::get_singleton()->get_root()->connect(SceneStringName(nonclient_window_input), callable_mp(this, &EditorTitleBar::gui_input));
@@ -109,6 +118,9 @@ void EditorTitleBar::_notification(int p_what) {
 		}
 		case NOTIFICATION_RESIZED: {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
+			if (center_control) {
+				center_control->set_custom_maximum_size(Size2i(-1, -1));
+			}
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!center_control) {
@@ -160,7 +172,11 @@ void EditorTitleBar::_notification(int p_what) {
 				int max_offset = next->get_position().x + next->get_size().x - next->get_combined_minimum_size().x - c_size.x;
 
 				int offset = (title_size.width - c_size.width) / 2;
-				offset = CLAMP(offset, min_offset, max_offset);
+				if (max_offset >= min_offset) {
+					offset = CLAMP(offset, min_offset, max_offset);
+				} else {
+					offset = min_offset;
+				}
 
 				fit_child_in_rect(prev, Rect2i(prev->get_position().x, 0, offset - prev->get_position().x, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
