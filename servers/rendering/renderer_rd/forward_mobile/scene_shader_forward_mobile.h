@@ -353,6 +353,7 @@ public:
 	SceneForwardMobileShaderRD shader;
 	ShaderCompiler compiler;
 	bool use_fp16 = false;
+	bool use_clip_and_cull_distance = false;
 	bool emulate_point_size = false;
 
 	RID default_shader;
