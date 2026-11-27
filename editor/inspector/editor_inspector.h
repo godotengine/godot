@@ -40,6 +40,7 @@ class AddMetadataDialog;
 class AcceptDialog;
 class EditorInspector;
 class HSeparator;
+class Label;
 class LineEdit;
 class MarginContainer;
 class OptionButton;
@@ -633,8 +634,11 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	Button *add_button = nullptr;
 
+	static constexpr int DEFAULT_MAX_ARRAY_SIZE = 16384;
+
 	AcceptDialog *resize_dialog = nullptr;
 	SpinBox *new_size_spin_box = nullptr;
+	Label *range_label = nullptr;
 
 	// Pagination.
 	int page_length = 5;
@@ -678,6 +682,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int _get_array_count();
 	void _add_button_pressed();
+	void _open_resize_dialog();
 	void _paginator_page_changed(int p_page);
 
 	void _rmb_popup_id_pressed(int p_id);
@@ -696,9 +701,12 @@ class EditorInspectorArray : public EditorInspectorSection {
 	Array _extract_properties_as_array(const List<PropertyInfo> &p_list);
 	int _drop_position() const;
 
-	void _new_size_spin_box_value_changed(float p_value);
-	void _new_size_spin_box_text_submitted(const String &p_text);
+	bool _try_parse_new_size(const String &p_text, int &r_size) const;
 	void _resize_dialog_confirmed();
+	void _new_size_spin_box_value_changed(double p_value);
+	void _new_size_spin_box_text_changed(const String &p_text);
+	void _new_size_spin_box_editing_toggled(bool p_toggled_on);
+	bool _update_size_range_from_property(const PropertyInfo &p_property);
 
 	void _update_elements_visibility();
 	void _setup();
