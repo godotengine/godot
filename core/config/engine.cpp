@@ -301,6 +301,12 @@ bool Engine::is_accurate_breadcrumbs_enabled() const {
 }
 #endif
 
+#if (defined(DEBUG_ENABLED) || defined(DEV_ENABLED)) && defined(D3D12_ENABLED)
+bool Engine::is_stable_power_state_enabled() const {
+	return stable_power_state;
+}
+#endif
+
 void Engine::set_print_to_stdout(bool p_enabled) {
 	CoreGlobals::print_line_enabled = p_enabled;
 }

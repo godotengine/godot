@@ -613,6 +613,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
+#if (defined(DEBUG_ENABLED) || defined(DEV_ENABLED)) && defined(D3D12_ENABLED)
+	print_help_option("--stable-power-state", "Enables stable power state (D3D12 only). This forces the GPU clock to a slower setting and prevents the driver from dynamically adjusting it, allowing you to make reliable before-and-after benchmark comparisons. The engine may crash when using this option if Developer Mode is not enabled in Windows.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+#endif
 #ifdef DEBUG_ENABLED
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-collisions", "Show collision shapes when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
@@ -1328,6 +1331,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			Engine::singleton->extra_gpu_memory_tracking = true;
 		} else if (arg == "--accurate-breadcrumbs") {
 			Engine::singleton->accurate_breadcrumbs = true;
+#endif
+#if (defined(DEBUG_ENABLED) || defined(DEV_ENABLED)) && defined(D3D12_ENABLED)
+		} else if (arg == "--stable-power-state") {
+			Engine::singleton->stable_power_state = true;
 #endif
 		} else if (arg == "--tablet-driver") {
 			if (N) {
