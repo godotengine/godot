@@ -2104,7 +2104,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	int debug_symbols_mode = p_preset->get("debug/export_debug_symbols");
 	bool copy_debug_symbols = (debug_symbols_mode == 1 && p_debug) || (debug_symbols_mode == 2);
 
-	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
+	bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
+	Array helpers = sandbox ? p_preset->get("codesign/entitlements/app_sandbox/helper_executables").operator Array() : Array();
 
 	// Create our folder structure.
 	if (err == OK) {
@@ -2583,7 +2584,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries."));
 		}
 
-		bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
 		String hlp_ent_path = sandbox ? EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name + "_helper.entitlements") : ent_path;
 		if (sign_enabled && (ent_path.is_empty())) {
