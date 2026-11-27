@@ -39,6 +39,7 @@
 class AddMetadataDialog;
 class AcceptDialog;
 class EditorInspector;
+class HFlowContainer;
 class HSeparator;
 class LineEdit;
 class MarginContainer;
@@ -631,7 +632,9 @@ class EditorInspectorArray : public EditorInspectorSection {
 	Control *control_dropping = nullptr;
 	bool dropping = false;
 
+	HFlowContainer *buttons_container = nullptr;
 	Button *add_button = nullptr;
+	Button *resize_button = nullptr;
 
 	AcceptDialog *resize_dialog = nullptr;
 	SpinBox *new_size_spin_box = nullptr;
@@ -678,6 +681,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int _get_array_count();
 	void _add_button_pressed();
+	void _open_resize_dialog();
 	void _paginator_page_changed(int p_page);
 
 	void _rmb_popup_id_pressed(int p_id);
