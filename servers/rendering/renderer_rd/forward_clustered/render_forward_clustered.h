@@ -314,7 +314,7 @@ private:
 			uint32_t cluster_z_bin_offset;
 			uint32_t cluster_z_bin_count;
 			float cluster_z_bin_scale;
-			uint32_t pad0;
+			uint32_t cluster_z_bin_mask_offset;
 
 			uint32_t ss_effects_flags;
 			float ssao_light_affect;

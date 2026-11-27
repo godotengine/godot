@@ -33,6 +33,7 @@
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_render.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/cluster_z_bins.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 class ClusterBuilderSharedDataRD {
@@ -87,6 +88,31 @@ class ClusterBuilderSharedDataRD {
 		RID shader_pipelines[PIPELINE_MAX];
 	} cluster_render;
 
+	struct ClusterZBins {
+		struct PushConstant {
+			uint32_t z_bin_count;
+			uint32_t z_bin_offset;
+			uint32_t z_bin_mask_offset;
+			uint32_t max_elements_by_type;
+
+			uint32_t element_counts[5]; // ELEMENT_TYPE_MAX
+			uint32_t type;
+			uint32_t pad1;
+			uint32_t pad2;
+		};
+
+		enum ShaderVariant {
+			SHADER_MASKS,
+			SHADER_RANGES,
+			SHADER_MAX,
+		};
+
+		ClusterZBinsShaderRD cluster_z_bins_shader;
+		RID shader_version;
+		RID shaders[SHADER_MAX];
+		RID shader_pipelines[SHADER_MAX];
+	} cluster_z_bins;
+
 	struct ClusterDebug {
 		struct PushConstant {
 			uint32_t screen_size[2];
@@ -103,7 +129,7 @@ class ClusterBuilderSharedDataRD {
 			uint32_t z_bin_count;
 
 			float z_bin_scale;
-			uint32_t pad0;
+			uint32_t z_bin_mask_offset;
 			uint32_t pad1;
 			uint32_t pad2;
 		};
@@ -185,22 +211,26 @@ private:
 	Size2i screen_size_in_tiles;
 
 	RID framebuffer;
-	RID cluster_buffer; // SS tile bitmasks of every element type, followed by the Z bins of every element type.
+	// SS tile bitmasks of every element type, followed by the Z bin ranges of every element type, followed by the Z bin bitmasks of every element type.
+	RID cluster_buffer;
 	RID element_buffer; // Used for rendering the element proxies.
+	RID element_z_bins_buffer; // First and last Z bin of each element, used to build the Z bin bitmasks in the compute shader.
 	uint32_t cluster_buffer_size = 0;
 	uint32_t bitmasks_per_type_count = 0; // number of bitmasks of all tiles for one element type
 
-	LocalVector<uint32_t> z_bins; // Each bin packs the lowest element index and the highest one plus one (zero is empty)
+	LocalVector<uint32_t> element_z_bins; // first | (last << 16), indexed by type * max_elements_by_type + element index
 	uint32_t z_bin_offset = 0;
+	uint32_t z_bin_mask_offset = 0;
 	uint32_t z_bin_count = 1;
 	float z_bin_scale = 0;
 
 	RID cluster_render_uniform_set;
+	RID cluster_z_bins_uniform_sets[ClusterBuilderSharedDataRD::ClusterZBins::SHADER_MAX];
 
 	// Persistent data.
 
 	void _clear();
-	void _add_to_z_bins(ElementType p_type, uint32_t p_index, const Vector2 &p_depth_range);
+	void _set_element_z_bins(ElementType p_type, uint32_t p_index, const Vector2 &p_depth_range);
 
 	static _FORCE_INLINE_ Vector3 _get_area_light_half_size(float p_radius, const Vector2 &p_area_size) {
 		return Vector3(p_area_size.x / 2.0 + p_radius, p_area_size.y / 2.0 + p_radius, p_radius / 2.0);
@@ -225,6 +255,10 @@ public:
 
 	static float get_z_bin_scale(float p_z_near, float p_z_far) {
 		return MIN(1.0f / Z_BIN_DEPTH, get_z_bin_count(p_z_near, p_z_far) / (p_z_far - p_z_near));
+	}
+
+	static uint32_t get_z_bin_mask_offset(uint32_t p_z_bin_offset) {
+		return p_z_bin_offset + MAX_Z_BINS * ELEMENT_TYPE_MAX;
 	}
 
 	// in view space, returned as (near, far)
@@ -324,7 +358,7 @@ public:
 			cluster_count_by_type[ELEMENT_TYPE_AREA_LIGHT]++;
 		}
 
-		_add_to_z_bins((ElementType)e.type, e.original_index, depth_range);
+		_set_element_z_bins((ElementType)e.type, e.original_index, depth_range);
 
 		render_element_count++;
 	}
@@ -359,7 +393,7 @@ public:
 
 		RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
-		_add_to_z_bins((ElementType)e.type, e.original_index, depth_range);
+		_set_element_z_bins((ElementType)e.type, e.original_index, depth_range);
 
 		cluster_count_by_type[e.type]++;
 		render_element_count++;

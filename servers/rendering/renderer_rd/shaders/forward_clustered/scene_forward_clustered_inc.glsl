@@ -335,7 +335,7 @@ struct ImplementationData {
 	uint cluster_z_bin_offset;
 	uint cluster_z_bin_count;
 	float cluster_z_bin_scale;
-	uint pad0;
+	uint cluster_z_bin_mask_offset;
 
 	uint ss_effects_flags;
 	float ssao_light_affect;

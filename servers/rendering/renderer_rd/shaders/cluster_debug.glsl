@@ -55,7 +55,7 @@ layout(push_constant, std430) uniform Params {
 	uint z_bin_count;
 
 	float z_bin_scale;
-	uint pad0;
+	uint z_bin_mask_offset;
 	uint pad1;
 	uint pad2;
 }
@@ -93,20 +93,15 @@ void main() {
 
 	uint z_bin = uint(clamp((depth - params.z_near) * params.z_bin_scale, 0.0, float(params.z_bin_count - 1)));
 	uint z_bin_minmax = cluster_data.data[params.z_bin_offset + params.cluster_type * params.z_bin_count + z_bin];
-	uint item_min = z_bin_minmax & 0xFFFF;
 	uint item_max = z_bin_minmax >> 16;
+	uint word_from = (z_bin_minmax & 0xFFFF) >> 5;
+	uint word_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1;
 
 	uint item_count = 0;
-	for (uint i = 0; i < params.bitmasks_per_tile_count; i++) {
-		uint tile_bits = cluster_data.data[tile_offset + i];
-		while (tile_bits != 0) {
-			uint bit = findLSB(tile_bits);
-			uint item = i * 32 + bit;
-			if ((item >= item_min && item < item_max)) {
-				item_count++;
-			}
-			tile_bits &= ~(1 << bit);
-		}
+	for (uint word = word_from; word < word_to; word++) {
+		uint tile_bits = cluster_data.data[tile_offset + word];
+		uint z_bin_bits = cluster_data.data[params.z_bin_mask_offset + (params.cluster_type * params.bitmasks_per_tile_count + word) * params.z_bin_count + z_bin];
+		item_count += uint(bitCount(tile_bits & z_bin_bits));
 	}
 
 	item_count = min(item_count, 32);

@@ -732,6 +732,7 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
 		scene_state.ubo.tiles_per_row = tiles_per_row;
 	}
 	scene_state.ubo.cluster_z_bin_offset = scene_state.ubo.bitmasks_per_type_count * ClusterBuilderRD::ELEMENT_TYPE_MAX;
+	scene_state.ubo.cluster_z_bin_mask_offset = ClusterBuilderRD::get_z_bin_mask_offset(scene_state.ubo.cluster_z_bin_offset);
 	scene_state.ubo.cluster_z_bin_count = ClusterBuilderRD::get_z_bin_count(p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
 	scene_state.ubo.cluster_z_bin_scale = ClusterBuilderRD::get_z_bin_scale(p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
 

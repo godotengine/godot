@@ -1158,6 +1158,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		params.bitmasks_per_type_count = tiles_per_row * tiles_per_column * params.bitmasks_per_tile_count;
 		params.tiles_per_row = tiles_per_row;
 		params.cluster_z_bin_offset = params.bitmasks_per_type_count * ClusterBuilderRD::ELEMENT_TYPE_MAX;
+		params.cluster_z_bin_mask_offset = ClusterBuilderRD::get_z_bin_mask_offset(params.cluster_z_bin_offset);
 		params.cluster_z_bin_count = ClusterBuilderRD::get_z_bin_count(z_near, z_far);
 		params.cluster_z_bin_scale = ClusterBuilderRD::get_z_bin_scale(z_near, z_far);
 

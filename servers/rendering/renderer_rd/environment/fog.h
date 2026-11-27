@@ -187,7 +187,7 @@ private:
 			float cluster_z_bin_scale;
 
 			uint32_t cluster_z_bin_offset;
-			uint32_t pad0;
+			uint32_t cluster_z_bin_mask_offset;
 			uint32_t pad1;
 			uint32_t pad2;
 

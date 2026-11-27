@@ -189,7 +189,7 @@ layout(set = 0, binding = 15, std140) uniform Params {
 	float cluster_z_bin_scale;
 
 	uint cluster_z_bin_offset;
-	uint pad0;
+	uint cluster_z_bin_mask_offset;
 	uint pad1;
 	uint pad2;
 
@@ -249,19 +249,16 @@ float get_omni_attenuation(float dist, float inv_range, float decay) {
 	return nd * pow(max(dist, 0.0001), -decay);
 }
 
-void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
-	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFF;
-	item_max = item_min_max >> 16;
+void cluster_get_word_range(uint p_type, uint p_z_bin, out uint word_from, out uint word_to) {
+	uint item_min_max = cluster_buffer.data[params.cluster_z_bin_offset + p_type * params.cluster_z_bin_count + p_z_bin];
+	uint item_max = item_min_max >> 16;
 
-	item_from = item_min >> 5;
-	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
+	word_from = (item_min_max & 0xFFFF) >> 5;
+	word_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
 }
 
-uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
-	int local_min = clamp(int(z_min) - int(i) * 32, 0, 32);
-	int local_max = clamp(int(z_max) - int(i) * 32, 0, 32);
-	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, local_max - local_min);
+uint cluster_get_z_bin_mask(uint p_type, uint p_word, uint p_z_bin) {
+	return cluster_buffer.data[params.cluster_z_bin_mask_offset + (p_type * params.bitmasks_per_tile_count + p_word) * params.cluster_z_bin_count + p_z_bin];
 }
 
 float henyey_greenstein(float cos_theta, float g) {
@@ -367,7 +364,7 @@ void main() {
 		}
 	}
 
-	uint z_bin = params.cluster_z_bin_offset + uint(clamp((abs(view_pos.z) - params.z_near) * params.cluster_z_bin_scale, 0.0, float(params.cluster_z_bin_count - 1)));
+	uint z_bin = uint(clamp((abs(view_pos.z) - params.z_near) * params.cluster_z_bin_scale, 0.0, float(params.cluster_z_bin_count - 1)));
 
 	vec3 total_light = vec3(0.0);
 
@@ -471,23 +468,21 @@ void main() {
 
 			uint tile_omni_offset = tile_offset;
 
-			uint item_min;
-			uint item_max;
-			uint item_from;
-			uint item_to;
+			uint word_from;
+			uint word_to;
 
-			cluster_get_item_range(z_bin, item_min, item_max, item_from, item_to);
+			cluster_get_word_range(0, z_bin, word_from, word_to);
 
-			for (uint i = item_from; i < item_to; i++) {
-				uint mask = cluster_buffer.data[tile_omni_offset + i];
-				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+			for (uint word = word_from; word < word_to; word++) {
+				uint mask = cluster_buffer.data[tile_omni_offset + word];
+				mask &= cluster_get_z_bin_mask(0, word, z_bin);
 				uint merged_mask = mask;
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
 
-					uint light_index = 32 * i + bit;
+					uint light_index = 32 * word + bit;
 
 					//if (!bool(omni_omni_lights.data[light_index].mask & draw_call.layer_mask)) {
 					//	continue; //not masked
@@ -538,16 +533,14 @@ void main() {
 
 			uint tile_spot_offset = tile_offset + params.bitmasks_per_type_count;
 
-			uint item_min;
-			uint item_max;
-			uint item_from;
-			uint item_to;
+			uint word_from;
+			uint word_to;
 
-			cluster_get_item_range(z_bin + params.cluster_z_bin_count, item_min, item_max, item_from, item_to);
+			cluster_get_word_range(1, z_bin, word_from, word_to);
 
-			for (uint i = item_from; i < item_to; i++) {
-				uint mask = cluster_buffer.data[tile_spot_offset + i];
-				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+			for (uint word = word_from; word < word_to; word++) {
+				uint mask = cluster_buffer.data[tile_spot_offset + word];
+				mask &= cluster_get_z_bin_mask(1, word, z_bin);
 				uint merged_mask = mask;
 
 				while (merged_mask != 0) {
@@ -558,7 +551,7 @@ void main() {
 					//	continue; //not masked
 					//}
 
-					uint light_index = 32 * i + bit;
+					uint light_index = 32 * word + bit;
 
 					vec3 light_pos = spot_lights.data[light_index].position;
 					vec3 light_rel_vec = spot_lights.data[light_index].position - view_pos;
@@ -603,23 +596,21 @@ void main() {
 
 			uint tile_area_offset = tile_offset + params.bitmasks_per_type_count * 2;
 
-			uint item_min;
-			uint item_max;
-			uint item_from;
-			uint item_to;
+			uint word_from;
+			uint word_to;
 
-			cluster_get_item_range(z_bin + params.cluster_z_bin_count * 2, item_min, item_max, item_from, item_to);
+			cluster_get_word_range(2, z_bin, word_from, word_to);
 
-			for (uint i = item_from; i < item_to; i++) {
-				uint mask = cluster_buffer.data[tile_area_offset + i];
-				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+			for (uint word = word_from; word < word_to; word++) {
+				uint mask = cluster_buffer.data[tile_area_offset + word];
+				mask &= cluster_get_z_bin_mask(2, word, z_bin);
 				uint merged_mask = mask;
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
 
-					uint light_index = 32 * i + bit;
+					uint light_index = 32 * word + bit;
 					float shadow_attenuation = 1.0;
 
 					vec3 area_width = area_lights.data[light_index].area_width;
