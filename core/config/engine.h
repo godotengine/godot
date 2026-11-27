@@ -81,6 +81,9 @@ private:
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	bool accurate_breadcrumbs = false;
 #endif
+#if (defined(DEBUG_ENABLED) || defined(DEV_ENABLED)) && defined(D3D12_ENABLED)
+	bool stable_power_state = false;
+#endif
 	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
@@ -214,6 +217,9 @@ public:
 	bool is_extra_gpu_memory_tracking_enabled() const;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	bool is_accurate_breadcrumbs_enabled() const;
+#endif
+#if (defined(DEBUG_ENABLED) || defined(DEV_ENABLED)) && defined(D3D12_ENABLED)
+	bool is_stable_power_state_enabled() const;
 #endif
 	int32_t get_gpu_index() const;
 

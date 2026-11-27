@@ -6275,6 +6275,13 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 		D3D12Hooks::get_singleton()->set_device(device.Get());
 	}
 
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	if (Engine::get_singleton()->is_stable_power_state_enabled()) {
+		res = device->SetStablePowerState(TRUE);
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "SetStablePowerState failed with error " + vformat("0x%08ux", (uint64_t)res) + ". Developer Mode may not have been enabled in Windows.");
+	}
+#endif
+
 	if (context_driver->use_validation_layers()) {
 		ComPtr<ID3D12InfoQueue> info_queue;
 		res = device.As(&info_queue);
