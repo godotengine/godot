@@ -1882,12 +1882,14 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 
 void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	String new_name;
-	TreeItem *ti = tree->get_edited();
-	int col_index = tree->get_edited_column();
+	TreeItem *ti = nullptr;
+	int file_index = -1;
 
 	if (p_from_tree) {
-		new_name = ti->get_text(col_index).strip_edges();
+		ti = tree->get_edited();
+		new_name = ti->get_text(0).strip_edges();
 	} else {
+		file_index = files->get_current();
 		new_name = files->get_edit_text().strip_edges();
 	}
 	String old_name = to_rename.is_file ? to_rename.path.get_file() : to_rename.path.left(-1).get_file();
@@ -1912,7 +1914,7 @@ void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	// Restore original name.
 	if (rename_error) {
 		if (ti) {
-			ti->set_text(col_index, old_name);
+			ti->set_text(0, old_name);
 		}
 		return;
 	}
@@ -1937,7 +1939,7 @@ void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTRC("A file or folder with this name already exists."));
 		if (ti) {
-			ti->set_text(col_index, old_name);
+			ti->set_text(0, old_name);
 		}
 		return;
 	}
@@ -1957,7 +1959,7 @@ void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
-	if (ti) {
+	if (ti || file_index >= 0) {
 		current_path = new_path;
 		current_path_line_edit->set_text(current_path);
 	}
