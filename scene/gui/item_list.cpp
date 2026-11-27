@@ -426,26 +426,24 @@ Variant ItemList::get_item_metadata(int p_idx) const {
 void ItemList::select(int p_idx, bool p_single) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (p_single || select_mode == SELECT_SINGLE) {
-		if (!items[p_idx].selectable || items[p_idx].disabled) {
-			return;
-		}
+	if (!items[p_idx].selectable || items[p_idx].disabled) {
+		return;
+	}
 
+	if (p_single || select_mode == SELECT_SINGLE) {
 		for (int i = 0; i < items.size(); i++) {
 			if (items.write[i].selected != (p_idx == i)) {
 				items.write[i].selected = (p_idx == i);
 				items.write[i].accessibility_item_dirty = true;
 			}
 		}
-
-		current = p_idx;
-		ensure_selected_visible = false;
 	} else {
-		if (items[p_idx].selectable && !items[p_idx].disabled) {
-			items.write[p_idx].selected = true;
-			items.write[p_idx].accessibility_item_dirty = true;
-		}
+		items.write[p_idx].selected = true;
+		items.write[p_idx].accessibility_item_dirty = true;
 	}
+	current = p_idx;
+	ensure_selected_visible = false;
+
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -458,6 +456,7 @@ void ItemList::deselect(int p_idx) {
 		current = -1;
 	} else {
 		items.write[p_idx].selected = false;
+		current = p_idx;
 	}
 	items.write[p_idx].accessibility_item_dirty = true;
 	queue_accessibility_update();
