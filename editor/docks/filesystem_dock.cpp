@@ -1404,6 +1404,20 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 void FileSystemDock::_tree_activate_file() {
 	TreeItem *selected = tree->get_selected();
 	if (selected) {
+		if (!selected->is_selected(0)) {
+			Vector<TreeItem *> to_deselect;
+			TreeItem *it = tree->get_next_selected(tree->get_root());
+
+			while (it) {
+				to_deselect.push_back(it);
+				it = tree->get_next_selected(it);
+			}
+
+			for (TreeItem *item : to_deselect) {
+				item->deselect(0);
+			}
+			selected->select(0);
+		}
 		String file_path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
 		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
