@@ -731,6 +731,7 @@ class EditorPaginator : public HBoxContainer {
 	Button *first_page_button = nullptr;
 	Button *prev_page_button = nullptr;
 	LineEdit *page_line_edit = nullptr;
+	Label *page_separator_label = nullptr;
 	Label *page_count_label = nullptr;
 	Button *next_page_button = nullptr;
 	Button *last_page_button = nullptr;
