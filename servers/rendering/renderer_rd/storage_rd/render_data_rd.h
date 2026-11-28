@@ -67,7 +67,7 @@ public:
 	int reflection_probe_pass = 0;
 
 	RID cluster_buffer;
-	uint32_t cluster_size = 0;
+	uint32_t tile_size = 0;
 	uint32_t cluster_max_elements = 0;
 
 	uint32_t directional_light_count = 0;

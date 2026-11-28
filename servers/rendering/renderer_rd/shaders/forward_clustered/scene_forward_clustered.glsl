@@ -161,19 +161,16 @@ layout(location = 13) out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 
-void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
-	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFFu;
-	item_max = item_min_max >> 16;
+void cluster_get_word_range(uint p_type, uint p_z_bin, out uint word_from, out uint word_to) {
+	uint item_min_max = cluster_buffer.data[implementation_data.cluster_z_bin_offset + p_type * implementation_data.cluster_z_bin_count + p_z_bin];
+	uint item_max = item_min_max >> 16;
 
-	item_from = item_min >> 5;
-	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
+	word_from = (item_min_max & 0xFFFFu) >> 5;
+	word_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
 }
 
-uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
-	int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
-	int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
-	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
+uint cluster_get_z_bin_mask(uint p_type, uint p_word, uint p_z_bin) {
+	return cluster_buffer.data[implementation_data.cluster_z_bin_mask_offset + (p_type * implementation_data.bitmasks_per_tile_count + p_word) * implementation_data.cluster_z_bin_count + p_z_bin];
 }
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 
@@ -547,30 +544,28 @@ void vertex_shader(vec3 vertex_input,
 
 	uvec2 screen_size = uvec2(1.0 / scene_data.screen_pixel_size);
 	uvec2 screen_pixel = clamp(uvec2(clip_pos * vec2(screen_size)), uvec2(0), screen_size - uvec2(1));
-	uvec2 cluster_pos = screen_pixel >> implementation_data.cluster_shift;
-	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
-	uint cluster_z = uint(clamp((-vertex_interp.z / scene_data.z_far) * 32.0, 0.0, 31.0));
+	uvec2 tile_pos = screen_pixel >> implementation_data.tile_shift;
+	uint tile_offset = (implementation_data.tiles_per_row * tile_pos.y + tile_pos.x) * implementation_data.bitmasks_per_tile_count;
+	uint z_bin = uint(clamp((-vertex_interp.z - scene_data.z_near) * implementation_data.cluster_z_bin_scale, 0.0, float(implementation_data.cluster_z_bin_count - 1)));
 
 	{ //omni lights
 
-		uint cluster_omni_offset = cluster_offset;
+		uint tile_omni_offset = tile_offset;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_omni_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(0, z_bin, word_from, word_to);
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_omni_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_omni_offset + word];
+			mask &= cluster_get_z_bin_mask(0, word, z_bin);
 			uint merged_mask = mask;
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
-				uint light_index = 32 * i + bit;
+				uint light_index = 32 * word + bit;
 
 				if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -587,25 +582,23 @@ void vertex_shader(vec3 vertex_input,
 	}
 
 	{ //spot lights
-		uint cluster_spot_offset = cluster_offset + implementation_data.cluster_type_size;
+		uint tile_spot_offset = tile_offset + implementation_data.bitmasks_per_type_count;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_spot_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(1, z_bin, word_from, word_to);
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_spot_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_spot_offset + word];
+			mask &= cluster_get_z_bin_mask(1, word, z_bin);
 			uint merged_mask = mask;
 
 			while (merged_mask != 0) {
 				uint bit = findMSB(merged_mask);
 				merged_mask &= ~(1u << bit);
 
-				uint light_index = 32 * i + bit;
+				uint light_index = 32 * word + bit;
 
 				if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -1128,19 +1121,16 @@ vec4 fog_process(vec3 vertex) {
 	return vec4(fog_color, fog_amount);
 }
 
-void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
-	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFFu;
-	item_max = item_min_max >> 16;
+void cluster_get_word_range(uint p_type, uint p_z_bin, out uint word_from, out uint word_to) {
+	uint item_min_max = cluster_buffer.data[implementation_data.cluster_z_bin_offset + p_type * implementation_data.cluster_z_bin_count + p_z_bin];
+	uint item_max = item_min_max >> 16;
 
-	item_from = item_min >> 5;
-	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
+	word_from = (item_min_max & 0xFFFFu) >> 5;
+	word_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
 }
 
-uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
-	int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
-	int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
-	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
+uint cluster_get_z_bin_mask(uint p_type, uint p_word, uint p_z_bin) {
+	return cluster_buffer.data[implementation_data.cluster_z_bin_mask_offset + (p_type * implementation_data.bitmasks_per_tile_count + p_word) * implementation_data.cluster_z_bin_count + p_z_bin];
 }
 
 #endif //!MODE_RENDER DEPTH
@@ -1541,13 +1531,13 @@ void fragment_shader(in SceneData scene_data) {
 #ifndef MODE_RENDER_DEPTH
 
 #ifdef USE_MULTIVIEW
-	uvec2 cluster_pos = uvec2(combined_uv.xy / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+	uvec2 tile_pos = uvec2(combined_uv.xy / scene_data.screen_pixel_size) >> implementation_data.tile_shift;
 #else
-	uvec2 cluster_pos = uvec2(gl_FragCoord.xy) >> implementation_data.cluster_shift;
+	uvec2 tile_pos = uvec2(gl_FragCoord.xy) >> implementation_data.tile_shift;
 #endif
-	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
+	uint tile_offset = (implementation_data.tiles_per_row * tile_pos.y + tile_pos.x) * implementation_data.bitmasks_per_tile_count;
 
-	uint cluster_z = uint(clamp((-vertex.z / scene_data.z_far) * 32.0, 0.0, 31.0));
+	uint z_bin = uint(clamp((-vertex.z - scene_data.z_near) * implementation_data.cluster_z_bin_scale, 0.0, float(implementation_data.cluster_z_bin_count - 1)));
 
 	//used for interpolating anything cluster related
 	vec3 vertex_ddx = dFdx(vertex);
@@ -1555,21 +1545,19 @@ void fragment_shader(in SceneData scene_data) {
 
 	{ // process decals
 
-		uint cluster_decal_offset = cluster_offset + implementation_data.cluster_type_size * 3;
+		uint tile_decal_offset = tile_offset + implementation_data.bitmasks_per_type_count * 3;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_decal_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(3, z_bin, word_from, word_to);
 
-		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		word_from = subgroupBroadcastFirst(subgroupMin(word_from));
+		word_to = subgroupBroadcastFirst(subgroupMax(word_to));
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_decal_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_decal_offset + word];
+			mask &= cluster_get_z_bin_mask(3, word, z_bin);
 
 			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
@@ -1580,7 +1568,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue;
 				}
 
-				uint decal_index = 32 * i + bit;
+				uint decal_index = 32 * word + bit;
 
 				if (!bool(decals.data[decal_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -2111,17 +2099,15 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 cc_reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 #endif
 
-		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 4;
+		uint tile_reflection_offset = tile_offset + implementation_data.bitmasks_per_type_count * 4;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_reflection_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(4, z_bin, word_from, word_to);
 
-		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		word_from = subgroupBroadcastFirst(subgroupMin(word_from));
+		word_to = subgroupBroadcastFirst(subgroupMax(word_to));
 
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
@@ -2136,9 +2122,9 @@ void fragment_shader(in SceneData scene_data) {
 		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_reflection_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_reflection_offset + word];
+			mask &= cluster_get_z_bin_mask(4, word, z_bin);
 
 			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
@@ -2149,7 +2135,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue;
 				}
 
-				uint reflection_index = 32 * i + bit;
+				uint reflection_index = 32 * word + bit;
 
 				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -2790,21 +2776,19 @@ void fragment_shader(in SceneData scene_data) {
 #ifndef USE_VERTEX_LIGHTING
 	{ //omni lights
 
-		uint cluster_omni_offset = cluster_offset;
+		uint tile_omni_offset = tile_offset;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_omni_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(0, z_bin, word_from, word_to);
 
-		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		word_from = subgroupBroadcastFirst(subgroupMin(word_from));
+		word_to = subgroupBroadcastFirst(subgroupMax(word_to));
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_omni_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_omni_offset + word];
+			mask &= cluster_get_z_bin_mask(0, word, z_bin);
 
 			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
@@ -2815,7 +2799,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue;
 				}
 
-				uint light_index = 32 * i + bit;
+				uint light_index = 32 * word + bit;
 
 				if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -2851,21 +2835,19 @@ void fragment_shader(in SceneData scene_data) {
 
 	{ //spot lights
 
-		uint cluster_spot_offset = cluster_offset + implementation_data.cluster_type_size;
+		uint tile_spot_offset = tile_offset + implementation_data.bitmasks_per_type_count;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_spot_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(1, z_bin, word_from, word_to);
 
-		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		word_from = subgroupBroadcastFirst(subgroupMin(word_from));
+		word_to = subgroupBroadcastFirst(subgroupMax(word_to));
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_spot_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_spot_offset + word];
+			mask &= cluster_get_z_bin_mask(1, word, z_bin);
 
 			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
@@ -2876,7 +2858,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue;
 				}
 
-				uint light_index = 32 * i + bit;
+				uint light_index = 32 * word + bit;
 
 				if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -2912,21 +2894,19 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (sc_cluster_has_area_light()) { // area lights
 
-		uint cluster_area_offset = cluster_offset + implementation_data.cluster_type_size * 2;
+		uint tile_area_offset = tile_offset + implementation_data.bitmasks_per_type_count * 2;
 
-		uint item_min;
-		uint item_max;
-		uint item_from;
-		uint item_to;
+		uint word_from;
+		uint word_to;
 
-		cluster_get_item_range(cluster_area_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_word_range(2, z_bin, word_from, word_to);
 
-		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		word_from = subgroupBroadcastFirst(subgroupMin(word_from));
+		word_to = subgroupBroadcastFirst(subgroupMax(word_to));
 
-		for (uint i = item_from; i < item_to; i++) {
-			uint mask = cluster_buffer.data[cluster_area_offset + i];
-			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint word = word_from; word < word_to; word++) {
+			uint mask = cluster_buffer.data[tile_area_offset + word];
+			mask &= cluster_get_z_bin_mask(2, word, z_bin);
 
 			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 			while (merged_mask != 0) {
@@ -2937,7 +2917,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue;
 				}
 
-				uint light_index = 32 * i + bit;
+				uint light_index = 32 * word + bit;
 
 				if (!bool(area_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
