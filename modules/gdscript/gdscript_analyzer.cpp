@@ -437,6 +437,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		int extends_index = 0;
 
 		if (!p_class->extends_path.is_empty()) {
+			p_class->extends_path = ResourceUID::ensure_path(p_class->extends_path);
 			if (p_class->extends_path.is_relative_path()) {
 				p_class->extends_path = class_type.script_path.get_base_dir().path_join(p_class->extends_path).simplify_path();
 			}
