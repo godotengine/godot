@@ -301,6 +301,7 @@ public:
 	void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable);
 
 	void canvas_item_set_canvas_group_mode(RID p_item, RSE::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
+	void canvas_item_set_ignore_canvas_owner_group_mode(RID p_item, bool ignore = false);
 
 	void canvas_item_set_debug_redraw(bool p_enabled);
 	bool canvas_item_get_debug_redraw() const;

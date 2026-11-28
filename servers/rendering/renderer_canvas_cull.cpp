@@ -2090,6 +2090,13 @@ void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RSE::Canv
 	}
 }
 
+void RendererCanvasCull::canvas_item_set_ignore_canvas_owner_group_mode(RID p_item, bool p_ignore) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->ignore_canvas_owner_group_mode = p_ignore;
+}
+
 RID RendererCanvasCull::canvas_light_allocate() {
 	return canvas_light_owner.allocate_rid();
 }
