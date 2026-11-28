@@ -506,6 +506,9 @@ msgstr "取代音量按鈕功能"
 msgid "Disable Scroll Deadzone"
 msgstr "停用捲動死區"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "導覽"
 
@@ -1192,6 +1195,31 @@ msgstr "編輯整數"
 
 msgid "Deferred Drag Mode"
 msgstr "延遲拖曳模式"
+
+msgid "Font Uneditable Color"
+msgstr "字體顏色不可編輯"
+
+msgid "Font"
+msgstr "字體"
+
+msgid "Font Size"
+msgstr "字體大小"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "正常"
+
+msgid "Focus"
+msgstr "焦點"
+
+msgid "Updown"
+msgstr "上下"
+
+msgid "Grabber Highlight"
+msgstr "抓取器高亮"
+
+msgid "Grabber"
+msgstr "抓取器"
 
 msgid "Zoom"
 msgstr "縮放"
@@ -3203,9 +3231,6 @@ msgstr "停止時的動作"
 
 msgid "Output"
 msgstr "輸出"
-
-msgid "Font Size"
-msgstr "字體大小"
 
 msgid "Always Clear Output on Play"
 msgstr "執行時永遠清除輸出"
@@ -5967,9 +5992,6 @@ msgstr "Emscripten 記憶體池大小"
 msgid "Godot Pool Size"
 msgstr "Godot 記憶體池大小"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "簽章工具"
 
@@ -7211,9 +7233,6 @@ msgstr "純文字"
 msgid "Outline Modulate"
 msgstr "輪廓調變"
 
-msgid "Font"
-msgstr "字體"
-
 msgid "Horizontal Alignment"
 msgstr "水平對齊"
 
@@ -8219,8 +8238,119 @@ msgstr "圖示垂直對齊"
 msgid "Expand Icon"
 msgstr "擴展圖示"
 
+msgid "Normal Mirrored"
+msgstr "正常鏡像"
+
+msgid "Pressed Mirrored"
+msgstr "按下鏡像"
+
+msgid "Hover"
+msgstr "懸停"
+
+msgid "Hover Mirrored"
+msgstr "懸停鏡像"
+
+msgid "Hover Pressed"
+msgstr "懸停且按下"
+
+msgid "Disabled Mirrored"
+msgstr "停用鏡像"
+
+msgid "Font Focus Color"
+msgstr "字體顏色聚焦"
+
+msgid "Font Pressed Color"
+msgstr "字體顏色按下"
+
+msgid "Font Hover Color"
+msgstr "字體顏色懸停"
+
+msgid "Font Hover Pressed Color"
+msgstr "字體顏色懸停且按下"
+
+msgid "Font Disabled Color"
+msgstr "字體顏色停用"
+
+msgid "Font Outline Color"
+msgstr "字體輪廓顏色"
+
+msgid "Icon Normal Color"
+msgstr "圖示正常顏色"
+
+msgid "Icon Focus Color"
+msgstr "圖示聚焦顏色"
+
+msgid "Icon Pressed Color"
+msgstr "圖示按下顏色"
+
+msgid "Icon Hover Color"
+msgstr "圖示懸停顏色"
+
+msgid "Icon Hover Pressed Color"
+msgstr "圖示懸停按下顏色"
+
+msgid "Icon Disabled Color"
+msgstr "圖示停用顏色"
+
+msgid "H Separation"
+msgstr "水平間距"
+
+msgid "Icon Max Width"
+msgstr "圖示最大寬度"
+
+msgid "Align to Largest Stylebox"
+msgstr "對齊至最大樣式盒"
+
 msgid "Use Top Left"
 msgstr "使用左上角"
+
+msgid "Check V Offset"
+msgstr "勾選圖示垂直偏移"
+
+msgid "Unchecked"
+msgstr "未勾選"
+
+msgid "Radio Checked"
+msgstr "單選已勾選"
+
+msgid "Radio Unchecked"
+msgstr "單選未勾選"
+
+msgid "Checked Disabled"
+msgstr "已勾選且停用"
+
+msgid "Unchecked Disabled"
+msgstr "未勾選且停用"
+
+msgid "Radio Checked Disabled"
+msgstr "單選已勾選且停用"
+
+msgid "Radio Unchecked Disabled"
+msgstr "單選未選中且停用"
+
+msgid "Checkbox Checked Color"
+msgstr "核取框啟用顏色"
+
+msgid "Checkbox Unchecked Color"
+msgstr "核取框停用顏色"
+
+msgid "Checked Mirrored"
+msgstr "勾選鏡像"
+
+msgid "Unchecked Mirrored"
+msgstr "未勾選鏡像"
+
+msgid "Checked Disabled Mirrored"
+msgstr "勾選停用鏡像"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "未勾選停用鏡像"
+
+msgid "Button Checked Color"
+msgstr "按鈕啟用顏色"
+
+msgid "Button Unchecked Color"
+msgstr "按鈕停用顏色"
 
 msgid "Symbol Lookup on Click"
 msgstr "點選查詢符號"
@@ -8288,6 +8418,81 @@ msgstr "高亮匹配項"
 msgid "Pairs"
 msgstr "成對符號"
 
+msgid "Code Folding Color"
+msgstr "程式碼摺疊顏色"
+
+msgid "Folded Code Region Color"
+msgstr "強制使用白色調變"
+
+msgid "Can Fold"
+msgstr "可折疊"
+
+msgid "Folded"
+msgstr "已折疊"
+
+msgid "Can Fold Code Region"
+msgstr "能夠折疊程式碼區域"
+
+msgid "Folded Code Region"
+msgstr "折疊程式碼區域"
+
+msgid "Folded EOL Icon"
+msgstr "折疊 EOL 圖示"
+
+msgid "Completion Color BG"
+msgstr "完成提示顏色背景"
+
+msgid "Breakpoint Color"
+msgstr "中斷點顏色"
+
+msgid "Breakpoint"
+msgstr "中斷點"
+
+msgid "Bookmark Color"
+msgstr "書籤顏色"
+
+msgid "Bookmark"
+msgstr "書簽"
+
+msgid "Executing Line Color"
+msgstr "執行列顏色"
+
+msgid "Executing Line"
+msgstr "執行列"
+
+msgid "Line Number Color"
+msgstr "列號顏色"
+
+msgid "Completion Max Width"
+msgstr "補全最大寬度"
+
+msgid "Completion Lines"
+msgstr "補全列數"
+
+msgid "Completion Scroll Width"
+msgstr "補全捲軸寬度"
+
+msgid "Completion Scroll Color"
+msgstr "自動補全捲軸顏色"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "自動補全捲軸顏色"
+
+msgid "Completion Background Color"
+msgstr "自動補全背景顏色"
+
+msgid "Completion Selected Color"
+msgstr "自動補全所選顏色"
+
+msgid "Completion Existing Color"
+msgstr "自動補全現有顏色"
+
+msgid "Line Length Guideline Color"
+msgstr "線長導引顏色"
+
+msgid "Brace Mismatch Color"
+msgstr "大括號不對稱顏色"
+
 msgid "Edit Alpha"
 msgstr "編輯 Alpha"
 
@@ -8323,6 +8528,102 @@ msgstr "十六進位可見"
 
 msgid "Presets Visible"
 msgstr "預設可見"
+
+msgid "Label Width"
+msgstr "標籤寬度"
+
+msgid "SV Width"
+msgstr "SV 寬度"
+
+msgid "SV Height"
+msgstr "SV 高度"
+
+msgid "H Width"
+msgstr "H 寬度"
+
+msgid "Center Slider Grabbers"
+msgstr "滑塊居中"
+
+msgid "Sample Focus"
+msgstr "範例焦點"
+
+msgid "Picker Focus Rectangle"
+msgstr "選取器焦點矩形"
+
+msgid "Picker Focus Circle"
+msgstr "選取器焦點圓"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "焦點（非編輯）游標顏色"
+
+msgid "Menu Option"
+msgstr "選單選項"
+
+msgid "Screen Picker"
+msgstr "螢幕取色器"
+
+msgid "Expanded Arrow"
+msgstr "展開箭頭"
+
+msgid "Folded Arrow"
+msgstr "折疊箭頭"
+
+msgid "Add Preset"
+msgstr "新增預設"
+
+msgid "Shape Rect"
+msgstr "形狀矩形"
+
+msgid "Shape Rect Wheel"
+msgstr "形狀矩形輪"
+
+msgid "Shape Circle"
+msgstr "形狀圓"
+
+msgid "Bar Arrow"
+msgstr "條形箭頭"
+
+msgid "Sample BG"
+msgstr "取樣背景"
+
+msgid "Sample Revert"
+msgstr "範例還原"
+
+msgid "Overbright Indicator"
+msgstr "過亮指示器"
+
+msgid "Picker Cursor"
+msgstr "選取器游標"
+
+msgid "Picker Cursor BG"
+msgstr "選取器游標背景"
+
+msgid "Color Hue"
+msgstr "顏色色相"
+
+msgid "Color Script"
+msgstr "腳本顏色"
+
+msgid "Color Copy"
+msgstr "顏色複製"
+
+msgid "Tab Unselected"
+msgstr "分頁未選"
+
+msgid "Tab Selected"
+msgstr "分頁已選"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset FG"
+msgstr "預設前景"
+
+msgid "Preset Focus"
+msgstr "預設焦點"
+
+msgid "Preset BG"
+msgstr "預設背景"
 
 msgid "Accessibility Region"
 msgstr "無障礙區塊"
@@ -8408,9 +8709,6 @@ msgstr "工具提示"
 msgid "Auto Translate Mode"
 msgstr "自動翻譯模式"
 
-msgid "Focus"
-msgstr "焦點"
-
 msgid "Neighbor Left"
 msgstr "左鄰"
 
@@ -8474,6 +8772,9 @@ msgstr "ESC 時關閉"
 msgid "Autowrap"
 msgstr "自動換行"
 
+msgid "Buttons Separation"
+msgstr "按鈕間距"
+
 msgid "Cancel Button Text"
 msgstr "取消按鈕文字"
 
@@ -8528,14 +8829,92 @@ msgstr "啟用覆蓋警告"
 msgid "Deleting Enabled"
 msgstr "啟用刪除"
 
+msgid "Parent Folder"
+msgstr "父資料夾"
+
+msgid "Forward Folder"
+msgstr "前進資料夾"
+
+msgid "Back Folder"
+msgstr "返回資料夾"
+
+msgid "Reload"
+msgstr "重新載入"
+
+msgid "Favorite"
+msgstr "收藏"
+
+msgid "Toggle Hidden"
+msgstr "切換隱藏"
+
+msgid "Folder"
+msgstr "資料夾"
+
+msgid "Toggle Filename Filter"
+msgstr "切換檔案名稱篩選器"
+
+msgid "File"
+msgstr "檔案"
+
+msgid "Create Folder"
+msgstr "建立資料夾"
+
+msgid "Sort"
+msgstr "排序"
+
+msgid "Favorite Up"
+msgstr "收藏置頂"
+
+msgid "Favorite Down"
+msgstr "收藏置底"
+
+msgid "Thumbnail Mode"
+msgstr "縮圖模式"
+
+msgid "List Mode"
+msgstr "清單模式"
+
+msgid "File Thumbnail"
+msgstr "檔案縮圖"
+
+msgid "Folder Thumbnail"
+msgstr "資料夾縮圖"
+
+msgid "Menu Copy Path"
+msgstr "選單複製路徑"
+
+msgid "Menu Delete"
+msgstr "選單刪除"
+
+msgid "Menu Refresh"
+msgstr "選單重新整理"
+
+msgid "Menu New Folder"
+msgstr "選單新增資料夾"
+
+msgid "Menu Show in File Manager"
+msgstr "選單顯示於檔案管理器"
+
+msgid "Menu Open Bundle"
+msgstr "選單開啟套組"
+
+msgid "Folder Icon Color"
+msgstr "資料夾圖示顏色"
+
+msgid "File Icon Color"
+msgstr "檔圖示顏色"
+
+msgid "File Disabled Color"
+msgstr "檔案停用顏色"
+
 msgid "Last Wrap Alignment"
 msgstr "最後換行對齊方式"
 
 msgid "Reverse Fill"
 msgstr "反向填充"
 
-msgid "Folded"
-msgstr "已折疊"
+msgid "V Separation"
+msgstr "垂直間距"
 
 msgid "Title Alignment"
 msgstr "標題對齊"
@@ -8552,8 +8931,38 @@ msgstr "可折疊群組"
 msgid "Title Text Direction"
 msgstr "標題文字方向"
 
+msgid "Title Panel"
+msgstr "標題面板"
+
+msgid "Title Hover Panel"
+msgstr "標題懸停面板"
+
+msgid "Title Collapsed Panel"
+msgstr "標題收合面板"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "標題收合懸停面板"
+
+msgid "Hover Font Color"
+msgstr "懸停字體顏色"
+
+msgid "Collapsed Font Color"
+msgstr "收合字體顏色"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "展開箭頭鏡像"
+
+msgid "Folded Arrow Mirrored"
+msgstr "折疊箭頭鏡像"
+
 msgid "Allow Folding All"
 msgstr "允許全部折疊"
+
+msgid "Resizer"
+msgstr "大小調整器"
+
+msgid "Resizer Color"
+msgstr "大小調整器顏色"
 
 msgid "Show Grid"
 msgstr "顯示網格"
@@ -8612,6 +9021,63 @@ msgstr "顯示小地圖按鈕"
 msgid "Show Arrange Button"
 msgstr "顯示排列按鈕"
 
+msgid "Panel Focus"
+msgstr "面板焦點"
+
+msgid "Grid Major"
+msgstr "主柵格"
+
+msgid "Grid Minor"
+msgstr "次柵格"
+
+msgid "Activity"
+msgstr "活動"
+
+msgid "Connection Hover Tint Color"
+msgstr "連接懸停強調色"
+
+msgid "Connection Hover Thickness"
+msgstr "連接線懸停粗細"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "連接有效目標色調顏色"
+
+msgid "Connection Rim Color"
+msgstr "連接邊框顏色"
+
+msgid "Selection Fill"
+msgstr "選中項填充"
+
+msgid "Selection Stroke"
+msgstr "選中項描邊"
+
+msgid "Menu Panel"
+msgstr "選單面板"
+
+msgid "Zoom In"
+msgstr "放大"
+
+msgid "Zoom Out"
+msgstr "縮小"
+
+msgid "Zoom Reset"
+msgstr "重設縮放"
+
+msgid "Snapping Toggle"
+msgstr "吸附開關"
+
+msgid "Grid Toggle"
+msgstr "柵格開關"
+
+msgid "Minimap Toggle"
+msgstr "小地圖開關"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "埠熱區內部範圍"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "埠熱區外部範圍"
+
 msgid "Draggable"
 msgstr "可拖動"
 
@@ -8630,11 +9096,29 @@ msgstr "自動縮減邊距"
 msgid "Drag Margin"
 msgstr "拖曳邊距"
 
+msgid "Panel Selected"
+msgstr "選中面板"
+
+msgid "Titlebar"
+msgstr "標題列"
+
+msgid "Titlebar Selected"
+msgstr "標題列選中"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "忽略無效連接類型"
 
 msgid "Slots Focus Mode"
 msgstr "插槽聚焦模式"
+
+msgid "Slot"
+msgstr "插槽"
+
+msgid "Slot Selected"
+msgstr "槽位已選取"
+
+msgid "Port H Offset"
+msgstr "埠水平偏移"
 
 msgid "Select Mode"
 msgstr "選擇模式"
@@ -8687,6 +9171,60 @@ msgstr "圖示比例"
 msgid "Fixed Icon Size"
 msgstr "固定圖示大小"
 
+msgid "Scrollbar Margin Left"
+msgstr "捲軸左邊距"
+
+msgid "Scrollbar Margin Top"
+msgstr "捲軸上邊距"
+
+msgid "Scrollbar Margin Right"
+msgstr "捲軸右邊距"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "捲軸下邊距"
+
+msgid "Scrollbar H Separation"
+msgstr "捲軸水平間距"
+
+msgid "Font Hovered Color"
+msgstr "字體懸停顏色"
+
+msgid "Font Hovered Selected Color"
+msgstr "懸停選取時字體顏色"
+
+msgid "Font Selected Color"
+msgstr "字體顏色選中"
+
+msgid "Scroll Hint"
+msgstr "捲動提示"
+
+msgid "Scroll Hint Color"
+msgstr "捲動提示顏色"
+
+msgid "Icon Margin"
+msgstr "圖示邊距"
+
+msgid "Hovered"
+msgstr "懸停"
+
+msgid "Hovered Selected"
+msgstr "懸停已選取"
+
+msgid "Hovered Selected Focus"
+msgstr "懸停選取焦點"
+
+msgid "Selected Focus"
+msgstr "選中項聚焦"
+
+msgid "Cursor Unfocused"
+msgstr "游標未聚焦"
+
+msgid "Cursor"
+msgstr "游標"
+
+msgid "Guide Color"
+msgstr "參考線顏色"
+
 msgid "Label Settings"
 msgstr "標籤設定"
 
@@ -8716,6 +9254,15 @@ msgstr "可見字元行為"
 
 msgid "Visible Ratio"
 msgstr "可見比例"
+
+msgid "Paragraph Spacing"
+msgstr "段落間距"
+
+msgid "Font Shadow Color"
+msgstr "字體陰影顏色"
+
+msgid "Shadow Outline Size"
+msgstr "陰影輪廓大小"
 
 msgid "Placeholder Text"
 msgstr "預留位置文字"
@@ -8795,11 +9342,50 @@ msgstr "圖示延展模式"
 msgid "Right Icon Scale"
 msgstr "右側圖示縮放"
 
+msgid "Font Placeholder Color"
+msgstr "字體顏色預留位置"
+
+msgid "Caret Width"
+msgstr "游標寬度"
+
+msgid "Caret Color"
+msgstr "游標顏色"
+
+msgid "Minimum Character Width"
+msgstr "最小字元寬度"
+
+msgid "Selection Color"
+msgstr "所選顏色"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Clear Button Color"
+msgstr "清除按鈕顏色"
+
+msgid "Clear Button Color Pressed"
+msgstr "清除按鈕顏色按下"
+
 msgid "Underline"
 msgstr "底線"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "底線間距"
+
+msgid "Margin Left"
+msgstr "左邊距"
+
+msgid "Margin Top"
+msgstr "上邊距"
+
+msgid "Margin Right"
+msgstr "右邊距"
+
+msgid "Margin Bottom"
+msgstr "下邊距"
 
 msgid "Start Index"
 msgstr "起始索引"
@@ -8837,6 +9423,15 @@ msgstr "啟用模糊搜尋"
 msgid "Fuzzy Search Max Misses"
 msgstr "模糊搜尋最大未命中數"
 
+msgid "Arrow"
+msgstr "箭頭"
+
+msgid "Arrow Margin"
+msgstr "箭頭邊距"
+
+msgid "Modulate Arrow"
+msgstr "調變箭頭"
+
 msgid "Hide on Item Selection"
 msgstr "專案選擇時隱藏"
 
@@ -8861,17 +9456,71 @@ msgstr "收縮高度"
 msgid "Shrink Width"
 msgstr "收縮寬度"
 
+msgid "Separator"
+msgstr "分隔線"
+
+msgid "Labeled Separator Left"
+msgstr "帶名稱分隔線左側"
+
+msgid "Labeled Separator Right"
+msgstr "帶名稱分隔線右側"
+
+msgid "Search Bar Separation"
+msgstr "搜尋列間距"
+
+msgid "Item Start Padding"
+msgstr "專案首端填充"
+
+msgid "Item End Padding"
+msgstr "專案末端填充"
+
+msgid "Gutter Compact"
+msgstr "緊湊間距"
+
+msgid "Indeterminate"
+msgstr "不確定"
+
+msgid "Indeterminate Disabled"
+msgstr "不確定停用"
+
+msgid "Search"
+msgstr "搜尋"
+
+msgid "Submenu"
+msgstr "子功能表"
+
+msgid "Submenu Mirrored"
+msgstr "子功能表鏡像"
+
+msgid "Font Separator"
+msgstr "分隔符號字體"
+
+msgid "Font Separator Size"
+msgstr "分隔符號字體大小"
+
+msgid "Font Accelerator Color"
+msgstr "字體加速器顏色"
+
+msgid "Font Separator Color"
+msgstr "字體分隔符號顏色"
+
+msgid "Separator Outline Size"
+msgstr "分隔符號輪廓大小"
+
+msgid "Font Separator Outline Color"
+msgstr "字體分隔符號輪廓顏色"
+
 msgid "Fill Mode"
 msgstr "填充模式"
 
 msgid "Show Percentage"
 msgstr "顯示百分比"
 
-msgid "Indeterminate"
-msgstr "不確定"
-
 msgid "Preview Indeterminate"
 msgstr "預覽不確定狀態"
+
+msgid "Background"
+msgstr "背景"
 
 msgid "Min Value"
 msgstr "最小值"
@@ -8957,8 +9606,98 @@ msgstr "進度條延遲"
 msgid "Text Selection"
 msgstr "文字選擇區"
 
+msgid "Horizontal Rule"
+msgstr "水平線"
+
+msgid "Normal Font"
+msgstr "正常字體"
+
+msgid "Normal Font Size"
+msgstr "正常字體大小"
+
+msgid "Shadow Offset X"
+msgstr "陰影 X 偏移"
+
+msgid "Shadow Offset Y"
+msgstr "陰影 Y 偏移"
+
+msgid "Bold Font"
+msgstr "加粗字體"
+
+msgid "Bold Font Size"
+msgstr "粗體字體大小"
+
+msgid "Bold Italics Font"
+msgstr "加粗斜體字體"
+
+msgid "Bold Italics Font Size"
+msgstr "加粗斜體字體大小"
+
+msgid "Italics Font"
+msgstr "斜體字體"
+
+msgid "Italics Font Size"
+msgstr "斜體字體大小"
+
+msgid "Mono Font"
+msgstr "等寬字體"
+
+msgid "Mono Font Size"
+msgstr "等寬字體大小"
+
+msgid "Text Highlight H Padding"
+msgstr "文字高亮水平填充"
+
+msgid "Text Highlight V Padding"
+msgstr "文字高亮豎直填充"
+
+msgid "Underline Alpha"
+msgstr "底線透明度"
+
+msgid "Strikethrough Alpha"
+msgstr "刪除線透明度"
+
+msgid "Table H Separation"
+msgstr "表格水平分隔"
+
+msgid "Table V Separation"
+msgstr "表格垂直分隔"
+
+msgid "Table Odd Row BG"
+msgstr "表格奇數行背景"
+
+msgid "Table Even Row BG"
+msgstr "表格偶數行背景"
+
+msgid "Table Border"
+msgstr "表格邊框"
+
 msgid "Custom Step"
 msgstr "自訂步長"
+
+msgid "Scroll Focus"
+msgstr "捲軸聚焦"
+
+msgid "Grabber Pressed"
+msgstr "抓取器按下"
+
+msgid "Increment"
+msgstr "增加"
+
+msgid "Increment Highlight"
+msgstr "增加高亮"
+
+msgid "Increment Pressed"
+msgstr "增加按下"
+
+msgid "Decrement"
+msgstr "減少"
+
+msgid "Decrement Highlight"
+msgstr "減少高亮"
+
+msgid "Decrement Pressed"
+msgstr "減少按下"
 
 msgid "Follow Focus"
 msgstr "跟隨焦點"
@@ -8993,8 +9732,20 @@ msgstr "預設水平捲動"
 msgid "Scroll Deadzone"
 msgstr "滾動死區"
 
-msgid "Scroll Hint"
-msgstr "捲動提示"
+msgid "Scrollbar V Separation"
+msgstr "捲軸垂直間距"
+
+msgid "Scroll Hint Vertical"
+msgstr "垂直捲動提示"
+
+msgid "Scroll Hint Horizontal"
+msgstr "水平捲動提示"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "垂直捲動提示顏色"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "水平捲動提示顏色"
 
 msgid "Default Scroll Deadzone"
 msgstr "預設滾動死區"
@@ -9011,6 +9762,30 @@ msgstr "邊界刻度"
 msgid "Ticks Position"
 msgstr "刻度位置"
 
+msgid "Slider"
+msgstr "滑動條"
+
+msgid "Grabber Area"
+msgstr "手柄區域"
+
+msgid "Grabber Area Highlight"
+msgstr "手柄區域高亮"
+
+msgid "Grabber Disabled"
+msgstr "手柄停用"
+
+msgid "Tick"
+msgstr "刻度"
+
+msgid "Center Grabber"
+msgstr "抓取器居中"
+
+msgid "Grabber Offset"
+msgstr "抓取器偏移"
+
+msgid "Tick Offset"
+msgstr "刻度偏移"
+
 msgid "Update on Text Changed"
 msgstr "文字更改時更新"
 
@@ -9022,6 +9797,96 @@ msgstr "自訂箭頭取整"
 
 msgid "Format"
 msgstr "格式"
+
+msgid "Buttons Vertical Separation"
+msgstr "按鈕垂直間距"
+
+msgid "Field and Buttons Separation"
+msgstr "欄位與按鈕間距"
+
+msgid "Buttons Width"
+msgstr "按鈕寬度"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "根據圖示設定最小按鈕寬度"
+
+msgid "Up"
+msgstr "向上"
+
+msgid "Up Hover"
+msgstr "向上懸停"
+
+msgid "Up Pressed"
+msgstr "向上按壓"
+
+msgid "Up Disabled"
+msgstr "向上停用"
+
+msgid "Down"
+msgstr "向下"
+
+msgid "Down Hover"
+msgstr "向下懸停"
+
+msgid "Down Pressed"
+msgstr "向下按壓"
+
+msgid "Down Disabled"
+msgstr "向下停用"
+
+msgid "Up Background"
+msgstr "向上背景"
+
+msgid "Up Background Hovered"
+msgstr "向上背景懸停"
+
+msgid "Up Background Pressed"
+msgstr "向上背景按壓"
+
+msgid "Up Background Disabled"
+msgstr "向上背景停用"
+
+msgid "Down Background"
+msgstr "向下背景"
+
+msgid "Down Background Hovered"
+msgstr "向下背景懸停"
+
+msgid "Down Background Pressed"
+msgstr "向下背景按壓"
+
+msgid "Down Background Disabled"
+msgstr "向下背景停用"
+
+msgid "Up Icon Modulate"
+msgstr "向上圖示調變"
+
+msgid "Up Hover Icon Modulate"
+msgstr "向上懸停圖示調變"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "向上按壓圖示調變"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "向上停用圖示調變"
+
+msgid "Down Icon Modulate"
+msgstr "向下圖示調變"
+
+msgid "Down Hover Icon Modulate"
+msgstr "向下懸停圖示調變"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "向下按壓圖示調變"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "向下停用圖示調變"
+
+msgid "Field and Buttons Separator"
+msgstr "欄位與按鈕分隔符號"
+
+msgid "Up Down Buttons Separator"
+msgstr "上下按鈕分隔線"
 
 msgid "Split Offsets"
 msgstr "拆分偏移"
@@ -9052,6 +9917,39 @@ msgstr "結束邊距"
 
 msgid "Highlight in Editor"
 msgstr "在編輯器中醒目顯示"
+
+msgid "Touch Dragger Color"
+msgstr "觸控拖曳器顏色"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "觸控拖曳器按下顏色"
+
+msgid "Touch Dragger Hover Color"
+msgstr "觸控拖曳器游標暫留顏色"
+
+msgid "Minimum Grab Thickness"
+msgstr "最小抓取厚度"
+
+msgid "Autohide"
+msgstr "自動隱藏"
+
+msgid "Touch Dragger"
+msgstr "觸控拖曳器"
+
+msgid "H Touch Dragger"
+msgstr "水平觸控拖曳器"
+
+msgid "V Touch Dragger"
+msgstr "垂直觸控拖曳器"
+
+msgid "H Grabber"
+msgstr "水平抓取器"
+
+msgid "V Grabber"
+msgstr "豎直抓取器"
+
+msgid "Split Bar Background"
+msgstr "分隔條背景"
 
 msgid "Split Offset"
 msgstr "拆分偏移"
@@ -9104,6 +10002,42 @@ msgstr "取消啟用選取"
 msgid "Tabs"
 msgstr "分頁"
 
+msgid "Hover Switch Wait Msec"
+msgstr "滑鼠停留切換等待毫秒數"
+
+msgid "Tab Hovered"
+msgstr "分頁懸停"
+
+msgid "Tab Disabled"
+msgstr "分頁停用"
+
+msgid "Tab Focus"
+msgstr "分頁聚焦"
+
+msgid "Drop Mark"
+msgstr "放下標記"
+
+msgid "Drop Mark Color"
+msgstr "放下標記顏色"
+
+msgid "Font Unselected Color"
+msgstr "字體顏色未選"
+
+msgid "Icon Selected Color"
+msgstr "已選取圖示顏色"
+
+msgid "Icon Hovered Color"
+msgstr "滑鼠停留圖示顏色"
+
+msgid "Icon Unselected Color"
+msgstr "未選取圖示顏色"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "Button Highlight"
+msgstr "按鈕高亮"
+
 msgid "Tabs Position"
 msgstr "分頁標籤位置"
 
@@ -9115,6 +10049,21 @@ msgstr "最小大小考慮隱藏分頁"
 
 msgid "Tab Focus Mode"
 msgstr "分頁聚焦模式"
+
+msgid "Side Margin"
+msgstr "側邊距"
+
+msgid "Tabbar Background"
+msgstr "分頁欄背景"
+
+msgid "Menu"
+msgstr "選單"
+
+msgid "Menu Highlight"
+msgstr "選單高亮"
+
+msgid "Icon Separation"
+msgstr "圖示間距"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "空白選取剪貼簿啟用"
@@ -9161,18 +10110,38 @@ msgstr "控制字元"
 msgid "Spaces"
 msgstr "空格"
 
+msgid "Search Result Color"
+msgstr "搜尋結果顏色"
+
+msgid "Search Result Border Color"
+msgstr "搜尋結果邊界顏色"
+
+msgid "Caret Background Color"
+msgstr "游標背景色"
+
+msgid "Tab"
+msgstr "分頁"
+
+msgid "Space"
+msgstr "空格"
+
+msgid "Font Readonly Color"
+msgstr "字體顏色唯讀"
+
+msgid "Wrap Offset"
+msgstr "環繞偏移"
+
+msgid "Current Line Color"
+msgstr "目前行顏色"
+
+msgid "Word Highlighted Color"
+msgstr "單字醒目顯示顏色"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "TextEdit 空閒檢測（秒）"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "TextEdit 撤銷棧最大大小"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "正常"
-
-msgid "Hover"
-msgstr "懸停"
 
 msgid "Focused"
 msgstr "聚焦"
@@ -9246,6 +10215,117 @@ msgstr "啟用水平滾動"
 msgid "Scroll Vertical Enabled"
 msgstr "啟用垂直捲動"
 
+msgid "Title Button Font"
+msgstr "標題按鈕字體"
+
+msgid "Title Button Font Size"
+msgstr "標題按鈕字體大小"
+
+msgid "Hovered Dimmed"
+msgstr "懸停時變暗"
+
+msgid "Button Hover"
+msgstr "按鈕懸停"
+
+msgid "Arrow Collapsed"
+msgstr "箭頭折疊"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "箭頭折疊鏡像"
+
+msgid "Select Arrow"
+msgstr "選擇箭頭"
+
+msgid "Custom Button"
+msgstr "自訂按鈕"
+
+msgid "Custom Button Hover"
+msgstr "自訂按鈕懸停"
+
+msgid "Custom Button Pressed"
+msgstr "自訂按鈕按下"
+
+msgid "Custom Button Font Highlight"
+msgstr "自訂按鈕字體高亮"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "懸停時字體變暗顏色"
+
+msgid "Drop on Item Color"
+msgstr "放置於項目上的顏色"
+
+msgid "Drop Position Color"
+msgstr "放置位置顏色"
+
+msgid "Inner Item Margin Bottom"
+msgstr "內部專案下邊距"
+
+msgid "Inner Item Margin Left"
+msgstr "內部專案左邊距"
+
+msgid "Inner Item Margin Right"
+msgstr "內部專案右邊距"
+
+msgid "Inner Item Margin Top"
+msgstr "內部專案上邊距"
+
+msgid "Item Margin"
+msgstr "專案邊距"
+
+msgid "Check H Separation"
+msgstr "核取方塊水平間距"
+
+msgid "Icon H Separation"
+msgstr "圖示水平間距"
+
+msgid "Button Margin"
+msgstr "按鈕邊距"
+
+msgid "Draw Guides"
+msgstr "繪製參考線"
+
+msgid "Relationship Line Width"
+msgstr "關係線寬度"
+
+msgid "Parent HL Line Width"
+msgstr "父高亮線寬度"
+
+msgid "Children HL Line Width"
+msgstr "子高亮線寬度"
+
+msgid "Parent HL Line Margin"
+msgstr "父高亮線邊距"
+
+msgid "Relationship Line Color"
+msgstr "關係線顏色"
+
+msgid "Parent HL Line Color"
+msgstr "父高亮線顏色"
+
+msgid "Children HL Line Color"
+msgstr "子高亮線顏色"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "拖曳展開等待毫秒數"
+
+msgid "Scroll Border"
+msgstr "滾動邊框"
+
+msgid "Scroll Speed"
+msgstr "滾動速度"
+
+msgid "Title Button Normal"
+msgstr "標題按鈕正常"
+
+msgid "Title Button Pressed"
+msgstr "標題按鈕按下"
+
+msgid "Title Button Hover"
+msgstr "標題按鈕懸停"
+
+msgid "Title Button Color"
+msgstr "標題按鈕顏色"
+
 msgid "Audio Track"
 msgstr "音訊軌道"
 
@@ -9287,6 +10367,18 @@ msgstr "動作向上"
 
 msgid "Action Down"
 msgstr "動作向下"
+
+msgid "Normal Joystick"
+msgstr "標準搖桿"
+
+msgid "Normal Tip"
+msgstr "標準尖端"
+
+msgid "Pressed Joystick"
+msgstr "按下的搖桿"
+
+msgid "Pressed Tip"
+msgstr "按下的尖端"
 
 msgid "Self Modulate"
 msgstr "自我調變"
@@ -9504,9 +10596,6 @@ msgstr "啟用物件拾取"
 msgid "Scene Traversal"
 msgstr "場景遍歷"
 
-msgid "Menu"
-msgstr "選單"
-
 msgid "Wait Time"
 msgstr "等待時間"
 
@@ -9695,6 +10784,39 @@ msgstr "HDR 輸出"
 
 msgid "Requested"
 msgstr "已要求"
+
+msgid "Embedded Border"
+msgstr "嵌入式邊框"
+
+msgid "Embedded Unfocused Border"
+msgstr "嵌入式未聚焦邊框"
+
+msgid "Title Font"
+msgstr "標題字體"
+
+msgid "Title Font Size"
+msgstr "標題字體大小"
+
+msgid "Title Height"
+msgstr "標題高度"
+
+msgid "Title Outline Modulate"
+msgstr "標題輪廓調變"
+
+msgid "Title Outline Size"
+msgstr "標題輪廓大小"
+
+msgid "Close Pressed"
+msgstr "關閉按下"
+
+msgid "Close H Offset"
+msgstr "關閉水平偏移"
+
+msgid "Close V Offset"
+msgstr "關閉垂直偏移"
+
+msgid "Resize Margin"
+msgstr "調整邊距"
 
 msgid "Swap Cancel OK"
 msgstr "交換取消確定"
@@ -10131,9 +11253,6 @@ msgstr "曲線 Y"
 msgid "Curve Z"
 msgstr "曲線 Z"
 
-msgid "Background"
-msgstr "背景"
-
 msgid "Canvas Max Layer"
 msgstr "畫布最大圖層"
 
@@ -10344,9 +11463,6 @@ msgstr "額外間距"
 msgid "Glyph"
 msgstr "字形"
 
-msgid "Space"
-msgstr "空格"
-
 msgid "Baseline"
 msgstr "基線"
 
@@ -10385,9 +11501,6 @@ msgstr "使用 HDR"
 
 msgid "To"
 msgstr "終點"
-
-msgid "Paragraph Spacing"
-msgstr "段落間距"
 
 msgid "Stacked Effects"
 msgstr "堆疊效果"
@@ -10931,1125 +12044,6 @@ msgstr "預設字體"
 
 msgid "Default Font Size"
 msgstr "預設字體大小"
-
-msgid "File"
-msgstr "檔案"
-
-msgid "Font Pressed Color"
-msgstr "字體顏色按下"
-
-msgid "Font Hover Color"
-msgstr "字體顏色懸停"
-
-msgid "Font Focus Color"
-msgstr "字體顏色聚焦"
-
-msgid "Font Hover Pressed Color"
-msgstr "字體顏色懸停且按下"
-
-msgid "Font Disabled Color"
-msgstr "字體顏色停用"
-
-msgid "Font Outline Color"
-msgstr "字體輪廓顏色"
-
-msgid "Icon Normal Color"
-msgstr "圖示正常顏色"
-
-msgid "Icon Pressed Color"
-msgstr "圖示按下顏色"
-
-msgid "Icon Hover Color"
-msgstr "圖示懸停顏色"
-
-msgid "Icon Hover Pressed Color"
-msgstr "圖示懸停按下顏色"
-
-msgid "Icon Focus Color"
-msgstr "圖示聚焦顏色"
-
-msgid "Icon Disabled Color"
-msgstr "圖示停用顏色"
-
-msgid "H Separation"
-msgstr "水平間距"
-
-msgid "Icon Max Width"
-msgstr "圖示最大寬度"
-
-msgid "Align to Largest Stylebox"
-msgstr "對齊至最大樣式盒"
-
-msgid "Underline Spacing"
-msgstr "底線間距"
-
-msgid "Normal Mirrored"
-msgstr "正常鏡像"
-
-msgid "Hover Mirrored"
-msgstr "懸停鏡像"
-
-msgid "Pressed Mirrored"
-msgstr "按下鏡像"
-
-msgid "Disabled Mirrored"
-msgstr "停用鏡像"
-
-msgid "Arrow"
-msgstr "箭頭"
-
-msgid "Arrow Margin"
-msgstr "箭頭邊距"
-
-msgid "Modulate Arrow"
-msgstr "調變箭頭"
-
-msgid "Hover Pressed"
-msgstr "懸停且按下"
-
-msgid "Checked Disabled"
-msgstr "已勾選且停用"
-
-msgid "Unchecked"
-msgstr "未勾選"
-
-msgid "Unchecked Disabled"
-msgstr "未勾選且停用"
-
-msgid "Radio Checked"
-msgstr "單選已勾選"
-
-msgid "Radio Checked Disabled"
-msgstr "單選已勾選且停用"
-
-msgid "Radio Unchecked"
-msgstr "單選未勾選"
-
-msgid "Radio Unchecked Disabled"
-msgstr "單選未選中且停用"
-
-msgid "Check V Offset"
-msgstr "勾選圖示垂直偏移"
-
-msgid "Checkbox Checked Color"
-msgstr "核取框啟用顏色"
-
-msgid "Checkbox Unchecked Color"
-msgstr "核取框停用顏色"
-
-msgid "Checked Mirrored"
-msgstr "勾選鏡像"
-
-msgid "Checked Disabled Mirrored"
-msgstr "勾選停用鏡像"
-
-msgid "Unchecked Mirrored"
-msgstr "未勾選鏡像"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "未勾選停用鏡像"
-
-msgid "Button Checked Color"
-msgstr "按鈕啟用顏色"
-
-msgid "Button Unchecked Color"
-msgstr "按鈕停用顏色"
-
-msgid "Font Shadow Color"
-msgstr "字體陰影顏色"
-
-msgid "Shadow Offset X"
-msgstr "陰影 X 偏移"
-
-msgid "Shadow Offset Y"
-msgstr "陰影 Y 偏移"
-
-msgid "Shadow Outline Size"
-msgstr "陰影輪廓大小"
-
-msgid "Font Selected Color"
-msgstr "字體顏色選中"
-
-msgid "Font Uneditable Color"
-msgstr "字體顏色不可編輯"
-
-msgid "Font Placeholder Color"
-msgstr "字體顏色預留位置"
-
-msgid "Caret Color"
-msgstr "游標顏色"
-
-msgid "Selection Color"
-msgstr "所選顏色"
-
-msgid "Clear Button Color"
-msgstr "清除按鈕顏色"
-
-msgid "Clear Button Color Pressed"
-msgstr "清除按鈕顏色按下"
-
-msgid "Minimum Character Width"
-msgstr "最小字元寬度"
-
-msgid "Caret Width"
-msgstr "游標寬度"
-
-msgid "Clear"
-msgstr "清除"
-
-msgid "Tab"
-msgstr "分頁"
-
-msgid "Font Readonly Color"
-msgstr "字體顏色唯讀"
-
-msgid "Current Line Color"
-msgstr "目前行顏色"
-
-msgid "Caret Background Color"
-msgstr "游標背景色"
-
-msgid "Word Highlighted Color"
-msgstr "單字醒目顯示顏色"
-
-msgid "Search Result Color"
-msgstr "搜尋結果顏色"
-
-msgid "Search Result Border Color"
-msgstr "搜尋結果邊界顏色"
-
-msgid "Wrap Offset"
-msgstr "環繞偏移"
-
-msgid "Breakpoint"
-msgstr "中斷點"
-
-msgid "Bookmark"
-msgstr "書簽"
-
-msgid "Executing Line"
-msgstr "執行列"
-
-msgid "Can Fold"
-msgstr "可折疊"
-
-msgid "Can Fold Code Region"
-msgstr "能夠折疊程式碼區域"
-
-msgid "Folded Code Region"
-msgstr "折疊程式碼區域"
-
-msgid "Folded EOL Icon"
-msgstr "折疊 EOL 圖示"
-
-msgid "Completion Color BG"
-msgstr "完成提示顏色背景"
-
-msgid "Completion Background Color"
-msgstr "自動補全背景顏色"
-
-msgid "Completion Selected Color"
-msgstr "自動補全所選顏色"
-
-msgid "Completion Existing Color"
-msgstr "自動補全現有顏色"
-
-msgid "Completion Scroll Color"
-msgstr "自動補全捲軸顏色"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "自動補全捲軸顏色"
-
-msgid "Bookmark Color"
-msgstr "書籤顏色"
-
-msgid "Breakpoint Color"
-msgstr "中斷點顏色"
-
-msgid "Executing Line Color"
-msgstr "執行列顏色"
-
-msgid "Code Folding Color"
-msgstr "程式碼摺疊顏色"
-
-msgid "Folded Code Region Color"
-msgstr "強制使用白色調變"
-
-msgid "Brace Mismatch Color"
-msgstr "大括號不對稱顏色"
-
-msgid "Line Number Color"
-msgstr "列號顏色"
-
-msgid "Line Length Guideline Color"
-msgstr "線長導引顏色"
-
-msgid "Completion Lines"
-msgstr "補全列數"
-
-msgid "Completion Max Width"
-msgstr "補全最大寬度"
-
-msgid "Completion Scroll Width"
-msgstr "補全捲軸寬度"
-
-msgid "Scroll Focus"
-msgstr "捲軸聚焦"
-
-msgid "Grabber"
-msgstr "抓取器"
-
-msgid "Grabber Highlight"
-msgstr "抓取器高亮"
-
-msgid "Grabber Pressed"
-msgstr "抓取器按下"
-
-msgid "Increment"
-msgstr "增加"
-
-msgid "Increment Highlight"
-msgstr "增加高亮"
-
-msgid "Increment Pressed"
-msgstr "增加按下"
-
-msgid "Decrement"
-msgstr "減少"
-
-msgid "Decrement Highlight"
-msgstr "減少高亮"
-
-msgid "Decrement Pressed"
-msgstr "減少按下"
-
-msgid "Slider"
-msgstr "滑動條"
-
-msgid "Grabber Area"
-msgstr "手柄區域"
-
-msgid "Grabber Area Highlight"
-msgstr "手柄區域高亮"
-
-msgid "Grabber Disabled"
-msgstr "手柄停用"
-
-msgid "Tick"
-msgstr "刻度"
-
-msgid "Center Grabber"
-msgstr "抓取器居中"
-
-msgid "Grabber Offset"
-msgstr "抓取器偏移"
-
-msgid "Tick Offset"
-msgstr "刻度偏移"
-
-msgid "Updown"
-msgstr "上下"
-
-msgid "Up"
-msgstr "向上"
-
-msgid "Up Hover"
-msgstr "向上懸停"
-
-msgid "Up Pressed"
-msgstr "向上按壓"
-
-msgid "Up Disabled"
-msgstr "向上停用"
-
-msgid "Down"
-msgstr "向下"
-
-msgid "Down Hover"
-msgstr "向下懸停"
-
-msgid "Down Pressed"
-msgstr "向下按壓"
-
-msgid "Down Disabled"
-msgstr "向下停用"
-
-msgid "Up Background"
-msgstr "向上背景"
-
-msgid "Up Background Hovered"
-msgstr "向上背景懸停"
-
-msgid "Up Background Pressed"
-msgstr "向上背景按壓"
-
-msgid "Up Background Disabled"
-msgstr "向上背景停用"
-
-msgid "Down Background"
-msgstr "向下背景"
-
-msgid "Down Background Hovered"
-msgstr "向下背景懸停"
-
-msgid "Down Background Pressed"
-msgstr "向下背景按壓"
-
-msgid "Down Background Disabled"
-msgstr "向下背景停用"
-
-msgid "Up Icon Modulate"
-msgstr "向上圖示調變"
-
-msgid "Up Hover Icon Modulate"
-msgstr "向上懸停圖示調變"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "向上按壓圖示調變"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "向上停用圖示調變"
-
-msgid "Down Icon Modulate"
-msgstr "向下圖示調變"
-
-msgid "Down Hover Icon Modulate"
-msgstr "向下懸停圖示調變"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "向下按壓圖示調變"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "向下停用圖示調變"
-
-msgid "Field and Buttons Separator"
-msgstr "欄位與按鈕分隔符號"
-
-msgid "Up Down Buttons Separator"
-msgstr "上下按鈕分隔線"
-
-msgid "Buttons Vertical Separation"
-msgstr "按鈕垂直間距"
-
-msgid "Field and Buttons Separation"
-msgstr "欄位與按鈕間距"
-
-msgid "Buttons Width"
-msgstr "按鈕寬度"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "根據圖示設定最小按鈕寬度"
-
-msgid "Scroll Hint Vertical"
-msgstr "垂直捲動提示"
-
-msgid "Scroll Hint Horizontal"
-msgstr "水平捲動提示"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "垂直捲動提示顏色"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "水平捲動提示顏色"
-
-msgid "Scrollbar Margin Left"
-msgstr "捲軸左邊距"
-
-msgid "Scrollbar Margin Top"
-msgstr "捲軸上邊距"
-
-msgid "Scrollbar Margin Right"
-msgstr "捲軸右邊距"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "捲軸下邊距"
-
-msgid "Normal Joystick"
-msgstr "標準搖桿"
-
-msgid "Normal Tip"
-msgstr "標準尖端"
-
-msgid "Pressed Joystick"
-msgstr "按下的搖桿"
-
-msgid "Pressed Tip"
-msgstr "按下的尖端"
-
-msgid "Embedded Border"
-msgstr "嵌入式邊框"
-
-msgid "Embedded Unfocused Border"
-msgstr "嵌入式未聚焦邊框"
-
-msgid "Title Font"
-msgstr "標題字體"
-
-msgid "Title Font Size"
-msgstr "標題字體大小"
-
-msgid "Title Outline Modulate"
-msgstr "標題輪廓調變"
-
-msgid "Title Outline Size"
-msgstr "標題輪廓大小"
-
-msgid "Title Height"
-msgstr "標題高度"
-
-msgid "Resize Margin"
-msgstr "調整邊距"
-
-msgid "Close"
-msgstr "關閉"
-
-msgid "Close Pressed"
-msgstr "關閉按下"
-
-msgid "Close H Offset"
-msgstr "關閉水平偏移"
-
-msgid "Close V Offset"
-msgstr "關閉垂直偏移"
-
-msgid "Buttons Separation"
-msgstr "按鈕間距"
-
-msgid "Load"
-msgstr "載入"
-
-msgid "Save"
-msgstr "儲存"
-
-msgid "Parent Folder"
-msgstr "父資料夾"
-
-msgid "Back Folder"
-msgstr "返回資料夾"
-
-msgid "Forward Folder"
-msgstr "前進資料夾"
-
-msgid "Reload"
-msgstr "重新載入"
-
-msgid "Favorite"
-msgstr "收藏"
-
-msgid "Toggle Hidden"
-msgstr "切換隱藏"
-
-msgid "Toggle Filename Filter"
-msgstr "切換檔案名稱篩選器"
-
-msgid "Folder"
-msgstr "資料夾"
-
-msgid "Thumbnail Mode"
-msgstr "縮圖模式"
-
-msgid "List Mode"
-msgstr "清單模式"
-
-msgid "Create Folder"
-msgstr "建立資料夾"
-
-msgid "Sort"
-msgstr "排序"
-
-msgid "Favorite Up"
-msgstr "收藏置頂"
-
-msgid "Favorite Down"
-msgstr "收藏置底"
-
-msgid "File Thumbnail"
-msgstr "檔案縮圖"
-
-msgid "Folder Thumbnail"
-msgstr "資料夾縮圖"
-
-msgid "Menu Copy Path"
-msgstr "選單複製路徑"
-
-msgid "Menu Delete"
-msgstr "選單刪除"
-
-msgid "Menu New Folder"
-msgstr "選單新增資料夾"
-
-msgid "Menu Refresh"
-msgstr "選單重新整理"
-
-msgid "Menu Show in File Manager"
-msgstr "選單顯示於檔案管理器"
-
-msgid "Menu Open Bundle"
-msgstr "選單開啟套組"
-
-msgid "Folder Icon Color"
-msgstr "資料夾圖示顏色"
-
-msgid "File Icon Color"
-msgstr "檔圖示顏色"
-
-msgid "File Disabled Color"
-msgstr "檔案停用顏色"
-
-msgid "Separator"
-msgstr "分隔線"
-
-msgid "Labeled Separator Left"
-msgstr "帶名稱分隔線左側"
-
-msgid "Labeled Separator Right"
-msgstr "帶名稱分隔線右側"
-
-msgid "Indeterminate Disabled"
-msgstr "不確定停用"
-
-msgid "Submenu"
-msgstr "子功能表"
-
-msgid "Submenu Mirrored"
-msgstr "子功能表鏡像"
-
-msgid "Search"
-msgstr "搜尋"
-
-msgid "Font Separator"
-msgstr "分隔符號字體"
-
-msgid "Font Separator Size"
-msgstr "分隔符號字體大小"
-
-msgid "Font Accelerator Color"
-msgstr "字體加速器顏色"
-
-msgid "Font Separator Color"
-msgstr "字體分隔符號顏色"
-
-msgid "Font Separator Outline Color"
-msgstr "字體分隔符號輪廓顏色"
-
-msgid "V Separation"
-msgstr "垂直間距"
-
-msgid "Search Bar Separation"
-msgstr "搜尋列間距"
-
-msgid "Separator Outline Size"
-msgstr "分隔符號輪廓大小"
-
-msgid "Item Start Padding"
-msgstr "專案首端填充"
-
-msgid "Item End Padding"
-msgstr "專案末端填充"
-
-msgid "Gutter Compact"
-msgstr "緊湊間距"
-
-msgid "Panel Selected"
-msgstr "選中面板"
-
-msgid "Panel Focus"
-msgstr "面板焦點"
-
-msgid "Titlebar"
-msgstr "標題列"
-
-msgid "Titlebar Selected"
-msgstr "標題列選中"
-
-msgid "Slot"
-msgstr "插槽"
-
-msgid "Slot Selected"
-msgstr "槽位已選取"
-
-msgid "Resizer"
-msgstr "大小調整器"
-
-msgid "Resizer Color"
-msgstr "大小調整器顏色"
-
-msgid "Port H Offset"
-msgstr "埠水平偏移"
-
-msgid "Hovered"
-msgstr "懸停"
-
-msgid "Hovered Dimmed"
-msgstr "懸停時變暗"
-
-msgid "Hovered Selected"
-msgstr "懸停已選取"
-
-msgid "Hovered Selected Focus"
-msgstr "懸停選取焦點"
-
-msgid "Selected Focus"
-msgstr "選中項聚焦"
-
-msgid "Cursor"
-msgstr "游標"
-
-msgid "Cursor Unfocused"
-msgstr "游標未聚焦"
-
-msgid "Button Hover"
-msgstr "按鈕懸停"
-
-msgid "Title Button Normal"
-msgstr "標題按鈕正常"
-
-msgid "Title Button Pressed"
-msgstr "標題按鈕按下"
-
-msgid "Title Button Hover"
-msgstr "標題按鈕懸停"
-
-msgid "Custom Button"
-msgstr "自訂按鈕"
-
-msgid "Custom Button Pressed"
-msgstr "自訂按鈕按下"
-
-msgid "Custom Button Hover"
-msgstr "自訂按鈕懸停"
-
-msgid "Select Arrow"
-msgstr "選擇箭頭"
-
-msgid "Arrow Collapsed"
-msgstr "箭頭折疊"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "箭頭折疊鏡像"
-
-msgid "Title Button Font"
-msgstr "標題按鈕字體"
-
-msgid "Title Button Font Size"
-msgstr "標題按鈕字體大小"
-
-msgid "Title Button Color"
-msgstr "標題按鈕顏色"
-
-msgid "Font Hovered Color"
-msgstr "字體懸停顏色"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "懸停時字體變暗顏色"
-
-msgid "Font Hovered Selected Color"
-msgstr "懸停選取時字體顏色"
-
-msgid "Guide Color"
-msgstr "參考線顏色"
-
-msgid "Drop on Item Color"
-msgstr "放置於項目上的顏色"
-
-msgid "Drop Position Color"
-msgstr "放置位置顏色"
-
-msgid "Relationship Line Color"
-msgstr "關係線顏色"
-
-msgid "Parent HL Line Color"
-msgstr "父高亮線顏色"
-
-msgid "Children HL Line Color"
-msgstr "子高亮線顏色"
-
-msgid "Custom Button Font Highlight"
-msgstr "自訂按鈕字體高亮"
-
-msgid "Scroll Hint Color"
-msgstr "捲動提示顏色"
-
-msgid "Item Margin"
-msgstr "專案邊距"
-
-msgid "Inner Item Margin Bottom"
-msgstr "內部專案下邊距"
-
-msgid "Inner Item Margin Left"
-msgstr "內部專案左邊距"
-
-msgid "Inner Item Margin Right"
-msgstr "內部專案右邊距"
-
-msgid "Inner Item Margin Top"
-msgstr "內部專案上邊距"
-
-msgid "Check H Separation"
-msgstr "核取方塊水平間距"
-
-msgid "Icon H Separation"
-msgstr "圖示水平間距"
-
-msgid "Button Margin"
-msgstr "按鈕邊距"
-
-msgid "Relationship Line Width"
-msgstr "關係線寬度"
-
-msgid "Parent HL Line Width"
-msgstr "父高亮線寬度"
-
-msgid "Children HL Line Width"
-msgstr "子高亮線寬度"
-
-msgid "Parent HL Line Margin"
-msgstr "父高亮線邊距"
-
-msgid "Draw Guides"
-msgstr "繪製參考線"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "拖曳展開等待毫秒數"
-
-msgid "Scroll Border"
-msgstr "滾動邊框"
-
-msgid "Scroll Speed"
-msgstr "滾動速度"
-
-msgid "Scrollbar H Separation"
-msgstr "捲軸水平間距"
-
-msgid "Scrollbar V Separation"
-msgstr "捲軸垂直間距"
-
-msgid "Icon Margin"
-msgstr "圖示邊距"
-
-msgid "Tab Selected"
-msgstr "分頁已選"
-
-msgid "Tab Hovered"
-msgstr "分頁懸停"
-
-msgid "Tab Unselected"
-msgstr "分頁未選"
-
-msgid "Tab Disabled"
-msgstr "分頁停用"
-
-msgid "Tab Focus"
-msgstr "分頁聚焦"
-
-msgid "Tabbar Background"
-msgstr "分頁欄背景"
-
-msgid "Drop Mark"
-msgstr "放下標記"
-
-msgid "Menu Highlight"
-msgstr "選單高亮"
-
-msgid "Font Unselected Color"
-msgstr "字體顏色未選"
-
-msgid "Drop Mark Color"
-msgstr "放下標記顏色"
-
-msgid "Icon Selected Color"
-msgstr "已選取圖示顏色"
-
-msgid "Icon Hovered Color"
-msgstr "滑鼠停留圖示顏色"
-
-msgid "Icon Unselected Color"
-msgstr "未選取圖示顏色"
-
-msgid "Side Margin"
-msgstr "側邊距"
-
-msgid "Icon Separation"
-msgstr "圖示間距"
-
-msgid "Button Highlight"
-msgstr "按鈕高亮"
-
-msgid "Hover Switch Wait Msec"
-msgstr "滑鼠停留切換等待毫秒數"
-
-msgid "SV Width"
-msgstr "SV 寬度"
-
-msgid "SV Height"
-msgstr "SV 高度"
-
-msgid "H Width"
-msgstr "H 寬度"
-
-msgid "Label Width"
-msgstr "標籤寬度"
-
-msgid "Center Slider Grabbers"
-msgstr "滑塊居中"
-
-msgid "Sample Focus"
-msgstr "範例焦點"
-
-msgid "Picker Focus Rectangle"
-msgstr "選取器焦點矩形"
-
-msgid "Picker Focus Circle"
-msgstr "選取器焦點圓"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "焦點（非編輯）游標顏色"
-
-msgid "Menu Option"
-msgstr "選單選項"
-
-msgid "Folded Arrow"
-msgstr "折疊箭頭"
-
-msgid "Expanded Arrow"
-msgstr "展開箭頭"
-
-msgid "Screen Picker"
-msgstr "螢幕取色器"
-
-msgid "Shape Circle"
-msgstr "形狀圓"
-
-msgid "Shape Rect"
-msgstr "形狀矩形"
-
-msgid "Shape Rect Wheel"
-msgstr "形狀矩形輪"
-
-msgid "Add Preset"
-msgstr "新增預設"
-
-msgid "Sample BG"
-msgstr "取樣背景"
-
-msgid "Sample Revert"
-msgstr "範例還原"
-
-msgid "Overbright Indicator"
-msgstr "過亮指示器"
-
-msgid "Bar Arrow"
-msgstr "條形箭頭"
-
-msgid "Picker Cursor"
-msgstr "選取器游標"
-
-msgid "Picker Cursor BG"
-msgstr "選取器游標背景"
-
-msgid "Color Script"
-msgstr "腳本顏色"
-
-msgid "Color Copy"
-msgstr "顏色複製"
-
-msgid "Color Hue"
-msgstr "顏色色相"
-
-msgid "BG"
-msgstr "BG"
-
-msgid "Preset FG"
-msgstr "預設前景"
-
-msgid "Preset Focus"
-msgstr "預設焦點"
-
-msgid "Preset BG"
-msgstr "預設背景"
-
-msgid "Horizontal Rule"
-msgstr "水平線"
-
-msgid "Normal Font"
-msgstr "正常字體"
-
-msgid "Bold Font"
-msgstr "加粗字體"
-
-msgid "Italics Font"
-msgstr "斜體字體"
-
-msgid "Bold Italics Font"
-msgstr "加粗斜體字體"
-
-msgid "Mono Font"
-msgstr "等寬字體"
-
-msgid "Normal Font Size"
-msgstr "正常字體大小"
-
-msgid "Bold Font Size"
-msgstr "粗體字體大小"
-
-msgid "Italics Font Size"
-msgstr "斜體字體大小"
-
-msgid "Bold Italics Font Size"
-msgstr "加粗斜體字體大小"
-
-msgid "Mono Font Size"
-msgstr "等寬字體大小"
-
-msgid "Table H Separation"
-msgstr "表格水平分隔"
-
-msgid "Table V Separation"
-msgstr "表格垂直分隔"
-
-msgid "Table Odd Row BG"
-msgstr "表格奇數行背景"
-
-msgid "Table Even Row BG"
-msgstr "表格偶數行背景"
-
-msgid "Table Border"
-msgstr "表格邊框"
-
-msgid "Text Highlight H Padding"
-msgstr "文字高亮水平填充"
-
-msgid "Text Highlight V Padding"
-msgstr "文字高亮豎直填充"
-
-msgid "Underline Alpha"
-msgstr "底線透明度"
-
-msgid "Strikethrough Alpha"
-msgstr "刪除線透明度"
-
-msgid "Touch Dragger Color"
-msgstr "觸控拖曳器顏色"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "觸控拖曳器按下顏色"
-
-msgid "Touch Dragger Hover Color"
-msgstr "觸控拖曳器游標暫留顏色"
-
-msgid "H Touch Dragger"
-msgstr "水平觸控拖曳器"
-
-msgid "V Touch Dragger"
-msgstr "垂直觸控拖曳器"
-
-msgid "Touch Dragger"
-msgstr "觸控拖曳器"
-
-msgid "H Grabber"
-msgstr "水平抓取器"
-
-msgid "V Grabber"
-msgstr "豎直抓取器"
-
-msgid "Margin Left"
-msgstr "左邊距"
-
-msgid "Margin Top"
-msgstr "上邊距"
-
-msgid "Margin Right"
-msgstr "右邊距"
-
-msgid "Margin Bottom"
-msgstr "下邊距"
-
-msgid "Minimum Grab Thickness"
-msgstr "最小抓取厚度"
-
-msgid "Autohide"
-msgstr "自動隱藏"
-
-msgid "Split Bar Background"
-msgstr "分隔條背景"
-
-msgid "Zoom Out"
-msgstr "縮小"
-
-msgid "Zoom In"
-msgstr "放大"
-
-msgid "Zoom Reset"
-msgstr "重設縮放"
-
-msgid "Grid Toggle"
-msgstr "柵格開關"
-
-msgid "Minimap Toggle"
-msgstr "小地圖開關"
-
-msgid "Snapping Toggle"
-msgstr "吸附開關"
-
-msgid "Menu Panel"
-msgstr "選單面板"
-
-msgid "Grid Minor"
-msgstr "次柵格"
-
-msgid "Grid Major"
-msgstr "主柵格"
-
-msgid "Selection Fill"
-msgstr "選中項填充"
-
-msgid "Selection Stroke"
-msgstr "選中項描邊"
-
-msgid "Activity"
-msgstr "活動"
-
-msgid "Connection Hover Tint Color"
-msgstr "連接懸停強調色"
-
-msgid "Connection Hover Thickness"
-msgstr "連接線懸停粗細"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "連接有效目標色調顏色"
-
-msgid "Connection Rim Color"
-msgstr "連接邊框顏色"
-
-msgid "Title Panel"
-msgstr "標題面板"
-
-msgid "Title Hover Panel"
-msgstr "標題懸停面板"
-
-msgid "Title Collapsed Panel"
-msgstr "標題收合面板"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "標題收合懸停面板"
-
-msgid "Hover Font Color"
-msgstr "懸停字體顏色"
-
-msgid "Collapsed Font Color"
-msgstr "收合字體顏色"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "展開箭頭鏡像"
-
-msgid "Folded Arrow Mirrored"
-msgstr "折疊箭頭鏡像"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "埠熱區內部範圍"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "埠熱區外部範圍"
 
 msgid "Default Theme Scale"
 msgstr "預設主題縮放"

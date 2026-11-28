@@ -52,13 +52,14 @@
 # نام <z.xp.xp.900@gmail.com>, 2025.
 # Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# theBSH <thebsh@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-07 03:32+0000\n"
-"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
+"PO-Revision-Date: 2026-11-18 18:52+0000\n"
+"Last-Translator: theBSH <thebsh@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
 "Language: fa\n"
@@ -66,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -479,6 +480,9 @@ msgstr "محور پیمایش ورودی چرخشی"
 msgid "Override Volume Buttons"
 msgstr "بازنویسی دکمه‌های بلندی صدا"
 
+msgid "Windows"
+msgstr "ویندوز"
+
 msgid "Navigation"
 msgstr "ناوبری"
 
@@ -845,6 +849,9 @@ msgstr "دسته بیرون"
 msgid "Stream"
 msgstr "استریم"
 
+msgid "Debug Adapter"
+msgstr "آداپتور اشکال‌زدایی"
+
 msgid "Request Timeout"
 msgstr "درخواست وقفه"
 
@@ -904,6 +911,21 @@ msgstr "برچسب"
 
 msgid "Read Only"
 msgstr "فقط مطالعه"
+
+msgid "Font"
+msgstr "قلم"
+
+msgid "Font Size"
+msgstr "اندازهٔ قلم"
+
+msgid "Focus"
+msgstr "تمرکز"
+
+msgid "Updown"
+msgstr "بالاپایین"
+
+msgid "Grabber"
+msgstr "رباینده"
 
 msgid "Bone Renamer"
 msgstr "بازنامگذار استخوان"
@@ -1749,9 +1771,6 @@ msgstr "پهنهٔ پایینی"
 msgid "Output"
 msgstr "برونداد"
 
-msgid "Font Size"
-msgstr "اندازهٔ قلم"
-
 msgid "Always Clear Output on Play"
 msgstr "همیشه هنگام پخش برونداد را پاک کن"
 
@@ -2441,9 +2460,6 @@ msgstr "برای گوشی"
 
 msgid "HTML"
 msgstr "HTML"
-
-msgid "Windows"
-msgstr "ویندوز"
 
 msgid "File Version"
 msgstr "نسخهٔ پرونده"
@@ -3142,9 +3158,6 @@ msgstr "اولویت نماپردازش پیراخط"
 msgid "Text"
 msgstr "نوشتار"
 
-msgid "Font"
-msgstr "قلم"
-
 msgid "Horizontal Alignment"
 msgstr "تراز افقی"
 
@@ -3400,14 +3413,29 @@ msgstr "رفتار نوشتار"
 msgid "Icon Behavior"
 msgstr "رفتار آیکن"
 
+msgid "Font Outline Color"
+msgstr "رنگ پیراخط قلم"
+
 msgid "Use Top Left"
 msgstr "بکاربردن چپ بالا"
+
+msgid "Unchecked"
+msgstr "بررسی‌نشده"
 
 msgid "Automatic Prefixes"
 msgstr "پیشوندهای خودکار"
 
 msgid "Pairs"
 msgstr "جفت‌ها"
+
+msgid "Bookmark Color"
+msgstr "رنگ نشانک"
+
+msgid "Executing Line Color"
+msgstr "رنگ خط در حال اجرا"
+
+msgid "Line Number Color"
+msgstr "رنگ شمارهٔ خط"
 
 msgid "Edit Alpha"
 msgstr "ویرایش آلفا"
@@ -3444,9 +3472,6 @@ msgstr "سوی چیدمان"
 
 msgid "Tooltip"
 msgstr "پندابزار"
-
-msgid "Focus"
-msgstr "تمرکز"
 
 msgid "Neighbor Left"
 msgstr "چپ همسایه"
@@ -3487,6 +3512,12 @@ msgstr "پالایه‌ها"
 msgid "Options"
 msgstr "گزینه‌ها"
 
+msgid "Reload"
+msgstr "بارکردن دوباره"
+
+msgid "File"
+msgstr "پرونده"
+
 msgid "Show Grid"
 msgstr "نمایش توری"
 
@@ -3501,6 +3532,12 @@ msgstr "خط‌های اتصال"
 
 msgid "Show Grid Buttons"
 msgstr "نمایش دکمه‌های توری"
+
+msgid "Grid Major"
+msgstr "توری مهاد"
+
+msgid "Grid Minor"
+msgstr "توری کماد"
 
 msgid "Draggable"
 msgstr "کشاندنی"
@@ -3520,6 +3557,9 @@ msgstr "لبهٔ کشاندن"
 msgid "Ignore Invalid Connection Type"
 msgstr "نادیده‌گیری گونه‌های اتصال نامعتبر"
 
+msgid "Slot"
+msgstr "شکاف"
+
 msgid "Select Mode"
 msgstr "انتخاب حالت"
 
@@ -3532,14 +3572,56 @@ msgstr "بیشینهٔ ستون‌ها"
 msgid "Icon Scale"
 msgstr "مقیاس آیکن"
 
+msgid "Scrollbar Margin Left"
+msgstr "لبهٔ چپ نوار پیمایش"
+
+msgid "Scrollbar Margin Top"
+msgstr "لبهٔ بالای نوار پیمایش"
+
+msgid "Scrollbar Margin Right"
+msgstr "لبهٔ راست نوار پیمایش"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "لبهٔ پایین نوار پیمایش"
+
+msgid "Scrollbar H Separation"
+msgstr "جدایی افقی نوار پیمایش"
+
+msgid "Icon Margin"
+msgstr "لبهٔ آیکن"
+
 msgid "Visible Characters"
 msgstr "نویسه‌های پدیدار"
+
+msgid "Shadow Outline Size"
+msgstr "اندازهٔ پیراخط سایه"
 
 msgid "Blink"
 msgstr "پلک"
 
+msgid "Caret Width"
+msgstr "پهنای هشتک"
+
+msgid "Minimum Character Width"
+msgstr "کمینهٔ پهنای نویسه"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
 msgid "Underline"
 msgstr "زیرخط"
+
+msgid "Margin Left"
+msgstr "چپ لبه"
+
+msgid "Margin Top"
+msgstr "بالای لبه"
+
+msgid "Margin Right"
+msgstr "راست لبه"
+
+msgid "Margin Bottom"
+msgstr "پایین لبه"
 
 msgid "Start Index"
 msgstr "اندیس آغازین"
@@ -3547,8 +3629,32 @@ msgstr "اندیس آغازین"
 msgid "Axis Stretch"
 msgstr "محور کشش"
 
+msgid "Arrow"
+msgstr "پیکان"
+
+msgid "Arrow Margin"
+msgstr "لبهٔ پیکان"
+
+msgid "Separator"
+msgstr "جداگر"
+
+msgid "Submenu"
+msgstr "زیر‌گزینگان"
+
+msgid "Font Separator"
+msgstr "جداگر قلم"
+
+msgid "Separator Outline Size"
+msgstr "اندازهٔ پیراخط جداگر"
+
+msgid "Font Separator Outline Color"
+msgstr "رنگ پیراخط جداگر قلم"
+
 msgid "Show Percentage"
 msgstr "نمایاندن درصد"
+
+msgid "Background"
+msgstr "پس‌زمینه"
 
 msgid "Max Value"
 msgstr "ارزش بیشینه‌"
@@ -3586,17 +3692,35 @@ msgstr "حالت پیمایش افقی"
 msgid "Vertical Scroll Mode"
 msgstr "حالت پیمایش عمودی"
 
+msgid "Scrollbar V Separation"
+msgstr "جدایی عمودی نوار پیمایش"
+
 msgid "Scrollable"
 msgstr "پیمایش‌پذیر"
 
+msgid "Tick"
+msgstr "تیک"
+
 msgid "Format"
 msgstr "چارچوب"
+
+msgid "Autohide"
+msgstr "پنهان‌سازی خودکار"
 
 msgid "Stretch Shrink"
 msgstr "تنجش کشش"
 
 msgid "Scrolling Enabled"
 msgstr "پیمایش بکارافتاده"
+
+msgid "Close"
+msgstr "بستن"
+
+msgid "Tab"
+msgstr "زبانه"
+
+msgid "Current Line Color"
+msgstr "رنگ خط کنونی"
 
 msgid "Ignore Texture Size"
 msgstr "نادیده‌گیری اندازهٔ بافت"
@@ -3621,6 +3745,18 @@ msgstr "پیمایش افقی بکارافتاده"
 
 msgid "Scroll Vertical Enabled"
 msgstr "پیمایش عمودی بکارافتاده"
+
+msgid "Item Margin"
+msgstr "لبهٔ مورد"
+
+msgid "Button Margin"
+msgstr "لبهٔ دکمه"
+
+msgid "Scroll Border"
+msgstr "مرز پیمایش"
+
+msgid "Scroll Speed"
+msgstr "تندی پیمایش"
 
 msgid "Audio Track"
 msgstr "نوار شنیداری"
@@ -3763,6 +3899,15 @@ msgstr "صفحه کنونی"
 msgid "Exclusive"
 msgstr "انحصاری"
 
+msgid "Embedded Border"
+msgstr "مرز نهادینه‌شده"
+
+msgid "Embedded Unfocused Border"
+msgstr "مرز نامتمرکز نهادینه‌شده"
+
+msgid "Title Outline Size"
+msgstr "اندازهٔ پیراخط عنوان"
+
 msgid "Layer Names"
 msgstr "نام لایه‌ها"
 
@@ -3864,9 +4009,6 @@ msgstr "بارکردن مسیر"
 
 msgid "Up Vector"
 msgstr "بردار بالایی"
-
-msgid "Background"
-msgstr "پس‌زمینه"
 
 msgid "Reflected Light"
 msgstr "نور بازتابیده"
@@ -4065,144 +4207,6 @@ msgstr "دامنه‌های رنگ"
 
 msgid "Default Base Scale"
 msgstr "مقیاس پایهٔ پیش‌فرض"
-
-msgid "File"
-msgstr "پرونده"
-
-msgid "Font Outline Color"
-msgstr "رنگ پیراخط قلم"
-
-msgid "Arrow"
-msgstr "پیکان"
-
-msgid "Arrow Margin"
-msgstr "لبهٔ پیکان"
-
-msgid "Unchecked"
-msgstr "بررسی‌نشده"
-
-msgid "Shadow Outline Size"
-msgstr "اندازهٔ پیراخط سایه"
-
-msgid "Minimum Character Width"
-msgstr "کمینهٔ پهنای نویسه"
-
-msgid "Caret Width"
-msgstr "پهنای هشتک"
-
-msgid "Clear"
-msgstr "پاک کردن"
-
-msgid "Tab"
-msgstr "زبانه"
-
-msgid "Current Line Color"
-msgstr "رنگ خط کنونی"
-
-msgid "Bookmark Color"
-msgstr "رنگ نشانک"
-
-msgid "Executing Line Color"
-msgstr "رنگ خط در حال اجرا"
-
-msgid "Line Number Color"
-msgstr "رنگ شمارهٔ خط"
-
-msgid "Grabber"
-msgstr "رباینده"
-
-msgid "Tick"
-msgstr "تیک"
-
-msgid "Updown"
-msgstr "بالاپایین"
-
-msgid "Scrollbar Margin Left"
-msgstr "لبهٔ چپ نوار پیمایش"
-
-msgid "Scrollbar Margin Top"
-msgstr "لبهٔ بالای نوار پیمایش"
-
-msgid "Scrollbar Margin Right"
-msgstr "لبهٔ راست نوار پیمایش"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "لبهٔ پایین نوار پیمایش"
-
-msgid "Embedded Border"
-msgstr "مرز نهادینه‌شده"
-
-msgid "Embedded Unfocused Border"
-msgstr "مرز نامتمرکز نهادینه‌شده"
-
-msgid "Title Outline Size"
-msgstr "اندازهٔ پیراخط عنوان"
-
-msgid "Close"
-msgstr "بستن"
-
-msgid "Reload"
-msgstr "بارکردن دوباره"
-
-msgid "Separator"
-msgstr "جداگر"
-
-msgid "Submenu"
-msgstr "زیر‌گزینگان"
-
-msgid "Font Separator"
-msgstr "جداگر قلم"
-
-msgid "Font Separator Outline Color"
-msgstr "رنگ پیراخط جداگر قلم"
-
-msgid "Separator Outline Size"
-msgstr "اندازهٔ پیراخط جداگر"
-
-msgid "Slot"
-msgstr "شکاف"
-
-msgid "Item Margin"
-msgstr "لبهٔ مورد"
-
-msgid "Button Margin"
-msgstr "لبهٔ دکمه"
-
-msgid "Scroll Border"
-msgstr "مرز پیمایش"
-
-msgid "Scroll Speed"
-msgstr "تندی پیمایش"
-
-msgid "Scrollbar H Separation"
-msgstr "جدایی افقی نوار پیمایش"
-
-msgid "Scrollbar V Separation"
-msgstr "جدایی عمودی نوار پیمایش"
-
-msgid "Icon Margin"
-msgstr "لبهٔ آیکن"
-
-msgid "Margin Left"
-msgstr "چپ لبه"
-
-msgid "Margin Top"
-msgstr "بالای لبه"
-
-msgid "Margin Right"
-msgstr "راست لبه"
-
-msgid "Margin Bottom"
-msgstr "پایین لبه"
-
-msgid "Autohide"
-msgstr "پنهان‌سازی خودکار"
-
-msgid "Grid Minor"
-msgstr "توری کماد"
-
-msgid "Grid Major"
-msgstr "توری مهاد"
 
 msgid "Default Theme Scale"
 msgstr "مقیاس پیش‌فرض زمینه"

@@ -3516,9 +3516,6 @@ msgstr "אין תיאור זמין."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "הערה זו עשויה להשתנות או להיות מוסרת בגרסאות עתידיות."
 
-msgid "Open in File Manager"
-msgstr "פתיחה במנהל הקבצים"
-
 msgid "This property can only be set in the Inspector."
 msgstr "ניתן להגדיר מאפיין זה רק במפקח."
 
@@ -4412,20 +4409,6 @@ msgstr ""
 "לא ניתן לשמור ענף שהוא חלק מסצנה יורשת.\n"
 "כדי לשמור ענף זה כסצנה משלו, יש לפתוח את הסצנה המקורית, ללחוץ לחיצה ימנית על "
 "ענף זה ולבחור „שמירת הענף כסצנה”."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"השבתת \"Editable Children\" תגרום להחזרת כל המאפיינים של מפרקי הצאצאים של תת־"
-"סצנה זו לבררת המחדל שלהם."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"הפעלת \"Load as Placeholder\" תשבית את \"Editable Children\" ותגרום להחזרת כל "
-"המאפיינים של המפרק לבררת המחדל שלהם."
 
 msgid "Make Local"
 msgstr "הפיכה למקומי"
@@ -8530,9 +8513,6 @@ msgstr "שגיאה: המיזם חסר במערכת הקבצים."
 
 msgid "Toggle Favorite"
 msgstr "הוספת/ביטול מועדף"
-
-msgid "Open in file manager"
-msgstr "פתיחה במנהל הקבצים"
 
 msgid "Last edited timestamp"
 msgstr "חותמת זמן העריכה האחרונה"

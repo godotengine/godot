@@ -83,7 +83,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-11-10 04:56+0000\n"
+"PO-Revision-Date: 2026-11-23 04:13+0000\n"
 "Last-Translator: Luka van der Plas "
 "<lukavdplas@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot-"
@@ -93,7 +93,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.11.2.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "Applicatie"
@@ -1193,6 +1193,25 @@ msgstr "Schuifregelaar verbergen"
 msgid "Editing Integer"
 msgstr "Geheel getal bewerken"
 
+msgid "Font Uneditable Color"
+msgstr "Letterkleur Niet Bewerkbaar"
+
+msgid "Font"
+msgstr "Lettertype"
+
+msgid "Font Size"
+msgstr "Lettergrootte"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normaal"
+
+msgid "Focus"
+msgstr "Focus"
+
+msgid "Updown"
+msgstr "Omhoog-omlaag"
+
 msgid "Zoom"
 msgstr "Zoom"
 
@@ -1684,6 +1703,12 @@ msgstr "Alfarand herstellen"
 
 msgid "Premult Alpha"
 msgstr "Alfa voorvermenigvuldigen"
+
+msgid "Preserve Alpha Test Coverage"
+msgstr "Bereik Alfatesten Behouden"
+
+msgid "Alpha Test Threshold"
+msgstr "Grenswaarde Alfatesten"
 
 msgid "Process"
 msgstr "Verwerken"
@@ -2679,9 +2704,6 @@ msgstr "Actie bij Stoppen"
 msgid "Output"
 msgstr "Uitvoer"
 
-msgid "Font Size"
-msgstr "Lettergrootte"
-
 msgid "Always Clear Output on Play"
 msgstr "Altijd Uitvoer Wissen bij Afspelen"
 
@@ -3282,6 +3304,9 @@ msgstr "Lus"
 msgid "Perspective"
 msgstr "Perspectief"
 
+msgid "FOV"
+msgstr "FOV"
+
 msgid "Depth Far"
 msgstr "Diepte Ver"
 
@@ -3446,6 +3471,12 @@ msgstr "Android Surface Gebruiken"
 
 msgid "Sort Order"
 msgstr "Sorteervolgorde"
+
+msgid "Alpha Blend"
+msgstr "Alfamengen"
+
+msgid "Max Anisotropy"
+msgstr "Max Anisotropie"
 
 msgid "Hand"
 msgstr "Hand"
@@ -3639,11 +3670,41 @@ msgstr "Waarschijnlijkheid"
 msgid "Description URL"
 msgstr "Beschrijving URL"
 
+msgid "Modes"
+msgstr "Modi"
+
+msgid "Stencil"
+msgstr "Stencil"
+
 msgid "Reference"
 msgstr "Referentie"
 
+msgid "Stencil Modes"
+msgstr "Stencilmodi"
+
+msgid "Input Name"
+msgstr "Invoernaam"
+
+msgid "Parameter Name"
+msgstr "Parameternaam"
+
+msgid "Tint Color Enabled"
+msgstr "Tintkleur Ingeschakeld"
+
+msgid "Tint Color"
+msgstr "Tintkleur"
+
 msgid "Expression"
 msgstr "Expressie"
+
+msgid "Group Name"
+msgstr "Groepnaam"
+
+msgid "Input Port Count"
+msgstr "Aantal Invoerpoorten"
+
+msgid "Output Port Count"
+msgstr "Aantal Uitvoerpoorten"
 
 msgid "Group"
 msgstr "Groep"
@@ -4272,6 +4333,9 @@ msgstr "Stream Gepauzeerd"
 msgid "Max Distance"
 msgstr "Max Afstand"
 
+msgid "Attenuation"
+msgstr "Afzwakking"
+
 msgid "Max Polyphony"
 msgstr "Max Polyfonie"
 
@@ -4539,6 +4603,9 @@ msgstr "Textureschaal"
 msgid "Closed"
 msgstr "Gesloten"
 
+msgid "Cull Mode"
+msgstr "Cullmodus"
+
 msgid "SDF Collision"
 msgstr "SDF-Botsing"
 
@@ -4556,6 +4623,9 @@ msgstr "Vullen"
 
 msgid "Gradient"
 msgstr "Gradiënt"
+
+msgid "Texture Mode"
+msgstr "Texturemodus"
 
 msgid "Capping"
 msgstr "Uiteindes"
@@ -4605,8 +4675,20 @@ msgstr "Scrollverschuiving"
 msgid "Repeat"
 msgstr "Herhalen"
 
+msgid "Repeat Size"
+msgstr "Herhalingsgrootte"
+
+msgid "Repeat Times"
+msgstr "Aantal Herhalingen"
+
+msgid "Begin"
+msgstr "Begin"
+
 msgid "End"
 msgstr "Einde"
+
+msgid "Follow Viewport"
+msgstr "Beeldvenster Volgen"
 
 msgid "Ignore Camera Scroll"
 msgstr "Camerascroll Negeren"
@@ -4622,6 +4704,9 @@ msgstr "Einde Limiet"
 
 msgid "Ignore Camera Zoom"
 msgstr "Camerazoom Negeren"
+
+msgid "Motion"
+msgstr "Beweging"
 
 msgid "Cubic Interp"
 msgstr "Kubische Interp"
@@ -4643,6 +4728,9 @@ msgstr "Restlengte"
 
 msgid "Stiffness"
 msgstr "Stijfheid"
+
+msgid "Bias"
+msgstr "Afwijking"
 
 msgid "Softness"
 msgstr "Zachtheid"
@@ -4707,17 +4795,63 @@ msgstr "Max dB"
 msgid "Keep Aspect"
 msgstr "Verhouding Behouden"
 
+msgid "Cull Mask"
+msgstr "Cullmasker"
+
 msgid "Attributes"
 msgstr "Eigenschappen"
+
+msgid "Near"
+msgstr "Dichtbij"
 
 msgid "Far"
 msgstr "Verte"
 
+msgid "Visibility AABB"
+msgstr "Zichtbaarheid AABB"
+
+msgid "Disable Z"
+msgstr "Z Uitschakelen"
+
 msgid "Flatness"
 msgstr "Platheid"
 
+msgid "Scale Curve Z"
+msgstr "Schaalcurve Z"
+
 msgid "Albedo"
 msgstr "Albedo"
+
+msgctxt "Geometry"
+msgid "Normal"
+msgstr "Normaal"
+
+msgid "Orm"
+msgstr "Orm"
+
+msgid "Emission"
+msgstr "Emissie"
+
+msgid "Parameters"
+msgstr "Parameters"
+
+msgid "Emission Energy"
+msgstr "Emmisie-energie"
+
+msgid "Albedo Mix"
+msgstr "Albedomix"
+
+msgid "Normal Fade"
+msgstr "Normaalvervaging"
+
+msgid "Vertical Fade"
+msgstr "Verticale Vervaging"
+
+msgid "Upper Fade"
+msgstr "Vervaging Boven"
+
+msgid "Lower Fade"
+msgstr "Vervaging Onder"
 
 msgid "Distance Fade"
 msgstr "Afstandsvervaging"
@@ -4761,8 +4895,17 @@ msgstr "Vaste Grootte"
 msgid "Alpha Cut"
 msgstr "Alfa Snijden"
 
+msgid "Alpha Scissor Threshold"
+msgstr "Alfa-schaarwaarde"
+
+msgid "Alpha Hash Scale"
+msgstr "Alfa-hash-schaal"
+
 msgid "Alpha Antialiasing Mode"
-msgstr "Alpha Antialias-modus"
+msgstr "Alfa-anti-aliasmodus"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "Alfa-anti-aliasrand"
 
 msgid "Render Priority"
 msgstr "Renderprioriteit"
@@ -4775,9 +4918,6 @@ msgstr "Tekst"
 
 msgid "Outline Modulate"
 msgstr "Omlijning Modulatie"
-
-msgid "Font"
-msgstr "Lettertype"
 
 msgid "Horizontal Alignment"
 msgstr "Horizontale Uitlijning"
@@ -4806,8 +4946,29 @@ msgstr "Indirecte Energie"
 msgid "Volumetric Fog Energy"
 msgstr "Energie Volumetrische Mist"
 
+msgid "Projector"
+msgstr "Projector"
+
+msgid "Angular Distance"
+msgstr "Hoekafstand"
+
 msgid "Negative"
 msgstr "Negatief"
+
+msgid "Specular"
+msgstr "Spiegeling"
+
+msgid "Bake Mode"
+msgstr "Bakmodus"
+
+msgid "Normal Bias"
+msgstr "Normaalafwijking"
+
+msgid "Reverse Cull Face"
+msgstr "Cullvlak Omkeren"
+
+msgid "Transmittance Bias"
+msgstr "Afwijking Lichtdoorlating"
 
 msgid "Opacity"
 msgstr "Dekking"
@@ -4815,8 +4976,35 @@ msgstr "Dekking"
 msgid "Blur"
 msgstr "Vervagen"
 
+msgid "Caster Mask"
+msgstr "Werpersmasker"
+
+msgid "Contact Shadows"
+msgstr "Contactschaduwen"
+
 msgid "Sky Mode"
 msgstr "Luchtmodus"
+
+msgid "Directional Shadow"
+msgstr "Gerichte Schaduw"
+
+msgid "Split 1"
+msgstr "Splitsing 1"
+
+msgid "Split 2"
+msgstr "Splitsing 2"
+
+msgid "Split 3"
+msgstr "Splitsing 3"
+
+msgid "Blend Splits"
+msgstr "Splitsingen Mengen"
+
+msgid "Fade Start"
+msgstr "Start Vervaging"
+
+msgid "Pancake Size"
+msgstr "Pancake-grootte"
 
 msgid "Omni"
 msgstr "Omni"
@@ -4826,6 +5014,9 @@ msgstr "Schaduwmodus"
 
 msgid "Spot"
 msgstr "Schijnwerper"
+
+msgid "Angle Attenuation"
+msgstr "Hoekafzwakking"
 
 msgid "Area"
 msgstr "Gebied"
@@ -4847,6 +5038,12 @@ msgstr "Kwaliteit"
 
 msgid "Bounces"
 msgstr "Weerkaatsingen"
+
+msgid "Bounce Indirect Energy"
+msgstr "Weerkaatsing Indirecte Energie"
+
+msgid "Shadowmask Mode"
+msgstr "Schaduwmaskermodus"
 
 msgid "Texel Scale"
 msgstr "Texelschaal"
@@ -4959,6 +5156,12 @@ msgstr "Max Lengte"
 msgid "Geometry"
 msgstr "Geometrie"
 
+msgid "Material Override"
+msgstr "Materiaaloverschrijving"
+
+msgid "Material Overlay"
+msgstr "Materiaalbovenlaag"
+
 msgid "Transparency"
 msgstr "Transparantie"
 
@@ -5040,8 +5243,98 @@ msgstr "Uitlijning Icoon"
 msgid "Vertical Icon Alignment"
 msgstr "Verticale Uitlijning Icoon"
 
+msgid "Normal Mirrored"
+msgstr "Normaal Gespiegeld"
+
+msgid "Pressed Mirrored"
+msgstr "Ingedrukt Gespiegeld"
+
+msgid "Disabled Mirrored"
+msgstr "Inactief Gespiegeld"
+
+msgid "Font Focus Color"
+msgstr "Letterkleur Focus"
+
+msgid "Font Pressed Color"
+msgstr "Letterkleur Ingedrukt"
+
+msgid "Font Disabled Color"
+msgstr "Letterkleur Inactief"
+
+msgid "Font Outline Color"
+msgstr "Kleur Letteromlijning"
+
+msgid "Icon Normal Color"
+msgstr "Icoonkleur Normaal"
+
+msgid "Icon Focus Color"
+msgstr "Icoonkleur Focus"
+
+msgid "Icon Pressed Color"
+msgstr "Icoonkleur Ingedrukt"
+
+msgid "Icon Disabled Color"
+msgstr "Icoonkleur Inactief"
+
+msgid "H Separation"
+msgstr "H Tussenruimte"
+
+msgid "Icon Max Width"
+msgstr "Icoon Max Breedte"
+
+msgid "Align to Largest Stylebox"
+msgstr "Uitlijnen met Grootste Stylebox"
+
 msgid "Use Top Left"
 msgstr "Linksboven Gebruiken"
+
+msgid "Check V Offset"
+msgstr "Selectievakje V Verschuiving"
+
+msgid "Unchecked"
+msgstr "Niet Aangevinkt"
+
+msgid "Radio Checked"
+msgstr "Radio Aangevinkt"
+
+msgid "Radio Unchecked"
+msgstr "Radio Niet Aangevinkt"
+
+msgid "Checked Disabled"
+msgstr "Aangevinkt Inactief"
+
+msgid "Unchecked Disabled"
+msgstr "Niet Aangevinkt Inactief"
+
+msgid "Radio Checked Disabled"
+msgstr "Radio Aangevinkt Inactief"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radio Niet Aangetikt Inactief"
+
+msgid "Checkbox Checked Color"
+msgstr "Kleur Selectievakje Aangevinkt"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Kleur Selectievakje Niet Aangevinkt"
+
+msgid "Checked Mirrored"
+msgstr "Aangevinkt Gespiegeld"
+
+msgid "Unchecked Mirrored"
+msgstr "Niet Aangevinkt Gespiegeld"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Aangevinkt Inactief Gespiegeld"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Niet Aangevinkt Uitgeschakeld Gespiegeld"
+
+msgid "Button Checked Color"
+msgstr "Kleur Knop Aangevinkt"
+
+msgid "Button Unchecked Color"
+msgstr "Kleur Knop Niet Aangevinkt"
 
 msgid "Symbol Lookup on Click"
 msgstr "Symbool Opzoeken bij Klik"
@@ -5073,6 +5366,66 @@ msgstr "Automatische Voorvoegsels"
 msgid "Auto Brace Completion"
 msgstr "Automatisch Haakjes Sluiten"
 
+msgid "Code Folding Color"
+msgstr "Kleur Code Opvouwen"
+
+msgid "Folded Code Region Color"
+msgstr "Kleur Opgevouwen Coderegio"
+
+msgid "Can Fold"
+msgstr "Opvouwbaar"
+
+msgid "Can Fold Code Region"
+msgstr "Opvouwbare Coderegio"
+
+msgid "Folded Code Region"
+msgstr "Opgevouwen Coderegio"
+
+msgid "Folded EOL Icon"
+msgstr "Ingeklapt EOL-icoon"
+
+msgid "Completion Color BG"
+msgstr "Kleur Aanvulling AG"
+
+msgid "Breakpoint Color"
+msgstr "Kleur Breekpunt"
+
+msgid "Breakpoint"
+msgstr "Breekpunt"
+
+msgid "Bookmark Color"
+msgstr "Kleur Bladwijzer"
+
+msgid "Bookmark"
+msgstr "Bladwijzer"
+
+msgid "Executing Line Color"
+msgstr "Kleur Uitvoerende Regel"
+
+msgid "Executing Line"
+msgstr "Uitvoerende Regel"
+
+msgid "Line Number Color"
+msgstr "Kleur Regelnummer"
+
+msgid "Completion Max Width"
+msgstr "Aanvulling Max Breedte"
+
+msgid "Completion Scroll Color"
+msgstr "Kleur Aanvulling Scroll"
+
+msgid "Completion Background Color"
+msgstr "Kleur Aanvulling Achtergrond"
+
+msgid "Completion Selected Color"
+msgstr "Kleur Aanvulling Geselecteerd"
+
+msgid "Completion Existing Color"
+msgstr "Kleur Aanvulling Bestaand"
+
+msgid "Line Length Guideline Color"
+msgstr "Kleur Richtlijn Regellengte"
+
 msgid "Edit Alpha"
 msgstr "Alfa Bewerken"
 
@@ -5102,6 +5455,9 @@ msgstr "Schuifbalken Zichtbaar"
 
 msgid "Hex Visible"
 msgstr "Hex Zichtbaar"
+
+msgid "Label Width"
+msgstr "Labelbreedte"
 
 msgid "Accessibility Region"
 msgstr "Toegankelijkheidsregio"
@@ -5136,6 +5492,9 @@ msgstr "Groeirichting"
 msgid "Pivot Offset"
 msgstr "Draaipuntverschuiving"
 
+msgid "Offset Transform"
+msgstr "Transformatie Verschuiven"
+
 msgid "Pivot"
 msgstr "Draaipunt"
 
@@ -5144,9 +5503,6 @@ msgstr "Alleen Visueel"
 
 msgid "Localize Numeral System"
 msgstr "Numeriek Systeem Lokaliseren"
-
-msgid "Focus"
-msgstr "Focus"
 
 msgid "Neighbor Left"
 msgstr "Buur Links"
@@ -5241,6 +5597,72 @@ msgstr "Lijst Recente Ingeschakeld"
 msgid "Deleting Enabled"
 msgstr "Verwijderen Ingeschakeld"
 
+msgid "Parent Folder"
+msgstr "Boven­liggende map"
+
+msgid "Forward Folder"
+msgstr "Volgende map"
+
+msgid "Back Folder"
+msgstr "Vorige map"
+
+msgid "Reload"
+msgstr "Herladen"
+
+msgid "Favorite"
+msgstr "Favoriet"
+
+msgid "Folder"
+msgstr "Map"
+
+msgid "Toggle Filename Filter"
+msgstr "Bestandsnaamfilter in-/uitschakelen"
+
+msgid "File"
+msgstr "Bestand"
+
+msgid "Create Folder"
+msgstr "Map aanmaken"
+
+msgid "Favorite Up"
+msgstr "Favoriet Omhoog"
+
+msgid "Favorite Down"
+msgstr "Favoriet Omlaag"
+
+msgid "Thumbnail Mode"
+msgstr "Miniatuurmodus"
+
+msgid "List Mode"
+msgstr "Lijstmodus"
+
+msgid "File Thumbnail"
+msgstr "Bestandsminiatuur"
+
+msgid "Folder Thumbnail"
+msgstr "Mapminiatuur"
+
+msgid "Menu Copy Path"
+msgstr "Menu Kopieerpad"
+
+msgid "Menu Delete"
+msgstr "Menu Verwijderen"
+
+msgid "Menu Refresh"
+msgstr "Menu Verversen"
+
+msgid "Menu New Folder"
+msgstr "Menu nieuwe map"
+
+msgid "Menu Show in File Manager"
+msgstr "Menu Toon in Bestandsverkenner"
+
+msgid "Folder Icon Color"
+msgstr "Kleur Mapicoon"
+
+msgid "File Icon Color"
+msgstr "Kleur Bestandsicoon"
+
 msgid "Title Alignment"
 msgstr "Titel Uitlijning"
 
@@ -5252,6 +5674,9 @@ msgstr "Titel Gedrag Tekstoverloop"
 
 msgid "Title Text Direction"
 msgstr "Titel Tekstrichting"
+
+msgid "Collapsed Font Color"
+msgstr "Ingeklapt Lettertypekleur"
 
 msgid "Allow Folding All"
 msgstr "Alles Inklappen Toestaan"
@@ -5274,6 +5699,21 @@ msgstr "Zoom Stapgrootte"
 msgid "Toolbar Menu"
 msgstr "Werkbalkmenu"
 
+msgid "Panel Focus"
+msgstr "Paneel Focus"
+
+msgid "Activity"
+msgstr "Activiteit"
+
+msgid "Menu Panel"
+msgstr "Menupaneel"
+
+msgid "Zoom In"
+msgstr "Inzoomen"
+
+msgid "Zoom Out"
+msgstr "Uitzoomen"
+
 msgid "Draggable"
 msgstr "Sleepbaar"
 
@@ -5282,6 +5722,15 @@ msgstr "Geselecteerd"
 
 msgid "Drag Margin"
 msgstr "Sleepmarge"
+
+msgid "Panel Selected"
+msgstr "Paneel Geselecteerd"
+
+msgid "Titlebar"
+msgstr "Titelbalk"
+
+msgid "Titlebar Selected"
+msgstr "Titelbalk Geselecteerd"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ongeldig Verbindingstype Negeren"
@@ -5325,6 +5774,18 @@ msgstr "Pictogrammen Modus"
 msgid "Fixed Icon Size"
 msgstr "Vaste Icoongrootte"
 
+msgid "Font Selected Color"
+msgstr "Letterkleur Geselecteerd"
+
+msgid "Scroll Hint"
+msgstr "Scrollhint"
+
+msgid "Cursor Unfocused"
+msgstr "Cursor Niet Gefocust"
+
+msgid "Cursor"
+msgstr "Cursor"
+
 msgid "Label Settings"
 msgstr "Labelinstellingen"
 
@@ -5345,6 +5806,15 @@ msgstr "Gedrag Zichtbare Tekens"
 
 msgid "Visible Ratio"
 msgstr "Zichtbaar Verhouding"
+
+msgid "Paragraph Spacing"
+msgstr "Paragraafruimte"
+
+msgid "Font Shadow Color"
+msgstr "Kleur Letterschaduw"
+
+msgid "Shadow Outline Size"
+msgstr "Schaduw Omlijningsgrootte"
 
 msgid "Placeholder Text"
 msgstr "Plaatshoudertekst"
@@ -5415,11 +5885,50 @@ msgstr "Uitbreidingsmodus Icoon"
 msgid "Right Icon Scale"
 msgstr "Schaal Rechtericoon"
 
+msgid "Font Placeholder Color"
+msgstr "Letterkleur Plaatshouder"
+
+msgid "Caret Width"
+msgstr "Cursorbreedte"
+
+msgid "Caret Color"
+msgstr "Cursorkleur"
+
+msgid "Minimum Character Width"
+msgstr "Minimale Tekenbreedte"
+
+msgid "Selection Color"
+msgstr "Kleur Selectie"
+
+msgid "Clear"
+msgstr "Wissen"
+
+msgid "Clear Button Color"
+msgstr "Kleur Wisknop"
+
+msgid "Clear Button Color Pressed"
+msgstr "Kleur Wisknop Ingedrukt"
+
 msgid "Underline"
 msgstr "Onderstrepen"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Tussenruimte Onderstreping"
+
+msgid "Margin Left"
+msgstr "Marge Links"
+
+msgid "Margin Top"
+msgstr "Marge Boven"
+
+msgid "Margin Right"
+msgstr "Marge Rechts"
+
+msgid "Margin Bottom"
+msgstr "Marge Onder"
 
 msgid "Start Index"
 msgstr "Startindex"
@@ -5433,17 +5942,38 @@ msgstr "Aan Langste Item Aanpassen"
 msgid "Search Bar"
 msgstr "Zoekbalk"
 
+msgid "Arrow"
+msgstr "Pijl"
+
+msgid "Arrow Margin"
+msgstr "Marge Pijl"
+
+msgid "Modulate Arrow"
+msgstr "Pijl Moduleren"
+
 msgid "Submenu Popup Delay"
 msgstr "Vertraging Popup Submenu"
 
 msgid "System Menu ID"
 msgstr "Systeemmenu-ID"
 
+msgid "Gutter Compact"
+msgstr "Goot Compact"
+
+msgid "Search"
+msgstr "Zoeken"
+
+msgid "Submenu"
+msgstr "Submenu"
+
 msgid "Fill Mode"
 msgstr "Vulmodus"
 
 msgid "Show Percentage"
 msgstr "Percentage Tonen"
+
+msgid "Background"
+msgstr "Achtergrond"
 
 msgid "Min Value"
 msgstr "Min Waarde"
@@ -5502,8 +6032,38 @@ msgstr "Voortgangsbalk Vertraging"
 msgid "Text Selection"
 msgstr "Tekstselectie"
 
+msgid "Shadow Offset X"
+msgstr "Schaduwverschuiving X"
+
+msgid "Shadow Offset Y"
+msgstr "Schaduwverschuiving Y"
+
+msgid "Bold Italics Font"
+msgstr "Vet Cursief Lettertype"
+
+msgid "Strikethrough Alpha"
+msgstr "Doorstrepen Alpha"
+
+msgid "Table Odd Row BG"
+msgstr "Tabel Oneven Rij AG"
+
+msgid "Table Even Row BG"
+msgstr "Tabel Even Rij AG"
+
+msgid "Table Border"
+msgstr "Tabelrand"
+
 msgid "Custom Step"
 msgstr "Aangepaste Stapgrootte"
+
+msgid "Increment Pressed"
+msgstr "Verhogen Ingedrukt"
+
+msgid "Decrement"
+msgstr "Verlagen"
+
+msgid "Decrement Pressed"
+msgstr "Verlagen Ingedrukt"
 
 msgid "Follow Focus"
 msgstr "Focus Volgen"
@@ -5535,14 +6095,56 @@ msgstr "Verticale Scrollmodus"
 msgid "Scroll Horizontal by Default"
 msgstr "Standaard Horizontaal Scrollen"
 
-msgid "Scroll Hint"
-msgstr "Scrollhint"
+msgid "Scroll Hint Vertical"
+msgstr "Scrollhint Verticaal"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Scrollhint Horizontaal"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Kleur Scrollhint Verticaal"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Kleur Scrollhint Horizontaal"
 
 msgid "Scrollable"
 msgstr "Scrollbaar"
 
+msgid "Slider"
+msgstr "Schuifbalk"
+
 msgid "Format"
 msgstr "Formaat"
+
+msgid "Buttons Width"
+msgstr "Breedte Knoppen"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Min Knopbreedte Instellen op basis van Iconen"
+
+msgid "Up"
+msgstr "Omhoog"
+
+msgid "Up Pressed"
+msgstr "Omhoog Ingedrukt"
+
+msgid "Down"
+msgstr "Omlaag"
+
+msgid "Down Pressed"
+msgstr "Omlaag Ingedrukt"
+
+msgid "Up Background"
+msgstr "Omhoog Achtergrond"
+
+msgid "Up Background Pressed"
+msgstr "Omhoog Achtergrond Ingedrukt"
+
+msgid "Down Background"
+msgstr "Omlaag Achtergrond"
+
+msgid "Down Background Pressed"
+msgstr "Omlaag Achtergrond Ingedrukt"
 
 msgid "Collapsed"
 msgstr "Ingeklapt"
@@ -5561,6 +6163,9 @@ msgstr "Marge Einde"
 
 msgid "Highlight in Editor"
 msgstr "Markeren in Editor"
+
+msgid "Autohide"
+msgstr "Automatisch Verbergen"
 
 msgid "Current Tab"
 msgstr "Huidige Tabblad"
@@ -5586,8 +6191,14 @@ msgstr "Deselecteren Ingeschakeld"
 msgid "Tabs"
 msgstr "Tabbladen"
 
+msgid "Close"
+msgstr "Sluiten"
+
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Verborgen Tabs voor Min Grootte Gebruiken"
+
+msgid "Menu"
+msgstr "Menu"
 
 msgid "Past End of File"
 msgstr "Voorbij Einde Bestand"
@@ -5607,15 +6218,38 @@ msgstr "Visuele Witruimte"
 msgid "Spaces"
 msgstr "Spaties"
 
+msgid "Search Result Color"
+msgstr "Kleur Zoekresultaat"
+
+msgid "Search Result Border Color"
+msgstr "Kleur Zoekresultaat Rand"
+
+msgid "Caret Background Color"
+msgstr "Kleur Cursorachtergrond"
+
+msgid "Tab"
+msgstr "Tabblad"
+
+msgid "Space"
+msgstr "Spatie"
+
+msgid "Font Readonly Color"
+msgstr "Letterkleur Alleen-lezen"
+
+msgid "Wrap Offset"
+msgstr "Regelafbreking Marge"
+
+msgid "Current Line Color"
+msgstr "Kleur Huidige Regel"
+
+msgid "Word Highlighted Color"
+msgstr "Kleur Gemarkeerd Woord"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Tekstbewerking Inactief Detectie (sec)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Tekstbewerking Ongedaan Maken Max Stackgrootte"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Normaal"
 
 msgid "Click Mask"
 msgstr "Klikmasker"
@@ -5644,6 +6278,15 @@ msgstr "Kolomtitels Zichtbaar"
 msgid "Hide Root"
 msgstr "Wortel verbergen"
 
+msgid "Dragging Unfold Wait Msec"
+msgstr "Slepen Uitvouwen Wacht Msec"
+
+msgid "Title Button Normal"
+msgstr "Titelknop Normaal"
+
+msgid "Title Button Pressed"
+msgstr "Titelknop Ingedrukt"
+
 msgid "Paused"
 msgstr "Gepauseerd"
 
@@ -5652,6 +6295,12 @@ msgstr "Joystickmodus"
 
 msgid "Joystick Size"
 msgstr "Joystickgrootte"
+
+msgid "Normal Joystick"
+msgstr "Normale Joystick"
+
+msgid "Pressed Joystick"
+msgstr "Ingedrukte Joystick"
 
 msgid "Show Behind Parent"
 msgstr "Achter Ouder Weergeven"
@@ -5716,17 +6365,38 @@ msgstr "Anti-alias"
 msgid "Snap"
 msgstr "Uitlijnen"
 
+msgid "Snap 2D Transforms to Pixel"
+msgstr "2D Transformaties Uitlijnen met Pixel"
+
+msgid "Snap 2D Vertices to Pixel"
+msgstr "2D Vertices Uitlijnen met Pixel"
+
 msgid "Lights and Shadows"
 msgstr "Lichten en Schaduwen"
+
+msgid "Positional Shadow"
+msgstr "Positieschaduw"
+
+msgid "Atlas Size"
+msgstr "Atlasgrootte"
+
+msgid "Atlas Quadrant 0 Subdiv"
+msgstr "Atlas Kwadrant 0 Onderverdeling"
+
+msgid "Atlas Quadrant 1 Subdiv"
+msgstr "Atlas Kwadrant 1 Onderverdeling"
+
+msgid "Atlas Quadrant 2 Subdiv"
+msgstr "Atlas Kwadrant 2 Onderverdeling"
+
+msgid "Atlas Quadrant 3 Subdiv"
+msgstr "Atlas Kwadrant 3 Onderverdeling"
 
 msgid "SDF"
 msgstr "SDF"
 
 msgid "Default Environment"
 msgstr "Standaardomgeving"
-
-msgid "Menu"
-msgstr "Menu"
 
 msgid "Wait Time"
 msgstr "Wachttijd"
@@ -5745,6 +6415,9 @@ msgstr "XR gebruiken"
 
 msgid "Own World 3D"
 msgstr "Eigen Wereld 3D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Use Debanding"
 msgstr "Debanding Gebruiken"
@@ -5799,6 +6472,30 @@ msgstr "HDR-uitvoer"
 
 msgid "Requested"
 msgstr "Aangevraagd"
+
+msgid "Title Font"
+msgstr "Lettertype Titel"
+
+msgid "Title Font Size"
+msgstr "Lettergrootte Titel"
+
+msgid "Title Height"
+msgstr "Hoogte Titel"
+
+msgid "Title Outline Modulate"
+msgstr "Omlijningsmodulatie Titel"
+
+msgid "Title Outline Size"
+msgstr "Omlijningsgrootte Titel"
+
+msgid "Close Pressed"
+msgstr "Sluiten Ingedrukt"
+
+msgid "Close H Offset"
+msgstr "Sluiten H Verschuiving"
+
+msgid "Close V Offset"
+msgstr "Sluiten V Verschuiving"
 
 msgid "Swap Cancel OK"
 msgstr "Annuleren OK Omdraaien"
@@ -5893,6 +6590,9 @@ msgstr "Lichtblootstelling"
 msgid "Sensitivity"
 msgstr "Gevoeligheid"
 
+msgid "Multiplier"
+msgstr "Vermenigvuldiger"
+
 msgid "Auto Exposure"
 msgstr "Automatische Belichting"
 
@@ -5926,11 +6626,14 @@ msgstr "Max Gevoeligheid"
 msgid "Focus Distance"
 msgstr "Focusafstand"
 
+msgid "Focal Length"
+msgstr "Brandpuntsafstand"
+
 msgid "Aperture"
 msgstr "Diafragma"
 
 msgid "Shutter Speed"
-msgstr "Ontsluitingstijd"
+msgstr "Sluitertijd"
 
 msgid "Which Feed"
 msgstr "Welke Feed"
@@ -5961,9 +6664,6 @@ msgstr "Min Domein"
 
 msgid "Max Domain"
 msgstr "Max Domein"
-
-msgid "Background"
-msgstr "Achtergrond"
 
 msgid "Canvas Max Layer"
 msgstr "Max Canvaslaag"
@@ -6070,9 +6770,6 @@ msgstr "Functionaliteiten"
 msgid "Extra Spacing"
 msgstr "Extra Tussenruimte"
 
-msgid "Space"
-msgstr "Spatie"
-
 msgid "Palette"
 msgstr "Palet"
 
@@ -6109,8 +6806,17 @@ msgstr "Gestapelde Omlijningen"
 msgid "Stacked Shadows"
 msgstr "Gestapelde Schaduwen"
 
+msgid "Next Pass"
+msgstr "Volgende Doorgang"
+
 msgid "Shader"
 msgstr "Shader"
+
+msgid "Depth Draw Mode"
+msgstr "Dieptetekenmodus"
+
+msgid "Depth Test"
+msgstr "Dieptetest"
 
 msgid "Diffuse Mode"
 msgstr "Diffusiemodus"
@@ -6123,6 +6829,9 @@ msgstr "Omgevingslicht Uitschakelen"
 
 msgid "Disable Fog"
 msgstr "Mist Uitschakelen"
+
+msgid "Disable Specular Occlusion"
+msgstr "Speculaire Bedekking Uitschakelen"
 
 msgid "Vertex Color"
 msgstr "Vertexkleur"
@@ -6142,8 +6851,29 @@ msgstr "Texture MSDF"
 msgid "ORM"
 msgstr "ORM"
 
+msgid "Metallic"
+msgstr "Metaal"
+
+msgid "Texture Channel"
+msgstr "Texturekanaal"
+
 msgid "On UV2"
 msgstr "Op UV2"
+
+msgid "Bent Normal Map"
+msgstr "Verbogen Normaalkaart"
+
+msgid "Rim"
+msgstr "Omranding"
+
+msgid "Clearcoat"
+msgstr "Blanke Lak"
+
+msgid "Flowmap"
+msgstr "Stromingskaart"
+
+msgid "Ambient Occlusion"
+msgstr "Omgevingsverhulling"
 
 msgid "Deep Parallax"
 msgstr "Diepe Parallax"
@@ -6153,6 +6883,27 @@ msgstr "Min Lagen"
 
 msgid "Max Layers"
 msgstr "Max Lagen"
+
+msgid "Flip Tangent"
+msgstr "Tangens Omkeren"
+
+msgid "Flip Binormal"
+msgstr "Binormaal Omkeren"
+
+msgid "Flip Texture"
+msgstr "Texture Spiegelen"
+
+msgid "Subsurf Scatter"
+msgstr "Volumeverstrooiing"
+
+msgid "Back Lighting"
+msgstr "Backlighting"
+
+msgid "Backlight"
+msgstr "Backlight"
+
+msgid "Refraction"
+msgstr "Lichtbreking"
 
 msgid "UV Layer"
 msgstr "UV-laag"
@@ -6166,6 +6917,12 @@ msgstr "UV2"
 msgid "Shadows"
 msgstr "Schaduwen"
 
+msgid "Disable Receive Shadows"
+msgstr "Schaduwen Ontvangen Uitschakelen"
+
+msgid "Shadow to Opacity"
+msgstr "Schaduw naar Dekking"
+
 msgid "Particles Anim"
 msgstr "Partikelsanim"
 
@@ -6175,6 +6932,9 @@ msgstr "H Frames"
 msgid "V Frames"
 msgstr "V Frames"
 
+msgid "Grow"
+msgstr "Groeien"
+
 msgid "Use Point Size"
 msgstr "Puntgrootte Gebruiken"
 
@@ -6183,6 +6943,24 @@ msgstr "Puntgrootte"
 
 msgid "Use Particle Trails"
 msgstr "Partikelsporen gebruiken"
+
+msgid "Use Z Clip Scale"
+msgstr "Z-knipschalen Gebruiken"
+
+msgid "Z Clip Scale"
+msgstr "Z-knipschaal"
+
+msgid "Use FOV Override"
+msgstr "FOV-overschrijving Gebruiken"
+
+msgid "FOV Override"
+msgstr "FOV-overschrijving"
+
+msgid "Proximity Fade"
+msgstr "Nabijheidsvervaging"
+
+msgid "Pixel Range"
+msgstr "Pixelbereik"
 
 msgid "Compare"
 msgstr "Vergelijken"
@@ -6217,6 +6995,9 @@ msgstr "Aantal Instanties"
 msgid "Visible Instance Count"
 msgstr "Aantal Zichtbare Instanties"
 
+msgid "Cell Height"
+msgstr "Celhoogte"
+
 msgid "Max Climb"
 msgstr "Max Klimmen"
 
@@ -6235,11 +7016,20 @@ msgstr "Details"
 msgid "Low Hanging Obstacles"
 msgstr "Laaghangende Obstakels"
 
+msgid "Preserve Color"
+msgstr "Kleur Behouden"
+
 msgid "Spawn"
 msgstr "Spawn"
 
+msgid "Emission Shape Scale"
+msgstr "Schaal Emissievorm"
+
 msgid "Emission Point Texture"
 msgstr "Texture Emissiepunt"
+
+msgid "Emission Normal Texture"
+msgstr "Texture Emissienormaal"
 
 msgid "Emission Color Texture"
 msgstr "Texture Emissiekleur"
@@ -6258,6 +7048,18 @@ msgstr "Geanimeerde Snelheid"
 
 msgid "Velocity Limit"
 msgstr "Snelheidslimiet"
+
+msgid "Rotation Velocity 3D"
+msgstr "Rotatiesnelheid 3D"
+
+msgid "Rotation Velocity 3D Min"
+msgstr "Rotatiesnelheid 3D Min"
+
+msgid "Rotation Velocity 3D Max"
+msgstr "Rotatiesnelheid 3D Max"
+
+msgid "Rotation Velocity 3D Curve"
+msgstr "Rotatiesnelheid 3D Curve"
 
 msgid "Accelerations"
 msgstr "Versnellingen"
@@ -6280,6 +7082,9 @@ msgstr "Kleurcurves"
 msgid "Alpha Curve"
 msgstr "Alfacurve"
 
+msgid "Emission Curve"
+msgstr "Emissiecurve"
+
 msgid "Turbulence"
 msgstr "Turbulentie"
 
@@ -6292,8 +7097,29 @@ msgstr "Ruisschaal"
 msgid "Noise Speed"
 msgstr "Ruissnelheid"
 
+msgid "Noise Speed Random"
+msgstr "Ruissnelheid Willekeurig"
+
+msgid "Influence over Life"
+msgstr "Invloed over Levensduur"
+
+msgid "Amount at End"
+msgstr "Aantal bij Einde"
+
+msgid "Amount at Collision"
+msgstr "Aantal bij Botsing"
+
+msgid "Amount at Start"
+msgstr "Aantal bij Start"
+
+msgid "Keep Velocity"
+msgstr "Snelheid Behouden"
+
 msgid "Absorbent"
 msgstr "Absorberend"
+
+msgid "Size Override"
+msgstr "Grootte Overschrijven"
 
 msgid "Keep Compressed Buffer"
 msgstr "Gecomprimeerde Buffer Houden"
@@ -6370,477 +7196,6 @@ msgstr "Standaardlettertype"
 msgid "Default Font Size"
 msgstr "Standaardlettertype Grootte"
 
-msgid "File"
-msgstr "Bestand"
-
-msgid "Font Pressed Color"
-msgstr "Letterkleur Ingedrukt"
-
-msgid "Font Focus Color"
-msgstr "Letterkleur Focus"
-
-msgid "Font Disabled Color"
-msgstr "Letterkleur Inactief"
-
-msgid "Font Outline Color"
-msgstr "Kleur Letteromlijning"
-
-msgid "Icon Normal Color"
-msgstr "Icoonkleur Normaal"
-
-msgid "Icon Pressed Color"
-msgstr "Icoonkleur Ingedrukt"
-
-msgid "Icon Focus Color"
-msgstr "Icoonkleur Focus"
-
-msgid "Icon Disabled Color"
-msgstr "Icoonkleur Inactief"
-
-msgid "H Separation"
-msgstr "H Tussenruimte"
-
-msgid "Icon Max Width"
-msgstr "Icoon Max Breedte"
-
-msgid "Align to Largest Stylebox"
-msgstr "Uitlijnen met Grootste Stylebox"
-
-msgid "Underline Spacing"
-msgstr "Tussenruimte Onderstreping"
-
-msgid "Normal Mirrored"
-msgstr "Normaal Gespiegeld"
-
-msgid "Pressed Mirrored"
-msgstr "Ingedrukt Gespiegeld"
-
-msgid "Disabled Mirrored"
-msgstr "Inactief Gespiegeld"
-
-msgid "Arrow"
-msgstr "Pijl"
-
-msgid "Arrow Margin"
-msgstr "Marge Pijl"
-
-msgid "Modulate Arrow"
-msgstr "Pijl Moduleren"
-
-msgid "Checked Disabled"
-msgstr "Aangevinkt Inactief"
-
-msgid "Unchecked"
-msgstr "Niet Aangevinkt"
-
-msgid "Unchecked Disabled"
-msgstr "Niet Aangevinkt Inactief"
-
-msgid "Radio Checked"
-msgstr "Radio Aangevinkt"
-
-msgid "Radio Checked Disabled"
-msgstr "Radio Aangevinkt Inactief"
-
-msgid "Radio Unchecked"
-msgstr "Radio Niet Aangevinkt"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Radio Niet Aangetikt Inactief"
-
-msgid "Check V Offset"
-msgstr "Selectievakje V Verschuiving"
-
-msgid "Checkbox Checked Color"
-msgstr "Kleur Selectievakje Aangevinkt"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Kleur Selectievakje Niet Aangevinkt"
-
-msgid "Checked Mirrored"
-msgstr "Aangevinkt Gespiegeld"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Aangevinkt Inactief Gespiegeld"
-
-msgid "Unchecked Mirrored"
-msgstr "Niet Aangevinkt Gespiegeld"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Niet Aangevinkt Uitgeschakeld Gespiegeld"
-
-msgid "Button Checked Color"
-msgstr "Kleur Knop Aangevinkt"
-
-msgid "Button Unchecked Color"
-msgstr "Kleur Knop Niet Aangevinkt"
-
-msgid "Font Shadow Color"
-msgstr "Kleur Letterschaduw"
-
-msgid "Shadow Offset X"
-msgstr "Schaduwverschuiving X"
-
-msgid "Shadow Offset Y"
-msgstr "Schaduwverschuiving Y"
-
-msgid "Shadow Outline Size"
-msgstr "Schaduw Omlijningsgrootte"
-
-msgid "Font Selected Color"
-msgstr "Letterkleur Geselecteerd"
-
-msgid "Font Uneditable Color"
-msgstr "Letterkleur Niet Bewerkbaar"
-
-msgid "Font Placeholder Color"
-msgstr "Letterkleur Plaatshouder"
-
-msgid "Caret Color"
-msgstr "Cursorkleur"
-
-msgid "Selection Color"
-msgstr "Kleur Selectie"
-
-msgid "Clear Button Color"
-msgstr "Kleur Wisknop"
-
-msgid "Clear Button Color Pressed"
-msgstr "Kleur Wisknop Ingedrukt"
-
-msgid "Minimum Character Width"
-msgstr "Minimale Tekenbreedte"
-
-msgid "Caret Width"
-msgstr "Cursorbreedte"
-
-msgid "Clear"
-msgstr "Wissen"
-
-msgid "Tab"
-msgstr "Tabblad"
-
-msgid "Font Readonly Color"
-msgstr "Letterkleur Alleen-lezen"
-
-msgid "Current Line Color"
-msgstr "Kleur Huidige Regel"
-
-msgid "Caret Background Color"
-msgstr "Kleur Cursorachtergrond"
-
-msgid "Word Highlighted Color"
-msgstr "Kleur Gemarkeerd Woord"
-
-msgid "Search Result Color"
-msgstr "Kleur Zoekresultaat"
-
-msgid "Search Result Border Color"
-msgstr "Kleur Zoekresultaat Rand"
-
-msgid "Wrap Offset"
-msgstr "Regelafbreking Marge"
-
-msgid "Breakpoint"
-msgstr "Breekpunt"
-
-msgid "Bookmark"
-msgstr "Bladwijzer"
-
-msgid "Executing Line"
-msgstr "Uitvoerende Regel"
-
-msgid "Can Fold"
-msgstr "Opvouwbaar"
-
-msgid "Can Fold Code Region"
-msgstr "Opvouwbare Coderegio"
-
-msgid "Folded Code Region"
-msgstr "Opgevouwen Coderegio"
-
-msgid "Folded EOL Icon"
-msgstr "Ingeklapt EOL-icoon"
-
-msgid "Completion Color BG"
-msgstr "Kleur Aanvulling AG"
-
-msgid "Completion Background Color"
-msgstr "Kleur Aanvulling Achtergrond"
-
-msgid "Completion Selected Color"
-msgstr "Kleur Aanvulling Geselecteerd"
-
-msgid "Completion Existing Color"
-msgstr "Kleur Aanvulling Bestaand"
-
-msgid "Completion Scroll Color"
-msgstr "Kleur Aanvulling Scroll"
-
-msgid "Bookmark Color"
-msgstr "Kleur Bladwijzer"
-
-msgid "Breakpoint Color"
-msgstr "Kleur Breekpunt"
-
-msgid "Executing Line Color"
-msgstr "Kleur Uitvoerende Regel"
-
-msgid "Code Folding Color"
-msgstr "Kleur Code Opvouwen"
-
-msgid "Folded Code Region Color"
-msgstr "Kleur Opgevouwen Coderegio"
-
-msgid "Line Number Color"
-msgstr "Kleur Regelnummer"
-
-msgid "Line Length Guideline Color"
-msgstr "Kleur Richtlijn Regellengte"
-
-msgid "Completion Max Width"
-msgstr "Aanvulling Max Breedte"
-
-msgid "Increment Pressed"
-msgstr "Verhogen Ingedrukt"
-
-msgid "Decrement"
-msgstr "Verlagen"
-
-msgid "Decrement Pressed"
-msgstr "Verlagen Ingedrukt"
-
-msgid "Slider"
-msgstr "Schuifbalk"
-
-msgid "Updown"
-msgstr "Omhoog-omlaag"
-
-msgid "Up"
-msgstr "Omhoog"
-
-msgid "Up Pressed"
-msgstr "Omhoog Ingedrukt"
-
-msgid "Down"
-msgstr "Omlaag"
-
-msgid "Down Pressed"
-msgstr "Omlaag Ingedrukt"
-
-msgid "Up Background"
-msgstr "Omhoog Achtergrond"
-
-msgid "Up Background Pressed"
-msgstr "Omhoog Achtergrond Ingedrukt"
-
-msgid "Down Background"
-msgstr "Omlaag Achtergrond"
-
-msgid "Down Background Pressed"
-msgstr "Omlaag Achtergrond Ingedrukt"
-
-msgid "Buttons Width"
-msgstr "Breedte Knoppen"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Min Knopbreedte Instellen op basis van Iconen"
-
-msgid "Scroll Hint Vertical"
-msgstr "Scrollhint Verticaal"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Scrollhint Horizontaal"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Kleur Scrollhint Verticaal"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Kleur Scrollhint Horizontaal"
-
-msgid "Normal Joystick"
-msgstr "Normale Joystick"
-
-msgid "Pressed Joystick"
-msgstr "Ingedrukte Joystick"
-
-msgid "Title Font"
-msgstr "Lettertype Titel"
-
-msgid "Title Font Size"
-msgstr "Lettergrootte Titel"
-
-msgid "Title Outline Modulate"
-msgstr "Omlijningsmodulatie Titel"
-
-msgid "Title Outline Size"
-msgstr "Omlijningsgrootte Titel"
-
-msgid "Title Height"
-msgstr "Hoogte Titel"
-
-msgid "Close"
-msgstr "Sluiten"
-
-msgid "Close Pressed"
-msgstr "Sluiten Ingedrukt"
-
-msgid "Close H Offset"
-msgstr "Sluiten H Verschuiving"
-
-msgid "Close V Offset"
-msgstr "Sluiten V Verschuiving"
-
-msgid "Save"
-msgstr "Opslaan"
-
-msgid "Parent Folder"
-msgstr "Boven­liggende map"
-
-msgid "Back Folder"
-msgstr "Vorige map"
-
-msgid "Forward Folder"
-msgstr "Volgende map"
-
-msgid "Reload"
-msgstr "Herladen"
-
-msgid "Favorite"
-msgstr "Favoriet"
-
-msgid "Toggle Filename Filter"
-msgstr "Bestandsnaamfilter in-/uitschakelen"
-
-msgid "Folder"
-msgstr "Map"
-
-msgid "Thumbnail Mode"
-msgstr "Miniatuurmodus"
-
-msgid "List Mode"
-msgstr "Lijstmodus"
-
-msgid "Create Folder"
-msgstr "Map aanmaken"
-
-msgid "Favorite Up"
-msgstr "Favoriet Omhoog"
-
-msgid "Favorite Down"
-msgstr "Favoriet Omlaag"
-
-msgid "File Thumbnail"
-msgstr "Bestandsminiatuur"
-
-msgid "Folder Thumbnail"
-msgstr "Mapminiatuur"
-
-msgid "Menu Copy Path"
-msgstr "Menu Kopieerpad"
-
-msgid "Menu Delete"
-msgstr "Menu Verwijderen"
-
-msgid "Menu New Folder"
-msgstr "Menu nieuwe map"
-
-msgid "Menu Refresh"
-msgstr "Menu Verversen"
-
-msgid "Menu Show in File Manager"
-msgstr "Menu Toon in Bestandsverkenner"
-
-msgid "Folder Icon Color"
-msgstr "Kleur Mapicoon"
-
-msgid "File Icon Color"
-msgstr "Kleur Bestandsicoon"
-
-msgid "Submenu"
-msgstr "Submenu"
-
-msgid "Search"
-msgstr "Zoeken"
-
-msgid "Gutter Compact"
-msgstr "Goot Compact"
-
-msgid "Panel Selected"
-msgstr "Paneel Geselecteerd"
-
-msgid "Panel Focus"
-msgstr "Paneel Focus"
-
-msgid "Titlebar"
-msgstr "Titelbalk"
-
-msgid "Titlebar Selected"
-msgstr "Titelbalk Geselecteerd"
-
-msgid "Cursor"
-msgstr "Cursor"
-
-msgid "Cursor Unfocused"
-msgstr "Cursor Niet Gefocust"
-
-msgid "Title Button Normal"
-msgstr "Titelknop Normaal"
-
-msgid "Title Button Pressed"
-msgstr "Titelknop Ingedrukt"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Slepen Uitvouwen Wacht Msec"
-
-msgid "Label Width"
-msgstr "Labelbreedte"
-
-msgid "Bold Italics Font"
-msgstr "Vet Cursief Lettertype"
-
-msgid "Table Odd Row BG"
-msgstr "Tabel Oneven Rij AG"
-
-msgid "Table Even Row BG"
-msgstr "Tabel Even Rij AG"
-
-msgid "Table Border"
-msgstr "Tabelrand"
-
-msgid "Strikethrough Alpha"
-msgstr "Doorstrepen Alpha"
-
-msgid "Margin Left"
-msgstr "Marge Links"
-
-msgid "Margin Top"
-msgstr "Marge Boven"
-
-msgid "Margin Right"
-msgstr "Marge Rechts"
-
-msgid "Margin Bottom"
-msgstr "Marge Onder"
-
-msgid "Autohide"
-msgstr "Automatisch Verbergen"
-
-msgid "Zoom Out"
-msgstr "Uitzoomen"
-
-msgid "Zoom In"
-msgstr "Inzoomen"
-
-msgid "Menu Panel"
-msgstr "Menupaneel"
-
-msgid "Activity"
-msgstr "Activiteit"
-
-msgid "Collapsed Font Color"
-msgstr "Ingeklapt Lettertypekleur"
-
 msgid "Custom"
 msgstr "Zelfgedefinieerd"
 
@@ -6916,11 +7271,41 @@ msgstr "Compressie­methode"
 msgid "Use Physical Light Units"
 msgstr "Fysieke Lichteenheden Gebruiken"
 
+msgid "Contact Shadow"
+msgstr "Contactschaduw"
+
+msgid "Shadow Length"
+msgstr "Schaduwlengte"
+
+msgid "Surface Thickness"
+msgstr "Oppervlaktedikte"
+
 msgid "Soft Shadow Filter Quality"
 msgstr "Zachte Schaduwfilterkwaliteit"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlas 16 Bits"
+
+msgid "Shadow Atlas"
+msgstr "Schaduwatlas"
+
+msgid "Batching"
+msgstr "Batchen"
+
+msgid "Shader Cache"
+msgstr "Shadercache"
+
+msgid "Use Zstd Compression"
+msgstr "Zstd-compressie Gebruiken"
+
+msgid "Reflections"
+msgstr "Reflecties"
+
 msgid "Sky Reflections"
 msgstr "Luchtreflecties"
+
+msgid "Roughness Layers"
+msgstr "Ruwheidslagen"
 
 msgid "Reflection Atlas"
 msgstr "Reflectieatlas"
@@ -6952,8 +7337,26 @@ msgstr "Halve Grootte"
 msgid "Decals"
 msgstr "Decals"
 
+msgid "Light Projectors"
+msgstr "Lichtprojectoren"
+
 msgid "Occlusion Rays per Thread"
 msgstr "Occlusiestralen per Thread"
+
+msgid "Subsurface Scattering"
+msgstr "Volumestrooiing"
+
+msgid "Subsurface Scattering Quality"
+msgstr "Kwaliteit Volumestrooiing"
+
+msgid "Subsurface Scattering Scale"
+msgstr "Schaal Volumestrooiing"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "Diepteschaal Volumestrooiing"
+
+msgid "Buffer Size"
+msgstr "Buffergrootte"
 
 msgid "Texel Size"
 msgstr "Texelgrootte"
@@ -6961,8 +7364,17 @@ msgstr "Texelgrootte"
 msgid "Frames to Update Lights"
 msgstr "Frames om Lichten bij te Werken"
 
+msgid "Volume Size"
+msgstr "Volumegrootte"
+
+msgid "Volume Depth"
+msgstr "Volumediepte"
+
 msgid "Update Iterations per Frame"
 msgstr "Iteraties Bijwerken per Frame"
+
+msgid "Cluster Builder"
+msgstr "Clusterbouwer"
 
 msgid "Max Clustered Elements"
 msgstr "Max Geclusterde Elementen"
@@ -6987,6 +7399,9 @@ msgstr "Shadertaal"
 
 msgid "Treat Warnings as Errors"
 msgstr "Waarschuwingen als Errors Behandelen"
+
+msgid "Depth Draw"
+msgstr "Dieptetekening"
 
 msgid "Shadows Disabled"
 msgstr "Schaduwen Uitgeschakeld"

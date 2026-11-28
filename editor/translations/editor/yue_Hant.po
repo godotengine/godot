@@ -5,12 +5,13 @@
 #
 # WerewolfwolfyXD <wer.xd@qq.com>, 2026.
 # Yuming Chen <meymchen@outlook.com>, 2026.
+# rakuyou <rakuyou211@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-09-10 09:22+0000\n"
-"Last-Translator: Yuming Chen <meymchen@outlook.com>\n"
+"PO-Revision-Date: 2026-11-23 04:13+0000\n"
+"Last-Translator: rakuyou <rakuyou211@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Cantonese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/yue_Hant/>\n"
 "Language: yue_Hant\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.9.1\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -859,6 +860,12 @@ msgstr "格線 X 間距"
 msgid "Grid Y Step"
 msgstr "格線 Y 間距"
 
+msgid "Blend Point X Position"
+msgstr "設定曲線控制點喞位置"
+
+msgid "Blend Point Y Position"
+msgstr "設定曲線控制點喞位置"
+
 msgid "Max Y"
 msgstr "Y 最大值"
 
@@ -1375,6 +1382,12 @@ msgstr "唔可以從「End」轉場！"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "從「%s」到「%s」嘅轉場已經存在！"
+
+msgid "Play/Travel to %s."
+msgstr "播放／前往 %s"
+
+msgid "Open %s in editor."
+msgstr "喺編輯器開啟"
 
 msgid "Add Node and Transition"
 msgstr "加入節點及轉場"
@@ -3449,9 +3462,6 @@ msgstr "未有說明。"
 msgid "This annotation may be changed or removed in future versions."
 msgstr "呢個註釋可能喺未來版本更改或者移除。"
 
-msgid "Open in File Manager"
-msgstr "喺檔案管理員開啟"
-
 msgid "This property can only be set in the Inspector."
 msgstr "呢個屬性只可以喺屬性檢視器設定。"
 
@@ -4326,17 +4336,6 @@ msgstr ""
 "唔可以儲存屬於繼承場景嘅分支。\n"
 "要將呢個分支儲存成獨立場景，請開啟原始場景，用滑鼠右鍵按呢個分支，再揀選「將分"
 "支另存成場景」。"
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr "停用「可編輯子節點」會令呢個子場景所有後代節點嘅屬性還原為預設值。"
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"啟用「載入為佔位節點」會停用「可編輯子節點」，並令節點嘅所有屬性還原為預設值。"
 
 msgid "Make Local"
 msgstr "設為本地"
@@ -8365,9 +8364,6 @@ msgstr "錯誤：檔案系統入面搵唔到專案。"
 
 msgid "Toggle Favorite"
 msgstr "切換我的最愛"
-
-msgid "Open in file manager"
-msgstr "喺檔案管理員開啟"
 
 msgid "Last edited timestamp"
 msgstr "上次編輯時間戳記"

@@ -100,6 +100,9 @@ private:
 	LocalVector<EditorDock *> all_docks;
 	HashSet<EditorDock *> dirty_docks;
 
+	// Stored to restore the offsets that the SplitContainer recalculates when docks are hidden or shown.
+	PackedInt32Array saved_main_hsplit_offsets;
+
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
 	bool forced_focus = false;

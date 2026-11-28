@@ -11,9 +11,9 @@
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="3D Physics Tests Demo">https://store.godotengine.org/asset/godot-foundation/physics-tests-3d-demo/</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
+		<link title="Voxel Game Demo">https://store.godotengine.org/asset/godot-foundation/voxel-game-demo/</link>
 	</tutorials>
 	<members>
 		<member name="constant_angular_velocity" type="Vector3" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="Vector3(0, 0, 0)">

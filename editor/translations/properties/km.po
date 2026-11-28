@@ -454,6 +454,9 @@ msgstr "កំណត់ជំនួសប៊ូតុងកម្រិតសំ
 msgid "Disable Scroll Deadzone"
 msgstr "បិទ Deadzone Scroll"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "ការរុករក"
 
@@ -1137,6 +1140,12 @@ msgstr "Editing Integer"
 
 msgid "Deferred Drag Mode"
 msgstr "Deferred Drag Mode"
+
+msgid "Font Uneditable Color"
+msgstr "ពណ៌ពុម្ពអក្សរមិនអាចកែបាន"
+
+msgid "Font Size"
+msgstr "Font Size"
 
 msgid "Zoom"
 msgstr "Zoom"
@@ -3148,9 +3157,6 @@ msgstr "សកម្មភាពពេលឈប់"
 
 msgid "Output"
 msgstr "Output"
-
-msgid "Font Size"
-msgstr "Font Size"
 
 msgid "Always Clear Output on Play"
 msgstr "Always Clear Output on Play"
@@ -5780,9 +5786,6 @@ msgstr "Emscripten Pool Size"
 msgid "Godot Pool Size"
 msgstr "ទំហំ Pool របស់ Godot"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -6246,14 +6249,101 @@ msgstr "ប្រភេទអន្តរកាលចាប់យកស្វ័
 msgid "Icon Behavior"
 msgstr "ឥរិយាបថរូបតំណាង"
 
+msgid "Hover Mirrored"
+msgstr "Hover ឆ្លុះ"
+
+msgid "Font Focus Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលផ្តោត"
+
+msgid "Font Pressed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលចុច"
+
+msgid "Font Hover Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
+
+msgid "Font Hover Pressed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ចុច"
+
+msgid "Font Disabled Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលបិទ"
+
+msgid "Font Outline Color"
+msgstr "ពណ៌ Outline ពុម្ពអក្សរ"
+
+msgid "Icon Focus Color"
+msgstr "ពណ៌រូបតំណាងពេលផ្តោត"
+
+msgid "Icon Pressed Color"
+msgstr "ពណ៌រូបតំណាងពេលចុច"
+
+msgid "Icon Hover Color"
+msgstr "ពណ៌រូបតំណាងពេល Hover"
+
+msgid "Icon Hover Pressed Color"
+msgstr "ពណ៌រូបតំណាងពេល Hover ចុច"
+
+msgid "Icon Disabled Color"
+msgstr "ពណ៌រូបតំណាងពេលបិទ"
+
+msgid "H Separation"
+msgstr "ការបំបែក H"
+
+msgid "Checkbox Checked Color"
+msgstr "ពណ៌ Checkbox ពេលធីក"
+
+msgid "Checkbox Unchecked Color"
+msgstr "ពណ៌ Checkbox ពេលមិនធីក"
+
+msgid "Button Checked Color"
+msgstr "ពណ៌ប៊ូតុងពេលធីក"
+
+msgid "Button Unchecked Color"
+msgstr "ពណ៌ប៊ូតុងពេលមិនធីក"
+
 msgid "Code Completion"
 msgstr "ការបំពេញកូដ"
+
+msgid "Folded Code Region Color"
+msgstr "ពណ៌តំបន់កូដដែលបានបត់"
+
+msgid "Folded Code Region"
+msgstr "តំបន់កូដដែលបានបត់"
+
+msgid "Completion Color BG"
+msgstr "ពណ៌ BG បំពេញ"
+
+msgid "Executing Line"
+msgstr "បន្ទាត់កំពុងដំណើរការ"
+
+msgid "Completion Lines"
+msgstr "បន្ទាត់បំពេញ"
 
 msgid "Edit Intensity"
 msgstr "កែសម្រួលកម្រិតពន្លឺ"
 
 msgid "Customization"
 msgstr "ការប្ដូរតាមបំណង"
+
+msgid "Sample Focus"
+msgstr "Sample ផ្តោត"
+
+msgid "Menu Option"
+msgstr "ជម្រើសម៉ឺនុយ"
+
+msgid "Color Script"
+msgstr "Color Script"
+
+msgid "Color Copy"
+msgstr "ចម្លងពណ៌"
+
+msgid "Tab Selected"
+msgstr "Tab ដែលបានជ្រើស"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset Focus"
+msgstr "Preset ផ្តោត"
 
 msgid "Accessibility Region"
 msgstr "តំបន់ភាពងាយស្រួល"
@@ -6294,6 +6384,9 @@ msgstr "របៀបបកប្រែស្វ័យប្រវត្តិ"
 msgid "Type Variation"
 msgstr "ការប្រែប្រួលប្រភេទ"
 
+msgid "Buttons Separation"
+msgstr "ការបំបែកប៊ូតុង"
+
 msgid "Filename Filter"
 msgstr "តម្រងឈ្មោះឯកសារ"
 
@@ -6318,8 +6411,29 @@ msgstr "បានបើកការព្រមានសរសេរជាន់
 msgid "Deleting Enabled"
 msgstr "បានបើកការលុប"
 
+msgid "List Mode"
+msgstr "របៀបបញ្ជី"
+
+msgid "Folder Icon Color"
+msgstr "ពណ៌រូបតំណាងថត"
+
+msgid "File Icon Color"
+msgstr "ពណ៌រូបតំណាងឯកសារ"
+
+msgid "V Separation"
+msgstr "ការបំបែក V"
+
 msgid "Title Position"
 msgstr "ទីតាំងចំណងជើង"
+
+msgid "Hover Font Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Hover"
+
+msgid "Collapsed Font Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Collapsed"
+
+msgid "Folded Arrow Mirrored"
+msgstr "ព្រួញបត់ឆ្លុះ"
 
 msgid "Type Names"
 msgstr "ឈ្មោះប្រភេទ"
@@ -6333,17 +6447,74 @@ msgstr "ការតភ្ជាប់"
 msgid "Show Zoom Buttons"
 msgstr "បង្ហាញប៊ូតុង Zoom"
 
+msgid "Panel Focus"
+msgstr "Panel ផ្តោត"
+
+msgid "Connection Hover Tint Color"
+msgstr "ពណ៌ជ្រលក់ Connection Hover"
+
+msgid "Connection Hover Thickness"
+msgstr "កម្រាស់ Connection Hover"
+
+msgid "Connection Rim Color"
+msgstr "ពណ៌ Rim ការតភ្ជាប់"
+
 msgid "Scaling Menus"
 msgstr "ម៉ឺនុយមាត្រដ្ឋាន"
+
+msgid "Panel Selected"
+msgstr "Panel ដែលបានជ្រើស"
+
+msgid "Titlebar Selected"
+msgstr "Titlebar ដែលបានជ្រើស"
 
 msgid "Slots Focus Mode"
 msgstr "របៀបផ្តោតរន្ធ"
 
+msgid "Slot Selected"
+msgstr "រន្ធដែលបានជ្រើស"
+
+msgid "Port H Offset"
+msgstr "អុហ្វសិត Port H"
+
 msgid "Scroll Hint Mode"
 msgstr "របៀបណែនាំរំកិល"
 
+msgid "Scrollbar H Separation"
+msgstr "ការបំបែក Scrollbar H"
+
+msgid "Font Hovered Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
+
+msgid "Font Hovered Selected Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ជ្រើស"
+
+msgid "Font Selected Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលជ្រើស"
+
+msgid "Scroll Hint"
+msgstr "ណែនាំរំកិល"
+
+msgid "Scroll Hint Color"
+msgstr "ពណ៌ណែនាំរំកិល"
+
+msgid "Hovered"
+msgstr "បាន Hover"
+
+msgid "Hovered Selected"
+msgstr "បាន Hover ជ្រើស"
+
+msgid "Hovered Selected Focus"
+msgstr "បាន Hover ជ្រើសផ្តោត"
+
+msgid "Selected Focus"
+msgstr "ជ្រើសផ្តោត"
+
 msgid "Paragraph Separator"
 msgstr "តួបំបែកកថាខណ្ឌ"
+
+msgid "Font Shadow Color"
+msgstr "ពណ៌ស្រមោលពុម្ពអក្សរ"
 
 msgid "Emoji Menu Enabled"
 msgstr "បានបើកម៉ឺនុយ Emoji"
@@ -6360,11 +6531,32 @@ msgstr "តួអក្សរ"
 msgid "Right Icon Scale"
 msgstr "មាត្រដ្ឋានរូបតំណាងស្តាំ"
 
+msgid "Font Placeholder Color"
+msgstr "ពណ៌ Placeholder ពុម្ពអក្សរ"
+
 msgid "Start Index"
 msgstr "លិបិក្រមចាប់ផ្តើម"
 
 msgid "Min Item Count"
 msgstr "ចំនួនធាតុអប្បបរមា"
+
+msgid "Search Bar Separation"
+msgstr "ការបំបែក Search Bar"
+
+msgid "Font Separator"
+msgstr "តួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Separator Size"
+msgstr "ទំហំតួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Accelerator Color"
+msgstr "ពណ៌ Accelerator ពុម្ពអក្សរ"
+
+msgid "Font Separator Color"
+msgstr "ពណ៌តួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Separator Outline Color"
+msgstr "ពណ៌ Outline តួបំបែកពុម្ពអក្សរ"
 
 msgid "Min Value"
 msgstr "តម្លៃអប្បបរមា"
@@ -6390,14 +6582,62 @@ msgstr "រំកិលបញ្ឈរ"
 msgid "Scroll Horizontal by Default"
 msgstr "រំកិលផ្តេកតាមលំនាំដើម"
 
-msgid "Scroll Hint"
-msgstr "ណែនាំរំកិល"
+msgid "Scrollbar V Separation"
+msgstr "ការបំបែក Scrollbar V"
+
+msgid "Scroll Hint Vertical"
+msgstr "ណែនាំរំកិលបញ្ឈរ"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "ពណ៌ណែនាំរំកិលបញ្ឈរ"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "ពណ៌ណែនាំរំកិលផ្តេក"
 
 msgid "Ticks Position"
 msgstr "ទីតាំងសញ្ញា"
 
+msgid "Tick Offset"
+msgstr "អុហ្វសិត Tick"
+
 msgid "Custom Arrow Round"
 msgstr "ព្រួញមូលផ្ទាល់ខ្លួន"
+
+msgid "Buttons Vertical Separation"
+msgstr "ការបំបែកបញ្ឈរប៊ូតុង"
+
+msgid "Field and Buttons Separation"
+msgstr "ការបំបែក Field និងប៊ូតុង"
+
+msgid "Up Hover"
+msgstr "Hover ឡើង"
+
+msgid "Up Pressed"
+msgstr "ចុចឡើង"
+
+msgid "Up Disabled"
+msgstr "បិទឡើង"
+
+msgid "Down Hover"
+msgstr "Hover ចុះ"
+
+msgid "Down Pressed"
+msgstr "ចុចចុះ"
+
+msgid "Down Disabled"
+msgstr "បិទចុះ"
+
+msgid "Down Background Disabled"
+msgstr "បិទផ្ទៃខាងក្រោយចុះ"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Modulate រូបតំណាងបិទចុះ"
+
+msgid "Field and Buttons Separator"
+msgstr "តួបំបែក Field និងប៊ូតុង"
+
+msgid "Up Down Buttons Separator"
+msgstr "តួបំបែកប៊ូតុងឡើងចុះ"
 
 msgid "Split Offsets"
 msgstr "អុហ្វសិតបំបែក"
@@ -6408,11 +6648,38 @@ msgstr "បានបើកការអូស"
 msgid "Touch Dragger Enabled"
 msgstr "បានបើក Touch Dragger"
 
+msgid "Touch Dragger Color"
+msgstr "ពណ៌ Touch Dragger"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "ពណ៌ Touch Dragger ពេលចុច"
+
+msgid "Touch Dragger Hover Color"
+msgstr "ពណ៌ Touch Dragger ពេល Hover"
+
 msgid "Deselect Enabled"
 msgstr "បានបើកការលែងជ្រើស"
 
+msgid "Tab Hovered"
+msgstr "Tab បាន Hover"
+
+msgid "Font Unselected Color"
+msgstr "ពណ៌ពុម្ពអក្សរមិនបានជ្រើស"
+
+msgid "Icon Selected Color"
+msgstr "ពណ៌រូបតំណាងដែលបានជ្រើស"
+
+msgid "Icon Hovered Color"
+msgstr "ពណ៌រូបតំណាងបាន Hover"
+
+msgid "Icon Unselected Color"
+msgstr "ពណ៌រូបតំណាងមិនបានជ្រើស"
+
 msgid "Tabs Position"
 msgstr "ទីតាំង Tabs"
+
+msgid "Icon Separation"
+msgstr "ការបំបែករូបតំណាង"
 
 msgid "Fit Content Width"
 msgstr "ទទឹងសមនឹងមាតិកា"
@@ -6420,11 +6687,47 @@ msgstr "ទទឹងសមនឹងមាតិកា"
 msgid "Word Separators"
 msgstr "តួបំបែកពាក្យ"
 
+msgid "Font Readonly Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Read-only"
+
+msgid "Wrap Offset"
+msgstr "អុហ្វសិត Wrap"
+
 msgid "Enable Drag Unfolding"
 msgstr "បើកការអូសពន្លា"
 
 msgid "Auto Tooltip"
 msgstr "Tooltip ស្វ័យប្រវត្តិ"
+
+msgid "Title Button Font Size"
+msgstr "ទំហំពុម្ពអក្សរប៊ូតុងចំណងជើង"
+
+msgid "Hovered Dimmed"
+msgstr "បាន Hover ស្រអាប់"
+
+msgid "Button Hover"
+msgstr "Hover ប៊ូតុង"
+
+msgid "Custom Button"
+msgstr "ប៊ូតុងផ្ទាល់ខ្លួន"
+
+msgid "Custom Button Hover"
+msgstr "Hover ប៊ូតុងផ្ទាល់ខ្លួន"
+
+msgid "Custom Button Pressed"
+msgstr "ប៊ូតុងផ្ទាល់ខ្លួនពេលចុច"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ស្រអាប់"
+
+msgid "Drop on Item Color"
+msgstr "ពណ៌ Drop លើធាតុ"
+
+msgid "Check H Separation"
+msgstr "ការបំបែក Check H"
+
+msgid "Icon H Separation"
+msgstr "ការបំបែក Icon H"
 
 msgid "Joystick Mode"
 msgstr "របៀប Joystick"
@@ -6449,6 +6752,9 @@ msgstr "សកម្មភាពឡើង"
 
 msgid "Action Down"
 msgstr "សកម្មភាពចុះ"
+
+msgid "Pressed Tip"
+msgstr "ចុងពេលចុច"
 
 msgid "Timeout"
 msgstr "ពេលផុតកំណត់"
@@ -6680,312 +6986,6 @@ msgstr "មាត្រដ្ឋានមូលដ្ឋានលំនាំដ
 
 msgid "Default Font Size"
 msgstr "ទំហំពុម្ពអក្សរលំនាំដើម"
-
-msgid "Font Pressed Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេលចុច"
-
-msgid "Font Hover Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
-
-msgid "Font Focus Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេលផ្តោត"
-
-msgid "Font Hover Pressed Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ចុច"
-
-msgid "Font Disabled Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេលបិទ"
-
-msgid "Font Outline Color"
-msgstr "ពណ៌ Outline ពុម្ពអក្សរ"
-
-msgid "Icon Pressed Color"
-msgstr "ពណ៌រូបតំណាងពេលចុច"
-
-msgid "Icon Hover Color"
-msgstr "ពណ៌រូបតំណាងពេល Hover"
-
-msgid "Icon Hover Pressed Color"
-msgstr "ពណ៌រូបតំណាងពេល Hover ចុច"
-
-msgid "Icon Focus Color"
-msgstr "ពណ៌រូបតំណាងពេលផ្តោត"
-
-msgid "Icon Disabled Color"
-msgstr "ពណ៌រូបតំណាងពេលបិទ"
-
-msgid "H Separation"
-msgstr "ការបំបែក H"
-
-msgid "Hover Mirrored"
-msgstr "Hover ឆ្លុះ"
-
-msgid "Checkbox Checked Color"
-msgstr "ពណ៌ Checkbox ពេលធីក"
-
-msgid "Checkbox Unchecked Color"
-msgstr "ពណ៌ Checkbox ពេលមិនធីក"
-
-msgid "Button Checked Color"
-msgstr "ពណ៌ប៊ូតុងពេលធីក"
-
-msgid "Button Unchecked Color"
-msgstr "ពណ៌ប៊ូតុងពេលមិនធីក"
-
-msgid "Font Shadow Color"
-msgstr "ពណ៌ស្រមោលពុម្ពអក្សរ"
-
-msgid "Font Selected Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេលជ្រើស"
-
-msgid "Font Uneditable Color"
-msgstr "ពណ៌ពុម្ពអក្សរមិនអាចកែបាន"
-
-msgid "Font Placeholder Color"
-msgstr "ពណ៌ Placeholder ពុម្ពអក្សរ"
-
-msgid "Font Readonly Color"
-msgstr "ពណ៌ពុម្ពអក្សរ Read-only"
-
-msgid "Wrap Offset"
-msgstr "អុហ្វសិត Wrap"
-
-msgid "Executing Line"
-msgstr "បន្ទាត់កំពុងដំណើរការ"
-
-msgid "Folded Code Region"
-msgstr "តំបន់កូដដែលបានបត់"
-
-msgid "Completion Color BG"
-msgstr "ពណ៌ BG បំពេញ"
-
-msgid "Folded Code Region Color"
-msgstr "ពណ៌តំបន់កូដដែលបានបត់"
-
-msgid "Completion Lines"
-msgstr "បន្ទាត់បំពេញ"
-
-msgid "Tick Offset"
-msgstr "អុហ្វសិត Tick"
-
-msgid "Up Hover"
-msgstr "Hover ឡើង"
-
-msgid "Up Pressed"
-msgstr "ចុចឡើង"
-
-msgid "Up Disabled"
-msgstr "បិទឡើង"
-
-msgid "Down Hover"
-msgstr "Hover ចុះ"
-
-msgid "Down Pressed"
-msgstr "ចុចចុះ"
-
-msgid "Down Disabled"
-msgstr "បិទចុះ"
-
-msgid "Down Background Disabled"
-msgstr "បិទផ្ទៃខាងក្រោយចុះ"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Modulate រូបតំណាងបិទចុះ"
-
-msgid "Field and Buttons Separator"
-msgstr "តួបំបែក Field និងប៊ូតុង"
-
-msgid "Up Down Buttons Separator"
-msgstr "តួបំបែកប៊ូតុងឡើងចុះ"
-
-msgid "Buttons Vertical Separation"
-msgstr "ការបំបែកបញ្ឈរប៊ូតុង"
-
-msgid "Field and Buttons Separation"
-msgstr "ការបំបែក Field និងប៊ូតុង"
-
-msgid "Scroll Hint Vertical"
-msgstr "ណែនាំរំកិលបញ្ឈរ"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "ពណ៌ណែនាំរំកិលបញ្ឈរ"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "ពណ៌ណែនាំរំកិលផ្តេក"
-
-msgid "Pressed Tip"
-msgstr "ចុងពេលចុច"
-
-msgid "Buttons Separation"
-msgstr "ការបំបែកប៊ូតុង"
-
-msgid "List Mode"
-msgstr "របៀបបញ្ជី"
-
-msgid "Folder Icon Color"
-msgstr "ពណ៌រូបតំណាងថត"
-
-msgid "File Icon Color"
-msgstr "ពណ៌រូបតំណាងឯកសារ"
-
-msgid "Font Separator"
-msgstr "តួបំបែកពុម្ពអក្សរ"
-
-msgid "Font Separator Size"
-msgstr "ទំហំតួបំបែកពុម្ពអក្សរ"
-
-msgid "Font Accelerator Color"
-msgstr "ពណ៌ Accelerator ពុម្ពអក្សរ"
-
-msgid "Font Separator Color"
-msgstr "ពណ៌តួបំបែកពុម្ពអក្សរ"
-
-msgid "Font Separator Outline Color"
-msgstr "ពណ៌ Outline តួបំបែកពុម្ពអក្សរ"
-
-msgid "V Separation"
-msgstr "ការបំបែក V"
-
-msgid "Search Bar Separation"
-msgstr "ការបំបែក Search Bar"
-
-msgid "Panel Selected"
-msgstr "Panel ដែលបានជ្រើស"
-
-msgid "Panel Focus"
-msgstr "Panel ផ្តោត"
-
-msgid "Titlebar Selected"
-msgstr "Titlebar ដែលបានជ្រើស"
-
-msgid "Slot Selected"
-msgstr "រន្ធដែលបានជ្រើស"
-
-msgid "Port H Offset"
-msgstr "អុហ្វសិត Port H"
-
-msgid "Hovered"
-msgstr "បាន Hover"
-
-msgid "Hovered Dimmed"
-msgstr "បាន Hover ស្រអាប់"
-
-msgid "Hovered Selected"
-msgstr "បាន Hover ជ្រើស"
-
-msgid "Hovered Selected Focus"
-msgstr "បាន Hover ជ្រើសផ្តោត"
-
-msgid "Selected Focus"
-msgstr "ជ្រើសផ្តោត"
-
-msgid "Button Hover"
-msgstr "Hover ប៊ូតុង"
-
-msgid "Custom Button"
-msgstr "ប៊ូតុងផ្ទាល់ខ្លួន"
-
-msgid "Custom Button Pressed"
-msgstr "ប៊ូតុងផ្ទាល់ខ្លួនពេលចុច"
-
-msgid "Custom Button Hover"
-msgstr "Hover ប៊ូតុងផ្ទាល់ខ្លួន"
-
-msgid "Title Button Font Size"
-msgstr "ទំហំពុម្ពអក្សរប៊ូតុងចំណងជើង"
-
-msgid "Font Hovered Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ស្រអាប់"
-
-msgid "Font Hovered Selected Color"
-msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ជ្រើស"
-
-msgid "Drop on Item Color"
-msgstr "ពណ៌ Drop លើធាតុ"
-
-msgid "Scroll Hint Color"
-msgstr "ពណ៌ណែនាំរំកិល"
-
-msgid "Check H Separation"
-msgstr "ការបំបែក Check H"
-
-msgid "Icon H Separation"
-msgstr "ការបំបែក Icon H"
-
-msgid "Scrollbar H Separation"
-msgstr "ការបំបែក Scrollbar H"
-
-msgid "Scrollbar V Separation"
-msgstr "ការបំបែក Scrollbar V"
-
-msgid "Tab Selected"
-msgstr "Tab ដែលបានជ្រើស"
-
-msgid "Tab Hovered"
-msgstr "Tab បាន Hover"
-
-msgid "Font Unselected Color"
-msgstr "ពណ៌ពុម្ពអក្សរមិនបានជ្រើស"
-
-msgid "Icon Selected Color"
-msgstr "ពណ៌រូបតំណាងដែលបានជ្រើស"
-
-msgid "Icon Hovered Color"
-msgstr "ពណ៌រូបតំណាងបាន Hover"
-
-msgid "Icon Unselected Color"
-msgstr "ពណ៌រូបតំណាងមិនបានជ្រើស"
-
-msgid "Icon Separation"
-msgstr "ការបំបែករូបតំណាង"
-
-msgid "Sample Focus"
-msgstr "Sample ផ្តោត"
-
-msgid "Menu Option"
-msgstr "ជម្រើសម៉ឺនុយ"
-
-msgid "Color Script"
-msgstr "Color Script"
-
-msgid "Color Copy"
-msgstr "ចម្លងពណ៌"
-
-msgid "BG"
-msgstr "BG"
-
-msgid "Preset Focus"
-msgstr "Preset ផ្តោត"
-
-msgid "Touch Dragger Color"
-msgstr "ពណ៌ Touch Dragger"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "ពណ៌ Touch Dragger ពេលចុច"
-
-msgid "Touch Dragger Hover Color"
-msgstr "ពណ៌ Touch Dragger ពេល Hover"
-
-msgid "Connection Hover Tint Color"
-msgstr "ពណ៌ជ្រលក់ Connection Hover"
-
-msgid "Connection Hover Thickness"
-msgstr "កម្រាស់ Connection Hover"
-
-msgid "Connection Rim Color"
-msgstr "ពណ៌ Rim ការតភ្ជាប់"
-
-msgid "Hover Font Color"
-msgstr "ពណ៌ពុម្ពអក្សរ Hover"
-
-msgid "Collapsed Font Color"
-msgstr "ពណ៌ពុម្ពអក្សរ Collapsed"
-
-msgid "Folded Arrow Mirrored"
-msgstr "ព្រួញបត់ឆ្លុះ"
 
 msgid "Default Theme Scale"
 msgstr "មាត្រដ្ឋាន Theme លំនាំដើម"

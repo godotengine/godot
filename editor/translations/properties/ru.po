@@ -215,13 +215,15 @@
 # Damir Sobolev <damir.sobolev.0@gmail.com>, 2026.
 # DatVex <kinorealme241@gmail.com>, 2026.
 # Alexander Dmitriev <dmitriev8925@gmail.com>, 2026.
+# bobojon ToT CaMuu Bob <bobojonwarcraftleft@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-28 22:38+0000\n"
-"Last-Translator: Alexander Dmitriev <dmitriev8925@gmail.com>\n"
+"PO-Revision-Date: 2026-11-17 17:48+0000\n"
+"Last-Translator: bobojon ToT CaMuu Bob "
+"<bobojonwarcraftleft@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -230,7 +232,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -360,6 +362,9 @@ msgstr "Сворачивание отключено"
 
 msgid "Maximize Disabled"
 msgstr "Разворачивание на весь экран отключено"
+
+msgid "Enable Toggle Fullscreen Shortcut"
+msgstr "Ширина окна просмотра"
 
 msgid "Window Width Override"
 msgstr "Переопределение ширины окна"
@@ -666,6 +671,9 @@ msgstr "Переопределить кнопки громкости"
 
 msgid "Disable Scroll Deadzone"
 msgstr "Отключить мертвую зону для прокрутки"
+
+msgid "Windows"
+msgstr "Windows"
 
 msgid "Navigation"
 msgstr "Навигация"
@@ -1353,6 +1361,31 @@ msgstr "Редактирование целого числа"
 
 msgid "Deferred Drag Mode"
 msgstr "Режим отложенного перетаскивания"
+
+msgid "Font Uneditable Color"
+msgstr "Цвет текста, когда редактирование отключено"
+
+msgid "Font"
+msgstr "Шрифт"
+
+msgid "Font Size"
+msgstr "Размер шрифта"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Обычный"
+
+msgid "Focus"
+msgstr "Фокус"
+
+msgid "Updown"
+msgstr "Пользовательская текстура для стрелок «вверх» и «вниз»"
+
+msgid "Grabber Highlight"
+msgstr "Подсветка захвата"
+
+msgid "Grabber"
+msgstr "Захват"
 
 msgid "Zoom"
 msgstr "Масштабирование"
@@ -3369,9 +3402,6 @@ msgstr "Действие при остановке"
 
 msgid "Output"
 msgstr "Вывод"
-
-msgid "Font Size"
-msgstr "Размер шрифта"
 
 msgid "Always Clear Output on Play"
 msgstr "Всегда очищать панель вывода при запуске"
@@ -6134,9 +6164,6 @@ msgstr "Размер пула памяти Emscripten"
 msgid "Godot Pool Size"
 msgstr "Размера пула памяти Godot"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -7380,9 +7407,6 @@ msgstr "Текст"
 msgid "Outline Modulate"
 msgstr "Цвет контура текста"
 
-msgid "Font"
-msgstr "Шрифт"
-
 msgid "Horizontal Alignment"
 msgstr "Горизонтальное выравнивание"
 
@@ -8390,8 +8414,119 @@ msgstr "Вертикальное выравнивание значков"
 msgid "Expand Icon"
 msgstr "Подгонять размер значка под размер кнопки"
 
+msgid "Normal Mirrored"
+msgstr "Обычный пункт меню (компоновка «справа налево»)"
+
+msgid "Pressed Mirrored"
+msgstr "Нажатый пункт меню (компоновка «справа налево»)"
+
+msgid "Hover"
+msgstr "Наведение"
+
+msgid "Hover Mirrored"
+msgstr "Пункт меню при наведении (компоновка «справа налево»)"
+
+msgid "Hover Pressed"
+msgstr "Нажатый пункт меню при наведении"
+
+msgid "Disabled Mirrored"
+msgstr "Отключённый пункт меню (компоновка «справа налево»)"
+
+msgid "Font Focus Color"
+msgstr "Цвет текста при фокусе на кнопке"
+
+msgid "Font Pressed Color"
+msgstr "Цвет текста при нажатии кнопки"
+
+msgid "Font Hover Color"
+msgstr "Цвет текста при наведении на кнопку"
+
+msgid "Font Hover Pressed Color"
+msgstr "Цвет текста при наведении на нажатую кнопку"
+
+msgid "Font Disabled Color"
+msgstr "Цвет теста при отключении кнопки"
+
+msgid "Font Outline Color"
+msgstr "Цвет текстового контура кнопки"
+
+msgid "Icon Normal Color"
+msgstr "Обычный цвет значка кнопки"
+
+msgid "Icon Focus Color"
+msgstr "Цвет значка при фокусе на кнопке"
+
+msgid "Icon Pressed Color"
+msgstr "Цвет значка при нажатии кнопки"
+
+msgid "Icon Hover Color"
+msgstr "Цвет значка при наведении на кнопку"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Цвет значка при наведении на нажатую кнопку"
+
+msgid "Icon Disabled Color"
+msgstr "Цвет значка при отключении кнопки"
+
+msgid "H Separation"
+msgstr "Гор. разделение"
+
+msgid "Icon Max Width"
+msgstr "Макс. ширина значка"
+
+msgid "Align to Largest Stylebox"
+msgstr "Выровнять по самому большому Stylebox"
+
 msgid "Use Top Left"
 msgstr "Использовать верхний левый угол"
+
+msgid "Check V Offset"
+msgstr "Верт. смещение для значков отметки"
+
+msgid "Unchecked"
+msgstr "Неотмеченный"
+
+msgid "Radio Checked"
+msgstr "Отмеченный переключатель"
+
+msgid "Radio Unchecked"
+msgstr "Неотмеченный переключатель"
+
+msgid "Checked Disabled"
+msgstr "Отмеченный отключённый флажок"
+
+msgid "Unchecked Disabled"
+msgstr "Неотмеченный отключённый флажок"
+
+msgid "Radio Checked Disabled"
+msgstr "Отмеченный отключённый переключатель"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Неотмеченный отключённый переключатель"
+
+msgid "Checkbox Checked Color"
+msgstr "Цвет установленного флажка"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Цвет снятого флажка"
+
+msgid "Checked Mirrored"
+msgstr "Отмеченный флажок (компоновка «справа налево»)"
+
+msgid "Unchecked Mirrored"
+msgstr "Неотмеченный флажок (компоновка «справа налево»)"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Отмеченный отключённый флажок (компоновка «справа налево»)"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Неотмеченный отключённый флажок (компоновка «справа налево»)"
+
+msgid "Button Checked Color"
+msgstr "Цвет нажатой кнопки"
+
+msgid "Button Unchecked Color"
+msgstr "Цвет ненажатой кнопки"
 
 msgid "Symbol Lookup on Click"
 msgstr "Поиск символа при нажатии"
@@ -8459,6 +8594,81 @@ msgstr "Подсветка соответствий"
 msgid "Pairs"
 msgstr "Пары"
 
+msgid "Code Folding Color"
+msgstr "Цвет значков сворачивания кода"
+
+msgid "Folded Code Region Color"
+msgstr "Цвет свёрнутой области кода"
+
+msgid "Can Fold"
+msgstr "Возможно сворачивание"
+
+msgid "Folded"
+msgstr "Возможно разворачивание"
+
+msgid "Can Fold Code Region"
+msgstr "Область кода с возможностью сворачивания"
+
+msgid "Folded Code Region"
+msgstr "Область кода с возможностью разворачивания"
+
+msgid "Folded EOL Icon"
+msgstr "Значок в конце свёрнутой строки"
+
+msgid "Completion Color BG"
+msgstr "Цвет фона индикатора выполнения"
+
+msgid "Breakpoint Color"
+msgstr "Цвет точки останова"
+
+msgid "Breakpoint"
+msgstr "Точка остановки"
+
+msgid "Bookmark Color"
+msgstr "Цвет закладки"
+
+msgid "Bookmark"
+msgstr "Закладка"
+
+msgid "Executing Line Color"
+msgstr "Цвет выполняемой строки"
+
+msgid "Executing Line"
+msgstr "Выполняемая строка"
+
+msgid "Line Number Color"
+msgstr "Цвет номеров строк"
+
+msgid "Completion Max Width"
+msgstr "Макс. ширина вариантов в окне завершения"
+
+msgid "Completion Lines"
+msgstr "Макс. кол-во вариантов завершения"
+
+msgid "Completion Scroll Width"
+msgstr "Ширина полосы прокрутки окна завершения"
+
+msgid "Completion Scroll Color"
+msgstr "Цвет полосы прокрутки окна завершения"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Цвет полосы прокрутки окна завершения при наведении"
+
+msgid "Completion Background Color"
+msgstr "Цвет фона окна завершения"
+
+msgid "Completion Selected Color"
+msgstr "Цвет фона выделенного варианта завершения"
+
+msgid "Completion Existing Color"
+msgstr "Цвет фона совпадающего текста в вариантах завершения"
+
+msgid "Line Length Guideline Color"
+msgstr "Цвет предела длины строки"
+
+msgid "Brace Mismatch Color"
+msgstr "Цвет несовпадающей скобки"
+
 msgid "Edit Alpha"
 msgstr "Редактировать альфа"
 
@@ -8494,6 +8704,102 @@ msgstr "Видимое поле ввода шестнадцатеричного 
 
 msgid "Presets Visible"
 msgstr "Видимые предустановки"
+
+msgid "Label Width"
+msgstr "Ширина подписи"
+
+msgid "SV Width"
+msgstr "Ширина поля выбора насыщенности/значения"
+
+msgid "SV Height"
+msgstr "Высота поля выбора насыщенности/значения"
+
+msgid "H Width"
+msgstr "Ширина ползунка выбора тона"
+
+msgid "Center Slider Grabbers"
+msgstr "Центрировать грабберы ползунка"
+
+msgid "Sample Focus"
+msgstr "Сэмпл в фокусе"
+
+msgid "Picker Focus Rectangle"
+msgstr "Рамка фокуса средства выбора цвета"
+
+msgid "Picker Focus Circle"
+msgstr "Окружность фокуса средства выбора цвета"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Цвет курсора при фокусе без редактирования"
+
+msgid "Menu Option"
+msgstr "Вариант стиля меню"
+
+msgid "Screen Picker"
+msgstr "Значок выбора цвета с экрана"
+
+msgid "Expanded Arrow"
+msgstr "Значок развёрнутого меню цветовых предустановок"
+
+msgid "Folded Arrow"
+msgstr "Значок свёрнутого меню цветовых предустановок"
+
+msgid "Add Preset"
+msgstr "Значок кнопки «Добавить предустановку»"
+
+msgid "Shape Rect"
+msgstr "Значок прямоугольника выбора"
+
+msgid "Shape Rect Wheel"
+msgstr "Значок прямоугольного колеса выбора"
+
+msgid "Shape Circle"
+msgstr "Значок круга выбора"
+
+msgid "Bar Arrow"
+msgstr "Текстура для стрелки"
+
+msgid "Sample BG"
+msgstr "Фон образца"
+
+msgid "Sample Revert"
+msgstr "Восстановление образца"
+
+msgid "Overbright Indicator"
+msgstr "Индикатор повышенной яркости"
+
+msgid "Picker Cursor"
+msgstr "Курсор выбора цвета"
+
+msgid "Picker Cursor BG"
+msgstr "Фон курсора средства выбора цвета"
+
+msgid "Color Hue"
+msgstr "Пользовательская текстура для ползунка выбора тона"
+
+msgid "Color Script"
+msgstr "Цвет скрипта"
+
+msgid "Color Copy"
+msgstr "Копирование цвета"
+
+msgid "Tab Unselected"
+msgstr "Вкладка не выбрана"
+
+msgid "Tab Selected"
+msgstr "Вкладка выбрана"
+
+msgid "BG"
+msgstr "Задний план"
+
+msgid "Preset FG"
+msgstr "Передний план предустановки"
+
+msgid "Preset Focus"
+msgstr "Предустановка в фокусе"
+
+msgid "Preset BG"
+msgstr "Задний план предустановки"
 
 msgid "Accessibility Region"
 msgstr "Область доступности"
@@ -8579,9 +8885,6 @@ msgstr "Подсказка"
 msgid "Auto Translate Mode"
 msgstr "Режим автоперевода"
 
-msgid "Focus"
-msgstr "Фокус"
-
 msgid "Neighbor Left"
 msgstr "Сосед слева"
 
@@ -8645,6 +8948,9 @@ msgstr "Закрыть при нажатии кнопки «Escape»"
 msgid "Autowrap"
 msgstr "Автоперенос"
 
+msgid "Buttons Separation"
+msgstr "Разделение кнопок"
+
 msgid "Cancel Button Text"
 msgstr "Текст кнопки «Отмена»"
 
@@ -8699,14 +9005,92 @@ msgstr "Предупреждение о перезаписи включено"
 msgid "Deleting Enabled"
 msgstr "Удаление включено"
 
+msgid "Parent Folder"
+msgstr "Родительская папка"
+
+msgid "Forward Folder"
+msgstr "Следующая папка"
+
+msgid "Back Folder"
+msgstr "Предыдущая папка"
+
+msgid "Reload"
+msgstr "Перезагрузить"
+
+msgid "Favorite"
+msgstr "Любимый"
+
+msgid "Toggle Hidden"
+msgstr "Переключение скрытых"
+
+msgid "Folder"
+msgstr "Папка"
+
+msgid "Toggle Filename Filter"
+msgstr "Переключить фильтр имени файла"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Create Folder"
+msgstr "Создать папку"
+
+msgid "Sort"
+msgstr "Сортировка"
+
+msgid "Favorite Up"
+msgstr "Лучший"
+
+msgid "Favorite Down"
+msgstr "Худший"
+
+msgid "Thumbnail Mode"
+msgstr "Размер отображения миниатюр"
+
+msgid "List Mode"
+msgstr "Режим отображения списка"
+
+msgid "File Thumbnail"
+msgstr "Миниатюра файла"
+
+msgid "Folder Thumbnail"
+msgstr "Миниатюра папки"
+
+msgid "Menu Copy Path"
+msgstr "Меню Копировать путь"
+
+msgid "Menu Delete"
+msgstr "Меню Удалить"
+
+msgid "Menu Refresh"
+msgstr "Меню Обновить"
+
+msgid "Menu New Folder"
+msgstr "Меню Новая папка"
+
+msgid "Menu Show in File Manager"
+msgstr "Меню Показать в менеджере файлов"
+
+msgid "Menu Open Bundle"
+msgstr "Меню Открыть пакет"
+
+msgid "Folder Icon Color"
+msgstr "Цвет значка папки"
+
+msgid "File Icon Color"
+msgstr "Цвет значка файла"
+
+msgid "File Disabled Color"
+msgstr "Цвет отключённого файла"
+
 msgid "Last Wrap Alignment"
 msgstr "Выравнивание для последнего переноса"
 
 msgid "Reverse Fill"
 msgstr "Обратная заливка"
 
-msgid "Folded"
-msgstr "Возможно разворачивание"
+msgid "V Separation"
+msgstr "Верт. разделение"
 
 msgid "Title Alignment"
 msgstr "Выравнивание заголовка"
@@ -8723,8 +9107,38 @@ msgstr "Сворачиваемая группа"
 msgid "Title Text Direction"
 msgstr "Направление текста заголовка"
 
+msgid "Title Panel"
+msgstr "Панель заголовка"
+
+msgid "Title Hover Panel"
+msgstr "Панель заголовка при наведении курсора"
+
+msgid "Title Collapsed Panel"
+msgstr "Свёрнутая панель заголовка"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Свёрнутая панель заголовка при наведении"
+
+msgid "Hover Font Color"
+msgstr "Цвет шрифта при наведении курсора"
+
+msgid "Collapsed Font Color"
+msgstr "Цвет шрифта свёрнутого элемента"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Зеркальное отображение развёрнутого элемента"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Зеркальное отображение свёрнутого элемента"
+
 msgid "Allow Folding All"
 msgstr "Позволять сворачивать всё"
+
+msgid "Resizer"
+msgstr "Средство изменения размера"
+
+msgid "Resizer Color"
+msgstr "Цвет значка средства изменения размера"
 
 msgid "Show Grid"
 msgstr "Показать сетку"
@@ -8783,6 +9197,64 @@ msgstr "Показать кнопку миникарты"
 msgid "Show Arrange Button"
 msgstr "Показать кнопку упорядочения"
 
+msgid "Panel Focus"
+msgstr "Панель в фокусе"
+
+msgid "Grid Major"
+msgstr "Цвет основных линий сетки"
+
+msgid "Grid Minor"
+msgstr "Цвет вторичных линий сетки"
+
+msgid "Activity"
+msgstr "Цвет активности соединения"
+
+msgid "Connection Hover Tint Color"
+msgstr "Оттенок цвета при наведении курсора на соединение"
+
+msgid "Connection Hover Thickness"
+msgstr "Толщина линии при наведении курсора на соединение"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Оттенок цвета корректной цели соединения"
+
+msgid "Connection Rim Color"
+msgstr "Цвет края соединения"
+
+msgid "Selection Fill"
+msgstr "Цвет заливки прямоугольника выделения"
+
+msgid "Selection Stroke"
+msgstr "Цвет контура прямоугольника выделения"
+
+msgid "Menu Panel"
+msgstr "Панель меню"
+
+msgid "Zoom In"
+msgstr "Приблизить"
+
+msgid "Zoom Out"
+msgstr "Отдалить"
+
+msgid "Zoom Reset"
+msgstr "Сбросить масштабирование"
+
+msgid "Snapping Toggle"
+msgstr "Переключатель привязки"
+
+msgid "Grid Toggle"
+msgstr "Переключатель сетки"
+
+msgid "Minimap Toggle"
+msgstr "Переключатель миникарты"
+
+msgid "Port Hotzone Inner Extent"
+msgstr ""
+"Гор. диапазон, в пределах которого порт можно захватить (внутр. сторона)"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Гор. диапазон, в пределах которого порт можно захватить (внеш. сторона)"
+
 msgid "Draggable"
 msgstr "Возможно перетаскивание"
 
@@ -8801,11 +9273,29 @@ msgstr "Отступ автосжатия"
 msgid "Drag Margin"
 msgstr "Отступ перетаскивания"
 
+msgid "Panel Selected"
+msgstr "Панель выбрана"
+
+msgid "Titlebar"
+msgstr "Строка заголовка"
+
+msgid "Titlebar Selected"
+msgstr "Строка заголовка выбрана"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Игнорировать некорректный тип соединения"
 
 msgid "Slots Focus Mode"
 msgstr "Режим фокуса на вкладках"
+
+msgid "Slot"
+msgstr "Слот"
+
+msgid "Slot Selected"
+msgstr "Слот выбран"
+
+msgid "Port H Offset"
+msgstr "Гор. смещение порта"
 
 msgid "Select Mode"
 msgstr "Режим выделения"
@@ -8858,6 +9348,60 @@ msgstr "Масштаб значка"
 msgid "Fixed Icon Size"
 msgstr "Фиксированный размер значка"
 
+msgid "Scrollbar Margin Left"
+msgstr "Отступ слева для полосы прокрутки"
+
+msgid "Scrollbar Margin Top"
+msgstr "Отступ сверху для полосы прокрутки"
+
+msgid "Scrollbar Margin Right"
+msgstr "Отступ справа для полосы прокрутки"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Отступ снизу для полосы прокрутки"
+
+msgid "Scrollbar H Separation"
+msgstr "Гор. разделение полосы прокрутки"
+
+msgid "Font Hovered Color"
+msgstr "Цвет шрифта при наведении"
+
+msgid "Font Hovered Selected Color"
+msgstr "Цвет шрифта выбранного элемента при наведении курсора"
+
+msgid "Font Selected Color"
+msgstr "Цвет текста текущей выбранной вкладки"
+
+msgid "Scroll Hint"
+msgstr "Подсказка прокручивания"
+
+msgid "Scroll Hint Color"
+msgstr "Цвет подсказки прокручивания"
+
+msgid "Icon Margin"
+msgstr "Отступ значка"
+
+msgid "Hovered"
+msgstr "При наведении курсора"
+
+msgid "Hovered Selected"
+msgstr "Выбранные элементы при наведении курсора"
+
+msgid "Hovered Selected Focus"
+msgstr "Выбранные элементы в фокусе при наведении курсора"
+
+msgid "Selected Focus"
+msgstr "Выбранные элементы, когда список элементов в фокусе"
+
+msgid "Cursor Unfocused"
+msgstr "Курсор при отсутствии фокуса"
+
+msgid "Cursor"
+msgstr "Курсор"
+
+msgid "Guide Color"
+msgstr "Цвет направляющей"
+
 msgid "Label Settings"
 msgstr "Параметры подписи"
 
@@ -8887,6 +9431,15 @@ msgstr "Поведение видимых символов"
 
 msgid "Visible Ratio"
 msgstr "Коэффициент видимых символов"
+
+msgid "Paragraph Spacing"
+msgstr "Межабзацные интервалы"
+
+msgid "Font Shadow Color"
+msgstr "Цвет тени текста"
+
+msgid "Shadow Outline Size"
+msgstr "Размер контура тени"
 
 msgid "Placeholder Text"
 msgstr "Текст-заполнитель"
@@ -8966,11 +9519,50 @@ msgstr "Режим разворачивания значков"
 msgid "Right Icon Scale"
 msgstr "Масштаб правого значка"
 
+msgid "Font Placeholder Color"
+msgstr "Цвет шрифта текста-заполнителя"
+
+msgid "Caret Width"
+msgstr "Ширина курсора"
+
+msgid "Caret Color"
+msgstr "Цвет курсора"
+
+msgid "Minimum Character Width"
+msgstr "Минимальная ширина символа"
+
+msgid "Selection Color"
+msgstr "Цвет выделения"
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Clear Button Color"
+msgstr "Цвет кнопки «Очистить»"
+
+msgid "Clear Button Color Pressed"
+msgstr "Цвет нажатой кнопки «Очистить»"
+
 msgid "Underline"
 msgstr "Подчёркивание"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Расстояние между базовой линией текста и линией подчёркивания"
+
+msgid "Margin Left"
+msgstr "Отступ слева"
+
+msgid "Margin Top"
+msgstr "Отступ сверху"
+
+msgid "Margin Right"
+msgstr "Отступ справа"
+
+msgid "Margin Bottom"
+msgstr "Отступ снизу"
 
 msgid "Start Index"
 msgstr "Начальный индекс"
@@ -9008,6 +9600,15 @@ msgstr "Нечеткий поиск включен"
 msgid "Fuzzy Search Max Misses"
 msgstr "Макс. промахов в нечетком поиске"
 
+msgid "Arrow"
+msgstr "Стрелка"
+
+msgid "Arrow Margin"
+msgstr "Отступ стрелки"
+
+msgid "Modulate Arrow"
+msgstr "Модуляция цвета стрелки"
+
 msgid "Hide on Item Selection"
 msgstr "Скрывать при выборе элемента"
 
@@ -9032,17 +9633,71 @@ msgstr "Высота сжатия"
 msgid "Shrink Width"
 msgstr "Ширина сжатия"
 
+msgid "Separator"
+msgstr "Разделитель"
+
+msgid "Labeled Separator Left"
+msgstr "Подписанный разделитель слева"
+
+msgid "Labeled Separator Right"
+msgstr "Подписанный разделитель справа"
+
+msgid "Search Bar Separation"
+msgstr "Разделитель строки поиска"
+
+msgid "Item Start Padding"
+msgstr "Отступ перед элементами"
+
+msgid "Item End Padding"
+msgstr "Отступ после элементов"
+
+msgid "Gutter Compact"
+msgstr "Компактный желоб"
+
+msgid "Indeterminate"
+msgstr "Не определено"
+
+msgid "Indeterminate Disabled"
+msgstr "Отключённые неопределённые"
+
+msgid "Search"
+msgstr "Поиск"
+
+msgid "Submenu"
+msgstr "Подменю"
+
+msgid "Submenu Mirrored"
+msgstr "Подменю (компоновка «справа налево»)"
+
+msgid "Font Separator"
+msgstr "Шрифт подписи разделителя"
+
+msgid "Font Separator Size"
+msgstr "Размер шрифта подписи разделителя"
+
+msgid "Font Accelerator Color"
+msgstr "Цвет текста ускорителя"
+
+msgid "Font Separator Color"
+msgstr "Цвет текста разделителя"
+
+msgid "Separator Outline Size"
+msgstr "Размер контура разделителя"
+
+msgid "Font Separator Outline Color"
+msgstr "Цвет контура текста разделителя"
+
 msgid "Fill Mode"
 msgstr "Режим заполнения"
 
 msgid "Show Percentage"
 msgstr "Показать процент"
 
-msgid "Indeterminate"
-msgstr "Не определено"
-
 msgid "Preview Indeterminate"
 msgstr "Предварительный просмотр не определён"
+
+msgid "Background"
+msgstr "Фон"
 
 msgid "Min Value"
 msgstr "Мин. значение"
@@ -9128,8 +9783,98 @@ msgstr "Задержка индикатора хода выполнения"
 msgid "Text Selection"
 msgstr "Выделение текста"
 
+msgid "Horizontal Rule"
+msgstr "Горизонтальная линия"
+
+msgid "Normal Font"
+msgstr "Обычный шрифт"
+
+msgid "Normal Font Size"
+msgstr "Размер обычного шрифта"
+
+msgid "Shadow Offset X"
+msgstr "Смещение тени по X"
+
+msgid "Shadow Offset Y"
+msgstr "Смещение тени по Y"
+
+msgid "Bold Font"
+msgstr "Жирный шрифт"
+
+msgid "Bold Font Size"
+msgstr "Размер полужирного шрифта"
+
+msgid "Bold Italics Font"
+msgstr "Жирный курсивный шрифт"
+
+msgid "Bold Italics Font Size"
+msgstr "Размер полужирного курсивного шрифта"
+
+msgid "Italics Font"
+msgstr "Курсивный шрифт"
+
+msgid "Italics Font Size"
+msgstr "Размер курсивного шрифта"
+
+msgid "Mono Font"
+msgstr "Моноширинный шрифт"
+
+msgid "Mono Font Size"
+msgstr "Размер моноширинного шрифта"
+
+msgid "Text Highlight H Padding"
+msgstr "Отступ по гор. для подсвеченного текста"
+
+msgid "Text Highlight V Padding"
+msgstr "Отступ по верт. для подсвеченного текста"
+
+msgid "Underline Alpha"
+msgstr "Прозрачность подчёркивания"
+
+msgid "Strikethrough Alpha"
+msgstr "Прозрачность зачёркивания"
+
+msgid "Table H Separation"
+msgstr "Гор. разделение таблицы"
+
+msgid "Table V Separation"
+msgstr "Верт. разделение таблицы"
+
+msgid "Table Odd Row BG"
+msgstr "Фон нечётных строк таблицы"
+
+msgid "Table Even Row BG"
+msgstr "Фон чётных строк таблицы"
+
+msgid "Table Border"
+msgstr "Граница таблицы"
+
 msgid "Custom Step"
 msgstr "Пользовательский шаг"
+
+msgid "Scroll Focus"
+msgstr "Прокрутка в фокусе"
+
+msgid "Grabber Pressed"
+msgstr "Нажатие захвата"
+
+msgid "Increment"
+msgstr "Инкремент"
+
+msgid "Increment Highlight"
+msgstr "Подсветка инкремента"
+
+msgid "Increment Pressed"
+msgstr "Нажатие инкремента"
+
+msgid "Decrement"
+msgstr "Декремент"
+
+msgid "Decrement Highlight"
+msgstr "Подсветка декремента"
+
+msgid "Decrement Pressed"
+msgstr "Нажатие декремента"
 
 msgid "Follow Focus"
 msgstr "Следовать за фокусом"
@@ -9164,8 +9909,20 @@ msgstr "Прокручивать по горизонтали по умолчан
 msgid "Scroll Deadzone"
 msgstr "Мёртвая зона прокрутки"
 
-msgid "Scroll Hint"
-msgstr "Подсказка прокручивания"
+msgid "Scrollbar V Separation"
+msgstr "Верт. разделение полосы прокрутки"
+
+msgid "Scroll Hint Vertical"
+msgstr "Подсказка прокручивания вертикально"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Подсказка прокручивания горизонтально"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Цвет вертикальной подсказки прокручивания"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Цвет горизонтальной подсказки прокручивания"
 
 msgid "Default Scroll Deadzone"
 msgstr "Мёртвая зона прокрутки по умолчанию"
@@ -9182,6 +9939,30 @@ msgstr "Деления на границах"
 msgid "Ticks Position"
 msgstr "Положение делений"
 
+msgid "Slider"
+msgstr "Ползунок"
+
+msgid "Grabber Area"
+msgstr "Область захвата"
+
+msgid "Grabber Area Highlight"
+msgstr "Подсветка области захвата"
+
+msgid "Grabber Disabled"
+msgstr "Захват отключён"
+
+msgid "Tick"
+msgstr "Деление"
+
+msgid "Center Grabber"
+msgstr "Захват по центру"
+
+msgid "Grabber Offset"
+msgstr "Смещение захвата"
+
+msgid "Tick Offset"
+msgstr "Смещение деления"
+
 msgid "Update on Text Changed"
 msgstr "Обновлять при изменении текста"
 
@@ -9193,6 +9974,96 @@ msgstr "Пользовательский круглая стрелка"
 
 msgid "Format"
 msgstr "Формат"
+
+msgid "Buttons Vertical Separation"
+msgstr "Вертикальное разделение кнопок"
+
+msgid "Field and Buttons Separation"
+msgstr "Разделение поля и кнопок"
+
+msgid "Buttons Width"
+msgstr "Ширина кнопок"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Установить минимальную ширину кнопки на основе изображения"
+
+msgid "Up"
+msgstr "В обычном состоянии"
+
+msgid "Up Hover"
+msgstr "В обычном состоянии при наведении курсора"
+
+msgid "Up Pressed"
+msgstr "В обычном состоянии при нажатии"
+
+msgid "Up Disabled"
+msgstr "В обычном состоянии при отключении"
+
+msgid "Down"
+msgstr "В активном состоянии"
+
+msgid "Down Hover"
+msgstr "В активном состоянии при наведении"
+
+msgid "Down Pressed"
+msgstr "В активном состоянии при нажатии"
+
+msgid "Down Disabled"
+msgstr "В активном состоянии при отключении"
+
+msgid "Up Background"
+msgstr "Фон в обычном состоянии"
+
+msgid "Up Background Hovered"
+msgstr "Фон в обычном состоянии при наведении курсора"
+
+msgid "Up Background Pressed"
+msgstr "Фон в обычном состоянии при нажатии"
+
+msgid "Up Background Disabled"
+msgstr "Фон в обычном состоянии при отключении"
+
+msgid "Down Background"
+msgstr "Фон в активном состоянии"
+
+msgid "Down Background Hovered"
+msgstr "Фон в активном состоянии при наведении курсора"
+
+msgid "Down Background Pressed"
+msgstr "Фон в активном состоянии при нажатии"
+
+msgid "Down Background Disabled"
+msgstr "Фон в активном состоянии при отключении"
+
+msgid "Up Icon Modulate"
+msgstr "Цвет значка в обычном состоянии"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Цвет значка в обычном состоянии при наведении курсора"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Цвет значка в обычном состоянии при нажатии"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Цвет значка в обычном состоянии при отключении"
+
+msgid "Down Icon Modulate"
+msgstr "Цвет значка в активном состоянии"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Цвет значка в активном состоянии при наведении курсора"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Цвет значка в активном состоянии при нажатии"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Цвет значка в активном состоянии при отключении"
+
+msgid "Field and Buttons Separator"
+msgstr "Разделитель полей и кнопок"
+
+msgid "Up Down Buttons Separator"
+msgstr "Разделитель кнопок в нажатом и обычном состояниях"
 
 msgid "Split Offsets"
 msgstr "Смещение разделения"
@@ -9223,6 +10094,39 @@ msgstr "Отступ в конце"
 
 msgid "Highlight in Editor"
 msgstr "Подсвечивать в редакторе"
+
+msgid "Touch Dragger Color"
+msgstr "Цвет ползунка тачскрина"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Цвет при нажатии ползунка тачскрина"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Цвет при наведении на ползунок тачскрина"
+
+msgid "Minimum Grab Thickness"
+msgstr "Минимальная толщина области захвата"
+
+msgid "Autohide"
+msgstr "Скрывать автоматически"
+
+msgid "Touch Dragger"
+msgstr "Ползунок тачскрина"
+
+msgid "H Touch Dragger"
+msgstr "Вертикальный ползунок тачскрина"
+
+msgid "V Touch Dragger"
+msgstr "Горизонтальный ползунок тачскрина"
+
+msgid "H Grabber"
+msgstr "Гор. захват"
+
+msgid "V Grabber"
+msgstr "Верт. захват"
+
+msgid "Split Bar Background"
+msgstr "Фон разделительной полосы"
 
 msgid "Split Offset"
 msgstr "Смещение разделения"
@@ -9276,6 +10180,42 @@ msgstr "Включить снятие выбора"
 msgid "Tabs"
 msgstr "Вкладки"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Ожидание переключения при наведении, мс"
+
+msgid "Tab Hovered"
+msgstr "Вкладка при наведении"
+
+msgid "Tab Disabled"
+msgstr "Вкладка отключена"
+
+msgid "Tab Focus"
+msgstr "Вкладка в фокусе"
+
+msgid "Drop Mark"
+msgstr "Отметка оставления"
+
+msgid "Drop Mark Color"
+msgstr "Цвет отметки оставления"
+
+msgid "Font Unselected Color"
+msgstr "Цвет текста других (невыбранных) вкладок"
+
+msgid "Icon Selected Color"
+msgstr "Цвет выбранного значка"
+
+msgid "Icon Hovered Color"
+msgstr "Цвет значка при наведении на кнопку"
+
+msgid "Icon Unselected Color"
+msgstr "Цвет не выбранного значка"
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "Button Highlight"
+msgstr "Подсветка кнопок"
+
 msgid "Tabs Position"
 msgstr "Положение вкладок"
 
@@ -9287,6 +10227,21 @@ msgstr "Использовать скрытые вкладки при расчё
 
 msgid "Tab Focus Mode"
 msgstr "Режим фокуса для вкладок"
+
+msgid "Side Margin"
+msgstr "Отступ сбоку"
+
+msgid "Tabbar Background"
+msgstr "Фон панели вкладок"
+
+msgid "Menu"
+msgstr "Меню"
+
+msgid "Menu Highlight"
+msgstr "Подсветка меню"
+
+msgid "Icon Separation"
+msgstr "Разделение значков"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Активировать буфер обмена при пустом выделении"
@@ -9333,18 +10288,38 @@ msgstr "Управляющие символы"
 msgid "Spaces"
 msgstr "Пробелы"
 
+msgid "Search Result Color"
+msgstr "Цвет результата поиска"
+
+msgid "Search Result Border Color"
+msgstr "Цвет границ результата поиска"
+
+msgid "Caret Background Color"
+msgstr "Фоновый цвет курсора"
+
+msgid "Tab"
+msgstr "Вкладка"
+
+msgid "Space"
+msgstr "Пространство"
+
+msgid "Font Readonly Color"
+msgstr "Цвет текста только для чтения"
+
+msgid "Wrap Offset"
+msgstr "Смещение обтекания"
+
+msgid "Current Line Color"
+msgstr "Цвет текущей строки"
+
+msgid "Word Highlighted Color"
+msgstr "Цвет подсвеченного слова"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Обнаружение редактирования текста (сек)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Макс. кол-во элементов для отмены редактирования текста"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Обычный"
-
-msgid "Hover"
-msgstr "Наведение"
 
 msgid "Focused"
 msgstr "Сфокусировано"
@@ -9418,6 +10393,121 @@ msgstr "Включить горизонтальную прокрутку"
 msgid "Scroll Vertical Enabled"
 msgstr "Включить вертикальную прокрутку"
 
+msgid "Title Button Font"
+msgstr "Шрифт кнопки заголовка"
+
+msgid "Title Button Font Size"
+msgstr "Размер шрифта кнопки заголовка"
+
+msgid "Hovered Dimmed"
+msgstr "Затемнённый элемент при наведении курсора"
+
+msgid "Button Hover"
+msgstr "Кнопка при наведении курсора"
+
+msgid "Arrow Collapsed"
+msgstr "Стрелка при свёрнутом элементе"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Стрелка при свёрнутом элементе (компоновка «справа налево»)"
+
+msgid "Select Arrow"
+msgstr "Стрелка выбора"
+
+msgid "Custom Button"
+msgstr "Пользовательская кнопка"
+
+msgid "Custom Button Hover"
+msgstr "Наведение на пользовательскую кнопку"
+
+msgid "Custom Button Pressed"
+msgstr "Нажатие пользовательской кнопки"
+
+msgid "Custom Button Font Highlight"
+msgstr "Цвет текста для ячейки пользовательского режима при наведении"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Цвет шрифта затенённого элемента при наведении курсора"
+
+msgid "Drop on Item Color"
+msgstr "Цвет при перетаскивании на элемент"
+
+msgid "Drop Position Color"
+msgstr "Цвет мест оставления"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Внутренний отступ снизу для элемента"
+
+msgid "Inner Item Margin Left"
+msgstr "Внутренний отступ слева для элемента"
+
+msgid "Inner Item Margin Right"
+msgstr "Внутренний отступ справа для элемента"
+
+msgid "Inner Item Margin Top"
+msgstr "Внутренний отступ сверху для элемента"
+
+msgid "Item Margin"
+msgstr "Отступ элемента"
+
+msgid "Check H Separation"
+msgstr "Проверьте разделение H"
+
+msgid "Icon H Separation"
+msgstr "Разделение значков H"
+
+msgid "Button Margin"
+msgstr "Отступ кнопки"
+
+msgid "Draw Guides"
+msgstr "Рисовать направляющие"
+
+msgid "Relationship Line Width"
+msgstr "Ширина линий отношений"
+
+msgid "Parent HL Line Width"
+msgstr ""
+"Ширина линий отношений между выбранным TreeItem и родительскими элементами"
+
+msgid "Children HL Line Width"
+msgstr "Ширина линий отношений между выбранным TreeItem и дочерними элементами"
+
+msgid "Parent HL Line Margin"
+msgstr ""
+"Расстояние между линиями родительских отношений для выбранного TreeItem и "
+"линиями отношений к его невыбранным одноуровневым элементам"
+
+msgid "Relationship Line Color"
+msgstr "Цвет линий отношений"
+
+msgid "Parent HL Line Color"
+msgstr ""
+"Цвет линий отношений между выбранным TreeItem и родительскими элементами"
+
+msgid "Children HL Line Color"
+msgstr "Цвет линий отношений между выбранным TreeItem и дочерними элементами"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Ожидание разворачивания при перетаскивании, мс"
+
+msgid "Scroll Border"
+msgstr "Граница прокрутки"
+
+msgid "Scroll Speed"
+msgstr "Скорость прокрутки"
+
+msgid "Title Button Normal"
+msgstr "Обычная кнопка заголовка"
+
+msgid "Title Button Pressed"
+msgstr "Нажатие кнопки заголовка"
+
+msgid "Title Button Hover"
+msgstr "Наведение на кнопку заголовка"
+
+msgid "Title Button Color"
+msgstr "Цвет кнопки заголовка"
+
 msgid "Audio Track"
 msgstr "Аудиотрек"
 
@@ -9459,6 +10549,18 @@ msgstr "Действие вверх"
 
 msgid "Action Down"
 msgstr "Действие вниз"
+
+msgid "Normal Joystick"
+msgstr "Обычный джойстик"
+
+msgid "Normal Tip"
+msgstr "Обычный кончик"
+
+msgid "Pressed Joystick"
+msgstr "Нажатый джойстик"
+
+msgid "Pressed Tip"
+msgstr "Нажатый кончик"
 
 msgid "Self Modulate"
 msgstr "Цвет элемента холста"
@@ -9676,9 +10778,6 @@ msgstr "Включить выбор объектов"
 msgid "Scene Traversal"
 msgstr "Обход узлов сцены"
 
-msgid "Menu"
-msgstr "Меню"
-
 msgid "Wait Time"
 msgstr "Время ожидания"
 
@@ -9868,6 +10967,39 @@ msgstr "Вывод HDR"
 
 msgid "Requested"
 msgstr "Запрошено"
+
+msgid "Embedded Border"
+msgstr "Встроенная граница"
+
+msgid "Embedded Unfocused Border"
+msgstr "Встроенная граница без фокуса"
+
+msgid "Title Font"
+msgstr "Шрифт заголовка"
+
+msgid "Title Font Size"
+msgstr "Размер шрифта заголовка"
+
+msgid "Title Height"
+msgstr "Высота заголовка"
+
+msgid "Title Outline Modulate"
+msgstr "Модуляция цвета контура текста заголовка"
+
+msgid "Title Outline Size"
+msgstr "Размер контура заголовка"
+
+msgid "Close Pressed"
+msgstr "Нажатие кнопки «Закрыть»"
+
+msgid "Close H Offset"
+msgstr "Гор. смещение кнопки закрытия"
+
+msgid "Close V Offset"
+msgstr "Верт. смещение кнопки закрытия"
+
+msgid "Resize Margin"
+msgstr "Отступ для изменения размера"
 
 msgid "Swap Cancel OK"
 msgstr "Поменять местами кнопки «Отмена» и «OK»"
@@ -10304,9 +11436,6 @@ msgstr "Кривая Y (зелёный канал)"
 msgid "Curve Z"
 msgstr "Кривая Z (синий канал)"
 
-msgid "Background"
-msgstr "Фон"
-
 msgid "Canvas Max Layer"
 msgstr "Макс. слой холста"
 
@@ -10517,9 +11646,6 @@ msgstr "Дополнительное расстояние"
 msgid "Glyph"
 msgstr "Глиф"
 
-msgid "Space"
-msgstr "Пространство"
-
 msgid "Baseline"
 msgstr "Базовая линия"
 
@@ -10558,9 +11684,6 @@ msgstr "Использовать HDR"
 
 msgid "To"
 msgstr "До"
-
-msgid "Paragraph Spacing"
-msgstr "Межабзацные интервалы"
 
 msgid "Stacked Effects"
 msgstr "Стек эффектов"
@@ -11106,1130 +12229,6 @@ msgstr "Шрифт по умолчанию"
 
 msgid "Default Font Size"
 msgstr "Размер шрифта по умолчанию"
-
-msgid "File"
-msgstr "Файл"
-
-msgid "Font Pressed Color"
-msgstr "Цвет текста при нажатии кнопки"
-
-msgid "Font Hover Color"
-msgstr "Цвет текста при наведении на кнопку"
-
-msgid "Font Focus Color"
-msgstr "Цвет текста при фокусе на кнопке"
-
-msgid "Font Hover Pressed Color"
-msgstr "Цвет текста при наведении на нажатую кнопку"
-
-msgid "Font Disabled Color"
-msgstr "Цвет теста при отключении кнопки"
-
-msgid "Font Outline Color"
-msgstr "Цвет текстового контура кнопки"
-
-msgid "Icon Normal Color"
-msgstr "Обычный цвет значка кнопки"
-
-msgid "Icon Pressed Color"
-msgstr "Цвет значка при нажатии кнопки"
-
-msgid "Icon Hover Color"
-msgstr "Цвет значка при наведении на кнопку"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Цвет значка при наведении на нажатую кнопку"
-
-msgid "Icon Focus Color"
-msgstr "Цвет значка при фокусе на кнопке"
-
-msgid "Icon Disabled Color"
-msgstr "Цвет значка при отключении кнопки"
-
-msgid "H Separation"
-msgstr "Гор. разделение"
-
-msgid "Icon Max Width"
-msgstr "Макс. ширина значка"
-
-msgid "Align to Largest Stylebox"
-msgstr "Выровнять по самому большому Stylebox"
-
-msgid "Underline Spacing"
-msgstr "Расстояние между базовой линией текста и линией подчёркивания"
-
-msgid "Normal Mirrored"
-msgstr "Обычный пункт меню (компоновка «справа налево»)"
-
-msgid "Hover Mirrored"
-msgstr "Пункт меню при наведении (компоновка «справа налево»)"
-
-msgid "Pressed Mirrored"
-msgstr "Нажатый пункт меню (компоновка «справа налево»)"
-
-msgid "Disabled Mirrored"
-msgstr "Отключённый пункт меню (компоновка «справа налево»)"
-
-msgid "Arrow"
-msgstr "Стрелка"
-
-msgid "Arrow Margin"
-msgstr "Отступ стрелки"
-
-msgid "Modulate Arrow"
-msgstr "Модуляция цвета стрелки"
-
-msgid "Hover Pressed"
-msgstr "Нажатый пункт меню при наведении"
-
-msgid "Checked Disabled"
-msgstr "Отмеченный отключённый флажок"
-
-msgid "Unchecked"
-msgstr "Неотмеченный"
-
-msgid "Unchecked Disabled"
-msgstr "Неотмеченный отключённый флажок"
-
-msgid "Radio Checked"
-msgstr "Отмеченный переключатель"
-
-msgid "Radio Checked Disabled"
-msgstr "Отмеченный отключённый переключатель"
-
-msgid "Radio Unchecked"
-msgstr "Неотмеченный переключатель"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Неотмеченный отключённый переключатель"
-
-msgid "Check V Offset"
-msgstr "Верт. смещение для значков отметки"
-
-msgid "Checkbox Checked Color"
-msgstr "Цвет установленного флажка"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Цвет снятого флажка"
-
-msgid "Checked Mirrored"
-msgstr "Отмеченный флажок (компоновка «справа налево»)"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Отмеченный отключённый флажок (компоновка «справа налево»)"
-
-msgid "Unchecked Mirrored"
-msgstr "Неотмеченный флажок (компоновка «справа налево»)"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Неотмеченный отключённый флажок (компоновка «справа налево»)"
-
-msgid "Button Checked Color"
-msgstr "Цвет нажатой кнопки"
-
-msgid "Button Unchecked Color"
-msgstr "Цвет ненажатой кнопки"
-
-msgid "Font Shadow Color"
-msgstr "Цвет тени текста"
-
-msgid "Shadow Offset X"
-msgstr "Смещение тени по X"
-
-msgid "Shadow Offset Y"
-msgstr "Смещение тени по Y"
-
-msgid "Shadow Outline Size"
-msgstr "Размер контура тени"
-
-msgid "Font Selected Color"
-msgstr "Цвет текста текущей выбранной вкладки"
-
-msgid "Font Uneditable Color"
-msgstr "Цвет текста, когда редактирование отключено"
-
-msgid "Font Placeholder Color"
-msgstr "Цвет шрифта текста-заполнителя"
-
-msgid "Caret Color"
-msgstr "Цвет курсора"
-
-msgid "Selection Color"
-msgstr "Цвет выделения"
-
-msgid "Clear Button Color"
-msgstr "Цвет кнопки «Очистить»"
-
-msgid "Clear Button Color Pressed"
-msgstr "Цвет нажатой кнопки «Очистить»"
-
-msgid "Minimum Character Width"
-msgstr "Минимальная ширина символа"
-
-msgid "Caret Width"
-msgstr "Ширина курсора"
-
-msgid "Clear"
-msgstr "Очистить"
-
-msgid "Tab"
-msgstr "Вкладка"
-
-msgid "Font Readonly Color"
-msgstr "Цвет текста только для чтения"
-
-msgid "Current Line Color"
-msgstr "Цвет текущей строки"
-
-msgid "Caret Background Color"
-msgstr "Фоновый цвет курсора"
-
-msgid "Word Highlighted Color"
-msgstr "Цвет подсвеченного слова"
-
-msgid "Search Result Color"
-msgstr "Цвет результата поиска"
-
-msgid "Search Result Border Color"
-msgstr "Цвет границ результата поиска"
-
-msgid "Wrap Offset"
-msgstr "Смещение обтекания"
-
-msgid "Breakpoint"
-msgstr "Точка остановки"
-
-msgid "Bookmark"
-msgstr "Закладка"
-
-msgid "Executing Line"
-msgstr "Выполняемая строка"
-
-msgid "Can Fold"
-msgstr "Возможно сворачивание"
-
-msgid "Can Fold Code Region"
-msgstr "Область кода с возможностью сворачивания"
-
-msgid "Folded Code Region"
-msgstr "Область кода с возможностью разворачивания"
-
-msgid "Folded EOL Icon"
-msgstr "Значок в конце свёрнутой строки"
-
-msgid "Completion Color BG"
-msgstr "Цвет фона индикатора выполнения"
-
-msgid "Completion Background Color"
-msgstr "Цвет фона окна завершения"
-
-msgid "Completion Selected Color"
-msgstr "Цвет фона выделенного варианта завершения"
-
-msgid "Completion Existing Color"
-msgstr "Цвет фона совпадающего текста в вариантах завершения"
-
-msgid "Completion Scroll Color"
-msgstr "Цвет полосы прокрутки окна завершения"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Цвет полосы прокрутки окна завершения при наведении"
-
-msgid "Bookmark Color"
-msgstr "Цвет закладки"
-
-msgid "Breakpoint Color"
-msgstr "Цвет точки останова"
-
-msgid "Executing Line Color"
-msgstr "Цвет выполняемой строки"
-
-msgid "Code Folding Color"
-msgstr "Цвет значков сворачивания кода"
-
-msgid "Folded Code Region Color"
-msgstr "Цвет свёрнутой области кода"
-
-msgid "Brace Mismatch Color"
-msgstr "Цвет несовпадающей скобки"
-
-msgid "Line Number Color"
-msgstr "Цвет номеров строк"
-
-msgid "Line Length Guideline Color"
-msgstr "Цвет предела длины строки"
-
-msgid "Completion Lines"
-msgstr "Макс. кол-во вариантов завершения"
-
-msgid "Completion Max Width"
-msgstr "Макс. ширина вариантов в окне завершения"
-
-msgid "Completion Scroll Width"
-msgstr "Ширина полосы прокрутки окна завершения"
-
-msgid "Scroll Focus"
-msgstr "Прокрутка в фокусе"
-
-msgid "Grabber"
-msgstr "Захват"
-
-msgid "Grabber Highlight"
-msgstr "Подсветка захвата"
-
-msgid "Grabber Pressed"
-msgstr "Нажатие захвата"
-
-msgid "Increment"
-msgstr "Инкремент"
-
-msgid "Increment Highlight"
-msgstr "Подсветка инкремента"
-
-msgid "Increment Pressed"
-msgstr "Нажатие инкремента"
-
-msgid "Decrement"
-msgstr "Декремент"
-
-msgid "Decrement Highlight"
-msgstr "Подсветка декремента"
-
-msgid "Decrement Pressed"
-msgstr "Нажатие декремента"
-
-msgid "Slider"
-msgstr "Ползунок"
-
-msgid "Grabber Area"
-msgstr "Область захвата"
-
-msgid "Grabber Area Highlight"
-msgstr "Подсветка области захвата"
-
-msgid "Grabber Disabled"
-msgstr "Захват отключён"
-
-msgid "Tick"
-msgstr "Деление"
-
-msgid "Center Grabber"
-msgstr "Захват по центру"
-
-msgid "Grabber Offset"
-msgstr "Смещение захвата"
-
-msgid "Tick Offset"
-msgstr "Смещение деления"
-
-msgid "Updown"
-msgstr "Пользовательская текстура для стрелок «вверх» и «вниз»"
-
-msgid "Up"
-msgstr "В обычном состоянии"
-
-msgid "Up Hover"
-msgstr "В обычном состоянии при наведении курсора"
-
-msgid "Up Pressed"
-msgstr "В обычном состоянии при нажатии"
-
-msgid "Up Disabled"
-msgstr "В обычном состоянии при отключении"
-
-msgid "Down"
-msgstr "В активном состоянии"
-
-msgid "Down Hover"
-msgstr "В активном состоянии при наведении"
-
-msgid "Down Pressed"
-msgstr "В активном состоянии при нажатии"
-
-msgid "Down Disabled"
-msgstr "В активном состоянии при отключении"
-
-msgid "Up Background"
-msgstr "Фон в обычном состоянии"
-
-msgid "Up Background Hovered"
-msgstr "Фон в обычном состоянии при наведении курсора"
-
-msgid "Up Background Pressed"
-msgstr "Фон в обычном состоянии при нажатии"
-
-msgid "Up Background Disabled"
-msgstr "Фон в обычном состоянии при отключении"
-
-msgid "Down Background"
-msgstr "Фон в активном состоянии"
-
-msgid "Down Background Hovered"
-msgstr "Фон в активном состоянии при наведении курсора"
-
-msgid "Down Background Pressed"
-msgstr "Фон в активном состоянии при нажатии"
-
-msgid "Down Background Disabled"
-msgstr "Фон в активном состоянии при отключении"
-
-msgid "Up Icon Modulate"
-msgstr "Цвет значка в обычном состоянии"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Цвет значка в обычном состоянии при наведении курсора"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Цвет значка в обычном состоянии при нажатии"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Цвет значка в обычном состоянии при отключении"
-
-msgid "Down Icon Modulate"
-msgstr "Цвет значка в активном состоянии"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Цвет значка в активном состоянии при наведении курсора"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Цвет значка в активном состоянии при нажатии"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Цвет значка в активном состоянии при отключении"
-
-msgid "Field and Buttons Separator"
-msgstr "Разделитель полей и кнопок"
-
-msgid "Up Down Buttons Separator"
-msgstr "Разделитель кнопок в нажатом и обычном состояниях"
-
-msgid "Buttons Vertical Separation"
-msgstr "Вертикальное разделение кнопок"
-
-msgid "Field and Buttons Separation"
-msgstr "Разделение поля и кнопок"
-
-msgid "Buttons Width"
-msgstr "Ширина кнопок"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Установить минимальную ширину кнопки на основе изображения"
-
-msgid "Scroll Hint Vertical"
-msgstr "Подсказка прокручивания вертикально"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Подсказка прокручивания горизонтально"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Цвет вертикальной подсказки прокручивания"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Цвет горизонтальной подсказки прокручивания"
-
-msgid "Scrollbar Margin Left"
-msgstr "Отступ слева для полосы прокрутки"
-
-msgid "Scrollbar Margin Top"
-msgstr "Отступ сверху для полосы прокрутки"
-
-msgid "Scrollbar Margin Right"
-msgstr "Отступ справа для полосы прокрутки"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Отступ снизу для полосы прокрутки"
-
-msgid "Normal Joystick"
-msgstr "Обычный джойстик"
-
-msgid "Normal Tip"
-msgstr "Обычный кончик"
-
-msgid "Pressed Joystick"
-msgstr "Нажатый джойстик"
-
-msgid "Pressed Tip"
-msgstr "Нажатый кончик"
-
-msgid "Embedded Border"
-msgstr "Встроенная граница"
-
-msgid "Embedded Unfocused Border"
-msgstr "Встроенная граница без фокуса"
-
-msgid "Title Font"
-msgstr "Шрифт заголовка"
-
-msgid "Title Font Size"
-msgstr "Размер шрифта заголовка"
-
-msgid "Title Outline Modulate"
-msgstr "Модуляция цвета контура текста заголовка"
-
-msgid "Title Outline Size"
-msgstr "Размер контура заголовка"
-
-msgid "Title Height"
-msgstr "Высота заголовка"
-
-msgid "Resize Margin"
-msgstr "Отступ для изменения размера"
-
-msgid "Close"
-msgstr "Закрыть"
-
-msgid "Close Pressed"
-msgstr "Нажатие кнопки «Закрыть»"
-
-msgid "Close H Offset"
-msgstr "Гор. смещение кнопки закрытия"
-
-msgid "Close V Offset"
-msgstr "Верт. смещение кнопки закрытия"
-
-msgid "Buttons Separation"
-msgstr "Разделение кнопок"
-
-msgid "Load"
-msgstr "Загрузить"
-
-msgid "Save"
-msgstr "Сохранить"
-
-msgid "Parent Folder"
-msgstr "Родительская папка"
-
-msgid "Back Folder"
-msgstr "Предыдущая папка"
-
-msgid "Forward Folder"
-msgstr "Следующая папка"
-
-msgid "Reload"
-msgstr "Перезагрузить"
-
-msgid "Favorite"
-msgstr "Любимый"
-
-msgid "Toggle Hidden"
-msgstr "Переключение скрытых"
-
-msgid "Toggle Filename Filter"
-msgstr "Переключить фильтр имени файла"
-
-msgid "Folder"
-msgstr "Папка"
-
-msgid "Thumbnail Mode"
-msgstr "Размер отображения миниатюр"
-
-msgid "List Mode"
-msgstr "Режим отображения списка"
-
-msgid "Create Folder"
-msgstr "Создать папку"
-
-msgid "Sort"
-msgstr "Сортировка"
-
-msgid "Favorite Up"
-msgstr "Лучший"
-
-msgid "Favorite Down"
-msgstr "Худший"
-
-msgid "File Thumbnail"
-msgstr "Миниатюра файла"
-
-msgid "Folder Thumbnail"
-msgstr "Миниатюра папки"
-
-msgid "Menu Copy Path"
-msgstr "Меню Копировать путь"
-
-msgid "Menu Delete"
-msgstr "Меню Удалить"
-
-msgid "Menu New Folder"
-msgstr "Меню Новая папка"
-
-msgid "Menu Refresh"
-msgstr "Меню Обновить"
-
-msgid "Menu Show in File Manager"
-msgstr "Меню Показать в менеджере файлов"
-
-msgid "Menu Open Bundle"
-msgstr "Меню Открыть пакет"
-
-msgid "Folder Icon Color"
-msgstr "Цвет значка папки"
-
-msgid "File Icon Color"
-msgstr "Цвет значка файла"
-
-msgid "File Disabled Color"
-msgstr "Цвет отключённого файла"
-
-msgid "Separator"
-msgstr "Разделитель"
-
-msgid "Labeled Separator Left"
-msgstr "Подписанный разделитель слева"
-
-msgid "Labeled Separator Right"
-msgstr "Подписанный разделитель справа"
-
-msgid "Indeterminate Disabled"
-msgstr "Отключённые неопределённые"
-
-msgid "Submenu"
-msgstr "Подменю"
-
-msgid "Submenu Mirrored"
-msgstr "Подменю (компоновка «справа налево»)"
-
-msgid "Search"
-msgstr "Поиск"
-
-msgid "Font Separator"
-msgstr "Шрифт подписи разделителя"
-
-msgid "Font Separator Size"
-msgstr "Размер шрифта подписи разделителя"
-
-msgid "Font Accelerator Color"
-msgstr "Цвет текста ускорителя"
-
-msgid "Font Separator Color"
-msgstr "Цвет текста разделителя"
-
-msgid "Font Separator Outline Color"
-msgstr "Цвет контура текста разделителя"
-
-msgid "V Separation"
-msgstr "Верт. разделение"
-
-msgid "Search Bar Separation"
-msgstr "Разделитель строки поиска"
-
-msgid "Separator Outline Size"
-msgstr "Размер контура разделителя"
-
-msgid "Item Start Padding"
-msgstr "Отступ перед элементами"
-
-msgid "Item End Padding"
-msgstr "Отступ после элементов"
-
-msgid "Gutter Compact"
-msgstr "Компактный желоб"
-
-msgid "Panel Selected"
-msgstr "Панель выбрана"
-
-msgid "Panel Focus"
-msgstr "Панель в фокусе"
-
-msgid "Titlebar"
-msgstr "Строка заголовка"
-
-msgid "Titlebar Selected"
-msgstr "Строка заголовка выбрана"
-
-msgid "Slot"
-msgstr "Слот"
-
-msgid "Slot Selected"
-msgstr "Слот выбран"
-
-msgid "Resizer"
-msgstr "Средство изменения размера"
-
-msgid "Resizer Color"
-msgstr "Цвет значка средства изменения размера"
-
-msgid "Port H Offset"
-msgstr "Гор. смещение порта"
-
-msgid "Hovered"
-msgstr "При наведении курсора"
-
-msgid "Hovered Dimmed"
-msgstr "Затемнённый элемент при наведении курсора"
-
-msgid "Hovered Selected"
-msgstr "Выбранные элементы при наведении курсора"
-
-msgid "Hovered Selected Focus"
-msgstr "Выбранные элементы в фокусе при наведении курсора"
-
-msgid "Selected Focus"
-msgstr "Выбранные элементы, когда список элементов в фокусе"
-
-msgid "Cursor"
-msgstr "Курсор"
-
-msgid "Cursor Unfocused"
-msgstr "Курсор при отсутствии фокуса"
-
-msgid "Button Hover"
-msgstr "Кнопка при наведении курсора"
-
-msgid "Title Button Normal"
-msgstr "Обычная кнопка заголовка"
-
-msgid "Title Button Pressed"
-msgstr "Нажатие кнопки заголовка"
-
-msgid "Title Button Hover"
-msgstr "Наведение на кнопку заголовка"
-
-msgid "Custom Button"
-msgstr "Пользовательская кнопка"
-
-msgid "Custom Button Pressed"
-msgstr "Нажатие пользовательской кнопки"
-
-msgid "Custom Button Hover"
-msgstr "Наведение на пользовательскую кнопку"
-
-msgid "Select Arrow"
-msgstr "Стрелка выбора"
-
-msgid "Arrow Collapsed"
-msgstr "Стрелка при свёрнутом элементе"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Стрелка при свёрнутом элементе (компоновка «справа налево»)"
-
-msgid "Title Button Font"
-msgstr "Шрифт кнопки заголовка"
-
-msgid "Title Button Font Size"
-msgstr "Размер шрифта кнопки заголовка"
-
-msgid "Title Button Color"
-msgstr "Цвет кнопки заголовка"
-
-msgid "Font Hovered Color"
-msgstr "Цвет шрифта при наведении"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Цвет шрифта затенённого элемента при наведении курсора"
-
-msgid "Font Hovered Selected Color"
-msgstr "Цвет шрифта выбранного элемента при наведении курсора"
-
-msgid "Guide Color"
-msgstr "Цвет направляющей"
-
-msgid "Drop on Item Color"
-msgstr "Цвет при перетаскивании на элемент"
-
-msgid "Drop Position Color"
-msgstr "Цвет мест оставления"
-
-msgid "Relationship Line Color"
-msgstr "Цвет линий отношений"
-
-msgid "Parent HL Line Color"
-msgstr ""
-"Цвет линий отношений между выбранным TreeItem и родительскими элементами"
-
-msgid "Children HL Line Color"
-msgstr "Цвет линий отношений между выбранным TreeItem и дочерними элементами"
-
-msgid "Custom Button Font Highlight"
-msgstr "Цвет текста для ячейки пользовательского режима при наведении"
-
-msgid "Scroll Hint Color"
-msgstr "Цвет подсказки прокручивания"
-
-msgid "Item Margin"
-msgstr "Отступ элемента"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Внутренний отступ снизу для элемента"
-
-msgid "Inner Item Margin Left"
-msgstr "Внутренний отступ слева для элемента"
-
-msgid "Inner Item Margin Right"
-msgstr "Внутренний отступ справа для элемента"
-
-msgid "Inner Item Margin Top"
-msgstr "Внутренний отступ сверху для элемента"
-
-msgid "Check H Separation"
-msgstr "Проверьте разделение H"
-
-msgid "Icon H Separation"
-msgstr "Разделение значков H"
-
-msgid "Button Margin"
-msgstr "Отступ кнопки"
-
-msgid "Relationship Line Width"
-msgstr "Ширина линий отношений"
-
-msgid "Parent HL Line Width"
-msgstr ""
-"Ширина линий отношений между выбранным TreeItem и родительскими элементами"
-
-msgid "Children HL Line Width"
-msgstr "Ширина линий отношений между выбранным TreeItem и дочерними элементами"
-
-msgid "Parent HL Line Margin"
-msgstr ""
-"Расстояние между линиями родительских отношений для выбранного TreeItem и "
-"линиями отношений к его невыбранным одноуровневым элементам"
-
-msgid "Draw Guides"
-msgstr "Рисовать направляющие"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Ожидание разворачивания при перетаскивании, мс"
-
-msgid "Scroll Border"
-msgstr "Граница прокрутки"
-
-msgid "Scroll Speed"
-msgstr "Скорость прокрутки"
-
-msgid "Scrollbar H Separation"
-msgstr "Гор. разделение полосы прокрутки"
-
-msgid "Scrollbar V Separation"
-msgstr "Верт. разделение полосы прокрутки"
-
-msgid "Icon Margin"
-msgstr "Отступ значка"
-
-msgid "Tab Selected"
-msgstr "Вкладка выбрана"
-
-msgid "Tab Hovered"
-msgstr "Вкладка при наведении"
-
-msgid "Tab Unselected"
-msgstr "Вкладка не выбрана"
-
-msgid "Tab Disabled"
-msgstr "Вкладка отключена"
-
-msgid "Tab Focus"
-msgstr "Вкладка в фокусе"
-
-msgid "Tabbar Background"
-msgstr "Фон панели вкладок"
-
-msgid "Drop Mark"
-msgstr "Отметка оставления"
-
-msgid "Menu Highlight"
-msgstr "Подсветка меню"
-
-msgid "Font Unselected Color"
-msgstr "Цвет текста других (невыбранных) вкладок"
-
-msgid "Drop Mark Color"
-msgstr "Цвет отметки оставления"
-
-msgid "Icon Selected Color"
-msgstr "Цвет выбранного значка"
-
-msgid "Icon Hovered Color"
-msgstr "Цвет значка при наведении на кнопку"
-
-msgid "Icon Unselected Color"
-msgstr "Цвет не выбранного значка"
-
-msgid "Side Margin"
-msgstr "Отступ сбоку"
-
-msgid "Icon Separation"
-msgstr "Разделение значков"
-
-msgid "Button Highlight"
-msgstr "Подсветка кнопок"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Ожидание переключения при наведении, мс"
-
-msgid "SV Width"
-msgstr "Ширина поля выбора насыщенности/значения"
-
-msgid "SV Height"
-msgstr "Высота поля выбора насыщенности/значения"
-
-msgid "H Width"
-msgstr "Ширина ползунка выбора тона"
-
-msgid "Label Width"
-msgstr "Ширина подписи"
-
-msgid "Center Slider Grabbers"
-msgstr "Центрировать грабберы ползунка"
-
-msgid "Sample Focus"
-msgstr "Сэмпл в фокусе"
-
-msgid "Picker Focus Rectangle"
-msgstr "Рамка фокуса средства выбора цвета"
-
-msgid "Picker Focus Circle"
-msgstr "Окружность фокуса средства выбора цвета"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Цвет курсора при фокусе без редактирования"
-
-msgid "Menu Option"
-msgstr "Вариант стиля меню"
-
-msgid "Folded Arrow"
-msgstr "Значок свёрнутого меню цветовых предустановок"
-
-msgid "Expanded Arrow"
-msgstr "Значок развёрнутого меню цветовых предустановок"
-
-msgid "Screen Picker"
-msgstr "Значок выбора цвета с экрана"
-
-msgid "Shape Circle"
-msgstr "Значок круга выбора"
-
-msgid "Shape Rect"
-msgstr "Значок прямоугольника выбора"
-
-msgid "Shape Rect Wheel"
-msgstr "Значок прямоугольного колеса выбора"
-
-msgid "Add Preset"
-msgstr "Значок кнопки «Добавить предустановку»"
-
-msgid "Sample BG"
-msgstr "Фон образца"
-
-msgid "Sample Revert"
-msgstr "Восстановление образца"
-
-msgid "Overbright Indicator"
-msgstr "Индикатор повышенной яркости"
-
-msgid "Bar Arrow"
-msgstr "Текстура для стрелки"
-
-msgid "Picker Cursor"
-msgstr "Курсор выбора цвета"
-
-msgid "Picker Cursor BG"
-msgstr "Фон курсора средства выбора цвета"
-
-msgid "Color Script"
-msgstr "Цвет скрипта"
-
-msgid "Color Copy"
-msgstr "Копирование цвета"
-
-msgid "Color Hue"
-msgstr "Пользовательская текстура для ползунка выбора тона"
-
-msgid "BG"
-msgstr "Задний план"
-
-msgid "Preset FG"
-msgstr "Передний план предустановки"
-
-msgid "Preset Focus"
-msgstr "Предустановка в фокусе"
-
-msgid "Preset BG"
-msgstr "Задний план предустановки"
-
-msgid "Horizontal Rule"
-msgstr "Горизонтальная линия"
-
-msgid "Normal Font"
-msgstr "Обычный шрифт"
-
-msgid "Bold Font"
-msgstr "Жирный шрифт"
-
-msgid "Italics Font"
-msgstr "Курсивный шрифт"
-
-msgid "Bold Italics Font"
-msgstr "Жирный курсивный шрифт"
-
-msgid "Mono Font"
-msgstr "Моноширинный шрифт"
-
-msgid "Normal Font Size"
-msgstr "Размер обычного шрифта"
-
-msgid "Bold Font Size"
-msgstr "Размер полужирного шрифта"
-
-msgid "Italics Font Size"
-msgstr "Размер курсивного шрифта"
-
-msgid "Bold Italics Font Size"
-msgstr "Размер полужирного курсивного шрифта"
-
-msgid "Mono Font Size"
-msgstr "Размер моноширинного шрифта"
-
-msgid "Table H Separation"
-msgstr "Гор. разделение таблицы"
-
-msgid "Table V Separation"
-msgstr "Верт. разделение таблицы"
-
-msgid "Table Odd Row BG"
-msgstr "Фон нечётных строк таблицы"
-
-msgid "Table Even Row BG"
-msgstr "Фон чётных строк таблицы"
-
-msgid "Table Border"
-msgstr "Граница таблицы"
-
-msgid "Text Highlight H Padding"
-msgstr "Отступ по гор. для подсвеченного текста"
-
-msgid "Text Highlight V Padding"
-msgstr "Отступ по верт. для подсвеченного текста"
-
-msgid "Underline Alpha"
-msgstr "Прозрачность подчёркивания"
-
-msgid "Strikethrough Alpha"
-msgstr "Прозрачность зачёркивания"
-
-msgid "Touch Dragger Color"
-msgstr "Цвет ползунка тачскрина"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Цвет при нажатии ползунка тачскрина"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Цвет при наведении на ползунок тачскрина"
-
-msgid "H Touch Dragger"
-msgstr "Вертикальный ползунок тачскрина"
-
-msgid "V Touch Dragger"
-msgstr "Горизонтальный ползунок тачскрина"
-
-msgid "Touch Dragger"
-msgstr "Ползунок тачскрина"
-
-msgid "H Grabber"
-msgstr "Гор. захват"
-
-msgid "V Grabber"
-msgstr "Верт. захват"
-
-msgid "Margin Left"
-msgstr "Отступ слева"
-
-msgid "Margin Top"
-msgstr "Отступ сверху"
-
-msgid "Margin Right"
-msgstr "Отступ справа"
-
-msgid "Margin Bottom"
-msgstr "Отступ снизу"
-
-msgid "Minimum Grab Thickness"
-msgstr "Минимальная толщина области захвата"
-
-msgid "Autohide"
-msgstr "Скрывать автоматически"
-
-msgid "Split Bar Background"
-msgstr "Фон разделительной полосы"
-
-msgid "Zoom Out"
-msgstr "Отдалить"
-
-msgid "Zoom In"
-msgstr "Приблизить"
-
-msgid "Zoom Reset"
-msgstr "Сбросить масштабирование"
-
-msgid "Grid Toggle"
-msgstr "Переключатель сетки"
-
-msgid "Minimap Toggle"
-msgstr "Переключатель миникарты"
-
-msgid "Snapping Toggle"
-msgstr "Переключатель привязки"
-
-msgid "Menu Panel"
-msgstr "Панель меню"
-
-msgid "Grid Minor"
-msgstr "Цвет вторичных линий сетки"
-
-msgid "Grid Major"
-msgstr "Цвет основных линий сетки"
-
-msgid "Selection Fill"
-msgstr "Цвет заливки прямоугольника выделения"
-
-msgid "Selection Stroke"
-msgstr "Цвет контура прямоугольника выделения"
-
-msgid "Activity"
-msgstr "Цвет активности соединения"
-
-msgid "Connection Hover Tint Color"
-msgstr "Оттенок цвета при наведении курсора на соединение"
-
-msgid "Connection Hover Thickness"
-msgstr "Толщина линии при наведении курсора на соединение"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Оттенок цвета корректной цели соединения"
-
-msgid "Connection Rim Color"
-msgstr "Цвет края соединения"
-
-msgid "Title Panel"
-msgstr "Панель заголовка"
-
-msgid "Title Hover Panel"
-msgstr "Панель заголовка при наведении курсора"
-
-msgid "Title Collapsed Panel"
-msgstr "Свёрнутая панель заголовка"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Свёрнутая панель заголовка при наведении"
-
-msgid "Hover Font Color"
-msgstr "Цвет шрифта при наведении курсора"
-
-msgid "Collapsed Font Color"
-msgstr "Цвет шрифта свёрнутого элемента"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Зеркальное отображение развёрнутого элемента"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Зеркальное отображение свёрнутого элемента"
-
-msgid "Port Hotzone Inner Extent"
-msgstr ""
-"Гор. диапазон, в пределах которого порт можно захватить (внутр. сторона)"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Гор. диапазон, в пределах которого порт можно захватить (внеш. сторона)"
 
 msgid "Default Theme Scale"
 msgstr "Масштаб темы по умолчанию"

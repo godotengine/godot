@@ -1215,6 +1215,8 @@ void TextEdit::_notification(int p_what) {
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int tab_size = text.get_tab_size();
 				int ofs_y = style->get_margin(SIDE_TOP);
+				int minimap_content_begin_x = xmargin_end + minimap_margin;
+				int minimap_content_width = minimap_width - minimap_margin;
 
 				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
@@ -1243,9 +1245,9 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_content_begin_x - minimap_content_width, viewport_offset_y + ofs_y, minimap_content_width, viewport_height), viewport_color);
 				} else {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_content_begin_x, viewport_offset_y + ofs_y, minimap_content_width, viewport_height), viewport_color);
 				}
 
 				for (int i = 0; i < minimap_draw_amount; i++) {
@@ -1308,22 +1310,22 @@ void TextEdit::_notification(int p_what) {
 
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_content_begin_x - minimap_content_width, i * minimap_line_height + ofs_y, minimap_content_width, 2), theme_cache.current_line_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_content_begin_x, i * minimap_line_height + ofs_y, minimap_content_width, 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_content_begin_x - minimap_content_width, i * minimap_line_height + ofs_y, minimap_content_width, 2), line_background_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_content_begin_x, i * minimap_line_height + ofs_y, minimap_content_width, 2), line_background_color);
 							}
 						}
 
 						Color next_color = current_color;
 						int characters = 0;
 						int tab_alignment = 0;
-						int xpos = xmargin_end + 2 + indent_px;
+						int xpos = minimap_content_begin_x + indent_px;
 						for (int j = 0; j < str.length(); j++) {
 							bool next_is_whitespace = false;
 							bool next_is_tab = false;

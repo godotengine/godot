@@ -373,10 +373,6 @@ void SplitContainerDragger::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_FOCUS_EXIT: {
-			stop_dragging();
-		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (dragging && !is_visible_in_tree()) {
 				stop_dragging();

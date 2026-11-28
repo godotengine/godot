@@ -3569,9 +3569,6 @@ msgstr ""
 "Chú thích (annotation) này có thể bị thay đổi hoặc loại bỏ trong các phiên "
 "bản tương lai."
 
-msgid "Open in File Manager"
-msgstr "Mở trong trình quản lý tệp tin"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Thuộc tính này chỉ có thể thiết lập trong bảng Inspector."
 
@@ -4470,20 +4467,6 @@ msgstr ""
 "Không thể lưu một nhánh là một phần của cảnh kế thừa.\n"
 "Để lưu nhánh này thành cảnh riêng, hãy mở cảnh gốc, chuột phải vào nhánh này "
 "và chọn \"Lưu nhánh dưới dạng cảnh\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Vô hiệu hóa \"Editable Children\" sẽ khiến tất cả thuộc tính của các node con "
-"cháu trong subscene này bị reset về mặc định."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Kích hoạt \"Load as Placeholder\" sẽ tự động tắt \"Editable Children\" và "
-"reset toàn bộ thuộc tính của node này về mặc định."
 
 msgid "Make Local"
 msgstr "Chuyển thành cục bộ (Make Local)"
@@ -8745,9 +8728,6 @@ msgstr "Lỗi: Dự án bị thiếu trên hệ thống tệp tin."
 
 msgid "Toggle Favorite"
 msgstr "Bật tắt Ưa thích"
-
-msgid "Open in file manager"
-msgstr "Mở trong trình quản lý tệp"
 
 msgid "Last edited timestamp"
 msgstr "Mốc thời gian chỉnh sửa lần cuối"

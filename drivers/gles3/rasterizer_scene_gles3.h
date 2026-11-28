@@ -124,6 +124,7 @@ struct RenderDataGLES3 {
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
+	const PagedArray<RID> *lightmaps = nullptr;
 	RID environment;
 	RID camera_attributes;
 	RID shadow_atlas;
@@ -351,6 +352,7 @@ private:
 		int32_t decals[MAX_DECAL_CULL];
 
 		RID lightmap_instance;
+		bool uses_lightmap = false;
 		Rect2 lightmap_uv_scale;
 		uint32_t lightmap_slice_index;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;

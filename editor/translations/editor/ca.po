@@ -3562,9 +3562,6 @@ msgstr "No hi ha descripció disponible."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Aquesta anotació es pot canviar o eliminar en futures versions."
 
-msgid "Open in File Manager"
-msgstr "Obrir en el Gestor de Fitxers"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Aquesta propietat només es pot establir a l'Inspector."
 
@@ -4474,21 +4471,6 @@ msgstr ""
 "Per desar aquesta branca a la seva pròpia escena, obriu l'escena original, "
 "feu clic amb el botó dret sobre aquesta branca i seleccioneu \"Desa la branca "
 "com a escena\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"La desactivació de \"Fills editables\" farà que totes les propietats dels "
-"nodes descendents d'aquesta subescena tornin a les seves predeterminades."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Si activeu \"Carrega com a marcador de posició\", es desactivarà \"Fills "
-"editables\" i es tornarà a totes les propietats del node al seu valor "
-"predeterminat."
 
 msgid "Make Local"
 msgstr "Fes local"
@@ -8777,9 +8759,6 @@ msgstr "Error: falta el projecte al sistema de fitxers."
 
 msgid "Toggle Favorite"
 msgstr "Commuta Favorit"
-
-msgid "Open in file manager"
-msgstr "Obre al gestor de fitxers"
 
 msgid "Last edited timestamp"
 msgstr "Darrera marca de temps editada"

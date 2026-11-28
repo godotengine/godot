@@ -1038,7 +1038,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 	_set_current_path_line_edit_text(current_path);
 
 	String directory = current_path;
-	String file = "";
 
 	int thumbnail_size = thumbnail_size_setting * EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
@@ -1148,7 +1147,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
 		if (!efd) {
 			directory = current_path.get_base_dir();
-			file = current_path.get_file();
 			efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
 		}
 		if (!efd) {
@@ -1275,7 +1273,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 			valid_selection.insert(item_index);
 		}
 
-		if (!p_keep_selection && !file.is_empty() && fname == file) {
+		if (!p_keep_selection && current_path == fpath) {
 			files->select(item_index, true);
 			files->ensure_current_is_visible();
 		}

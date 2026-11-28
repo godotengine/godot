@@ -3467,9 +3467,6 @@ msgstr "ບໍ່ມີລາຍລະອຽດ."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "ແອນໂນເທຊັນນີ້ອາດຈະຖືກປ່ຽນແປງ ຫຼື ລຶບອອກໃນເວີຊັນຕໍ່ໆໄປ."
 
-msgid "Open in File Manager"
-msgstr "ເປີດໃນຕົວຈັດການໄຟລ໌"
-
 msgid "This property can only be set in the Inspector."
 msgstr "ຄຸນສົມບັດນີ້ສາມາດຕັ້ງຄ່າໄດ້ໃນອິນສະເປັກເຕີເທົ່ານັ້ນ."
 
@@ -4348,20 +4345,6 @@ msgstr ""
 "ບໍ່ສາມາດບັນທຶກກິ່ງທີ່ເປັນສ່ວນໜຶ່ງຂອງສາກສືບທອດໄດ້.\n"
 "ເພື່ອບັນທຶກກິ່ງນີ້ເປັນສາກຂອງມັນເອງ, ໃຫ້ເປີດສາກຕົ້ນສະບັບ, ຄລິກຂວາໃສ່ກິ່ງນີ້, ແລ້ວເລືອກ \"Save Branch "
 "as Scene\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"ການປິດ \"Editable Children\" ຈະເຮັດໃຫ້ຄຸນສົມບັດທັງໝົດຂອງໂນດລູກຫຼານໃນສາກຍ່ອຍນີ້ "
-"ຖືກກັບຄືນໄປເປັນຄ່າເລີ່ມຕົ້ນ."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"ການເປີດ \"Load as Placeholder\" ຈະປິດການໃຊ້ງານ \"Editable Children\" ແລະ "
-"ເຮັດໃຫ້ຄຸນສົມບັດທັງໝົດຂອງໂນດຖືກກັບຄືນໄປເປັນຄ່າເລີ່ມຕົ້ນ."
 
 msgid "Make Local"
 msgstr "ເຮັດໃຫ້ເປັນໂລຄໍ (Local)"
@@ -8405,9 +8388,6 @@ msgstr "ຂໍ້ຜິດພາດ: ບໍ່ພົບໂຄງການໃນ�
 
 msgid "Toggle Favorite"
 msgstr "ສະຫຼັບລາຍການທີ່ມັກ"
-
-msgid "Open in file manager"
-msgstr "ເປີດໃນຕົວຈັດການໄຟລ໌"
 
 msgid "Last edited timestamp"
 msgstr "ເວລາທີ່ແກ້ໄຂຫຼ້າສຸດ"

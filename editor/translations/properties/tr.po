@@ -552,6 +552,9 @@ msgstr "ses tuşlarını yeniden tanımla"
 msgid "Disable Scroll Deadzone"
 msgstr "Kaydırma Ölü Bölgesini Devre Dışı Bırak"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "Gezinti"
 
@@ -1187,6 +1190,31 @@ msgstr "Kaydırıcıyı Gizle"
 
 msgid "Editing Integer"
 msgstr "Tamsayı Düzenleme"
+
+msgid "Font Uneditable Color"
+msgstr "Yazı Tipi Düzenlenemez Rengi"
+
+msgid "Font"
+msgstr "Yazı Tipi"
+
+msgid "Font Size"
+msgstr "Yazı Tipi Boyutu"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Focus"
+msgstr "Odak"
+
+msgid "Updown"
+msgstr "Üst-alt"
+
+msgid "Grabber Highlight"
+msgstr "Kavrayıcı Vurgulama"
+
+msgid "Grabber"
+msgstr "Kavrayıcı"
 
 msgid "Zoom"
 msgstr "Yakınlaştır"
@@ -2982,9 +3010,6 @@ msgstr "Durdurma Eylemi"
 
 msgid "Output"
 msgstr "Çıktı"
-
-msgid "Font Size"
-msgstr "Yazı Tipi Boyutu"
 
 msgid "Always Clear Output on Play"
 msgstr "Oynatıldığında Çıktıyı Her Zaman Temizle"
@@ -5398,9 +5423,6 @@ msgstr "Simge 180 X 180"
 msgid "Icon 512 X 512"
 msgstr "Simge 512 X 512"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -6603,9 +6625,6 @@ msgstr "Metin"
 msgid "Outline Modulate"
 msgstr "Anahat Ton Değişimi"
 
-msgid "Font"
-msgstr "Yazı Tipi"
-
 msgid "Horizontal Alignment"
 msgstr "Yatay Hizalama"
 
@@ -7587,8 +7606,107 @@ msgstr "Dikey Simge Hizalama"
 msgid "Expand Icon"
 msgstr "Simgeyi Genişlet"
 
+msgid "Normal Mirrored"
+msgstr "Normal Ayna Yansıtıldı"
+
+msgid "Pressed Mirrored"
+msgstr "Basılmışı Ayna Yansıt"
+
+msgid "Hover"
+msgstr "Üzerine Gel"
+
+msgid "Hover Mirrored"
+msgstr "ÜZerine Gelmeyi Ayna Yansıt"
+
+msgid "Hover Pressed"
+msgstr "Üzerine Gelip Basma"
+
+msgid "Disabled Mirrored"
+msgstr "Ayna Yansıtma Devre Dışı"
+
+msgid "Font Focus Color"
+msgstr "Yazı Tipi Odak Rengi"
+
+msgid "Font Pressed Color"
+msgstr "Yazı Tipi Basıldı Rengi"
+
+msgid "Font Hover Color"
+msgstr "Yazı Tipi Üzerine Gelme Rengi"
+
+msgid "Font Hover Pressed Color"
+msgstr "Yazı Tipi Üzerine Gelip Basma Rengi"
+
+msgid "Font Disabled Color"
+msgstr "Yazı Tipi Devre Dışı Rengi"
+
+msgid "Font Outline Color"
+msgstr "Yazı Tipi Anahat Rengi"
+
+msgid "Icon Normal Color"
+msgstr "Simge Normal Rengi"
+
+msgid "Icon Focus Color"
+msgstr "Simge Odak Rengi"
+
+msgid "Icon Pressed Color"
+msgstr "Simge Basıldı Rengi"
+
+msgid "Icon Hover Color"
+msgstr "Simge Üzerine Gelme Rengi"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Simge Üzerine Gelip Basma Rengi"
+
+msgid "Icon Disabled Color"
+msgstr "Simge Devre Dışı Rengi"
+
+msgid "H Separation"
+msgstr "Yatay Ayrılma"
+
+msgid "Icon Max Width"
+msgstr "Simge En Fazla Genişlik"
+
+msgid "Align to Largest Stylebox"
+msgstr "En Büyük Tarzkutusu'na Hizala"
+
 msgid "Use Top Left"
 msgstr "Sol Üst Kullan"
+
+msgid "Check V Offset"
+msgstr "Dikey Kayması Denetle"
+
+msgid "Unchecked"
+msgstr "Seçilmemiş"
+
+msgid "Radio Checked"
+msgstr "Radyo Düğmesi Seçili"
+
+msgid "Radio Unchecked"
+msgstr "Radyo Düğmesi Seçilmemiş"
+
+msgid "Checked Disabled"
+msgstr "Seçilme Devre Dışı"
+
+msgid "Unchecked Disabled"
+msgstr "Seçilmemiş Devre Dışı"
+
+msgid "Radio Checked Disabled"
+msgstr "Radyo Düğmesi Seçilmiş Devre Dışı"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radyo Düğmesi Seçilmemiş Devre Dışı"
+
+msgid "Checked Mirrored"
+msgstr "Seçilmiş Ayna Yansıtılmış"
+
+msgid "Unchecked Mirrored"
+msgstr "Seçilmemiş Ayna Yansıtılmış"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Seçilmiş Devre Dışı Ayna Yansıtılmış"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Seçilmemiş Devre Dışı Ayna Yansıtılmış"
 
 msgid "Symbol Lookup on Click"
 msgstr "Tıklayınca Simge Arama"
@@ -7653,6 +7771,81 @@ msgstr "Eşleşmeyi Vurgulama"
 msgid "Pairs"
 msgstr "Çiftler"
 
+msgid "Code Folding Color"
+msgstr "Kod Katlama Rengi"
+
+msgid "Folded Code Region Color"
+msgstr "Katlanmış Kod Bölgesi Rengi"
+
+msgid "Can Fold"
+msgstr "Katlanabilir"
+
+msgid "Folded"
+msgstr "Katlanmış"
+
+msgid "Can Fold Code Region"
+msgstr "Kod Bölgesi Katlanabilir"
+
+msgid "Folded Code Region"
+msgstr "Katlanmış Kod Bölgesi"
+
+msgid "Folded EOL Icon"
+msgstr "Katlanmış Satır Sonu Simgesi"
+
+msgid "Completion Color BG"
+msgstr "Tamamlama Rengi ArkaPlan"
+
+msgid "Breakpoint Color"
+msgstr "Kesme Noktası Rengi"
+
+msgid "Breakpoint"
+msgstr "Kesme Noktası"
+
+msgid "Bookmark Color"
+msgstr "Yer İmi Rengi"
+
+msgid "Bookmark"
+msgstr "Yer İmi"
+
+msgid "Executing Line Color"
+msgstr "Yürütülen Satır Rengi"
+
+msgid "Executing Line"
+msgstr "Yürütülen Satır"
+
+msgid "Line Number Color"
+msgstr "Satır Numarası Rengi"
+
+msgid "Completion Max Width"
+msgstr "Tamamlanma En Fazla Genişlik"
+
+msgid "Completion Lines"
+msgstr "Tamamlanma Satırları"
+
+msgid "Completion Scroll Width"
+msgstr "Tamamlanma Kaydırma Genişliği"
+
+msgid "Completion Scroll Color"
+msgstr "Tamamlanma Kaydırma Rengi"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Tamamlanma Kaydırmanın Üzerinde Rengi"
+
+msgid "Completion Background Color"
+msgstr "Tamamlanma Arkaplan Rengi"
+
+msgid "Completion Selected Color"
+msgstr "Tamamlanma Seçim Rengi"
+
+msgid "Completion Existing Color"
+msgstr "Tamamlanma Var Olan Rengi"
+
+msgid "Line Length Guideline Color"
+msgstr "Satır Uzunluğu Kılavuz Çizgisi Rengi"
+
+msgid "Brace Mismatch Color"
+msgstr "Eşleşmeyen Parantez Rengi"
+
 msgid "Edit Alpha"
 msgstr "Alfayı Düzenle"
 
@@ -7685,6 +7878,84 @@ msgstr "Onaltılık Görünür"
 
 msgid "Presets Visible"
 msgstr "Hazır Ayarlar Görünür"
+
+msgid "Label Width"
+msgstr "Etiket Genişliği"
+
+msgid "SV Width"
+msgstr "Örnekleyici Görünümü Genişliği"
+
+msgid "SV Height"
+msgstr "Örnekleyici Görünümü Yüksekliği"
+
+msgid "H Width"
+msgstr "Yatay Genişlik"
+
+msgid "Center Slider Grabbers"
+msgstr "Kaydırıcı Tutamaçlarını Ortala"
+
+msgid "Menu Option"
+msgstr "Menü Seçeneği"
+
+msgid "Screen Picker"
+msgstr "Ekran Seçici"
+
+msgid "Expanded Arrow"
+msgstr "Genişletilmiş Ok"
+
+msgid "Folded Arrow"
+msgstr "Katlanmış Ok"
+
+msgid "Add Preset"
+msgstr "Hazır Ayar Ekle"
+
+msgid "Shape Rect"
+msgstr "Şekil Dikdörtgen"
+
+msgid "Shape Rect Wheel"
+msgstr "Şekil Dikdörtgen Teker"
+
+msgid "Shape Circle"
+msgstr "Şekil Daire"
+
+msgid "Bar Arrow"
+msgstr "Çubuk Ok"
+
+msgid "Sample BG"
+msgstr "Arkaplan Örnekleyici"
+
+msgid "Sample Revert"
+msgstr "Örnek Geri Al"
+
+msgid "Overbright Indicator"
+msgstr "Aşırı-parlak Göstergesi"
+
+msgid "Picker Cursor"
+msgstr "Seçici İmleci"
+
+msgid "Picker Cursor BG"
+msgstr "Seçici İmleci Arka Plan"
+
+msgid "Color Hue"
+msgstr "Renk Tonu"
+
+msgid "Tab Unselected"
+msgstr "Sekme Seçimi Kaldırıldı"
+
+msgid "Tab Selected"
+msgstr "Sekme Seçildi"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset FG"
+msgstr "Hazır Ayar ÖnPlan"
+
+msgid "Preset Focus"
+msgstr "Hazır Ayar Odak"
+
+msgid "Preset BG"
+msgstr "Hazır Ayar ArkaPlan"
 
 msgid "Theme Overrides"
 msgstr "Tema Üzerine Yazma"
@@ -7740,9 +8011,6 @@ msgstr "Araçipucu"
 msgid "Auto Translate Mode"
 msgstr "Otomatik Çeviri Modu"
 
-msgid "Focus"
-msgstr "Odak"
-
 msgid "Neighbor Left"
 msgstr "Komşu Sol"
 
@@ -7788,6 +8056,9 @@ msgstr "İptal tuşu (Esc) basılırsa Kapat"
 msgid "Autowrap"
 msgstr "Otomatik Sarmala"
 
+msgid "Buttons Separation"
+msgstr "Düğmeler Aralığı"
+
 msgid "Cancel Button Text"
 msgstr "İptal Düğmesi Metin"
 
@@ -7815,14 +8086,56 @@ msgstr "Yerel Diyaloğu Kullan"
 msgid "Options"
 msgstr "Seçenekler"
 
+msgid "Parent Folder"
+msgstr "Ana Klasör"
+
+msgid "Forward Folder"
+msgstr "Klasör İleri Git"
+
+msgid "Back Folder"
+msgstr "Klasör Geri Git"
+
+msgid "Reload"
+msgstr "Yeniden Yükle"
+
+msgid "Toggle Hidden"
+msgstr "Gizlileri Aç/Kapat"
+
+msgid "Folder"
+msgstr "Klasör"
+
+msgid "Toggle Filename Filter"
+msgstr "Dosya Adı Filtresini Aç/Kapat"
+
+msgid "File"
+msgstr "Dosya"
+
+msgid "Create Folder"
+msgstr "Klasör Oluştur"
+
+msgid "Folder Icon Color"
+msgstr "Klasör Simgesi Rengi"
+
+msgid "File Icon Color"
+msgstr "Dosya Simgesi Rengi"
+
+msgid "File Disabled Color"
+msgstr "Dosya Devre Dışı Rengi"
+
 msgid "Last Wrap Alignment"
 msgstr "Son Sargı Hizalaması"
 
 msgid "Reverse Fill"
 msgstr "Ters Dolgu"
 
-msgid "Folded"
-msgstr "Katlanmış"
+msgid "V Separation"
+msgstr "Dikey Ayrım"
+
+msgid "Resizer"
+msgstr "Yeniden Boyutlandırıcı"
+
+msgid "Resizer Color"
+msgstr "Yeniden Boyutlandırıcı Rengi"
 
 msgid "Show Grid"
 msgstr "Izgarayı Göster"
@@ -7878,6 +8191,60 @@ msgstr "MiniHarita Düğmesini Göster"
 msgid "Show Arrange Button"
 msgstr "Düzenle Düğmesini Göster"
 
+msgid "Grid Major"
+msgstr "Izgara Büyük"
+
+msgid "Grid Minor"
+msgstr "Izgara Küçük"
+
+msgid "Activity"
+msgstr "Etkinlik"
+
+msgid "Connection Hover Tint Color"
+msgstr "Bağlantı Üstünde Durma Tonlama Rengi"
+
+msgid "Connection Hover Thickness"
+msgstr "Bağlantı Üstüne Gelme Kalınlığı"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Bağlantı Geçerli Hedef Tonlama Rengi"
+
+msgid "Connection Rim Color"
+msgstr "Bağlantı Kenar Rengi"
+
+msgid "Selection Fill"
+msgstr "Seçim Doldurma"
+
+msgid "Selection Stroke"
+msgstr "Seçim Fırça Darbesi"
+
+msgid "Menu Panel"
+msgstr "Menü Paneli"
+
+msgid "Zoom In"
+msgstr "Yakınlaştır"
+
+msgid "Zoom Out"
+msgstr "Uzaklaştır"
+
+msgid "Zoom Reset"
+msgstr "Yakınlaştırmayı Sıfırlama"
+
+msgid "Snapping Toggle"
+msgstr "Tutunmayı Aç/Kapat"
+
+msgid "Grid Toggle"
+msgstr "Izgara Aç/Kapat"
+
+msgid "Minimap Toggle"
+msgstr "Mini Harita Aç/Kapat"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Port Sıcakbölge İç Uzanımı"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Port Sıcakbölge Dış Uzanımı"
+
 msgid "Draggable"
 msgstr "Sürüklenebilir"
 
@@ -7893,8 +8260,23 @@ msgstr "Otomatik Daraltma Kenar Boşluğu"
 msgid "Drag Margin"
 msgstr "Sürükleme Kenar Boşluğu"
 
+msgid "Panel Selected"
+msgstr "Panel Seçildi"
+
+msgid "Titlebar"
+msgstr "Başlık çubuğu"
+
+msgid "Titlebar Selected"
+msgstr "Başlık Çubuğu Seçildi"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Geçersiz Bağlantı Tipini Görmezden Gel"
+
+msgid "Slot"
+msgstr "Yuva"
+
+msgid "Port H Offset"
+msgstr "Port Yatay Kayması"
 
 msgid "Select Mode"
 msgstr "Seçme Kipi"
@@ -7941,6 +8323,54 @@ msgstr "Simge Ölçeği"
 msgid "Fixed Icon Size"
 msgstr "Sabit Simge Boyu"
 
+msgid "Scrollbar Margin Left"
+msgstr "Kaydırma Çubuğu Kenar Boşluğu Sol"
+
+msgid "Scrollbar Margin Top"
+msgstr "Kaydırma Çubuğu Kenar Boşluğu Üst"
+
+msgid "Scrollbar Margin Right"
+msgstr "Kaydırma Çubuğu Kenar Boşluğu Sağ"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Kaydırma Çubuğu Kenar Boşluğu Alt"
+
+msgid "Scrollbar H Separation"
+msgstr "Kaydırma Çubuğu Yatay Ayırım"
+
+msgid "Font Hovered Color"
+msgstr "Yazı Tipi Üzerine Gelindi Rengi"
+
+msgid "Font Hovered Selected Color"
+msgstr "Yazı Tipi Üzerine Gelindi Seçili Renk"
+
+msgid "Font Selected Color"
+msgstr "Yazı Tipi Seçilmiş Rengi"
+
+msgid "Icon Margin"
+msgstr "Simge Kenar Boşluğu"
+
+msgid "Hovered"
+msgstr "Üzerine Gelindi"
+
+msgid "Hovered Selected"
+msgstr "Üzerine Gelindi Seçili"
+
+msgid "Hovered Selected Focus"
+msgstr "Üzerine Gelindi Seçili Odaklı"
+
+msgid "Selected Focus"
+msgstr "Seçili Odak"
+
+msgid "Cursor Unfocused"
+msgstr "İmleç Odak Dışı"
+
+msgid "Cursor"
+msgstr "İmleç"
+
+msgid "Guide Color"
+msgstr "Rehber Rengi"
+
 msgid "Label Settings"
 msgstr "Etiket Ayarları"
 
@@ -7970,6 +8400,15 @@ msgstr "Görünür Karakterlerin Davranışı"
 
 msgid "Visible Ratio"
 msgstr "Görünürlük Oranı"
+
+msgid "Paragraph Spacing"
+msgstr "Paragraf Aralığı"
+
+msgid "Font Shadow Color"
+msgstr "Yazı Tipi Gölge Rengi"
+
+msgid "Shadow Outline Size"
+msgstr "Gölge Anahat Boyutu"
 
 msgid "Placeholder Text"
 msgstr "Yer Tutucu Metin"
@@ -8031,11 +8470,50 @@ msgstr "Gizli"
 msgid "Right Icon"
 msgstr "Sağ Simge"
 
+msgid "Font Placeholder Color"
+msgstr "Yazı Tipi Yer Tutucu Rengi"
+
+msgid "Caret Width"
+msgstr "İmleç Genişliği"
+
+msgid "Caret Color"
+msgstr "İmleç Rengi"
+
+msgid "Minimum Character Width"
+msgstr "En Az Karakter Genişliği"
+
+msgid "Selection Color"
+msgstr "Seçim Rengi"
+
+msgid "Clear"
+msgstr "Temizle"
+
+msgid "Clear Button Color"
+msgstr "Temizle Düğmesi Rengi"
+
+msgid "Clear Button Color Pressed"
+msgstr "Temizle Düğmesi Rengi Basıldı"
+
 msgid "Underline"
 msgstr "Altçizgi"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Altçizgi Boşluğu"
+
+msgid "Margin Left"
+msgstr "Kenar Boşluğu Sol"
+
+msgid "Margin Top"
+msgstr "Kenar Boşluğu Üst"
+
+msgid "Margin Right"
+msgstr "Kenar Boşluğu Sağ"
+
+msgid "Margin Bottom"
+msgstr "Kenar Boşluğu Alt"
 
 msgid "Start Index"
 msgstr "Başlangıç İndeksi"
@@ -8061,6 +8539,15 @@ msgstr "Eksen Esnetmesi"
 msgid "Fit to Longest Item"
 msgstr "En Uzun Öğeye Uydur"
 
+msgid "Arrow"
+msgstr "Ok"
+
+msgid "Arrow Margin"
+msgstr "Ok Kenar Boşluğu"
+
+msgid "Modulate Arrow"
+msgstr "Ok Ton Değiştirme"
+
 msgid "Hide on Item Selection"
 msgstr "Öğe Seçiminde Gizle"
 
@@ -8079,17 +8566,62 @@ msgstr "Sistem Menüsü Kimliği"
 msgid "Prefer Native Menu"
 msgstr "Özgün Menüyü Tercih Et"
 
+msgid "Separator"
+msgstr "Ayıraç"
+
+msgid "Labeled Separator Left"
+msgstr "Etiketli Ayıraç Sol"
+
+msgid "Labeled Separator Right"
+msgstr "Etiketli Ayıraç Sağ"
+
+msgid "Item Start Padding"
+msgstr "Öğe Başlangıç Dolgulaması"
+
+msgid "Item End Padding"
+msgstr "Öğe Bitiş Dolgulaması"
+
+msgid "Indeterminate"
+msgstr "Belirsiz"
+
+msgid "Indeterminate Disabled"
+msgstr "Belirsiz Devredışı"
+
+msgid "Submenu"
+msgstr "Altmenü"
+
+msgid "Submenu Mirrored"
+msgstr "Altmenü Ayna Yansıtılmış"
+
+msgid "Font Separator"
+msgstr "Yazı Tipi Ayıraç"
+
+msgid "Font Separator Size"
+msgstr "Yazı Tipi Ayıraç Boyutu"
+
+msgid "Font Accelerator Color"
+msgstr "Yazı Tipi Hızlandırıcı Rengi"
+
+msgid "Font Separator Color"
+msgstr "Yazı Tipi Ayıraç Rengi"
+
+msgid "Separator Outline Size"
+msgstr "Ayıraç Anahat Rengi"
+
+msgid "Font Separator Outline Color"
+msgstr "Yazı Tipi Ayıraç Anahat Rengi"
+
 msgid "Fill Mode"
 msgstr "Doldurma Kipi"
 
 msgid "Show Percentage"
 msgstr "Yüzdeyi Göster"
 
-msgid "Indeterminate"
-msgstr "Belirsiz"
-
 msgid "Preview Indeterminate"
 msgstr "Belirsiz Önizleme"
+
+msgid "Background"
+msgstr "Arkaplan"
 
 msgid "Min Value"
 msgstr "En küçük Değer"
@@ -8172,8 +8704,89 @@ msgstr "İlerleme Çubuğu Gecikmesi"
 msgid "Text Selection"
 msgstr "Metin Seçimi"
 
+msgid "Normal Font"
+msgstr "Normal Yazı Tipi"
+
+msgid "Normal Font Size"
+msgstr "Normal Yazı Tipi Boyutu"
+
+msgid "Shadow Offset X"
+msgstr "Gölge Kayması X"
+
+msgid "Shadow Offset Y"
+msgstr "Gölge Kayması Y"
+
+msgid "Bold Font"
+msgstr "Koyu Yazı Tipi"
+
+msgid "Bold Font Size"
+msgstr "Kalın Yazı Tipi Boyutu"
+
+msgid "Bold Italics Font"
+msgstr "Kalın Eğik Yazı Tipi"
+
+msgid "Bold Italics Font Size"
+msgstr "Kalın Eğik Yazı Tipi Boyutu"
+
+msgid "Italics Font"
+msgstr "Eğik Yazı Tipi"
+
+msgid "Italics Font Size"
+msgstr "Eğik Yazı Tipi Boyutu"
+
+msgid "Mono Font"
+msgstr "Mono Yazı Tipi"
+
+msgid "Mono Font Size"
+msgstr "Mono Yazı Tipi Boyutu"
+
+msgid "Text Highlight H Padding"
+msgstr "Metin Vurgulama Yatay Dolgulaması"
+
+msgid "Text Highlight V Padding"
+msgstr "Metin Vurgulama Dikey Dolgulaması"
+
+msgid "Table H Separation"
+msgstr "Çizelge Yatay Ayırımı"
+
+msgid "Table V Separation"
+msgstr "Çizelge Dikey Ayırımı"
+
+msgid "Table Odd Row BG"
+msgstr "Çizelge Tek Sayılı Satırlar Arkaplanı"
+
+msgid "Table Even Row BG"
+msgstr "Çizelge Çift Sayılı Satırlar Arkaplan"
+
+msgid "Table Border"
+msgstr "Çizelge Kenarlığı"
+
 msgid "Custom Step"
 msgstr "Özel Adım"
+
+msgid "Scroll Focus"
+msgstr "Kaydırma Odaklama"
+
+msgid "Grabber Pressed"
+msgstr "Kavrayıcı Basıldı"
+
+msgid "Increment"
+msgstr "Artış"
+
+msgid "Increment Highlight"
+msgstr "Artış Vurgulama"
+
+msgid "Increment Pressed"
+msgstr "Artış Basıldı"
+
+msgid "Decrement"
+msgstr "Azalış"
+
+msgid "Decrement Highlight"
+msgstr "Azalış Vurgulama"
+
+msgid "Decrement Pressed"
+msgstr "Azalış Basıldı"
 
 msgid "Follow Focus"
 msgstr "Odağı Takip Et"
@@ -8190,6 +8803,9 @@ msgstr "Dikey Kaydırma Kipi"
 msgid "Scroll Deadzone"
 msgstr "Kaydırma Ölü bölgesi"
 
+msgid "Scrollbar V Separation"
+msgstr "Kaydırma Çubuğu Dikey Ayırım"
+
 msgid "Default Scroll Deadzone"
 msgstr "Varsayılan Kaydırma Ölü bölgesi"
 
@@ -8202,6 +8818,27 @@ msgstr "İşaret Sayısı"
 msgid "Ticks on Borders"
 msgstr "Kenarlar Üzerinde İşaretler"
 
+msgid "Slider"
+msgstr "Kaydırıcı"
+
+msgid "Grabber Area"
+msgstr "Kavrayıcı Alanı"
+
+msgid "Grabber Area Highlight"
+msgstr "Kavrayıcı Alanı Vurgulama"
+
+msgid "Grabber Disabled"
+msgstr "Kavrayıcı Devre Dışı"
+
+msgid "Tick"
+msgstr "İşaret"
+
+msgid "Center Grabber"
+msgstr "Kavrayıcıyı Ortala"
+
+msgid "Grabber Offset"
+msgstr "Kavrayıcı Kaydırması"
+
 msgid "Update on Text Changed"
 msgstr "Metin Değişince Güncelle"
 
@@ -8210,6 +8847,96 @@ msgstr "Özel Ok Adımı"
 
 msgid "Format"
 msgstr "Biçim"
+
+msgid "Buttons Vertical Separation"
+msgstr "Düğmeler Dikey Ayırma"
+
+msgid "Field and Buttons Separation"
+msgstr "Alan ve Düğmeler Ayırma"
+
+msgid "Buttons Width"
+msgstr "Düğmeler Genişlik"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "En Az Düğme Genişliğini Simgelerden Ayarla"
+
+msgid "Up"
+msgstr "Yukarı"
+
+msgid "Up Hover"
+msgstr "Yukarı Üzerine Gelindi"
+
+msgid "Up Pressed"
+msgstr "Yukarı Basıldı"
+
+msgid "Up Disabled"
+msgstr "Yukarı Devre Dışı"
+
+msgid "Down"
+msgstr "Aşağı"
+
+msgid "Down Hover"
+msgstr "Aşağı Üzerine Gelme"
+
+msgid "Down Pressed"
+msgstr "Aşağı Basıldı"
+
+msgid "Down Disabled"
+msgstr "Aşağı Devre Dışı"
+
+msgid "Up Background"
+msgstr "Yukarı Arka Plan"
+
+msgid "Up Background Hovered"
+msgstr "Yukarı Arka Plan Üzerine Gelindi"
+
+msgid "Up Background Pressed"
+msgstr "Yukarı Arka Plan Basıldı"
+
+msgid "Up Background Disabled"
+msgstr "Yukarı Arka Plan Devre Dışı"
+
+msgid "Down Background"
+msgstr "Aşağı Arka Plan"
+
+msgid "Down Background Hovered"
+msgstr "Aşağı Arka Plan Üzerine Gelindi"
+
+msgid "Down Background Pressed"
+msgstr "Aşağı Arka Plan Basıldı"
+
+msgid "Down Background Disabled"
+msgstr "Aşağı Arka Plan Devre Dışı"
+
+msgid "Up Icon Modulate"
+msgstr "Yukarı Simge Ton Değiştir"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Yukarı Üzerine Gelme Simge Ton Değiştirme"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Yukarı Basıldı Simge Ton Değiştir"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Yukarı Devre Dışı Simge Ton Değiştirme"
+
+msgid "Down Icon Modulate"
+msgstr "Aşağı Simge Ton Değiştirme"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Aşağı Üzerine Gelme Simge Ton Değiştirme"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Aşağı Basıldı Simge Ton Değiştirme"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Aşağı Devre Dışı Simge Ton Değiştirme"
+
+msgid "Field and Buttons Separator"
+msgstr "Alan ve Düğmeler Ayırıcı"
+
+msgid "Up Down Buttons Separator"
+msgstr "Yukarı Aşağı Düğmeleri Ayırıcı"
 
 msgid "Collapsed"
 msgstr "Daraltılmış"
@@ -8231,6 +8958,21 @@ msgstr "Kenar Boşluğu Bitiş"
 
 msgid "Highlight in Editor"
 msgstr "Düzenleyicide Vurgula"
+
+msgid "Minimum Grab Thickness"
+msgstr "En Az Yakalama Kalınlığı"
+
+msgid "Autohide"
+msgstr "Otomatik Gizle"
+
+msgid "H Grabber"
+msgstr "Yatay Kavrayıcı"
+
+msgid "V Grabber"
+msgstr "Dikey Kavrayıcı"
+
+msgid "Split Bar Background"
+msgstr "Ayırma Çubuğu Arka Plan"
 
 msgid "Split Offset"
 msgstr "Kaymayı Bölümlendir"
@@ -8274,6 +9016,30 @@ msgstr "Etkin Seçimi Kaldır"
 msgid "Tabs"
 msgstr "Sekmeler"
 
+msgid "Tab Hovered"
+msgstr "Sekme Üzerine Gelindi"
+
+msgid "Tab Disabled"
+msgstr "Sekme Devre Dışı"
+
+msgid "Tab Focus"
+msgstr "Sekme Odağı"
+
+msgid "Drop Mark"
+msgstr "Bırakma İşareti"
+
+msgid "Drop Mark Color"
+msgstr "Bırakma İşareti Rengi"
+
+msgid "Font Unselected Color"
+msgstr "Font Seçimi Kaldırıldı Rengi"
+
+msgid "Close"
+msgstr "Kapat"
+
+msgid "Button Highlight"
+msgstr "Düğme Vurgulama"
+
 msgid "Tabs Position"
 msgstr "Sekmelerin Konumu"
 
@@ -8285,6 +9051,21 @@ msgstr "En Küçük Boy için Gizli Sekmeler Kullan"
 
 msgid "Tab Focus Mode"
 msgstr "Sekme Odak Kipi"
+
+msgid "Side Margin"
+msgstr "Yan Kenar Boşluğu"
+
+msgid "Tabbar Background"
+msgstr "Sekme Çubuğu Arkaplanı"
+
+msgid "Menu"
+msgstr "Menü"
+
+msgid "Menu Highlight"
+msgstr "Menü Vurgulama"
+
+msgid "Icon Separation"
+msgstr "Simge Ayırımı"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Seçim Panosu Boşaltma Etkin"
@@ -8325,18 +9106,35 @@ msgstr "Denetim Karakterleri"
 msgid "Spaces"
 msgstr "Boşluklar"
 
+msgid "Search Result Color"
+msgstr "Arama Sonuç Rengi"
+
+msgid "Search Result Border Color"
+msgstr "Arama Sonuç Kenar Rengi"
+
+msgid "Caret Background Color"
+msgstr "İmleç Arkaplan Rengi"
+
+msgid "Tab"
+msgstr "Sekme"
+
+msgid "Space"
+msgstr "Uzay"
+
+msgid "Font Readonly Color"
+msgstr "Yazı Tipi Sadece Okunabilir Rengi"
+
+msgid "Current Line Color"
+msgstr "Geçerli Satır Rengi"
+
+msgid "Word Highlighted Color"
+msgstr "Vurgulu Kelime Rengi"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Metn Düzenleme Boşta Kalma Algılama (sn)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Metin Düzenleme Geri Alma Yığını En Fazla Boyut"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Normal"
-
-msgid "Hover"
-msgstr "Üzerine Gel"
 
 msgid "Focused"
 msgstr "Odaklandı"
@@ -8406,6 +9204,105 @@ msgstr "Yatay Kaydırma Etkin"
 
 msgid "Scroll Vertical Enabled"
 msgstr "Dikey Kaydırma Etkin"
+
+msgid "Title Button Font"
+msgstr "Başlık Düğmesi Yazı Tipi"
+
+msgid "Title Button Font Size"
+msgstr "Başlık Düğmesi Yazı Tipi Boyutu"
+
+msgid "Hovered Dimmed"
+msgstr "Üzerine Gelindi Solgun"
+
+msgid "Button Hover"
+msgstr "Düğme Üzerine Gelme"
+
+msgid "Arrow Collapsed"
+msgstr "Ok Daraltıldı"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Ok Daraltıldı Ayna Yansıması"
+
+msgid "Select Arrow"
+msgstr "Seçim Oku"
+
+msgid "Custom Button"
+msgstr "Özel Düğme"
+
+msgid "Custom Button Hover"
+msgstr "Özel Düğme Üzerine Gelme"
+
+msgid "Custom Button Pressed"
+msgstr "Özel Düğme Basıldı"
+
+msgid "Custom Button Font Highlight"
+msgstr "Özel Düğme Yazı Tipi Vurgusu"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Yazı Tipi Üzerine Gelindi Solgun Rengi"
+
+msgid "Drop Position Color"
+msgstr "Bırakma Konumu Rengi"
+
+msgid "Inner Item Margin Bottom"
+msgstr "İç Öğe Kenar Boşluğu Alt"
+
+msgid "Inner Item Margin Left"
+msgstr "İç Öğe Kenar Boşluğu Sol"
+
+msgid "Inner Item Margin Right"
+msgstr "İç Öğe Kenar Boşluğu Sağ"
+
+msgid "Inner Item Margin Top"
+msgstr "İç Öğe Kenar Boşluğu Üst"
+
+msgid "Item Margin"
+msgstr "Öğe Kenar Boşluğu"
+
+msgid "Button Margin"
+msgstr "Düğme Kenar Boşluğu"
+
+msgid "Draw Guides"
+msgstr "Kılavuzları Çiz"
+
+msgid "Relationship Line Width"
+msgstr "İlişki Satırı Genişliği"
+
+msgid "Parent HL Line Width"
+msgstr "Üst-Öğe Vurgu Satırı Genişliği"
+
+msgid "Children HL Line Width"
+msgstr "Alt-Öğe Vurgu Satırı Genişliği"
+
+msgid "Parent HL Line Margin"
+msgstr "Üst-Öğe Vurgu Satırı Kenar Boşluğu"
+
+msgid "Relationship Line Color"
+msgstr "İlişki Satırı Rengi"
+
+msgid "Parent HL Line Color"
+msgstr "Üst-Öğe Vurgulu Satır Rengi"
+
+msgid "Children HL Line Color"
+msgstr "Alt-Öğe Vurgulu Satır Rengi"
+
+msgid "Scroll Border"
+msgstr "Kaydırma Kenarlığı"
+
+msgid "Scroll Speed"
+msgstr "Kaydırma Hızı"
+
+msgid "Title Button Normal"
+msgstr "Başlık Düğmesi Normal"
+
+msgid "Title Button Pressed"
+msgstr "Başlık Düğmesi Basıldı"
+
+msgid "Title Button Hover"
+msgstr "Başlık Düğmesi Üzerine Gelme"
+
+msgid "Title Button Color"
+msgstr "Başlık Düğmesi Rengi"
 
 msgid "Audio Track"
 msgstr "Ses İzi"
@@ -8611,9 +9508,6 @@ msgstr "Varsayılan Ortam"
 msgid "Enable Object Picking"
 msgstr "Nesne Seçmeyi Etkinleştir"
 
-msgid "Menu"
-msgstr "Menü"
-
 msgid "Wait Time"
 msgstr "Bekleme Süresi"
 
@@ -8784,6 +9678,39 @@ msgstr "Başlığı Görünür Tut"
 
 msgid "Content Scale"
 msgstr "İçerik Ölçeği"
+
+msgid "Embedded Border"
+msgstr "Gömülü Kenar"
+
+msgid "Embedded Unfocused Border"
+msgstr "Gömülü Odaklanmamış Sınır"
+
+msgid "Title Font"
+msgstr "Başlık Yazı Tipi"
+
+msgid "Title Font Size"
+msgstr "Başlık Yazı Tipi Boyutu"
+
+msgid "Title Height"
+msgstr "Başlık Yüksekliği"
+
+msgid "Title Outline Modulate"
+msgstr "Başlık Anahat Ton Değişimi"
+
+msgid "Title Outline Size"
+msgstr "Başlık Anahat Boyutu"
+
+msgid "Close Pressed"
+msgstr "Kapat Basıldı"
+
+msgid "Close H Offset"
+msgstr "Kapat Yatay Kayması"
+
+msgid "Close V Offset"
+msgstr "Kapat Dikey Kayması"
+
+msgid "Resize Margin"
+msgstr "Kenar Boşluğunu Yeniden Boyutlandır"
 
 msgid "Swap Cancel OK"
 msgstr "Vazgeç/Tamam Düğmelerini Yer Değiştir"
@@ -9214,9 +10141,6 @@ msgstr "Eğri Y"
 msgid "Curve Z"
 msgstr "Eğri Z"
 
-msgid "Background"
-msgstr "Arkaplan"
-
 msgid "Canvas Max Layer"
 msgstr "Kanvas En Çok Katman"
 
@@ -9421,9 +10345,6 @@ msgstr "Fazladan Boşluk"
 msgid "Glyph"
 msgstr "Kabartma"
 
-msgid "Space"
-msgstr "Uzay"
-
 msgid "Baseline"
 msgstr "Anahat"
 
@@ -9456,9 +10377,6 @@ msgstr "HDR Kullan"
 
 msgid "To"
 msgstr "Şuraya"
-
-msgid "Paragraph Spacing"
-msgstr "Paragraf Aralığı"
 
 msgid "Next Pass"
 msgstr "Sonraki Geçiş"
@@ -9930,930 +10848,6 @@ msgstr "Varsayılan Yazı Tipi"
 
 msgid "Default Font Size"
 msgstr "Varsayılan Yazı Tipi Boyutu"
-
-msgid "File"
-msgstr "Dosya"
-
-msgid "Font Pressed Color"
-msgstr "Yazı Tipi Basıldı Rengi"
-
-msgid "Font Hover Color"
-msgstr "Yazı Tipi Üzerine Gelme Rengi"
-
-msgid "Font Focus Color"
-msgstr "Yazı Tipi Odak Rengi"
-
-msgid "Font Hover Pressed Color"
-msgstr "Yazı Tipi Üzerine Gelip Basma Rengi"
-
-msgid "Font Disabled Color"
-msgstr "Yazı Tipi Devre Dışı Rengi"
-
-msgid "Font Outline Color"
-msgstr "Yazı Tipi Anahat Rengi"
-
-msgid "Icon Normal Color"
-msgstr "Simge Normal Rengi"
-
-msgid "Icon Pressed Color"
-msgstr "Simge Basıldı Rengi"
-
-msgid "Icon Hover Color"
-msgstr "Simge Üzerine Gelme Rengi"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Simge Üzerine Gelip Basma Rengi"
-
-msgid "Icon Focus Color"
-msgstr "Simge Odak Rengi"
-
-msgid "Icon Disabled Color"
-msgstr "Simge Devre Dışı Rengi"
-
-msgid "H Separation"
-msgstr "Yatay Ayrılma"
-
-msgid "Icon Max Width"
-msgstr "Simge En Fazla Genişlik"
-
-msgid "Align to Largest Stylebox"
-msgstr "En Büyük Tarzkutusu'na Hizala"
-
-msgid "Underline Spacing"
-msgstr "Altçizgi Boşluğu"
-
-msgid "Normal Mirrored"
-msgstr "Normal Ayna Yansıtıldı"
-
-msgid "Hover Mirrored"
-msgstr "ÜZerine Gelmeyi Ayna Yansıt"
-
-msgid "Pressed Mirrored"
-msgstr "Basılmışı Ayna Yansıt"
-
-msgid "Disabled Mirrored"
-msgstr "Ayna Yansıtma Devre Dışı"
-
-msgid "Arrow"
-msgstr "Ok"
-
-msgid "Arrow Margin"
-msgstr "Ok Kenar Boşluğu"
-
-msgid "Modulate Arrow"
-msgstr "Ok Ton Değiştirme"
-
-msgid "Hover Pressed"
-msgstr "Üzerine Gelip Basma"
-
-msgid "Checked Disabled"
-msgstr "Seçilme Devre Dışı"
-
-msgid "Unchecked"
-msgstr "Seçilmemiş"
-
-msgid "Unchecked Disabled"
-msgstr "Seçilmemiş Devre Dışı"
-
-msgid "Radio Checked"
-msgstr "Radyo Düğmesi Seçili"
-
-msgid "Radio Checked Disabled"
-msgstr "Radyo Düğmesi Seçilmiş Devre Dışı"
-
-msgid "Radio Unchecked"
-msgstr "Radyo Düğmesi Seçilmemiş"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Radyo Düğmesi Seçilmemiş Devre Dışı"
-
-msgid "Check V Offset"
-msgstr "Dikey Kayması Denetle"
-
-msgid "Checked Mirrored"
-msgstr "Seçilmiş Ayna Yansıtılmış"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Seçilmiş Devre Dışı Ayna Yansıtılmış"
-
-msgid "Unchecked Mirrored"
-msgstr "Seçilmemiş Ayna Yansıtılmış"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Seçilmemiş Devre Dışı Ayna Yansıtılmış"
-
-msgid "Font Shadow Color"
-msgstr "Yazı Tipi Gölge Rengi"
-
-msgid "Shadow Offset X"
-msgstr "Gölge Kayması X"
-
-msgid "Shadow Offset Y"
-msgstr "Gölge Kayması Y"
-
-msgid "Shadow Outline Size"
-msgstr "Gölge Anahat Boyutu"
-
-msgid "Font Selected Color"
-msgstr "Yazı Tipi Seçilmiş Rengi"
-
-msgid "Font Uneditable Color"
-msgstr "Yazı Tipi Düzenlenemez Rengi"
-
-msgid "Font Placeholder Color"
-msgstr "Yazı Tipi Yer Tutucu Rengi"
-
-msgid "Caret Color"
-msgstr "İmleç Rengi"
-
-msgid "Selection Color"
-msgstr "Seçim Rengi"
-
-msgid "Clear Button Color"
-msgstr "Temizle Düğmesi Rengi"
-
-msgid "Clear Button Color Pressed"
-msgstr "Temizle Düğmesi Rengi Basıldı"
-
-msgid "Minimum Character Width"
-msgstr "En Az Karakter Genişliği"
-
-msgid "Caret Width"
-msgstr "İmleç Genişliği"
-
-msgid "Clear"
-msgstr "Temizle"
-
-msgid "Tab"
-msgstr "Sekme"
-
-msgid "Font Readonly Color"
-msgstr "Yazı Tipi Sadece Okunabilir Rengi"
-
-msgid "Current Line Color"
-msgstr "Geçerli Satır Rengi"
-
-msgid "Caret Background Color"
-msgstr "İmleç Arkaplan Rengi"
-
-msgid "Word Highlighted Color"
-msgstr "Vurgulu Kelime Rengi"
-
-msgid "Search Result Color"
-msgstr "Arama Sonuç Rengi"
-
-msgid "Search Result Border Color"
-msgstr "Arama Sonuç Kenar Rengi"
-
-msgid "Breakpoint"
-msgstr "Kesme Noktası"
-
-msgid "Bookmark"
-msgstr "Yer İmi"
-
-msgid "Executing Line"
-msgstr "Yürütülen Satır"
-
-msgid "Can Fold"
-msgstr "Katlanabilir"
-
-msgid "Can Fold Code Region"
-msgstr "Kod Bölgesi Katlanabilir"
-
-msgid "Folded Code Region"
-msgstr "Katlanmış Kod Bölgesi"
-
-msgid "Folded EOL Icon"
-msgstr "Katlanmış Satır Sonu Simgesi"
-
-msgid "Completion Color BG"
-msgstr "Tamamlama Rengi ArkaPlan"
-
-msgid "Completion Background Color"
-msgstr "Tamamlanma Arkaplan Rengi"
-
-msgid "Completion Selected Color"
-msgstr "Tamamlanma Seçim Rengi"
-
-msgid "Completion Existing Color"
-msgstr "Tamamlanma Var Olan Rengi"
-
-msgid "Completion Scroll Color"
-msgstr "Tamamlanma Kaydırma Rengi"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Tamamlanma Kaydırmanın Üzerinde Rengi"
-
-msgid "Bookmark Color"
-msgstr "Yer İmi Rengi"
-
-msgid "Breakpoint Color"
-msgstr "Kesme Noktası Rengi"
-
-msgid "Executing Line Color"
-msgstr "Yürütülen Satır Rengi"
-
-msgid "Code Folding Color"
-msgstr "Kod Katlama Rengi"
-
-msgid "Folded Code Region Color"
-msgstr "Katlanmış Kod Bölgesi Rengi"
-
-msgid "Brace Mismatch Color"
-msgstr "Eşleşmeyen Parantez Rengi"
-
-msgid "Line Number Color"
-msgstr "Satır Numarası Rengi"
-
-msgid "Line Length Guideline Color"
-msgstr "Satır Uzunluğu Kılavuz Çizgisi Rengi"
-
-msgid "Completion Lines"
-msgstr "Tamamlanma Satırları"
-
-msgid "Completion Max Width"
-msgstr "Tamamlanma En Fazla Genişlik"
-
-msgid "Completion Scroll Width"
-msgstr "Tamamlanma Kaydırma Genişliği"
-
-msgid "Scroll Focus"
-msgstr "Kaydırma Odaklama"
-
-msgid "Grabber"
-msgstr "Kavrayıcı"
-
-msgid "Grabber Highlight"
-msgstr "Kavrayıcı Vurgulama"
-
-msgid "Grabber Pressed"
-msgstr "Kavrayıcı Basıldı"
-
-msgid "Increment"
-msgstr "Artış"
-
-msgid "Increment Highlight"
-msgstr "Artış Vurgulama"
-
-msgid "Increment Pressed"
-msgstr "Artış Basıldı"
-
-msgid "Decrement"
-msgstr "Azalış"
-
-msgid "Decrement Highlight"
-msgstr "Azalış Vurgulama"
-
-msgid "Decrement Pressed"
-msgstr "Azalış Basıldı"
-
-msgid "Slider"
-msgstr "Kaydırıcı"
-
-msgid "Grabber Area"
-msgstr "Kavrayıcı Alanı"
-
-msgid "Grabber Area Highlight"
-msgstr "Kavrayıcı Alanı Vurgulama"
-
-msgid "Grabber Disabled"
-msgstr "Kavrayıcı Devre Dışı"
-
-msgid "Tick"
-msgstr "İşaret"
-
-msgid "Center Grabber"
-msgstr "Kavrayıcıyı Ortala"
-
-msgid "Grabber Offset"
-msgstr "Kavrayıcı Kaydırması"
-
-msgid "Updown"
-msgstr "Üst-alt"
-
-msgid "Up"
-msgstr "Yukarı"
-
-msgid "Up Hover"
-msgstr "Yukarı Üzerine Gelindi"
-
-msgid "Up Pressed"
-msgstr "Yukarı Basıldı"
-
-msgid "Up Disabled"
-msgstr "Yukarı Devre Dışı"
-
-msgid "Down"
-msgstr "Aşağı"
-
-msgid "Down Hover"
-msgstr "Aşağı Üzerine Gelme"
-
-msgid "Down Pressed"
-msgstr "Aşağı Basıldı"
-
-msgid "Down Disabled"
-msgstr "Aşağı Devre Dışı"
-
-msgid "Up Background"
-msgstr "Yukarı Arka Plan"
-
-msgid "Up Background Hovered"
-msgstr "Yukarı Arka Plan Üzerine Gelindi"
-
-msgid "Up Background Pressed"
-msgstr "Yukarı Arka Plan Basıldı"
-
-msgid "Up Background Disabled"
-msgstr "Yukarı Arka Plan Devre Dışı"
-
-msgid "Down Background"
-msgstr "Aşağı Arka Plan"
-
-msgid "Down Background Hovered"
-msgstr "Aşağı Arka Plan Üzerine Gelindi"
-
-msgid "Down Background Pressed"
-msgstr "Aşağı Arka Plan Basıldı"
-
-msgid "Down Background Disabled"
-msgstr "Aşağı Arka Plan Devre Dışı"
-
-msgid "Up Icon Modulate"
-msgstr "Yukarı Simge Ton Değiştir"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Yukarı Üzerine Gelme Simge Ton Değiştirme"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Yukarı Basıldı Simge Ton Değiştir"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Yukarı Devre Dışı Simge Ton Değiştirme"
-
-msgid "Down Icon Modulate"
-msgstr "Aşağı Simge Ton Değiştirme"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Aşağı Üzerine Gelme Simge Ton Değiştirme"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Aşağı Basıldı Simge Ton Değiştirme"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Aşağı Devre Dışı Simge Ton Değiştirme"
-
-msgid "Field and Buttons Separator"
-msgstr "Alan ve Düğmeler Ayırıcı"
-
-msgid "Up Down Buttons Separator"
-msgstr "Yukarı Aşağı Düğmeleri Ayırıcı"
-
-msgid "Buttons Vertical Separation"
-msgstr "Düğmeler Dikey Ayırma"
-
-msgid "Field and Buttons Separation"
-msgstr "Alan ve Düğmeler Ayırma"
-
-msgid "Buttons Width"
-msgstr "Düğmeler Genişlik"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "En Az Düğme Genişliğini Simgelerden Ayarla"
-
-msgid "Scrollbar Margin Left"
-msgstr "Kaydırma Çubuğu Kenar Boşluğu Sol"
-
-msgid "Scrollbar Margin Top"
-msgstr "Kaydırma Çubuğu Kenar Boşluğu Üst"
-
-msgid "Scrollbar Margin Right"
-msgstr "Kaydırma Çubuğu Kenar Boşluğu Sağ"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Kaydırma Çubuğu Kenar Boşluğu Alt"
-
-msgid "Embedded Border"
-msgstr "Gömülü Kenar"
-
-msgid "Embedded Unfocused Border"
-msgstr "Gömülü Odaklanmamış Sınır"
-
-msgid "Title Font"
-msgstr "Başlık Yazı Tipi"
-
-msgid "Title Font Size"
-msgstr "Başlık Yazı Tipi Boyutu"
-
-msgid "Title Outline Modulate"
-msgstr "Başlık Anahat Ton Değişimi"
-
-msgid "Title Outline Size"
-msgstr "Başlık Anahat Boyutu"
-
-msgid "Title Height"
-msgstr "Başlık Yüksekliği"
-
-msgid "Resize Margin"
-msgstr "Kenar Boşluğunu Yeniden Boyutlandır"
-
-msgid "Close"
-msgstr "Kapat"
-
-msgid "Close Pressed"
-msgstr "Kapat Basıldı"
-
-msgid "Close H Offset"
-msgstr "Kapat Yatay Kayması"
-
-msgid "Close V Offset"
-msgstr "Kapat Dikey Kayması"
-
-msgid "Buttons Separation"
-msgstr "Düğmeler Aralığı"
-
-msgid "Load"
-msgstr "Yükle"
-
-msgid "Save"
-msgstr "Kaydet"
-
-msgid "Parent Folder"
-msgstr "Ana Klasör"
-
-msgid "Back Folder"
-msgstr "Klasör Geri Git"
-
-msgid "Forward Folder"
-msgstr "Klasör İleri Git"
-
-msgid "Reload"
-msgstr "Yeniden Yükle"
-
-msgid "Toggle Hidden"
-msgstr "Gizlileri Aç/Kapat"
-
-msgid "Toggle Filename Filter"
-msgstr "Dosya Adı Filtresini Aç/Kapat"
-
-msgid "Folder"
-msgstr "Klasör"
-
-msgid "Create Folder"
-msgstr "Klasör Oluştur"
-
-msgid "Folder Icon Color"
-msgstr "Klasör Simgesi Rengi"
-
-msgid "File Icon Color"
-msgstr "Dosya Simgesi Rengi"
-
-msgid "File Disabled Color"
-msgstr "Dosya Devre Dışı Rengi"
-
-msgid "Separator"
-msgstr "Ayıraç"
-
-msgid "Labeled Separator Left"
-msgstr "Etiketli Ayıraç Sol"
-
-msgid "Labeled Separator Right"
-msgstr "Etiketli Ayıraç Sağ"
-
-msgid "Indeterminate Disabled"
-msgstr "Belirsiz Devredışı"
-
-msgid "Submenu"
-msgstr "Altmenü"
-
-msgid "Submenu Mirrored"
-msgstr "Altmenü Ayna Yansıtılmış"
-
-msgid "Font Separator"
-msgstr "Yazı Tipi Ayıraç"
-
-msgid "Font Separator Size"
-msgstr "Yazı Tipi Ayıraç Boyutu"
-
-msgid "Font Accelerator Color"
-msgstr "Yazı Tipi Hızlandırıcı Rengi"
-
-msgid "Font Separator Color"
-msgstr "Yazı Tipi Ayıraç Rengi"
-
-msgid "Font Separator Outline Color"
-msgstr "Yazı Tipi Ayıraç Anahat Rengi"
-
-msgid "V Separation"
-msgstr "Dikey Ayrım"
-
-msgid "Separator Outline Size"
-msgstr "Ayıraç Anahat Rengi"
-
-msgid "Item Start Padding"
-msgstr "Öğe Başlangıç Dolgulaması"
-
-msgid "Item End Padding"
-msgstr "Öğe Bitiş Dolgulaması"
-
-msgid "Panel Selected"
-msgstr "Panel Seçildi"
-
-msgid "Titlebar"
-msgstr "Başlık çubuğu"
-
-msgid "Titlebar Selected"
-msgstr "Başlık Çubuğu Seçildi"
-
-msgid "Slot"
-msgstr "Yuva"
-
-msgid "Resizer"
-msgstr "Yeniden Boyutlandırıcı"
-
-msgid "Resizer Color"
-msgstr "Yeniden Boyutlandırıcı Rengi"
-
-msgid "Port H Offset"
-msgstr "Port Yatay Kayması"
-
-msgid "Hovered"
-msgstr "Üzerine Gelindi"
-
-msgid "Hovered Dimmed"
-msgstr "Üzerine Gelindi Solgun"
-
-msgid "Hovered Selected"
-msgstr "Üzerine Gelindi Seçili"
-
-msgid "Hovered Selected Focus"
-msgstr "Üzerine Gelindi Seçili Odaklı"
-
-msgid "Selected Focus"
-msgstr "Seçili Odak"
-
-msgid "Cursor"
-msgstr "İmleç"
-
-msgid "Cursor Unfocused"
-msgstr "İmleç Odak Dışı"
-
-msgid "Button Hover"
-msgstr "Düğme Üzerine Gelme"
-
-msgid "Title Button Normal"
-msgstr "Başlık Düğmesi Normal"
-
-msgid "Title Button Pressed"
-msgstr "Başlık Düğmesi Basıldı"
-
-msgid "Title Button Hover"
-msgstr "Başlık Düğmesi Üzerine Gelme"
-
-msgid "Custom Button"
-msgstr "Özel Düğme"
-
-msgid "Custom Button Pressed"
-msgstr "Özel Düğme Basıldı"
-
-msgid "Custom Button Hover"
-msgstr "Özel Düğme Üzerine Gelme"
-
-msgid "Select Arrow"
-msgstr "Seçim Oku"
-
-msgid "Arrow Collapsed"
-msgstr "Ok Daraltıldı"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Ok Daraltıldı Ayna Yansıması"
-
-msgid "Title Button Font"
-msgstr "Başlık Düğmesi Yazı Tipi"
-
-msgid "Title Button Font Size"
-msgstr "Başlık Düğmesi Yazı Tipi Boyutu"
-
-msgid "Title Button Color"
-msgstr "Başlık Düğmesi Rengi"
-
-msgid "Font Hovered Color"
-msgstr "Yazı Tipi Üzerine Gelindi Rengi"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Yazı Tipi Üzerine Gelindi Solgun Rengi"
-
-msgid "Font Hovered Selected Color"
-msgstr "Yazı Tipi Üzerine Gelindi Seçili Renk"
-
-msgid "Guide Color"
-msgstr "Rehber Rengi"
-
-msgid "Drop Position Color"
-msgstr "Bırakma Konumu Rengi"
-
-msgid "Relationship Line Color"
-msgstr "İlişki Satırı Rengi"
-
-msgid "Parent HL Line Color"
-msgstr "Üst-Öğe Vurgulu Satır Rengi"
-
-msgid "Children HL Line Color"
-msgstr "Alt-Öğe Vurgulu Satır Rengi"
-
-msgid "Custom Button Font Highlight"
-msgstr "Özel Düğme Yazı Tipi Vurgusu"
-
-msgid "Item Margin"
-msgstr "Öğe Kenar Boşluğu"
-
-msgid "Inner Item Margin Bottom"
-msgstr "İç Öğe Kenar Boşluğu Alt"
-
-msgid "Inner Item Margin Left"
-msgstr "İç Öğe Kenar Boşluğu Sol"
-
-msgid "Inner Item Margin Right"
-msgstr "İç Öğe Kenar Boşluğu Sağ"
-
-msgid "Inner Item Margin Top"
-msgstr "İç Öğe Kenar Boşluğu Üst"
-
-msgid "Button Margin"
-msgstr "Düğme Kenar Boşluğu"
-
-msgid "Relationship Line Width"
-msgstr "İlişki Satırı Genişliği"
-
-msgid "Parent HL Line Width"
-msgstr "Üst-Öğe Vurgu Satırı Genişliği"
-
-msgid "Children HL Line Width"
-msgstr "Alt-Öğe Vurgu Satırı Genişliği"
-
-msgid "Parent HL Line Margin"
-msgstr "Üst-Öğe Vurgu Satırı Kenar Boşluğu"
-
-msgid "Draw Guides"
-msgstr "Kılavuzları Çiz"
-
-msgid "Scroll Border"
-msgstr "Kaydırma Kenarlığı"
-
-msgid "Scroll Speed"
-msgstr "Kaydırma Hızı"
-
-msgid "Scrollbar H Separation"
-msgstr "Kaydırma Çubuğu Yatay Ayırım"
-
-msgid "Scrollbar V Separation"
-msgstr "Kaydırma Çubuğu Dikey Ayırım"
-
-msgid "Icon Margin"
-msgstr "Simge Kenar Boşluğu"
-
-msgid "Tab Selected"
-msgstr "Sekme Seçildi"
-
-msgid "Tab Hovered"
-msgstr "Sekme Üzerine Gelindi"
-
-msgid "Tab Unselected"
-msgstr "Sekme Seçimi Kaldırıldı"
-
-msgid "Tab Disabled"
-msgstr "Sekme Devre Dışı"
-
-msgid "Tab Focus"
-msgstr "Sekme Odağı"
-
-msgid "Tabbar Background"
-msgstr "Sekme Çubuğu Arkaplanı"
-
-msgid "Drop Mark"
-msgstr "Bırakma İşareti"
-
-msgid "Menu Highlight"
-msgstr "Menü Vurgulama"
-
-msgid "Font Unselected Color"
-msgstr "Font Seçimi Kaldırıldı Rengi"
-
-msgid "Drop Mark Color"
-msgstr "Bırakma İşareti Rengi"
-
-msgid "Side Margin"
-msgstr "Yan Kenar Boşluğu"
-
-msgid "Icon Separation"
-msgstr "Simge Ayırımı"
-
-msgid "Button Highlight"
-msgstr "Düğme Vurgulama"
-
-msgid "SV Width"
-msgstr "Örnekleyici Görünümü Genişliği"
-
-msgid "SV Height"
-msgstr "Örnekleyici Görünümü Yüksekliği"
-
-msgid "H Width"
-msgstr "Yatay Genişlik"
-
-msgid "Label Width"
-msgstr "Etiket Genişliği"
-
-msgid "Center Slider Grabbers"
-msgstr "Kaydırıcı Tutamaçlarını Ortala"
-
-msgid "Menu Option"
-msgstr "Menü Seçeneği"
-
-msgid "Folded Arrow"
-msgstr "Katlanmış Ok"
-
-msgid "Expanded Arrow"
-msgstr "Genişletilmiş Ok"
-
-msgid "Screen Picker"
-msgstr "Ekran Seçici"
-
-msgid "Shape Circle"
-msgstr "Şekil Daire"
-
-msgid "Shape Rect"
-msgstr "Şekil Dikdörtgen"
-
-msgid "Shape Rect Wheel"
-msgstr "Şekil Dikdörtgen Teker"
-
-msgid "Add Preset"
-msgstr "Hazır Ayar Ekle"
-
-msgid "Sample BG"
-msgstr "Arkaplan Örnekleyici"
-
-msgid "Sample Revert"
-msgstr "Örnek Geri Al"
-
-msgid "Overbright Indicator"
-msgstr "Aşırı-parlak Göstergesi"
-
-msgid "Bar Arrow"
-msgstr "Çubuk Ok"
-
-msgid "Picker Cursor"
-msgstr "Seçici İmleci"
-
-msgid "Picker Cursor BG"
-msgstr "Seçici İmleci Arka Plan"
-
-msgid "Color Hue"
-msgstr "Renk Tonu"
-
-msgid "BG"
-msgstr "BG"
-
-msgid "Preset FG"
-msgstr "Hazır Ayar ÖnPlan"
-
-msgid "Preset Focus"
-msgstr "Hazır Ayar Odak"
-
-msgid "Preset BG"
-msgstr "Hazır Ayar ArkaPlan"
-
-msgid "Normal Font"
-msgstr "Normal Yazı Tipi"
-
-msgid "Bold Font"
-msgstr "Koyu Yazı Tipi"
-
-msgid "Italics Font"
-msgstr "Eğik Yazı Tipi"
-
-msgid "Bold Italics Font"
-msgstr "Kalın Eğik Yazı Tipi"
-
-msgid "Mono Font"
-msgstr "Mono Yazı Tipi"
-
-msgid "Normal Font Size"
-msgstr "Normal Yazı Tipi Boyutu"
-
-msgid "Bold Font Size"
-msgstr "Kalın Yazı Tipi Boyutu"
-
-msgid "Italics Font Size"
-msgstr "Eğik Yazı Tipi Boyutu"
-
-msgid "Bold Italics Font Size"
-msgstr "Kalın Eğik Yazı Tipi Boyutu"
-
-msgid "Mono Font Size"
-msgstr "Mono Yazı Tipi Boyutu"
-
-msgid "Table H Separation"
-msgstr "Çizelge Yatay Ayırımı"
-
-msgid "Table V Separation"
-msgstr "Çizelge Dikey Ayırımı"
-
-msgid "Table Odd Row BG"
-msgstr "Çizelge Tek Sayılı Satırlar Arkaplanı"
-
-msgid "Table Even Row BG"
-msgstr "Çizelge Çift Sayılı Satırlar Arkaplan"
-
-msgid "Table Border"
-msgstr "Çizelge Kenarlığı"
-
-msgid "Text Highlight H Padding"
-msgstr "Metin Vurgulama Yatay Dolgulaması"
-
-msgid "Text Highlight V Padding"
-msgstr "Metin Vurgulama Dikey Dolgulaması"
-
-msgid "H Grabber"
-msgstr "Yatay Kavrayıcı"
-
-msgid "V Grabber"
-msgstr "Dikey Kavrayıcı"
-
-msgid "Margin Left"
-msgstr "Kenar Boşluğu Sol"
-
-msgid "Margin Top"
-msgstr "Kenar Boşluğu Üst"
-
-msgid "Margin Right"
-msgstr "Kenar Boşluğu Sağ"
-
-msgid "Margin Bottom"
-msgstr "Kenar Boşluğu Alt"
-
-msgid "Minimum Grab Thickness"
-msgstr "En Az Yakalama Kalınlığı"
-
-msgid "Autohide"
-msgstr "Otomatik Gizle"
-
-msgid "Split Bar Background"
-msgstr "Ayırma Çubuğu Arka Plan"
-
-msgid "Zoom Out"
-msgstr "Uzaklaştır"
-
-msgid "Zoom In"
-msgstr "Yakınlaştır"
-
-msgid "Zoom Reset"
-msgstr "Yakınlaştırmayı Sıfırlama"
-
-msgid "Grid Toggle"
-msgstr "Izgara Aç/Kapat"
-
-msgid "Minimap Toggle"
-msgstr "Mini Harita Aç/Kapat"
-
-msgid "Snapping Toggle"
-msgstr "Tutunmayı Aç/Kapat"
-
-msgid "Menu Panel"
-msgstr "Menü Paneli"
-
-msgid "Grid Minor"
-msgstr "Izgara Küçük"
-
-msgid "Grid Major"
-msgstr "Izgara Büyük"
-
-msgid "Selection Fill"
-msgstr "Seçim Doldurma"
-
-msgid "Selection Stroke"
-msgstr "Seçim Fırça Darbesi"
-
-msgid "Activity"
-msgstr "Etkinlik"
-
-msgid "Connection Hover Tint Color"
-msgstr "Bağlantı Üstünde Durma Tonlama Rengi"
-
-msgid "Connection Hover Thickness"
-msgstr "Bağlantı Üstüne Gelme Kalınlığı"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Bağlantı Geçerli Hedef Tonlama Rengi"
-
-msgid "Connection Rim Color"
-msgstr "Bağlantı Kenar Rengi"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Port Sıcakbölge İç Uzanımı"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Port Sıcakbölge Dış Uzanımı"
 
 msgid "Default Theme Scale"
 msgstr "Varsayılan Tema Ölçeği"

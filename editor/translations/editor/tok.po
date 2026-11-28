@@ -969,9 +969,6 @@ msgstr "o pilin tawa open lon linja."
 msgid "No description available."
 msgstr "toki sona li lon ala."
 
-msgid "Open in File Manager"
-msgstr "o open lon lawa lipu"
-
 msgid "Constant"
 msgstr "nanpa awen"
 

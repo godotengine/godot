@@ -722,6 +722,9 @@ msgstr "Lame"
 msgid "Hide Slider"
 msgstr "Peida Liugur"
 
+msgid "Font Size"
+msgstr "Fondi Suurus"
+
 msgid "Zoom"
 msgstr "Suum"
 
@@ -1738,9 +1741,6 @@ msgstr "Salvesta Enne Käivitamist"
 
 msgid "Output"
 msgstr "Väljund"
-
-msgid "Font Size"
-msgstr "Fondi Suurus"
 
 msgid "Always Clear Output on Play"
 msgstr "Puhasta Alati Väljund Käivitamisel"
@@ -2819,6 +2819,27 @@ msgstr "Nuppude Grupp"
 msgid "Indentation"
 msgstr "Treppimine"
 
+msgid "Breakpoint Color"
+msgstr "Katkestuspunkti Värv"
+
+msgid "Bookmark Color"
+msgstr "Järjehoidja Värv"
+
+msgid "Executing Line Color"
+msgstr "Käivitatava Rea Värv"
+
+msgid "Line Number Color"
+msgstr "Reanumbri Värv"
+
+msgid "Completion Background Color"
+msgstr "Lõpetamise Tausta Värv"
+
+msgid "Completion Selected Color"
+msgstr "Lõpetamise Valitud Värv"
+
+msgid "Brace Mismatch Color"
+msgstr "Sulgude Mittesobivuse Värv"
+
 msgid "Constants"
 msgstr "Konstantid"
 
@@ -2837,14 +2858,50 @@ msgstr "Juurdepääs"
 msgid "Filters"
 msgstr "Filtrid"
 
+msgid "Reload"
+msgstr "Lae Uuesti"
+
+msgid "File"
+msgstr "Fail"
+
 msgid "Select Mode"
 msgstr "Valimisrežiim"
+
+msgid "Caret Color"
+msgstr "Kursori Värv"
+
+msgid "Selection Color"
+msgstr "Valiku Värv"
+
+msgid "Clear"
+msgstr "Puhasta"
+
+msgid "Submenu"
+msgstr "Alammenüü"
 
 msgid "Format"
 msgstr "Formaat"
 
+msgid "Close"
+msgstr "Sulge"
+
 msgid "Syntax Highlighter"
 msgstr "Süntaksi Esiletõstja"
+
+msgid "Search Result Color"
+msgstr "Otsingu Tulemuse Värv"
+
+msgid "Search Result Border Color"
+msgstr "Otsingu Tulemuse Äärise Värv"
+
+msgid "Caret Background Color"
+msgstr "Kursori Tausta Värv"
+
+msgid "Current Line Color"
+msgstr "Praeguse Rea Värv"
+
+msgid "Word Highlighted Color"
+msgstr "Esiletõstetud Sõna Värv"
 
 msgid "Expand"
 msgstr "Laienda"
@@ -2932,63 +2989,6 @@ msgstr "Funktsiooni Värv"
 
 msgid "Member Variable Color"
 msgstr "Liikme Muutuja Värv"
-
-msgid "File"
-msgstr "Fail"
-
-msgid "Caret Color"
-msgstr "Kursori Värv"
-
-msgid "Selection Color"
-msgstr "Valiku Värv"
-
-msgid "Clear"
-msgstr "Puhasta"
-
-msgid "Current Line Color"
-msgstr "Praeguse Rea Värv"
-
-msgid "Caret Background Color"
-msgstr "Kursori Tausta Värv"
-
-msgid "Word Highlighted Color"
-msgstr "Esiletõstetud Sõna Värv"
-
-msgid "Search Result Color"
-msgstr "Otsingu Tulemuse Värv"
-
-msgid "Search Result Border Color"
-msgstr "Otsingu Tulemuse Äärise Värv"
-
-msgid "Completion Background Color"
-msgstr "Lõpetamise Tausta Värv"
-
-msgid "Completion Selected Color"
-msgstr "Lõpetamise Valitud Värv"
-
-msgid "Bookmark Color"
-msgstr "Järjehoidja Värv"
-
-msgid "Breakpoint Color"
-msgstr "Katkestuspunkti Värv"
-
-msgid "Executing Line Color"
-msgstr "Käivitatava Rea Värv"
-
-msgid "Brace Mismatch Color"
-msgstr "Sulgude Mittesobivuse Värv"
-
-msgid "Line Number Color"
-msgstr "Reanumbri Värv"
-
-msgid "Close"
-msgstr "Sulge"
-
-msgid "Reload"
-msgstr "Lae Uuesti"
-
-msgid "Submenu"
-msgstr "Alammenüü"
 
 msgid "Custom"
 msgstr "Kohandatud"

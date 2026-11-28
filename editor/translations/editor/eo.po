@@ -2130,9 +2130,6 @@ msgstr ""
 msgid "Editor"
 msgstr "Redaktilo"
 
-msgid "Open in File Manager"
-msgstr "Malfermi en la dosieradministrilon"
-
 msgid "Class"
 msgstr "Klaso"
 
@@ -3960,9 +3957,6 @@ msgstr "Eraro: La projekto mankas en la dosiersistemo."
 
 msgid "Toggle Favorite"
 msgstr "(Mal)montri ĉe la supro"
-
-msgid "Open in file manager"
-msgstr "Malfermi en la dosieradministrilon"
 
 msgid "Last edited timestamp"
 msgstr "Dato de la lasta redakto"

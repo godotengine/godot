@@ -162,6 +162,7 @@ private:
 #ifdef TOOLS_ENABLED
 	// if false gizmo move body
 	bool gizmo_move_joint = false;
+	JointData *joint_defaults = nullptr;
 #endif
 
 	JointData *joint_data = nullptr;
@@ -196,6 +197,10 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+#ifdef TOOLS_ENABLED
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+#endif
 	void _notification(int p_what);
 	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState3D>)
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
@@ -206,6 +211,8 @@ protected:
 private:
 	void _sync_body_state(PhysicsDirectBodyState3D *p_state);
 
+	template <typename T>
+	void _make_joint_data();
 	void _update_joint_offset();
 	void _fix_joint_offset();
 	void _reload_joint();

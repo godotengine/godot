@@ -2253,9 +2253,6 @@ msgstr "Κάντε κλικ για να ανοίξετε στο πρόγραμμ
 msgid "No description available."
 msgstr "Δεν υπάρχει διαθέσιμη περιγραφή."
 
-msgid "Open in File Manager"
-msgstr "Άνοιγμα στη διαχείριση αρχείων"
-
 msgid "Class"
 msgstr "Κλάση"
 

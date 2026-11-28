@@ -990,9 +990,10 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	panel->add_child(hb);
+
 	icon = memnew(TextureRect);
 	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	icon->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	icon->set_expand_mode(TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -1048,7 +1049,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	progress_hbox->add_child(install_button);
 	install_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::install));
 
-	set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+	set_custom_minimum_size(Size2(460 * EDSCALE, 0));
 
 	download = memnew(HTTPRequest);
 	panel->add_child(download);

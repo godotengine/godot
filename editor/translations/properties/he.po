@@ -488,6 +488,9 @@ msgstr "דריסת כפתורי עוצמת השמע"
 msgid "Disable Scroll Deadzone"
 msgstr "השבתת אזור מת לגלילה"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "ניווט"
 
@@ -1174,6 +1177,31 @@ msgstr "עריכת מספר שלם"
 
 msgid "Deferred Drag Mode"
 msgstr "מצב גרירה דחוי"
+
+msgid "Font Uneditable Color"
+msgstr "צבע גופן לא ניתן לעריכה"
+
+msgid "Font"
+msgstr "גופן"
+
+msgid "Font Size"
+msgstr "גודל גופן"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "נורמל"
+
+msgid "Focus"
+msgstr "מיקוד"
+
+msgid "Updown"
+msgstr "מעלה/מטה"
+
+msgid "Grabber Highlight"
+msgstr "הדגשת ידית האחיזה"
+
+msgid "Grabber"
+msgstr "ידית אחיזה"
 
 msgid "Zoom"
 msgstr "תקריב"
@@ -3185,9 +3213,6 @@ msgstr "פעולה בעת עצירה"
 
 msgid "Output"
 msgstr "פלט"
-
-msgid "Font Size"
-msgstr "גודל גופן"
 
 msgid "Always Clear Output on Play"
 msgstr "ניקוי הפלט תמיד בעת הפעלה"
@@ -5949,9 +5974,6 @@ msgstr "גודל מאגר Emscripten"
 msgid "Godot Pool Size"
 msgstr "גודל מאגר Godot"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -7193,9 +7215,6 @@ msgstr "טקסט"
 msgid "Outline Modulate"
 msgstr "אפנון קו המתאר"
 
-msgid "Font"
-msgstr "גופן"
-
 msgid "Horizontal Alignment"
 msgstr "יישור אופקי"
 
@@ -8201,8 +8220,119 @@ msgstr "יישור סמל אנכי"
 msgid "Expand Icon"
 msgstr "הרחבת סמל"
 
+msgid "Normal Mirrored"
+msgstr "רגיל משוקף"
+
+msgid "Pressed Mirrored"
+msgstr "לחוץ משוקף"
+
+msgid "Hover"
+msgstr "ריחוף"
+
+msgid "Hover Mirrored"
+msgstr "ריחוף משוקף"
+
+msgid "Hover Pressed"
+msgstr "ריחוף בלחיצה"
+
+msgid "Disabled Mirrored"
+msgstr "מושבת משוקף"
+
+msgid "Font Focus Color"
+msgstr "צבע גופן במיקוד"
+
+msgid "Font Pressed Color"
+msgstr "צבע גופן בלחיצה"
+
+msgid "Font Hover Color"
+msgstr "צבע גופן בריחוף"
+
+msgid "Font Hover Pressed Color"
+msgstr "צבע גופן בריחוף ולחיצה"
+
+msgid "Font Disabled Color"
+msgstr "צבע גופן מושבת"
+
+msgid "Font Outline Color"
+msgstr "צבע קו המתאר של הגופן"
+
+msgid "Icon Normal Color"
+msgstr "צבע סמל רגיל"
+
+msgid "Icon Focus Color"
+msgstr "צבע סמל במיקוד"
+
+msgid "Icon Pressed Color"
+msgstr "צבע סמל בלחיצה"
+
+msgid "Icon Hover Color"
+msgstr "צבע סמל בריחוף"
+
+msgid "Icon Hover Pressed Color"
+msgstr "צבע אייקון לחוץ מרחף"
+
+msgid "Icon Disabled Color"
+msgstr "צבע סמל מושבת"
+
+msgid "H Separation"
+msgstr "ריווח אופקי"
+
+msgid "Icon Max Width"
+msgstr "רוחב סמל מרבי"
+
+msgid "Align to Largest Stylebox"
+msgstr "יישור לפי תיבת הסגנון הגדולה ביותר"
+
 msgid "Use Top Left"
 msgstr "שימוש בפינה השמאלית העליונה"
+
+msgid "Check V Offset"
+msgstr "היסט אנכי של תיבת הסימון"
+
+msgid "Unchecked"
+msgstr "לא מסומן"
+
+msgid "Radio Checked"
+msgstr "כפתור בחירה מסומן"
+
+msgid "Radio Unchecked"
+msgstr "כפתור בחירה לא מסומן"
+
+msgid "Checked Disabled"
+msgstr "מסומן מושבת"
+
+msgid "Unchecked Disabled"
+msgstr "לא מסומן מושבת"
+
+msgid "Radio Checked Disabled"
+msgstr "כפתור בחירה מסומן מושבת"
+
+msgid "Radio Unchecked Disabled"
+msgstr "כפתור בחירה לא מסומן מושבת"
+
+msgid "Checkbox Checked Color"
+msgstr "צבע תיבת סימון מסומנת"
+
+msgid "Checkbox Unchecked Color"
+msgstr "צבע תיבת סימון לא מסומנת"
+
+msgid "Checked Mirrored"
+msgstr "מסומן משוקף"
+
+msgid "Unchecked Mirrored"
+msgstr "לא מסומן משוקף"
+
+msgid "Checked Disabled Mirrored"
+msgstr "מסומן מושבת משוקף"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "לא מסומן מושבת משוקף"
+
+msgid "Button Checked Color"
+msgstr "צבע כפתור מסומן"
+
+msgid "Button Unchecked Color"
+msgstr "צבע כפתור לא מסומן"
 
 msgid "Symbol Lookup on Click"
 msgstr "חיפוש סמל בלחיצה"
@@ -8270,6 +8400,81 @@ msgstr "הדגשת התאמה"
 msgid "Pairs"
 msgstr "זוגות"
 
+msgid "Code Folding Color"
+msgstr "צבע קיפול קוד"
+
+msgid "Folded Code Region Color"
+msgstr "צבע אזור קוד מקופל"
+
+msgid "Can Fold"
+msgstr "ניתן לקיפול"
+
+msgid "Folded"
+msgstr "מקופל"
+
+msgid "Can Fold Code Region"
+msgstr "ניתן לקפל אזור קוד"
+
+msgid "Folded Code Region"
+msgstr "אזור קוד מקופל"
+
+msgid "Folded EOL Icon"
+msgstr "סמל סוף שורה מקופלת"
+
+msgid "Completion Color BG"
+msgstr "צבע רקע ההשלמה"
+
+msgid "Breakpoint Color"
+msgstr "צבע נקודות עצירה"
+
+msgid "Breakpoint"
+msgstr "נקודת עצירה"
+
+msgid "Bookmark Color"
+msgstr "צבע סימניות"
+
+msgid "Bookmark"
+msgstr "סימנייה"
+
+msgid "Executing Line Color"
+msgstr "צבע השורה המבוצעת"
+
+msgid "Executing Line"
+msgstr "שורה מבוצעת"
+
+msgid "Line Number Color"
+msgstr "צבע מספרי שורות"
+
+msgid "Completion Max Width"
+msgstr "רוחב השלמה מרבי"
+
+msgid "Completion Lines"
+msgstr "שורות השלמה"
+
+msgid "Completion Scroll Width"
+msgstr "רוחב גלילת ההשלמה"
+
+msgid "Completion Scroll Color"
+msgstr "צבע הגלילה בהשלמה"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "צבע הגלילה בריחוף בהשלמה"
+
+msgid "Completion Background Color"
+msgstr "צבע רקע ההשלמה"
+
+msgid "Completion Selected Color"
+msgstr "צבע הבחירה בהשלמה"
+
+msgid "Completion Existing Color"
+msgstr "צבע קיים בהשלמה"
+
+msgid "Line Length Guideline Color"
+msgstr "צבע הקו המנחה של אורך השורה"
+
+msgid "Brace Mismatch Color"
+msgstr "צבע סוגריים לא תואמים"
+
 msgid "Edit Alpha"
 msgstr "עריכת אלפא"
 
@@ -8305,6 +8510,102 @@ msgstr "ערך הקס גלוי"
 
 msgid "Presets Visible"
 msgstr "הערכות המוגדרות גלויות"
+
+msgid "Label Width"
+msgstr "רוחב תווית"
+
+msgid "SV Width"
+msgstr "רוחב SV"
+
+msgid "SV Height"
+msgstr "גובה SV"
+
+msgid "H Width"
+msgstr "רוחב H"
+
+msgid "Center Slider Grabbers"
+msgstr "מרכוז ידיות האחיזה של המחוון"
+
+msgid "Sample Focus"
+msgstr "מיקוד דוגמה"
+
+msgid "Picker Focus Rectangle"
+msgstr "מלבן מיקוד בבורר"
+
+msgid "Picker Focus Circle"
+msgstr "עיגול מיקוד בבורר"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "צבע סמן במיקוד ללא עריכה"
+
+msgid "Menu Option"
+msgstr "אפשרות תפריט"
+
+msgid "Screen Picker"
+msgstr "בוחר מהמסך"
+
+msgid "Expanded Arrow"
+msgstr "חץ מורחב"
+
+msgid "Folded Arrow"
+msgstr "חץ מקופל"
+
+msgid "Add Preset"
+msgstr "הוספת ערכה מוגדרת"
+
+msgid "Shape Rect"
+msgstr "צורת מלבן"
+
+msgid "Shape Rect Wheel"
+msgstr "צורת מלבן עם גלגל"
+
+msgid "Shape Circle"
+msgstr "צורת עיגול"
+
+msgid "Bar Arrow"
+msgstr "חץ הסרגל"
+
+msgid "Sample BG"
+msgstr "רקע הדוגמה"
+
+msgid "Sample Revert"
+msgstr "דגימת שחזור"
+
+msgid "Overbright Indicator"
+msgstr "מחוון בהירות־יתר"
+
+msgid "Picker Cursor"
+msgstr "סמן הבורר"
+
+msgid "Picker Cursor BG"
+msgstr "רקע סמן הבורר"
+
+msgid "Color Hue"
+msgstr "גוון הצבע"
+
+msgid "Color Script"
+msgstr "צבע סקריפט"
+
+msgid "Color Copy"
+msgstr "העתקת צבע"
+
+msgid "Tab Unselected"
+msgstr "לשונית לא נבחרת"
+
+msgid "Tab Selected"
+msgstr "לשונית נבחרת"
+
+msgid "BG"
+msgstr "רקע"
+
+msgid "Preset FG"
+msgstr "תבנית קידמי"
+
+msgid "Preset Focus"
+msgstr "תבנית מיקוד"
+
+msgid "Preset BG"
+msgstr "רקע ערכה מוגדרת"
 
 msgid "Accessibility Region"
 msgstr "אזור נגישות"
@@ -8390,9 +8691,6 @@ msgstr "תיאור צץ"
 msgid "Auto Translate Mode"
 msgstr "מצב תרגום אוטומטי"
 
-msgid "Focus"
-msgstr "מיקוד"
-
 msgid "Neighbor Left"
 msgstr "שכן משמאל"
 
@@ -8456,6 +8754,9 @@ msgstr "סגירה ב־Escape"
 msgid "Autowrap"
 msgstr "גלישת שורות אוטומטית"
 
+msgid "Buttons Separation"
+msgstr "ריווח כפתורים"
+
 msgid "Cancel Button Text"
 msgstr "טקסט כפתור הביטול"
 
@@ -8510,14 +8811,92 @@ msgstr "אזהרת דריסה מופעלת"
 msgid "Deleting Enabled"
 msgstr "מחיקה מופעלת"
 
+msgid "Parent Folder"
+msgstr "תיקיית הורה"
+
+msgid "Forward Folder"
+msgstr "תיקייה קדימה"
+
+msgid "Back Folder"
+msgstr "תיקייה אחורה"
+
+msgid "Reload"
+msgstr "רענון"
+
+msgid "Favorite"
+msgstr "מועדף"
+
+msgid "Toggle Hidden"
+msgstr "החלפת מצב מוסתרים"
+
+msgid "Folder"
+msgstr "תיקיה"
+
+msgid "Toggle Filename Filter"
+msgstr "החלפת מצב מסנן שמות קבצים"
+
+msgid "File"
+msgstr "קובץ"
+
+msgid "Create Folder"
+msgstr "יצירת תיקייה"
+
+msgid "Sort"
+msgstr "מיון"
+
+msgid "Favorite Up"
+msgstr "העברת מועדף מעלה"
+
+msgid "Favorite Down"
+msgstr "העברת מועדף מטה"
+
+msgid "Thumbnail Mode"
+msgstr "מצב תמונות ממוזערות"
+
+msgid "List Mode"
+msgstr "מצב רשימה"
+
+msgid "File Thumbnail"
+msgstr "תמונה ממוזערת של קובץ"
+
+msgid "Folder Thumbnail"
+msgstr "תמונה ממוזערת של תיקייה"
+
+msgid "Menu Copy Path"
+msgstr "תפריט העתקת נתיב"
+
+msgid "Menu Delete"
+msgstr "תפריט מחיקה"
+
+msgid "Menu Refresh"
+msgstr "תפריט רענון"
+
+msgid "Menu New Folder"
+msgstr "תפריט תיקייה חדשה"
+
+msgid "Menu Show in File Manager"
+msgstr "תפריט הצגה במנהל הקבצים"
+
+msgid "Menu Open Bundle"
+msgstr "תפריט פתיחת חבילה"
+
+msgid "Folder Icon Color"
+msgstr "צבע סמל תיקייה"
+
+msgid "File Icon Color"
+msgstr "צבע סמל קובץ"
+
+msgid "File Disabled Color"
+msgstr "צבע קובץ מושבת"
+
 msgid "Last Wrap Alignment"
 msgstr "יישור הגלישה האחרונה"
 
 msgid "Reverse Fill"
 msgstr "מילוי הפוך"
 
-msgid "Folded"
-msgstr "מקופל"
+msgid "V Separation"
+msgstr "ריווח אנכי"
 
 msgid "Title Alignment"
 msgstr "יישור הכותרת"
@@ -8534,8 +8913,38 @@ msgstr "קבוצה מתקפלת"
 msgid "Title Text Direction"
 msgstr "כיוון טקסט הכותרת"
 
+msgid "Title Panel"
+msgstr "פנל כותרת"
+
+msgid "Title Hover Panel"
+msgstr "פנל כותרת בריחוף"
+
+msgid "Title Collapsed Panel"
+msgstr "פנל כותרת מכווץ"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "פנל כותרת מכווץ בריחוף"
+
+msgid "Hover Font Color"
+msgstr "צבע גופן בריחוף"
+
+msgid "Collapsed Font Color"
+msgstr "צבע גופן מכווץ"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "חץ מורחב משוקף"
+
+msgid "Folded Arrow Mirrored"
+msgstr "חץ מקופל משוקף"
+
 msgid "Allow Folding All"
 msgstr "מתן אפשרות לקיפול הכול"
+
+msgid "Resizer"
+msgstr "משנה גודל"
+
+msgid "Resizer Color"
+msgstr "צבע משנה הגודל"
 
 msgid "Show Grid"
 msgstr "הצגת רשת"
@@ -8594,6 +9003,63 @@ msgstr "הצגת כפתור מפה מוקטנת"
 msgid "Show Arrange Button"
 msgstr "הצגת כפתור סידור"
 
+msgid "Panel Focus"
+msgstr "מיקוד פנל"
+
+msgid "Grid Major"
+msgstr "רשת ראשית"
+
+msgid "Grid Minor"
+msgstr "רשת משנית"
+
+msgid "Activity"
+msgstr "פעילות"
+
+msgid "Connection Hover Tint Color"
+msgstr "צבע גוון חיבור בריחוף"
+
+msgid "Connection Hover Thickness"
+msgstr "עובי חיבור בריחוף"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "צבע גוון יעד חיבור תקין"
+
+msgid "Connection Rim Color"
+msgstr "צבע שולי החיבור"
+
+msgid "Selection Fill"
+msgstr "מילוי הבחירה"
+
+msgid "Selection Stroke"
+msgstr "קו הבחירה"
+
+msgid "Menu Panel"
+msgstr "פנל תפריט"
+
+msgid "Zoom In"
+msgstr "התקרבות"
+
+msgid "Zoom Out"
+msgstr "התרחקות"
+
+msgid "Zoom Reset"
+msgstr "איפוס התקריב"
+
+msgid "Snapping Toggle"
+msgstr "החלפת מצב הצמדה"
+
+msgid "Grid Toggle"
+msgstr "החלפת מצב רשת"
+
+msgid "Minimap Toggle"
+msgstr "החלפת מצב מפה מוקטנת"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "היקף פנימי של אזור הפעולה בפתחה"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "היקף חיצוני של אזור הפעולה בפתחה"
+
 msgid "Draggable"
 msgstr "ניתן לגרירה"
 
@@ -8612,11 +9078,29 @@ msgstr "שולי כיווץ אוטומטי"
 msgid "Drag Margin"
 msgstr "שולי גרירה"
 
+msgid "Panel Selected"
+msgstr "פנל נבחר"
+
+msgid "Titlebar"
+msgstr "שורת כותרת"
+
+msgid "Titlebar Selected"
+msgstr "שורת כותרת נבחרת"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "התעלמות מסוג חיבור לא תקין"
 
 msgid "Slots Focus Mode"
 msgstr "מצב מיקוד משבצות"
+
+msgid "Slot"
+msgstr "משבצת"
+
+msgid "Slot Selected"
+msgstr "משבצת נבחרת"
+
+msgid "Port H Offset"
+msgstr "היסט אופקי של פתחה"
 
 msgid "Select Mode"
 msgstr "בחר מצב"
@@ -8669,6 +9153,60 @@ msgstr "קנה מידה של הסמל"
 msgid "Fixed Icon Size"
 msgstr "גודל סמל קבוע"
 
+msgid "Scrollbar Margin Left"
+msgstr "שולי פס הגלילה משמאל"
+
+msgid "Scrollbar Margin Top"
+msgstr "שולי פס הגלילה מלמעלה"
+
+msgid "Scrollbar Margin Right"
+msgstr "שולי פס הגלילה מימין"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "שולי פס הגלילה מלמטה"
+
+msgid "Scrollbar H Separation"
+msgstr "ריווח אופקי לפס הגלילה"
+
+msgid "Font Hovered Color"
+msgstr "צבע גופן בריחוף"
+
+msgid "Font Hovered Selected Color"
+msgstr "צבע גופן נבחר בריחוף"
+
+msgid "Font Selected Color"
+msgstr "צבע גופן נבחר"
+
+msgid "Scroll Hint"
+msgstr "רמז גלילה"
+
+msgid "Scroll Hint Color"
+msgstr "צבע רמז הגלילה"
+
+msgid "Icon Margin"
+msgstr "שולי סמל"
+
+msgid "Hovered"
+msgstr "בריחוף"
+
+msgid "Hovered Selected"
+msgstr "נבחר בריחוף"
+
+msgid "Hovered Selected Focus"
+msgstr "נבחר בריחוף עם מיקוד"
+
+msgid "Selected Focus"
+msgstr "מיקוד נבחר"
+
+msgid "Cursor Unfocused"
+msgstr "סמן ללא מיקוד"
+
+msgid "Cursor"
+msgstr "מצביע"
+
+msgid "Guide Color"
+msgstr "צבע קו מנחה"
+
 msgid "Label Settings"
 msgstr "הגדרות תווית"
 
@@ -8698,6 +9236,15 @@ msgstr "התנהגות התווים הגלויים"
 
 msgid "Visible Ratio"
 msgstr "יחס גלוי"
+
+msgid "Paragraph Spacing"
+msgstr "ריווח פסקאות"
+
+msgid "Font Shadow Color"
+msgstr "צבע צל הגופן"
+
+msgid "Shadow Outline Size"
+msgstr "גודל קו המתאר של הצל"
 
 msgid "Placeholder Text"
 msgstr "טקסט ממלא מקום"
@@ -8777,11 +9324,50 @@ msgstr "מצב הרחבת סמל"
 msgid "Right Icon Scale"
 msgstr "קנה מידה של הסמל הימני"
 
+msgid "Font Placeholder Color"
+msgstr "צבע גופן ממלא מקום"
+
+msgid "Caret Width"
+msgstr "רוחב הסמן"
+
+msgid "Caret Color"
+msgstr "צבע הסמן"
+
+msgid "Minimum Character Width"
+msgstr "רוחב תו מזערי"
+
+msgid "Selection Color"
+msgstr "צבע הבחירה"
+
+msgid "Clear"
+msgstr "ניקוי"
+
+msgid "Clear Button Color"
+msgstr "צבע כפתור הניקוי"
+
+msgid "Clear Button Color Pressed"
+msgstr "צבע כפתור הניקוי בלחיצה"
+
 msgid "Underline"
 msgstr "קו תחתון"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "ריווח קו תחתון"
+
+msgid "Margin Left"
+msgstr "שוליים משמאל"
+
+msgid "Margin Top"
+msgstr "שוליים מלמעלה"
+
+msgid "Margin Right"
+msgstr "שוליים מימין"
+
+msgid "Margin Bottom"
+msgstr "שוליים מלמטה"
 
 msgid "Start Index"
 msgstr "אינדקס התחלה"
@@ -8819,6 +9405,15 @@ msgstr "חיפוש מקורב מופעל"
 msgid "Fuzzy Search Max Misses"
 msgstr "מספר החטאות מרבי בחיפוש מקורב"
 
+msgid "Arrow"
+msgstr "חץ"
+
+msgid "Arrow Margin"
+msgstr "שולי החץ"
+
+msgid "Modulate Arrow"
+msgstr "אפנון החץ"
+
 msgid "Hide on Item Selection"
 msgstr "הסתרה בבחירת פריט"
 
@@ -8843,17 +9438,71 @@ msgstr "כיווץ גובה"
 msgid "Shrink Width"
 msgstr "כיווץ רוחב"
 
+msgid "Separator"
+msgstr "מפריד"
+
+msgid "Labeled Separator Left"
+msgstr "מפריד עם תווית משמאל"
+
+msgid "Labeled Separator Right"
+msgstr "מפריד עם תווית מימין"
+
+msgid "Search Bar Separation"
+msgstr "ריווח סרגל החיפוש"
+
+msgid "Item Start Padding"
+msgstr "ריפוד תחילת פריט"
+
+msgid "Item End Padding"
+msgstr "ריפוד סוף פריט"
+
+msgid "Gutter Compact"
+msgstr "שוליים דחוסים"
+
+msgid "Indeterminate"
+msgstr "לא מוגדר"
+
+msgid "Indeterminate Disabled"
+msgstr "לא מוגדר מושבת"
+
+msgid "Search"
+msgstr "חיפוש"
+
+msgid "Submenu"
+msgstr "תת־תפריט"
+
+msgid "Submenu Mirrored"
+msgstr "תת־תפריט משוקף"
+
+msgid "Font Separator"
+msgstr "גופן המפריד"
+
+msgid "Font Separator Size"
+msgstr "גודל גופן המפריד"
+
+msgid "Font Accelerator Color"
+msgstr "צבע גופן המאיץ"
+
+msgid "Font Separator Color"
+msgstr "צבע גופן המפריד"
+
+msgid "Separator Outline Size"
+msgstr "גודל קו המתאר של המפריד"
+
+msgid "Font Separator Outline Color"
+msgstr "צבע קו המתאר של גופן המפריד"
+
 msgid "Fill Mode"
 msgstr "מצב מילוי"
 
 msgid "Show Percentage"
 msgstr "הצגת אחוזים"
 
-msgid "Indeterminate"
-msgstr "לא מוגדר"
-
 msgid "Preview Indeterminate"
 msgstr "תצוגה מקדימה של מצב לא מוגדר"
+
+msgid "Background"
+msgstr "רקע"
 
 msgid "Min Value"
 msgstr "ערך מזערי"
@@ -8939,8 +9588,98 @@ msgstr "השהיית סרגל ההתקדמות"
 msgid "Text Selection"
 msgstr "בחירת טקסט"
 
+msgid "Horizontal Rule"
+msgstr "קו אופקי"
+
+msgid "Normal Font"
+msgstr "גופן רגיל"
+
+msgid "Normal Font Size"
+msgstr "גודל גופן רגיל"
+
+msgid "Shadow Offset X"
+msgstr "היסט הצל ב־X"
+
+msgid "Shadow Offset Y"
+msgstr "היסט הצל ב־Y"
+
+msgid "Bold Font"
+msgstr "גופן מודגש"
+
+msgid "Bold Font Size"
+msgstr "גודל גופן מודגש"
+
+msgid "Bold Italics Font"
+msgstr "גופן מודגש ומוטה"
+
+msgid "Bold Italics Font Size"
+msgstr "גודל גופן מודגש ונטוי"
+
+msgid "Italics Font"
+msgstr "גופן נטוי"
+
+msgid "Italics Font Size"
+msgstr "גודל גופן נטוי"
+
+msgid "Mono Font"
+msgstr "גופן ברוחב קבוע"
+
+msgid "Mono Font Size"
+msgstr "גודל גופן ברוחב קבוע"
+
+msgid "Text Highlight H Padding"
+msgstr "ריפוד אופקי להדגשת טקסט"
+
+msgid "Text Highlight V Padding"
+msgstr "ריפוד אנכי להדגשת טקסט"
+
+msgid "Underline Alpha"
+msgstr "אלפא לקו תחתון"
+
+msgid "Strikethrough Alpha"
+msgstr "אלפא לקו חוצה"
+
+msgid "Table H Separation"
+msgstr "ריווח אופקי בטבלה"
+
+msgid "Table V Separation"
+msgstr "ריווח אנכי בטבלה"
+
+msgid "Table Odd Row BG"
+msgstr "רקע שורה אי־זוגית בטבלה"
+
+msgid "Table Even Row BG"
+msgstr "רקע שורה זוגית בטבלה"
+
+msgid "Table Border"
+msgstr "גבול הטבלה"
+
 msgid "Custom Step"
 msgstr "צעד מותאם אישית"
+
+msgid "Scroll Focus"
+msgstr "מיקוד גלילה"
+
+msgid "Grabber Pressed"
+msgstr "ידית אחיזה לחוצה"
+
+msgid "Increment"
+msgstr "הגדלה"
+
+msgid "Increment Highlight"
+msgstr "הדגשת הגדלה"
+
+msgid "Increment Pressed"
+msgstr "הגדלה לחוצה"
+
+msgid "Decrement"
+msgstr "הורדה ב1"
+
+msgid "Decrement Highlight"
+msgstr "הדגשת הקטנה"
+
+msgid "Decrement Pressed"
+msgstr "הקטנה לחוצה"
 
 msgid "Follow Focus"
 msgstr "מעקב אחר המיקוד"
@@ -8975,8 +9714,20 @@ msgstr "גלילה אופקית כבררת מחדל"
 msgid "Scroll Deadzone"
 msgstr "אזור מת לגלילה"
 
-msgid "Scroll Hint"
-msgstr "רמז גלילה"
+msgid "Scrollbar V Separation"
+msgstr "ריווח אנכי לפס הגלילה"
+
+msgid "Scroll Hint Vertical"
+msgstr "רמז גלילה אנכית"
+
+msgid "Scroll Hint Horizontal"
+msgstr "רמז גלילה אופקית"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "צבע רמז גלילה אנכית"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "צבע רמז גלילה אופקית"
 
 msgid "Default Scroll Deadzone"
 msgstr "אזור מת בררת מחדל לגלילה"
@@ -8993,6 +9744,30 @@ msgstr "שנתות בגבולות"
 msgid "Ticks Position"
 msgstr "מיקום השנתות"
 
+msgid "Slider"
+msgstr "מחוון"
+
+msgid "Grabber Area"
+msgstr "אזור ידית האחיזה"
+
+msgid "Grabber Area Highlight"
+msgstr "הדגשת אזור ידית האחיזה"
+
+msgid "Grabber Disabled"
+msgstr "ידית אחיזה מושבתת"
+
+msgid "Tick"
+msgstr "שנתה"
+
+msgid "Center Grabber"
+msgstr "ידית אחיזה במרכז"
+
+msgid "Grabber Offset"
+msgstr "היסט ידית האחיזה"
+
+msgid "Tick Offset"
+msgstr "היסט שנתות"
+
 msgid "Update on Text Changed"
 msgstr "עדכון בעת שינוי הטקסט"
 
@@ -9004,6 +9779,96 @@ msgstr "עיגול חץ מותאם אישית"
 
 msgid "Format"
 msgstr "תבנית"
+
+msgid "Buttons Vertical Separation"
+msgstr "ריווח אנכי בין כפתורים"
+
+msgid "Field and Buttons Separation"
+msgstr "ריווח בין השדה לכפתורים"
+
+msgid "Buttons Width"
+msgstr "רוחב כפתורים"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "קביעת רוחב כפתורים מזערי לפי הסמלים"
+
+msgid "Up"
+msgstr "למעלה"
+
+msgid "Up Hover"
+msgstr "מעלה בריחוף"
+
+msgid "Up Pressed"
+msgstr "מעלה לחוץ"
+
+msgid "Up Disabled"
+msgstr "מעלה מושבת"
+
+msgid "Down"
+msgstr "למטה"
+
+msgid "Down Hover"
+msgstr "מטה בריחוף"
+
+msgid "Down Pressed"
+msgstr "לחוץ למטה"
+
+msgid "Down Disabled"
+msgstr "מטה מושבת"
+
+msgid "Up Background"
+msgstr "רקע מעלה"
+
+msgid "Up Background Hovered"
+msgstr "רקע מעלה בריחוף"
+
+msgid "Up Background Pressed"
+msgstr "רקע מעלה לחוץ"
+
+msgid "Up Background Disabled"
+msgstr "רקע מעלה מושבת"
+
+msgid "Down Background"
+msgstr "רקע מטה"
+
+msgid "Down Background Hovered"
+msgstr "רקע מטה בריחוף"
+
+msgid "Down Background Pressed"
+msgstr "רקע מטה לחוץ"
+
+msgid "Down Background Disabled"
+msgstr "רקע מטה מושבת"
+
+msgid "Up Icon Modulate"
+msgstr "אפנון סמל מעלה"
+
+msgid "Up Hover Icon Modulate"
+msgstr "אפנון סמל מעלה בריחוף"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "אפנון סמל מעלה לחוץ"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "אפנון סמל מעלה מושבת"
+
+msgid "Down Icon Modulate"
+msgstr "אפנון סמל מטה"
+
+msgid "Down Hover Icon Modulate"
+msgstr "אפנון סמל מטה בריחוף"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "אפנון סמל מטה לחוץ"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "אפנון סמל מטה מושבת"
+
+msgid "Field and Buttons Separator"
+msgstr "מפריד בין השדה לכפתורים"
+
+msgid "Up Down Buttons Separator"
+msgstr "מפריד כפתורי מעלה ומטה"
 
 msgid "Split Offsets"
 msgstr "היסטי פיצול"
@@ -9034,6 +9899,39 @@ msgstr "שולי סוף"
 
 msgid "Highlight in Editor"
 msgstr "הדגשה בעורך"
+
+msgid "Touch Dragger Color"
+msgstr "צבע גורר המגע"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "צבע גורר המגע בלחיצה"
+
+msgid "Touch Dragger Hover Color"
+msgstr "צבע גורר המגע בריחוף"
+
+msgid "Minimum Grab Thickness"
+msgstr "עובי אחיזה מזערי"
+
+msgid "Autohide"
+msgstr "הסתרה אוטומטית"
+
+msgid "Touch Dragger"
+msgstr "גורר מגע"
+
+msgid "H Touch Dragger"
+msgstr "גורר מגע אופקי"
+
+msgid "V Touch Dragger"
+msgstr "גורר מגע אנכי"
+
+msgid "H Grabber"
+msgstr "ידית אחיזה אופקית"
+
+msgid "V Grabber"
+msgstr "ידית אחיזה אנכית"
+
+msgid "Split Bar Background"
+msgstr "רקע סרגל הפיצול"
 
 msgid "Split Offset"
 msgstr "היסט פיצול"
@@ -9086,6 +9984,42 @@ msgstr "ביטול בחירה מופעל"
 msgid "Tabs"
 msgstr "טאבים"
 
+msgid "Hover Switch Wait Msec"
+msgstr "המתנה למעבר בריחוף (מילישניות)"
+
+msgid "Tab Hovered"
+msgstr "לשונית בריחוף"
+
+msgid "Tab Disabled"
+msgstr "לשונית מושבתת"
+
+msgid "Tab Focus"
+msgstr "מיקוד לשונית"
+
+msgid "Drop Mark"
+msgstr "סימן שחרור"
+
+msgid "Drop Mark Color"
+msgstr "צבע סימן השחרור"
+
+msgid "Font Unselected Color"
+msgstr "צבע גופן לא נבחר"
+
+msgid "Icon Selected Color"
+msgstr "צבע סמל נבחר"
+
+msgid "Icon Hovered Color"
+msgstr "צבע סמל בריחוף"
+
+msgid "Icon Unselected Color"
+msgstr "צבע סמל לא נבחר"
+
+msgid "Close"
+msgstr "סגירה"
+
+msgid "Button Highlight"
+msgstr "הדגשת כפתור"
+
 msgid "Tabs Position"
 msgstr "מיקום הלשוניות"
 
@@ -9097,6 +10031,21 @@ msgstr "שימוש בלשוניות מוסתרות לגודל המזערי"
 
 msgid "Tab Focus Mode"
 msgstr "מצב מיקוד לשונית"
+
+msgid "Side Margin"
+msgstr "שוליים צדדיים"
+
+msgid "Tabbar Background"
+msgstr "רקע סרגל הלשוניות"
+
+msgid "Menu"
+msgstr "תפריט"
+
+msgid "Menu Highlight"
+msgstr "הדגשת תפריט"
+
+msgid "Icon Separation"
+msgstr "ריווח סמלים"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "לוח גזירים לבחירה ריקה מופעל"
@@ -9143,18 +10092,38 @@ msgstr "תווי בקרה"
 msgid "Spaces"
 msgstr "רווחים"
 
+msgid "Search Result Color"
+msgstr "צבע תוצאות חיפוש"
+
+msgid "Search Result Border Color"
+msgstr "צבע גבול תוצאות חיפוש"
+
+msgid "Caret Background Color"
+msgstr "צבע רקע הסמן"
+
+msgid "Tab"
+msgstr "לשונית"
+
+msgid "Space"
+msgstr "רווח"
+
+msgid "Font Readonly Color"
+msgstr "צבע גופן לקריאה בלבד"
+
+msgid "Wrap Offset"
+msgstr "היסט גלישה"
+
+msgid "Current Line Color"
+msgstr "צבע השורה הנוכחית"
+
+msgid "Word Highlighted Color"
+msgstr "צבע מילה מודגשת"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "זיהוי חוסר פעילות בעריכת טקסט (שניות)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "גודל מרבי של מחסנית הביטולים בעריכת טקסט"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "נורמל"
-
-msgid "Hover"
-msgstr "ריחוף"
 
 msgid "Focused"
 msgstr "ממוקד"
@@ -9228,6 +10197,117 @@ msgstr "גלילה אופקית מופעלת"
 msgid "Scroll Vertical Enabled"
 msgstr "גלילה אנכית מופעלת"
 
+msgid "Title Button Font"
+msgstr "גופן כפתור הכותרת"
+
+msgid "Title Button Font Size"
+msgstr "גודל גופן כפתור הכותרת"
+
+msgid "Hovered Dimmed"
+msgstr "מרחף חשוך"
+
+msgid "Button Hover"
+msgstr "כפתור בריחוף"
+
+msgid "Arrow Collapsed"
+msgstr "חץ מכווץ"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "חץ מכווץ משוקף"
+
+msgid "Select Arrow"
+msgstr "חץ בחירה"
+
+msgid "Custom Button"
+msgstr "כפתור מותאם אישית"
+
+msgid "Custom Button Hover"
+msgstr "כפתור מותאם אישית בריחוף"
+
+msgid "Custom Button Pressed"
+msgstr "כפתור מותאם אישית לחוץ"
+
+msgid "Custom Button Font Highlight"
+msgstr "הדגשת גופן הכפתור המותאם אישית"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "צבע גופן מעומעם בריחוף"
+
+msgid "Drop on Item Color"
+msgstr "צבע שחרור על פריט"
+
+msgid "Drop Position Color"
+msgstr "צבע מיקום השחרור"
+
+msgid "Inner Item Margin Bottom"
+msgstr "שוליים פנימיים של פריט מלמטה"
+
+msgid "Inner Item Margin Left"
+msgstr "שוליים פנימיים של פריט משמאל"
+
+msgid "Inner Item Margin Right"
+msgstr "שוליים פנימיים של פריט מימין"
+
+msgid "Inner Item Margin Top"
+msgstr "שוליים פנימיים של פריט מלמעלה"
+
+msgid "Item Margin"
+msgstr "שולי פריט"
+
+msgid "Check H Separation"
+msgstr "ריווח אופקי לתיבת הסימון"
+
+msgid "Icon H Separation"
+msgstr "ריווח אופקי לסמל"
+
+msgid "Button Margin"
+msgstr "שולי כפתור"
+
+msgid "Draw Guides"
+msgstr "ציור קווים מנחים"
+
+msgid "Relationship Line Width"
+msgstr "רוחב קו הקשר"
+
+msgid "Parent HL Line Width"
+msgstr "רוחב קו ההדגשה של ההורה"
+
+msgid "Children HL Line Width"
+msgstr "רוחב קו ההדגשה של הצאצאים"
+
+msgid "Parent HL Line Margin"
+msgstr "שולי קו ההדגשה של ההורה"
+
+msgid "Relationship Line Color"
+msgstr "צבע קו הקשר"
+
+msgid "Parent HL Line Color"
+msgstr "צבע קו ההדגשה של ההורה"
+
+msgid "Children HL Line Color"
+msgstr "צבע קו ההדגשה של הצאצאים"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "המתנה לפתיחה בגרירה (מילישניות)"
+
+msgid "Scroll Border"
+msgstr "גבול גלילה"
+
+msgid "Scroll Speed"
+msgstr "מהירות גלילה"
+
+msgid "Title Button Normal"
+msgstr "כפתור כותרת רגיל"
+
+msgid "Title Button Pressed"
+msgstr "כפתור כותרת לחוץ"
+
+msgid "Title Button Hover"
+msgstr "כפתור כותרת בריחוף"
+
+msgid "Title Button Color"
+msgstr "צבע כפתור הכותרת"
+
 msgid "Audio Track"
 msgstr "רצועת שמע"
 
@@ -9269,6 +10349,18 @@ msgstr "פעולה למעלה"
 
 msgid "Action Down"
 msgstr "פעולה למטה"
+
+msgid "Normal Joystick"
+msgstr "ג׳ויסטיק רגיל"
+
+msgid "Normal Tip"
+msgstr "קצה רגיל"
+
+msgid "Pressed Joystick"
+msgstr "ג׳ויסטיק לחוץ"
+
+msgid "Pressed Tip"
+msgstr "קצה לחוץ"
 
 msgid "Self Modulate"
 msgstr "אפנון עצמי"
@@ -9486,9 +10578,6 @@ msgstr "הפעלת בחירת עצמים"
 msgid "Scene Traversal"
 msgstr "מעבר על הסצנה"
 
-msgid "Menu"
-msgstr "תפריט"
-
 msgid "Wait Time"
 msgstr "זמן המתנה"
 
@@ -9677,6 +10766,39 @@ msgstr "פלט HDR"
 
 msgid "Requested"
 msgstr "התבקש"
+
+msgid "Embedded Border"
+msgstr "גבול מוטמע"
+
+msgid "Embedded Unfocused Border"
+msgstr "גבול מוטמע ללא מיקוד"
+
+msgid "Title Font"
+msgstr "גופן הכותרת"
+
+msgid "Title Font Size"
+msgstr "גודל גופן הכותרת"
+
+msgid "Title Height"
+msgstr "גובה הכותרת"
+
+msgid "Title Outline Modulate"
+msgstr "אפנון קו המתאר של הכותרת"
+
+msgid "Title Outline Size"
+msgstr "גודל קו המתאר של הכותרת"
+
+msgid "Close Pressed"
+msgstr "סגור לחוץ"
+
+msgid "Close H Offset"
+msgstr "היסט אופקי לסגירה"
+
+msgid "Close V Offset"
+msgstr "היסט אנכי לסגירה"
+
+msgid "Resize Margin"
+msgstr "שולי שינוי גודל"
 
 msgid "Swap Cancel OK"
 msgstr "החלפת ביטול ואישור"
@@ -10113,9 +11235,6 @@ msgstr "עקום Y"
 msgid "Curve Z"
 msgstr "עקום Z"
 
-msgid "Background"
-msgstr "רקע"
-
 msgid "Canvas Max Layer"
 msgstr "שכבת קנבס מרבית"
 
@@ -10326,9 +11445,6 @@ msgstr "ריווח נוסף"
 msgid "Glyph"
 msgstr "גליף"
 
-msgid "Space"
-msgstr "רווח"
-
 msgid "Baseline"
 msgstr "קו בסיס"
 
@@ -10367,9 +11483,6 @@ msgstr "השתמש בHDR"
 
 msgid "To"
 msgstr "אל"
-
-msgid "Paragraph Spacing"
-msgstr "ריווח פסקאות"
 
 msgid "Stacked Effects"
 msgstr "אפקטים מוערמים"
@@ -10913,1125 +12026,6 @@ msgstr "גופן בררת מחדל"
 
 msgid "Default Font Size"
 msgstr "גודל גופן בררת מחדל"
-
-msgid "File"
-msgstr "קובץ"
-
-msgid "Font Pressed Color"
-msgstr "צבע גופן בלחיצה"
-
-msgid "Font Hover Color"
-msgstr "צבע גופן בריחוף"
-
-msgid "Font Focus Color"
-msgstr "צבע גופן במיקוד"
-
-msgid "Font Hover Pressed Color"
-msgstr "צבע גופן בריחוף ולחיצה"
-
-msgid "Font Disabled Color"
-msgstr "צבע גופן מושבת"
-
-msgid "Font Outline Color"
-msgstr "צבע קו המתאר של הגופן"
-
-msgid "Icon Normal Color"
-msgstr "צבע סמל רגיל"
-
-msgid "Icon Pressed Color"
-msgstr "צבע סמל בלחיצה"
-
-msgid "Icon Hover Color"
-msgstr "צבע סמל בריחוף"
-
-msgid "Icon Hover Pressed Color"
-msgstr "צבע אייקון לחוץ מרחף"
-
-msgid "Icon Focus Color"
-msgstr "צבע סמל במיקוד"
-
-msgid "Icon Disabled Color"
-msgstr "צבע סמל מושבת"
-
-msgid "H Separation"
-msgstr "ריווח אופקי"
-
-msgid "Icon Max Width"
-msgstr "רוחב סמל מרבי"
-
-msgid "Align to Largest Stylebox"
-msgstr "יישור לפי תיבת הסגנון הגדולה ביותר"
-
-msgid "Underline Spacing"
-msgstr "ריווח קו תחתון"
-
-msgid "Normal Mirrored"
-msgstr "רגיל משוקף"
-
-msgid "Hover Mirrored"
-msgstr "ריחוף משוקף"
-
-msgid "Pressed Mirrored"
-msgstr "לחוץ משוקף"
-
-msgid "Disabled Mirrored"
-msgstr "מושבת משוקף"
-
-msgid "Arrow"
-msgstr "חץ"
-
-msgid "Arrow Margin"
-msgstr "שולי החץ"
-
-msgid "Modulate Arrow"
-msgstr "אפנון החץ"
-
-msgid "Hover Pressed"
-msgstr "ריחוף בלחיצה"
-
-msgid "Checked Disabled"
-msgstr "מסומן מושבת"
-
-msgid "Unchecked"
-msgstr "לא מסומן"
-
-msgid "Unchecked Disabled"
-msgstr "לא מסומן מושבת"
-
-msgid "Radio Checked"
-msgstr "כפתור בחירה מסומן"
-
-msgid "Radio Checked Disabled"
-msgstr "כפתור בחירה מסומן מושבת"
-
-msgid "Radio Unchecked"
-msgstr "כפתור בחירה לא מסומן"
-
-msgid "Radio Unchecked Disabled"
-msgstr "כפתור בחירה לא מסומן מושבת"
-
-msgid "Check V Offset"
-msgstr "היסט אנכי של תיבת הסימון"
-
-msgid "Checkbox Checked Color"
-msgstr "צבע תיבת סימון מסומנת"
-
-msgid "Checkbox Unchecked Color"
-msgstr "צבע תיבת סימון לא מסומנת"
-
-msgid "Checked Mirrored"
-msgstr "מסומן משוקף"
-
-msgid "Checked Disabled Mirrored"
-msgstr "מסומן מושבת משוקף"
-
-msgid "Unchecked Mirrored"
-msgstr "לא מסומן משוקף"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "לא מסומן מושבת משוקף"
-
-msgid "Button Checked Color"
-msgstr "צבע כפתור מסומן"
-
-msgid "Button Unchecked Color"
-msgstr "צבע כפתור לא מסומן"
-
-msgid "Font Shadow Color"
-msgstr "צבע צל הגופן"
-
-msgid "Shadow Offset X"
-msgstr "היסט הצל ב־X"
-
-msgid "Shadow Offset Y"
-msgstr "היסט הצל ב־Y"
-
-msgid "Shadow Outline Size"
-msgstr "גודל קו המתאר של הצל"
-
-msgid "Font Selected Color"
-msgstr "צבע גופן נבחר"
-
-msgid "Font Uneditable Color"
-msgstr "צבע גופן לא ניתן לעריכה"
-
-msgid "Font Placeholder Color"
-msgstr "צבע גופן ממלא מקום"
-
-msgid "Caret Color"
-msgstr "צבע הסמן"
-
-msgid "Selection Color"
-msgstr "צבע הבחירה"
-
-msgid "Clear Button Color"
-msgstr "צבע כפתור הניקוי"
-
-msgid "Clear Button Color Pressed"
-msgstr "צבע כפתור הניקוי בלחיצה"
-
-msgid "Minimum Character Width"
-msgstr "רוחב תו מזערי"
-
-msgid "Caret Width"
-msgstr "רוחב הסמן"
-
-msgid "Clear"
-msgstr "ניקוי"
-
-msgid "Tab"
-msgstr "לשונית"
-
-msgid "Font Readonly Color"
-msgstr "צבע גופן לקריאה בלבד"
-
-msgid "Current Line Color"
-msgstr "צבע השורה הנוכחית"
-
-msgid "Caret Background Color"
-msgstr "צבע רקע הסמן"
-
-msgid "Word Highlighted Color"
-msgstr "צבע מילה מודגשת"
-
-msgid "Search Result Color"
-msgstr "צבע תוצאות חיפוש"
-
-msgid "Search Result Border Color"
-msgstr "צבע גבול תוצאות חיפוש"
-
-msgid "Wrap Offset"
-msgstr "היסט גלישה"
-
-msgid "Breakpoint"
-msgstr "נקודת עצירה"
-
-msgid "Bookmark"
-msgstr "סימנייה"
-
-msgid "Executing Line"
-msgstr "שורה מבוצעת"
-
-msgid "Can Fold"
-msgstr "ניתן לקיפול"
-
-msgid "Can Fold Code Region"
-msgstr "ניתן לקפל אזור קוד"
-
-msgid "Folded Code Region"
-msgstr "אזור קוד מקופל"
-
-msgid "Folded EOL Icon"
-msgstr "סמל סוף שורה מקופלת"
-
-msgid "Completion Color BG"
-msgstr "צבע רקע ההשלמה"
-
-msgid "Completion Background Color"
-msgstr "צבע רקע ההשלמה"
-
-msgid "Completion Selected Color"
-msgstr "צבע הבחירה בהשלמה"
-
-msgid "Completion Existing Color"
-msgstr "צבע קיים בהשלמה"
-
-msgid "Completion Scroll Color"
-msgstr "צבע הגלילה בהשלמה"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "צבע הגלילה בריחוף בהשלמה"
-
-msgid "Bookmark Color"
-msgstr "צבע סימניות"
-
-msgid "Breakpoint Color"
-msgstr "צבע נקודות עצירה"
-
-msgid "Executing Line Color"
-msgstr "צבע השורה המבוצעת"
-
-msgid "Code Folding Color"
-msgstr "צבע קיפול קוד"
-
-msgid "Folded Code Region Color"
-msgstr "צבע אזור קוד מקופל"
-
-msgid "Brace Mismatch Color"
-msgstr "צבע סוגריים לא תואמים"
-
-msgid "Line Number Color"
-msgstr "צבע מספרי שורות"
-
-msgid "Line Length Guideline Color"
-msgstr "צבע הקו המנחה של אורך השורה"
-
-msgid "Completion Lines"
-msgstr "שורות השלמה"
-
-msgid "Completion Max Width"
-msgstr "רוחב השלמה מרבי"
-
-msgid "Completion Scroll Width"
-msgstr "רוחב גלילת ההשלמה"
-
-msgid "Scroll Focus"
-msgstr "מיקוד גלילה"
-
-msgid "Grabber"
-msgstr "ידית אחיזה"
-
-msgid "Grabber Highlight"
-msgstr "הדגשת ידית האחיזה"
-
-msgid "Grabber Pressed"
-msgstr "ידית אחיזה לחוצה"
-
-msgid "Increment"
-msgstr "הגדלה"
-
-msgid "Increment Highlight"
-msgstr "הדגשת הגדלה"
-
-msgid "Increment Pressed"
-msgstr "הגדלה לחוצה"
-
-msgid "Decrement"
-msgstr "הורדה ב1"
-
-msgid "Decrement Highlight"
-msgstr "הדגשת הקטנה"
-
-msgid "Decrement Pressed"
-msgstr "הקטנה לחוצה"
-
-msgid "Slider"
-msgstr "מחוון"
-
-msgid "Grabber Area"
-msgstr "אזור ידית האחיזה"
-
-msgid "Grabber Area Highlight"
-msgstr "הדגשת אזור ידית האחיזה"
-
-msgid "Grabber Disabled"
-msgstr "ידית אחיזה מושבתת"
-
-msgid "Tick"
-msgstr "שנתה"
-
-msgid "Center Grabber"
-msgstr "ידית אחיזה במרכז"
-
-msgid "Grabber Offset"
-msgstr "היסט ידית האחיזה"
-
-msgid "Tick Offset"
-msgstr "היסט שנתות"
-
-msgid "Updown"
-msgstr "מעלה/מטה"
-
-msgid "Up"
-msgstr "למעלה"
-
-msgid "Up Hover"
-msgstr "מעלה בריחוף"
-
-msgid "Up Pressed"
-msgstr "מעלה לחוץ"
-
-msgid "Up Disabled"
-msgstr "מעלה מושבת"
-
-msgid "Down"
-msgstr "למטה"
-
-msgid "Down Hover"
-msgstr "מטה בריחוף"
-
-msgid "Down Pressed"
-msgstr "לחוץ למטה"
-
-msgid "Down Disabled"
-msgstr "מטה מושבת"
-
-msgid "Up Background"
-msgstr "רקע מעלה"
-
-msgid "Up Background Hovered"
-msgstr "רקע מעלה בריחוף"
-
-msgid "Up Background Pressed"
-msgstr "רקע מעלה לחוץ"
-
-msgid "Up Background Disabled"
-msgstr "רקע מעלה מושבת"
-
-msgid "Down Background"
-msgstr "רקע מטה"
-
-msgid "Down Background Hovered"
-msgstr "רקע מטה בריחוף"
-
-msgid "Down Background Pressed"
-msgstr "רקע מטה לחוץ"
-
-msgid "Down Background Disabled"
-msgstr "רקע מטה מושבת"
-
-msgid "Up Icon Modulate"
-msgstr "אפנון סמל מעלה"
-
-msgid "Up Hover Icon Modulate"
-msgstr "אפנון סמל מעלה בריחוף"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "אפנון סמל מעלה לחוץ"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "אפנון סמל מעלה מושבת"
-
-msgid "Down Icon Modulate"
-msgstr "אפנון סמל מטה"
-
-msgid "Down Hover Icon Modulate"
-msgstr "אפנון סמל מטה בריחוף"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "אפנון סמל מטה לחוץ"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "אפנון סמל מטה מושבת"
-
-msgid "Field and Buttons Separator"
-msgstr "מפריד בין השדה לכפתורים"
-
-msgid "Up Down Buttons Separator"
-msgstr "מפריד כפתורי מעלה ומטה"
-
-msgid "Buttons Vertical Separation"
-msgstr "ריווח אנכי בין כפתורים"
-
-msgid "Field and Buttons Separation"
-msgstr "ריווח בין השדה לכפתורים"
-
-msgid "Buttons Width"
-msgstr "רוחב כפתורים"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "קביעת רוחב כפתורים מזערי לפי הסמלים"
-
-msgid "Scroll Hint Vertical"
-msgstr "רמז גלילה אנכית"
-
-msgid "Scroll Hint Horizontal"
-msgstr "רמז גלילה אופקית"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "צבע רמז גלילה אנכית"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "צבע רמז גלילה אופקית"
-
-msgid "Scrollbar Margin Left"
-msgstr "שולי פס הגלילה משמאל"
-
-msgid "Scrollbar Margin Top"
-msgstr "שולי פס הגלילה מלמעלה"
-
-msgid "Scrollbar Margin Right"
-msgstr "שולי פס הגלילה מימין"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "שולי פס הגלילה מלמטה"
-
-msgid "Normal Joystick"
-msgstr "ג׳ויסטיק רגיל"
-
-msgid "Normal Tip"
-msgstr "קצה רגיל"
-
-msgid "Pressed Joystick"
-msgstr "ג׳ויסטיק לחוץ"
-
-msgid "Pressed Tip"
-msgstr "קצה לחוץ"
-
-msgid "Embedded Border"
-msgstr "גבול מוטמע"
-
-msgid "Embedded Unfocused Border"
-msgstr "גבול מוטמע ללא מיקוד"
-
-msgid "Title Font"
-msgstr "גופן הכותרת"
-
-msgid "Title Font Size"
-msgstr "גודל גופן הכותרת"
-
-msgid "Title Outline Modulate"
-msgstr "אפנון קו המתאר של הכותרת"
-
-msgid "Title Outline Size"
-msgstr "גודל קו המתאר של הכותרת"
-
-msgid "Title Height"
-msgstr "גובה הכותרת"
-
-msgid "Resize Margin"
-msgstr "שולי שינוי גודל"
-
-msgid "Close"
-msgstr "סגירה"
-
-msgid "Close Pressed"
-msgstr "סגור לחוץ"
-
-msgid "Close H Offset"
-msgstr "היסט אופקי לסגירה"
-
-msgid "Close V Offset"
-msgstr "היסט אנכי לסגירה"
-
-msgid "Buttons Separation"
-msgstr "ריווח כפתורים"
-
-msgid "Load"
-msgstr "טעינה"
-
-msgid "Save"
-msgstr "שמירה"
-
-msgid "Parent Folder"
-msgstr "תיקיית הורה"
-
-msgid "Back Folder"
-msgstr "תיקייה אחורה"
-
-msgid "Forward Folder"
-msgstr "תיקייה קדימה"
-
-msgid "Reload"
-msgstr "רענון"
-
-msgid "Favorite"
-msgstr "מועדף"
-
-msgid "Toggle Hidden"
-msgstr "החלפת מצב מוסתרים"
-
-msgid "Toggle Filename Filter"
-msgstr "החלפת מצב מסנן שמות קבצים"
-
-msgid "Folder"
-msgstr "תיקיה"
-
-msgid "Thumbnail Mode"
-msgstr "מצב תמונות ממוזערות"
-
-msgid "List Mode"
-msgstr "מצב רשימה"
-
-msgid "Create Folder"
-msgstr "יצירת תיקייה"
-
-msgid "Sort"
-msgstr "מיון"
-
-msgid "Favorite Up"
-msgstr "העברת מועדף מעלה"
-
-msgid "Favorite Down"
-msgstr "העברת מועדף מטה"
-
-msgid "File Thumbnail"
-msgstr "תמונה ממוזערת של קובץ"
-
-msgid "Folder Thumbnail"
-msgstr "תמונה ממוזערת של תיקייה"
-
-msgid "Menu Copy Path"
-msgstr "תפריט העתקת נתיב"
-
-msgid "Menu Delete"
-msgstr "תפריט מחיקה"
-
-msgid "Menu New Folder"
-msgstr "תפריט תיקייה חדשה"
-
-msgid "Menu Refresh"
-msgstr "תפריט רענון"
-
-msgid "Menu Show in File Manager"
-msgstr "תפריט הצגה במנהל הקבצים"
-
-msgid "Menu Open Bundle"
-msgstr "תפריט פתיחת חבילה"
-
-msgid "Folder Icon Color"
-msgstr "צבע סמל תיקייה"
-
-msgid "File Icon Color"
-msgstr "צבע סמל קובץ"
-
-msgid "File Disabled Color"
-msgstr "צבע קובץ מושבת"
-
-msgid "Separator"
-msgstr "מפריד"
-
-msgid "Labeled Separator Left"
-msgstr "מפריד עם תווית משמאל"
-
-msgid "Labeled Separator Right"
-msgstr "מפריד עם תווית מימין"
-
-msgid "Indeterminate Disabled"
-msgstr "לא מוגדר מושבת"
-
-msgid "Submenu"
-msgstr "תת־תפריט"
-
-msgid "Submenu Mirrored"
-msgstr "תת־תפריט משוקף"
-
-msgid "Search"
-msgstr "חיפוש"
-
-msgid "Font Separator"
-msgstr "גופן המפריד"
-
-msgid "Font Separator Size"
-msgstr "גודל גופן המפריד"
-
-msgid "Font Accelerator Color"
-msgstr "צבע גופן המאיץ"
-
-msgid "Font Separator Color"
-msgstr "צבע גופן המפריד"
-
-msgid "Font Separator Outline Color"
-msgstr "צבע קו המתאר של גופן המפריד"
-
-msgid "V Separation"
-msgstr "ריווח אנכי"
-
-msgid "Search Bar Separation"
-msgstr "ריווח סרגל החיפוש"
-
-msgid "Separator Outline Size"
-msgstr "גודל קו המתאר של המפריד"
-
-msgid "Item Start Padding"
-msgstr "ריפוד תחילת פריט"
-
-msgid "Item End Padding"
-msgstr "ריפוד סוף פריט"
-
-msgid "Gutter Compact"
-msgstr "שוליים דחוסים"
-
-msgid "Panel Selected"
-msgstr "פנל נבחר"
-
-msgid "Panel Focus"
-msgstr "מיקוד פנל"
-
-msgid "Titlebar"
-msgstr "שורת כותרת"
-
-msgid "Titlebar Selected"
-msgstr "שורת כותרת נבחרת"
-
-msgid "Slot"
-msgstr "משבצת"
-
-msgid "Slot Selected"
-msgstr "משבצת נבחרת"
-
-msgid "Resizer"
-msgstr "משנה גודל"
-
-msgid "Resizer Color"
-msgstr "צבע משנה הגודל"
-
-msgid "Port H Offset"
-msgstr "היסט אופקי של פתחה"
-
-msgid "Hovered"
-msgstr "בריחוף"
-
-msgid "Hovered Dimmed"
-msgstr "מרחף חשוך"
-
-msgid "Hovered Selected"
-msgstr "נבחר בריחוף"
-
-msgid "Hovered Selected Focus"
-msgstr "נבחר בריחוף עם מיקוד"
-
-msgid "Selected Focus"
-msgstr "מיקוד נבחר"
-
-msgid "Cursor"
-msgstr "מצביע"
-
-msgid "Cursor Unfocused"
-msgstr "סמן ללא מיקוד"
-
-msgid "Button Hover"
-msgstr "כפתור בריחוף"
-
-msgid "Title Button Normal"
-msgstr "כפתור כותרת רגיל"
-
-msgid "Title Button Pressed"
-msgstr "כפתור כותרת לחוץ"
-
-msgid "Title Button Hover"
-msgstr "כפתור כותרת בריחוף"
-
-msgid "Custom Button"
-msgstr "כפתור מותאם אישית"
-
-msgid "Custom Button Pressed"
-msgstr "כפתור מותאם אישית לחוץ"
-
-msgid "Custom Button Hover"
-msgstr "כפתור מותאם אישית בריחוף"
-
-msgid "Select Arrow"
-msgstr "חץ בחירה"
-
-msgid "Arrow Collapsed"
-msgstr "חץ מכווץ"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "חץ מכווץ משוקף"
-
-msgid "Title Button Font"
-msgstr "גופן כפתור הכותרת"
-
-msgid "Title Button Font Size"
-msgstr "גודל גופן כפתור הכותרת"
-
-msgid "Title Button Color"
-msgstr "צבע כפתור הכותרת"
-
-msgid "Font Hovered Color"
-msgstr "צבע גופן בריחוף"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "צבע גופן מעומעם בריחוף"
-
-msgid "Font Hovered Selected Color"
-msgstr "צבע גופן נבחר בריחוף"
-
-msgid "Guide Color"
-msgstr "צבע קו מנחה"
-
-msgid "Drop on Item Color"
-msgstr "צבע שחרור על פריט"
-
-msgid "Drop Position Color"
-msgstr "צבע מיקום השחרור"
-
-msgid "Relationship Line Color"
-msgstr "צבע קו הקשר"
-
-msgid "Parent HL Line Color"
-msgstr "צבע קו ההדגשה של ההורה"
-
-msgid "Children HL Line Color"
-msgstr "צבע קו ההדגשה של הצאצאים"
-
-msgid "Custom Button Font Highlight"
-msgstr "הדגשת גופן הכפתור המותאם אישית"
-
-msgid "Scroll Hint Color"
-msgstr "צבע רמז הגלילה"
-
-msgid "Item Margin"
-msgstr "שולי פריט"
-
-msgid "Inner Item Margin Bottom"
-msgstr "שוליים פנימיים של פריט מלמטה"
-
-msgid "Inner Item Margin Left"
-msgstr "שוליים פנימיים של פריט משמאל"
-
-msgid "Inner Item Margin Right"
-msgstr "שוליים פנימיים של פריט מימין"
-
-msgid "Inner Item Margin Top"
-msgstr "שוליים פנימיים של פריט מלמעלה"
-
-msgid "Check H Separation"
-msgstr "ריווח אופקי לתיבת הסימון"
-
-msgid "Icon H Separation"
-msgstr "ריווח אופקי לסמל"
-
-msgid "Button Margin"
-msgstr "שולי כפתור"
-
-msgid "Relationship Line Width"
-msgstr "רוחב קו הקשר"
-
-msgid "Parent HL Line Width"
-msgstr "רוחב קו ההדגשה של ההורה"
-
-msgid "Children HL Line Width"
-msgstr "רוחב קו ההדגשה של הצאצאים"
-
-msgid "Parent HL Line Margin"
-msgstr "שולי קו ההדגשה של ההורה"
-
-msgid "Draw Guides"
-msgstr "ציור קווים מנחים"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "המתנה לפתיחה בגרירה (מילישניות)"
-
-msgid "Scroll Border"
-msgstr "גבול גלילה"
-
-msgid "Scroll Speed"
-msgstr "מהירות גלילה"
-
-msgid "Scrollbar H Separation"
-msgstr "ריווח אופקי לפס הגלילה"
-
-msgid "Scrollbar V Separation"
-msgstr "ריווח אנכי לפס הגלילה"
-
-msgid "Icon Margin"
-msgstr "שולי סמל"
-
-msgid "Tab Selected"
-msgstr "לשונית נבחרת"
-
-msgid "Tab Hovered"
-msgstr "לשונית בריחוף"
-
-msgid "Tab Unselected"
-msgstr "לשונית לא נבחרת"
-
-msgid "Tab Disabled"
-msgstr "לשונית מושבתת"
-
-msgid "Tab Focus"
-msgstr "מיקוד לשונית"
-
-msgid "Tabbar Background"
-msgstr "רקע סרגל הלשוניות"
-
-msgid "Drop Mark"
-msgstr "סימן שחרור"
-
-msgid "Menu Highlight"
-msgstr "הדגשת תפריט"
-
-msgid "Font Unselected Color"
-msgstr "צבע גופן לא נבחר"
-
-msgid "Drop Mark Color"
-msgstr "צבע סימן השחרור"
-
-msgid "Icon Selected Color"
-msgstr "צבע סמל נבחר"
-
-msgid "Icon Hovered Color"
-msgstr "צבע סמל בריחוף"
-
-msgid "Icon Unselected Color"
-msgstr "צבע סמל לא נבחר"
-
-msgid "Side Margin"
-msgstr "שוליים צדדיים"
-
-msgid "Icon Separation"
-msgstr "ריווח סמלים"
-
-msgid "Button Highlight"
-msgstr "הדגשת כפתור"
-
-msgid "Hover Switch Wait Msec"
-msgstr "המתנה למעבר בריחוף (מילישניות)"
-
-msgid "SV Width"
-msgstr "רוחב SV"
-
-msgid "SV Height"
-msgstr "גובה SV"
-
-msgid "H Width"
-msgstr "רוחב H"
-
-msgid "Label Width"
-msgstr "רוחב תווית"
-
-msgid "Center Slider Grabbers"
-msgstr "מרכוז ידיות האחיזה של המחוון"
-
-msgid "Sample Focus"
-msgstr "מיקוד דוגמה"
-
-msgid "Picker Focus Rectangle"
-msgstr "מלבן מיקוד בבורר"
-
-msgid "Picker Focus Circle"
-msgstr "עיגול מיקוד בבורר"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "צבע סמן במיקוד ללא עריכה"
-
-msgid "Menu Option"
-msgstr "אפשרות תפריט"
-
-msgid "Folded Arrow"
-msgstr "חץ מקופל"
-
-msgid "Expanded Arrow"
-msgstr "חץ מורחב"
-
-msgid "Screen Picker"
-msgstr "בוחר מהמסך"
-
-msgid "Shape Circle"
-msgstr "צורת עיגול"
-
-msgid "Shape Rect"
-msgstr "צורת מלבן"
-
-msgid "Shape Rect Wheel"
-msgstr "צורת מלבן עם גלגל"
-
-msgid "Add Preset"
-msgstr "הוספת ערכה מוגדרת"
-
-msgid "Sample BG"
-msgstr "רקע הדוגמה"
-
-msgid "Sample Revert"
-msgstr "דגימת שחזור"
-
-msgid "Overbright Indicator"
-msgstr "מחוון בהירות־יתר"
-
-msgid "Bar Arrow"
-msgstr "חץ הסרגל"
-
-msgid "Picker Cursor"
-msgstr "סמן הבורר"
-
-msgid "Picker Cursor BG"
-msgstr "רקע סמן הבורר"
-
-msgid "Color Script"
-msgstr "צבע סקריפט"
-
-msgid "Color Copy"
-msgstr "העתקת צבע"
-
-msgid "Color Hue"
-msgstr "גוון הצבע"
-
-msgid "BG"
-msgstr "רקע"
-
-msgid "Preset FG"
-msgstr "תבנית קידמי"
-
-msgid "Preset Focus"
-msgstr "תבנית מיקוד"
-
-msgid "Preset BG"
-msgstr "רקע ערכה מוגדרת"
-
-msgid "Horizontal Rule"
-msgstr "קו אופקי"
-
-msgid "Normal Font"
-msgstr "גופן רגיל"
-
-msgid "Bold Font"
-msgstr "גופן מודגש"
-
-msgid "Italics Font"
-msgstr "גופן נטוי"
-
-msgid "Bold Italics Font"
-msgstr "גופן מודגש ומוטה"
-
-msgid "Mono Font"
-msgstr "גופן ברוחב קבוע"
-
-msgid "Normal Font Size"
-msgstr "גודל גופן רגיל"
-
-msgid "Bold Font Size"
-msgstr "גודל גופן מודגש"
-
-msgid "Italics Font Size"
-msgstr "גודל גופן נטוי"
-
-msgid "Bold Italics Font Size"
-msgstr "גודל גופן מודגש ונטוי"
-
-msgid "Mono Font Size"
-msgstr "גודל גופן ברוחב קבוע"
-
-msgid "Table H Separation"
-msgstr "ריווח אופקי בטבלה"
-
-msgid "Table V Separation"
-msgstr "ריווח אנכי בטבלה"
-
-msgid "Table Odd Row BG"
-msgstr "רקע שורה אי־זוגית בטבלה"
-
-msgid "Table Even Row BG"
-msgstr "רקע שורה זוגית בטבלה"
-
-msgid "Table Border"
-msgstr "גבול הטבלה"
-
-msgid "Text Highlight H Padding"
-msgstr "ריפוד אופקי להדגשת טקסט"
-
-msgid "Text Highlight V Padding"
-msgstr "ריפוד אנכי להדגשת טקסט"
-
-msgid "Underline Alpha"
-msgstr "אלפא לקו תחתון"
-
-msgid "Strikethrough Alpha"
-msgstr "אלפא לקו חוצה"
-
-msgid "Touch Dragger Color"
-msgstr "צבע גורר המגע"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "צבע גורר המגע בלחיצה"
-
-msgid "Touch Dragger Hover Color"
-msgstr "צבע גורר המגע בריחוף"
-
-msgid "H Touch Dragger"
-msgstr "גורר מגע אופקי"
-
-msgid "V Touch Dragger"
-msgstr "גורר מגע אנכי"
-
-msgid "Touch Dragger"
-msgstr "גורר מגע"
-
-msgid "H Grabber"
-msgstr "ידית אחיזה אופקית"
-
-msgid "V Grabber"
-msgstr "ידית אחיזה אנכית"
-
-msgid "Margin Left"
-msgstr "שוליים משמאל"
-
-msgid "Margin Top"
-msgstr "שוליים מלמעלה"
-
-msgid "Margin Right"
-msgstr "שוליים מימין"
-
-msgid "Margin Bottom"
-msgstr "שוליים מלמטה"
-
-msgid "Minimum Grab Thickness"
-msgstr "עובי אחיזה מזערי"
-
-msgid "Autohide"
-msgstr "הסתרה אוטומטית"
-
-msgid "Split Bar Background"
-msgstr "רקע סרגל הפיצול"
-
-msgid "Zoom Out"
-msgstr "התרחקות"
-
-msgid "Zoom In"
-msgstr "התקרבות"
-
-msgid "Zoom Reset"
-msgstr "איפוס התקריב"
-
-msgid "Grid Toggle"
-msgstr "החלפת מצב רשת"
-
-msgid "Minimap Toggle"
-msgstr "החלפת מצב מפה מוקטנת"
-
-msgid "Snapping Toggle"
-msgstr "החלפת מצב הצמדה"
-
-msgid "Menu Panel"
-msgstr "פנל תפריט"
-
-msgid "Grid Minor"
-msgstr "רשת משנית"
-
-msgid "Grid Major"
-msgstr "רשת ראשית"
-
-msgid "Selection Fill"
-msgstr "מילוי הבחירה"
-
-msgid "Selection Stroke"
-msgstr "קו הבחירה"
-
-msgid "Activity"
-msgstr "פעילות"
-
-msgid "Connection Hover Tint Color"
-msgstr "צבע גוון חיבור בריחוף"
-
-msgid "Connection Hover Thickness"
-msgstr "עובי חיבור בריחוף"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "צבע גוון יעד חיבור תקין"
-
-msgid "Connection Rim Color"
-msgstr "צבע שולי החיבור"
-
-msgid "Title Panel"
-msgstr "פנל כותרת"
-
-msgid "Title Hover Panel"
-msgstr "פנל כותרת בריחוף"
-
-msgid "Title Collapsed Panel"
-msgstr "פנל כותרת מכווץ"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "פנל כותרת מכווץ בריחוף"
-
-msgid "Hover Font Color"
-msgstr "צבע גופן בריחוף"
-
-msgid "Collapsed Font Color"
-msgstr "צבע גופן מכווץ"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "חץ מורחב משוקף"
-
-msgid "Folded Arrow Mirrored"
-msgstr "חץ מקופל משוקף"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "היקף פנימי של אזור הפעולה בפתחה"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "היקף חיצוני של אזור הפעולה בפתחה"
 
 msgid "Default Theme Scale"
 msgstr "קנה מידה של ערכת העיצוב בררת מחדל"

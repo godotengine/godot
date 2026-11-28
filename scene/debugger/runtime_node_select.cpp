@@ -171,6 +171,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	srect_ci = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->viewport_attach_canvas(root->get_viewport_rid(), draw_canvas);
+	RS::get_singleton()->viewport_set_canvas_stacking(root->get_viewport_rid(), draw_canvas, RSE::CANVAS_LAYER_MAX, RSE::CANVAS_LAYER_MAX);
 	RS::get_singleton()->canvas_item_set_parent(sel_drag_ci, draw_canvas);
 	RS::get_singleton()->canvas_item_set_parent(srect_ci, draw_canvas);
 

@@ -3593,9 +3593,6 @@ msgstr "Nenhuma descrição disponível."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Esta anotação pode ser alterada ou removida em versões futuras."
 
-msgid "Open in File Manager"
-msgstr "Abrir no Gestor de Ficheiros"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Esta propriedade só pode ser definida no Inspetor."
 
@@ -4503,20 +4500,6 @@ msgstr ""
 "Incapaz de guardar um ramo que é parte de uma cena herdada.\n"
 "Para guardar este ramo na sua própria cena, abra a cena original, clique "
 "direito neste ramo e selecione \"Guardar Ramo como Cena\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Desativar a opção \"Filhos Editáveis\" reverterá todas as propriedades dos "
-"nós descendentes desta subcena aos seus valores padrão."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Ativar \"Carregar como espaço reservado\" desativará \"Filhos editáveis\" e "
-"fará com que todas as propriedades do nó sejam revertidas ao padrão."
 
 msgid "Make Local"
 msgstr "Tornar Local"
@@ -8760,9 +8743,6 @@ msgstr "Erro: Projeto inexistente no sistema de ficheiros."
 
 msgid "Toggle Favorite"
 msgstr "Alternar Favorito"
-
-msgid "Open in file manager"
-msgstr "Abrir no gestor de ficheiros"
 
 msgid "Last edited timestamp"
 msgstr "Data da última edição"

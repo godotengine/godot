@@ -3,6 +3,7 @@
 // ReSharper disable InconsistentNaming
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Godot.SourceGenerators.Internal;
 
@@ -16,6 +17,7 @@ namespace Godot.NativeInterop
      */
 
     [GenerateUnmanagedCallbacks(typeof(UnmanagedCallbacks))]
+    [StackTraceHidden]
     public static unsafe partial class NativeFuncs
     {
         private static bool initialized;

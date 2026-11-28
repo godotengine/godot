@@ -3253,9 +3253,6 @@ msgstr "Klik untuk menyalin."
 msgid "No description available."
 msgstr "Tidak ada deskripsi yang tersedia."
 
-msgid "Open in File Manager"
-msgstr "Tampilkan di Pengelola Berkas"
-
 msgid "Class"
 msgstr "Kelas"
 
@@ -6296,9 +6293,6 @@ msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."
 
 msgid "Toggle Favorite"
 msgstr "Beralih Favorit"
-
-msgid "Open in file manager"
-msgstr "Tampilkan di Pengelola Berkas"
 
 msgid "Last edited timestamp"
 msgstr "Penanda waktu terakhir diubah"

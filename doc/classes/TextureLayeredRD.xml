@@ -8,7 +8,7 @@
 		[b]Note:[/b] [TextureLayeredRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [TextureLayered] instead.
 	</description>
 	<tutorials>
-		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
+		<link title="Compute Texture demo">https://store.godotengine.org/asset/godot-foundation/compute-texture-demo/</link>
 	</tutorials>
 	<members>
 		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid">

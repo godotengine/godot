@@ -16177,13 +16177,6 @@ msgstr "[code]true[/code]이면 텍스처가 중심이 됩니다."
 msgid "Returns [code]true[/code] if the [param anim] animation exists."
 msgstr "[param anim] 애니메이션이 존재하면 [code]true[/code]를 반환합니다."
 
-msgid ""
-"Application status indicator (aka notification area icon).\n"
-"[b]Note:[/b] Status indicator is implemented on macOS and Windows."
-msgstr ""
-"애플리케이션 상태 표시기 (알림 영역 아이콘이라고도 함).\n"
-"[b]참고:[/b] 상태 표시기는 macOS와 Windows에서 구현됩니다."
-
 msgid "Status indicator icon."
 msgstr "상태 표시기 아이콘."
 
@@ -16728,15 +16721,6 @@ msgstr ""
 
 msgid "A control that displays a texture."
 msgstr "텍스처를 표시하는 컨트롤."
-
-msgid ""
-"A control that displays a texture, for example an icon inside a GUI. The "
-"texture's placement can be controlled with the [member stretch_mode] "
-"property. It can scale, tile, or stay centered inside its bounding rectangle."
-msgstr ""
-"GUI 안쪽의 아이콘의 예시와 같은 텍스처를 표시하는 컨트롤입니다. 텍스처의 자리"
-"는 [member stretch_mode] 속성으로 제어될 수 있습니다. 스케일, 바둑판식 배열 또"
-"는 경계 직사각형 안쪽 중앙에 배치될 수 있습니다."
 
 msgid "The node's [Texture2D] resource."
 msgstr "노드의 [Texture2D] 리소스."

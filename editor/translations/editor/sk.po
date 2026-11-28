@@ -2462,9 +2462,6 @@ msgstr ""
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Open in File Manager"
-msgstr "Otvoriť v File Manažérovy"
-
 msgid "Class"
 msgstr "Trieda"
 

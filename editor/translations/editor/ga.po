@@ -3541,9 +3541,6 @@ msgstr "Níl cur síos ar fáil."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Féadfar an nóta seo a athrú nó a bhaint i leaganacha amach anseo."
 
-msgid "Open in File Manager"
-msgstr "Oscail i mBainisteoir Comhad"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Ní féidir an mhaoin seo a shocrú ach amháin sa Chigire."
 
@@ -4478,21 +4475,6 @@ msgstr ""
 "Ní féidir craobh atá mar chuid de radharc oidhreachtúil a shábháil.\n"
 "Chun an brainse seo a shábháil ina radharc féin, oscail an radharc bunaidh, "
 "cliceáil ar dheis ar an mbrainse seo, agus roghnaigh \"Save Branch as Scene\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Má dhíchumasaítear \"Leanaí Ineagarthóireachta\", cuirfear gach airí de nóid "
-"shliochtacha an fho-radhairc seo ar ais chuig a réamhshocrú."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Má chumasaítear \"Luchtaigh mar Ionadchoinneálaí\" díchumasófar \"Leanaí "
-"Ineagarthóireachta\" agus cuirfidh sé faoi deara go gcuirfear gach maoin den "
-"nód ar ais chuig a mainneachtain."
 
 msgid "Make Local"
 msgstr "Déan Áitiúil"
@@ -8793,9 +8775,6 @@ msgstr "Earráid: Tá an tionscadal ar iarraidh ar an gcóras comhad."
 
 msgid "Toggle Favorite"
 msgstr "Scoránaigh an ceann is fearr leat"
-
-msgid "Open in file manager"
-msgstr "Oscail i mbainisteoir comhad"
 
 msgid "Last edited timestamp"
 msgstr "Stampa ama is déanaí curtha in eagar"

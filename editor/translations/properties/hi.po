@@ -1148,6 +1148,15 @@ msgstr "पूर्णांक का संपादन"
 msgid "Deferred Drag Mode"
 msgstr "डेफर्ड ड्रैग मोड"
 
+msgid "Font"
+msgstr "लिपि"
+
+msgid "Font Size"
+msgstr "लिपि आकार"
+
+msgid "Updown"
+msgstr "ऊपरनीचे"
+
 msgid "Zoom"
 msgstr "ज़ूम"
 
@@ -2865,9 +2874,6 @@ msgstr "गेम एंबेड मोड"
 msgid "Output"
 msgstr "आउटपुट"
 
-msgid "Font Size"
-msgstr "लिपि आकार"
-
 msgid "Linux/*BSD"
 msgstr "Linux/*BSD"
 
@@ -4545,9 +4551,6 @@ msgstr "आउटलाइन रेंडर प्राथमिकता"
 msgid "Text"
 msgstr "लेख"
 
-msgid "Font"
-msgstr "लिपि"
-
 msgid "Uppercase"
 msgstr "बड़े अक्षर"
 
@@ -4887,8 +4890,23 @@ msgstr "अनप्रेस को अनुमति दें"
 msgid "Text Overrun Behavior"
 msgstr "लेख अधिप्रवाह व्यवहार"
 
+msgid "Hover"
+msgstr "होवर"
+
+msgid "Align to Largest Stylebox"
+msgstr "सबसे बड़े स्टाइलबॉक्स से संरेखित करें"
+
 msgid "Use Top Left"
 msgstr "शीर्ष बाएँ को इस्तेमाल करें"
+
+msgid "Unchecked"
+msgstr "अचेक्ड"
+
+msgid "Radio Unchecked"
+msgstr "रेडियो अचेक्ड"
+
+msgid "Radio Unchecked Disabled"
+msgstr "रेडियो अचेक्ड निष्क्रिय"
 
 msgid "Symbol Lookup on Click"
 msgstr "क्लिक पर प्रतीक खोज"
@@ -4911,6 +4929,33 @@ msgstr "स्वचालित उपसर्गों"
 msgid "Pairs"
 msgstr "जोड़े"
 
+msgid "Code Folding Color"
+msgstr "कोड फ़ोल्ड करने योग्य रंग"
+
+msgid "Folded EOL Icon"
+msgstr "फोल्डेड EOL दृश्यचिन्ह"
+
+msgid "Bookmark Color"
+msgstr "बुकमार्क रंग"
+
+msgid "Bookmark"
+msgstr "बुकमार्क"
+
+msgid "Executing Line Color"
+msgstr "लाइन रंग निष्पादित करना"
+
+msgid "Completion Scroll Color"
+msgstr "समापन स्क्रॉल रंग"
+
+msgid "Completion Existing Color"
+msgstr "समापन मौजूदा रंग"
+
+msgid "Line Length Guideline Color"
+msgstr "लाइन लंबाई दिशानिर्देश रंग"
+
+msgid "Brace Mismatch Color"
+msgstr "ब्रेस बेमेल रंग"
+
 msgid "Edit Alpha"
 msgstr "अल्फ़ा संपादित करें"
 
@@ -4925,6 +4970,33 @@ msgstr "हेक्स दृश्यमान"
 
 msgid "Presets Visible"
 msgstr "प्रीसेट दृश्यमान"
+
+msgid "Center Slider Grabbers"
+msgstr "सेंटर स्लाइडर ग्रैबर्स"
+
+msgid "Picker Focus Rectangle"
+msgstr "पिकर फोकस आयत"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "कर्सर रंग पर ध्यान केंद्रित नहीं किया गया"
+
+msgid "Screen Picker"
+msgstr "स्क्रीन पिकर"
+
+msgid "Shape Rect Wheel"
+msgstr "आकार आयताकार पहिया"
+
+msgid "Shape Circle"
+msgstr "आकार वृत्त"
+
+msgid "Bar Arrow"
+msgstr "बार तीर"
+
+msgid "Sample BG"
+msgstr "नमूना BG"
+
+msgid "Overbright Indicator"
+msgstr "ओवरब्राइट संकेतक"
 
 msgid "Pivot Offset"
 msgstr "धुरी ओफ़्सेट"
@@ -4980,6 +5052,27 @@ msgstr "फ़िल्टर्स"
 msgid "Options"
 msgstr "विकल्प"
 
+msgid "Reload"
+msgstr "पुनः लोड करें"
+
+msgid "Favorite"
+msgstr "फ़ेवरेट"
+
+msgid "Toggle Filename Filter"
+msgstr "फ़ाइल नाम फ़िल्टर टॉगल करें"
+
+msgid "File"
+msgstr "नत्थी"
+
+msgid "Favorite Up"
+msgstr "पसंदीदा ऊपर"
+
+msgid "Favorite Down"
+msgstr "पसंदीदा नीचे"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "शीर्षक संकुचित होवर पैनल"
+
 msgid "Allow Folding All"
 msgstr "सभी को फ़ोल्ड करने की अनुमति दें"
 
@@ -4998,11 +5091,38 @@ msgstr "ग्रिड बटन दिखाएं"
 msgid "Show Arrange Button"
 msgstr "व्यवस्थित करें बटन दिखाएँ"
 
+msgid "Grid Major"
+msgstr "ग्रिड मेजर"
+
+msgid "Grid Minor"
+msgstr "ग्रिड माइनर"
+
+msgid "Menu Panel"
+msgstr "मेनू पैनल"
+
+msgid "Snapping Toggle"
+msgstr "स्नैपिंग टॉगल"
+
+msgid "Grid Toggle"
+msgstr "ग्रिड टॉगल"
+
+msgid "Minimap Toggle"
+msgstr "मिनिमैप टॉगल"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "पोर्ट हॉटज़ोन आंतरिक विस्तार"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "पोर्ट हॉटज़ोन बाहरी विस्तार"
+
 msgid "Draggable"
 msgstr "खींचने योग्य"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "अमान्य कनेक्शन प्रकार को अनदेखा करें"
+
+msgid "Slot"
+msgstr "slot"
 
 msgid "Select Mode"
 msgstr "चुनाव मोड"
@@ -5030,6 +5150,12 @@ msgstr "दृश्यचिन्ह मोड"
 
 msgid "Icon Scale"
 msgstr "दृश्यचिन्ह स्केल"
+
+msgid "Cursor Unfocused"
+msgstr "कर्सर अनफोकस्ड"
+
+msgid "Cursor"
+msgstr "कर्सर"
 
 msgid "Ellipsis Char"
 msgstr "इलिप्सिस चार"
@@ -5070,6 +5196,15 @@ msgstr "मध्य ग्राफ़ीम"
 msgid "Secret"
 msgstr "गुप्त"
 
+msgid "Caret Color"
+msgstr "कैरेट रंग"
+
+msgid "Minimum Character Width"
+msgstr "न्यूनतम वर्ण चौड़ाई"
+
+msgid "Clear"
+msgstr "साफ़"
+
 msgid "Underline"
 msgstr "रेखांकन"
 
@@ -5091,6 +5226,9 @@ msgstr "अक्ष खिंचाव"
 msgid "Fit to Longest Item"
 msgstr "सबसे लम्बी वस्तु के लिए फिट"
 
+msgid "Arrow"
+msgstr "तीर"
+
 msgid "Submenu Popup Delay"
 msgstr "सबमेनू पॉपअप विलंब"
 
@@ -5100,8 +5238,32 @@ msgstr "सिस्टम मेनू ID"
 msgid "Prefer Native Menu"
 msgstr "मूल मेनू को प्राथमिकता दें"
 
+msgid "Labeled Separator Left"
+msgstr "लेबल विभाजक बाएँ"
+
+msgid "Labeled Separator Right"
+msgstr "लेबल विभाजक दायाँ"
+
+msgid "Item End Padding"
+msgstr "आइटम अंत पैडिंग"
+
+msgid "Gutter Compact"
+msgstr "गटर कॉम्पैक्ट"
+
 msgid "Indeterminate"
 msgstr "अनिर्धारित"
+
+msgid "Submenu"
+msgstr "उपमेनू"
+
+msgid "Submenu Mirrored"
+msgstr "उपमेनू मिरर्ड"
+
+msgid "Separator Outline Size"
+msgstr "विभाजक रूपरेखा आकार"
+
+msgid "Background"
+msgstr "पृष्ठभूमि"
 
 msgid "Allow Lesser"
 msgstr "छोटे मान की अनुमति"
@@ -5133,17 +5295,74 @@ msgstr "मेटा रेखांकित"
 msgid "Hint Underlined"
 msgstr "संकेत रेखांकित"
 
+msgid "Bold Italics Font"
+msgstr "बोल्ड इटैलिक्स लिपि"
+
+msgid "Table Even Row BG"
+msgstr "मेज सम पंक्ति BG"
+
+msgid "Scroll Focus"
+msgstr "फोकस स्क्रॉल करें"
+
+msgid "Increment"
+msgstr "वृद्धि"
+
+msgid "Decrement"
+msgstr "घटती"
+
+msgid "Decrement Highlight"
+msgstr "घटती हाइलाइट"
+
+msgid "Decrement Pressed"
+msgstr "घटाव दबाया गया"
+
 msgid "Follow Focus"
 msgstr "फोकस का पालन करें"
 
 msgid "Default Scroll Deadzone"
 msgstr "प्रायिक स्क्रॉल डेडज़ोन"
 
+msgid "Grabber Area Highlight"
+msgstr "ग्रैबर क्षेत्र हाइलाइट"
+
+msgid "Tick"
+msgstr "टिक"
+
 msgid "Format"
 msgstr "फ़ोर्मैट"
 
+msgid "Up"
+msgstr "ऊपर"
+
+msgid "Down"
+msgstr "नीचे"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "ऊपर दबा हुआ दृश्यचिन्ह मॉड्यूलेट"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "नीचे दबाया गया दृश्यचिन्ह मॉड्यूलेट"
+
 msgid "Dragger Visibility"
 msgstr "ड्रैगर दृश्यता"
+
+msgid "Minimum Grab Thickness"
+msgstr "न्यूनतम ग्रैब मोटाई"
+
+msgid "Touch Dragger"
+msgstr "ड्रैगर को स्पर्श करें"
+
+msgid "H Touch Dragger"
+msgstr "H ड्रैगर को स्पर्श करें"
+
+msgid "V Touch Dragger"
+msgstr "V ड्रैगर को स्पर्श करें"
+
+msgid "H Grabber"
+msgstr "H ग्रैबर"
+
+msgid "V Grabber"
+msgstr "V ग्रैबर"
 
 msgid "Stretch Shrink"
 msgstr "खिंचाव सिकुड़न"
@@ -5154,11 +5373,20 @@ msgstr "टैब बंद करें प्रदर्शन नीति"
 msgid "Scrolling Enabled"
 msgstr "स्क्रॉलिंग सक्रिय"
 
+msgid "Hover Switch Wait Msec"
+msgstr "होवर स्विच प्रतीक्षा Msec"
+
+msgid "Close"
+msgstr "बंद करे"
+
 msgid "Tabs Visible"
 msgstr "टैब दृश्यमान"
 
 msgid "Use Hidden Tabs for Min Size"
 msgstr "न्यूनतम आकार के लिए छिपे हुए टैब का उपयोग करें"
+
+msgid "Menu"
+msgstr "मेनू"
 
 msgid "Past End of File"
 msgstr "फ़ाइल का पिछला अंत"
@@ -5172,14 +5400,20 @@ msgstr "राइट क्लिक पर आगे बढ़ें"
 msgid "Syntax Highlighter"
 msgstr "सिंटैक्स हाइलाइटर"
 
+msgid "Tab"
+msgstr "टैब"
+
+msgid "Current Line Color"
+msgstr "वर्तमान रेखा का रंग"
+
+msgid "Word Highlighted Color"
+msgstr "शब्द हाइलाइट किया गया रंग"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "लेख संपादित आलसी पहचान (sec)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "लेख संपादित पूर्ववत स्टैक अधिकतम आकार"
-
-msgid "Hover"
-msgstr "होवर"
 
 msgid "Radial Fill"
 msgstr "रेडियल भरण"
@@ -5207,6 +5441,18 @@ msgstr "कॉलम शीर्षक दृश्य"
 
 msgid "Drop Mode Flags"
 msgstr "ड्रॉप मोड ध्वजा"
+
+msgid "Custom Button Font Highlight"
+msgstr "कस्टम बटन लिपि हाइलाइट"
+
+msgid "Parent HL Line Margin"
+msgstr "मूल HL लाइन मार्जिन"
+
+msgid "Children HL Line Color"
+msgstr "बच्चों की HL लाइन का रंग"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "खींचकर खोलें, कुछ मिलीसेकंड प्रतीक्षा करें"
 
 msgid "Paused"
 msgstr "ठहरना"
@@ -5304,9 +5550,6 @@ msgstr "SDF"
 msgid "Enable Object Picking"
 msgstr "वस्तु चुनना सक्रिय करे"
 
-msgid "Menu"
-msgstr "मेनू"
-
 msgid "Use XR"
 msgstr "उपयोग XR"
 
@@ -5384,6 +5627,12 @@ msgstr "माउस पासथ्रू"
 
 msgid "Keep Title Visible"
 msgstr "शीर्षक दृश्यमान रखें"
+
+msgid "Embedded Border"
+msgstr "एंबेडेड सीमा"
+
+msgid "Embedded Unfocused Border"
+msgstr "एम्बेडेड अनफोकस्ड बॉर्डर"
 
 msgid "2D Render"
 msgstr "2D रेंडर"
@@ -5555,9 +5804,6 @@ msgstr "अलग स्पेकुलर की आवश्यकता"
 
 msgid "Bake Interval"
 msgstr "बेक अंतराल"
-
-msgid "Background"
-msgstr "पृष्ठभूमि"
 
 msgid "Canvas Max Layer"
 msgstr "कैनवास मैक्स लेयर"
@@ -5825,252 +6071,6 @@ msgstr "सदस्य चर रंग"
 
 msgid "Member Keyword Colors"
 msgstr "सदस्य कीवर्ड रंग"
-
-msgid "File"
-msgstr "नत्थी"
-
-msgid "Align to Largest Stylebox"
-msgstr "सबसे बड़े स्टाइलबॉक्स से संरेखित करें"
-
-msgid "Arrow"
-msgstr "तीर"
-
-msgid "Unchecked"
-msgstr "अचेक्ड"
-
-msgid "Radio Unchecked"
-msgstr "रेडियो अचेक्ड"
-
-msgid "Radio Unchecked Disabled"
-msgstr "रेडियो अचेक्ड निष्क्रिय"
-
-msgid "Caret Color"
-msgstr "कैरेट रंग"
-
-msgid "Minimum Character Width"
-msgstr "न्यूनतम वर्ण चौड़ाई"
-
-msgid "Clear"
-msgstr "साफ़"
-
-msgid "Tab"
-msgstr "टैब"
-
-msgid "Current Line Color"
-msgstr "वर्तमान रेखा का रंग"
-
-msgid "Word Highlighted Color"
-msgstr "शब्द हाइलाइट किया गया रंग"
-
-msgid "Bookmark"
-msgstr "बुकमार्क"
-
-msgid "Folded EOL Icon"
-msgstr "फोल्डेड EOL दृश्यचिन्ह"
-
-msgid "Completion Existing Color"
-msgstr "समापन मौजूदा रंग"
-
-msgid "Completion Scroll Color"
-msgstr "समापन स्क्रॉल रंग"
-
-msgid "Bookmark Color"
-msgstr "बुकमार्क रंग"
-
-msgid "Executing Line Color"
-msgstr "लाइन रंग निष्पादित करना"
-
-msgid "Code Folding Color"
-msgstr "कोड फ़ोल्ड करने योग्य रंग"
-
-msgid "Brace Mismatch Color"
-msgstr "ब्रेस बेमेल रंग"
-
-msgid "Line Length Guideline Color"
-msgstr "लाइन लंबाई दिशानिर्देश रंग"
-
-msgid "Scroll Focus"
-msgstr "फोकस स्क्रॉल करें"
-
-msgid "Increment"
-msgstr "वृद्धि"
-
-msgid "Decrement"
-msgstr "घटती"
-
-msgid "Decrement Highlight"
-msgstr "घटती हाइलाइट"
-
-msgid "Decrement Pressed"
-msgstr "घटाव दबाया गया"
-
-msgid "Grabber Area Highlight"
-msgstr "ग्रैबर क्षेत्र हाइलाइट"
-
-msgid "Tick"
-msgstr "टिक"
-
-msgid "Updown"
-msgstr "ऊपरनीचे"
-
-msgid "Up"
-msgstr "ऊपर"
-
-msgid "Down"
-msgstr "नीचे"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "ऊपर दबा हुआ दृश्यचिन्ह मॉड्यूलेट"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "नीचे दबाया गया दृश्यचिन्ह मॉड्यूलेट"
-
-msgid "Embedded Border"
-msgstr "एंबेडेड सीमा"
-
-msgid "Embedded Unfocused Border"
-msgstr "एम्बेडेड अनफोकस्ड बॉर्डर"
-
-msgid "Close"
-msgstr "बंद करे"
-
-msgid "Reload"
-msgstr "पुनः लोड करें"
-
-msgid "Favorite"
-msgstr "फ़ेवरेट"
-
-msgid "Toggle Filename Filter"
-msgstr "फ़ाइल नाम फ़िल्टर टॉगल करें"
-
-msgid "Favorite Up"
-msgstr "पसंदीदा ऊपर"
-
-msgid "Favorite Down"
-msgstr "पसंदीदा नीचे"
-
-msgid "Labeled Separator Left"
-msgstr "लेबल विभाजक बाएँ"
-
-msgid "Labeled Separator Right"
-msgstr "लेबल विभाजक दायाँ"
-
-msgid "Submenu"
-msgstr "उपमेनू"
-
-msgid "Submenu Mirrored"
-msgstr "उपमेनू मिरर्ड"
-
-msgid "Separator Outline Size"
-msgstr "विभाजक रूपरेखा आकार"
-
-msgid "Item End Padding"
-msgstr "आइटम अंत पैडिंग"
-
-msgid "Gutter Compact"
-msgstr "गटर कॉम्पैक्ट"
-
-msgid "Slot"
-msgstr "slot"
-
-msgid "Cursor"
-msgstr "कर्सर"
-
-msgid "Cursor Unfocused"
-msgstr "कर्सर अनफोकस्ड"
-
-msgid "Children HL Line Color"
-msgstr "बच्चों की HL लाइन का रंग"
-
-msgid "Custom Button Font Highlight"
-msgstr "कस्टम बटन लिपि हाइलाइट"
-
-msgid "Parent HL Line Margin"
-msgstr "मूल HL लाइन मार्जिन"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "खींचकर खोलें, कुछ मिलीसेकंड प्रतीक्षा करें"
-
-msgid "Hover Switch Wait Msec"
-msgstr "होवर स्विच प्रतीक्षा Msec"
-
-msgid "Center Slider Grabbers"
-msgstr "सेंटर स्लाइडर ग्रैबर्स"
-
-msgid "Picker Focus Rectangle"
-msgstr "पिकर फोकस आयत"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "कर्सर रंग पर ध्यान केंद्रित नहीं किया गया"
-
-msgid "Screen Picker"
-msgstr "स्क्रीन पिकर"
-
-msgid "Shape Circle"
-msgstr "आकार वृत्त"
-
-msgid "Shape Rect Wheel"
-msgstr "आकार आयताकार पहिया"
-
-msgid "Sample BG"
-msgstr "नमूना BG"
-
-msgid "Overbright Indicator"
-msgstr "ओवरब्राइट संकेतक"
-
-msgid "Bar Arrow"
-msgstr "बार तीर"
-
-msgid "Bold Italics Font"
-msgstr "बोल्ड इटैलिक्स लिपि"
-
-msgid "Table Even Row BG"
-msgstr "मेज सम पंक्ति BG"
-
-msgid "H Touch Dragger"
-msgstr "H ड्रैगर को स्पर्श करें"
-
-msgid "V Touch Dragger"
-msgstr "V ड्रैगर को स्पर्श करें"
-
-msgid "Touch Dragger"
-msgstr "ड्रैगर को स्पर्श करें"
-
-msgid "H Grabber"
-msgstr "H ग्रैबर"
-
-msgid "V Grabber"
-msgstr "V ग्रैबर"
-
-msgid "Minimum Grab Thickness"
-msgstr "न्यूनतम ग्रैब मोटाई"
-
-msgid "Grid Toggle"
-msgstr "ग्रिड टॉगल"
-
-msgid "Minimap Toggle"
-msgstr "मिनिमैप टॉगल"
-
-msgid "Snapping Toggle"
-msgstr "स्नैपिंग टॉगल"
-
-msgid "Menu Panel"
-msgstr "मेनू पैनल"
-
-msgid "Grid Minor"
-msgstr "ग्रिड माइनर"
-
-msgid "Grid Major"
-msgstr "ग्रिड मेजर"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "शीर्षक संकुचित होवर पैनल"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "पोर्ट हॉटज़ोन आंतरिक विस्तार"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "पोर्ट हॉटज़ोन बाहरी विस्तार"
 
 msgid "Channel Disable Threshold dB"
 msgstr "चैनल निष्क्रिय थ्रेशोल्ड dB"

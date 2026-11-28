@@ -78,10 +78,6 @@ public:
 	virtual void clipboard_set_primary(const String &p_text) override { primary_clipboard_text = p_text; }
 	virtual String clipboard_get_primary() const override { return primary_clipboard_text; }
 
-	virtual Size2i window_get_size(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override {
-		return Size2i(1920, 1080);
-	}
-
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override {
 		cursor_shape = p_shape;
 	}
@@ -92,6 +88,10 @@ public:
 
 	static void register_mock_driver() {
 		register_create_function("mock", create_func, get_rendering_drivers_func);
+	}
+
+	DisplayServerMock() {
+		size = Size2i(1920, 1080);
 	}
 };
 

@@ -2517,9 +2517,6 @@ msgid "This annotation may be changed or removed in future versions."
 msgstr ""
 "Această adnotare poate fi modificată sau eliminată în versiunile viitoare."
 
-msgid "Open in File Manager"
-msgstr "Deschideți în Administratorul de Fișiere"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Această proprietate poate fi setată doar din Inspector."
 

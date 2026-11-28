@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-11-05 05:32+0000\n"
+"PO-Revision-Date: 2026-11-13 02:45+0000\n"
 "Last-Translator: NoNormal <no123normal@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.11.1.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -845,6 +845,9 @@ msgstr "Prolínání"
 msgid "Open"
 msgstr "Otevřít"
 
+msgid "Open in editor."
+msgstr "Otevřít v editoru."
+
 msgid "Index"
 msgstr "Index"
 
@@ -1448,6 +1451,9 @@ msgstr "Přechod od \"Konce\" není možný!"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "Přechod z \"%s\" do \"%s\" už existuje!"
+
+msgid "Open %s in editor."
+msgstr "Otevřít %s v editoru."
 
 msgid "Add Node and Transition"
 msgstr "Přidat uzel a přechod"
@@ -3555,9 +3561,6 @@ msgstr "Není dostupný popis."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Tato anotace může být v budoucích verzích změněna nebo odstraněna."
 
-msgid "Open in File Manager"
-msgstr "Otevřít ve správci souborů"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Tato vlastnost může být nastavena pouze v inspektoru."
 
@@ -4461,21 +4464,6 @@ msgstr ""
 "Nelze uložit větev, která je součástí zděděné scény.\n"
 "Chcete-li uložit tuto větev do vlastní scény, otevřete původní scénu, "
 "klikněte pravým tlačítkem na tuto větev a vyberte \"Uložit větev jako scénu\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Zakázání \"Editovatelný Potomek\" způsobí, že všechny vlastnosti uzlů potomků "
-"této scény budou vráceny na původní hodnotu."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Povolení možnosti \"Načíst jako dočasný\" zakáže možnost \"Upravitelný "
-"potomek\" a způsobí, že všechny vlastnosti uzlu budou vráceny na výchozí "
-"hodnoty."
 
 msgid "Make Local"
 msgstr "Změnit na místní"
@@ -6838,6 +6826,9 @@ msgstr "Seřadit podle cesty (sestupně)"
 msgid "Dependency Editor"
 msgstr "Editor závislostí"
 
+msgid "Project setting: %s"
+msgstr "Nastavení projektu: %s"
+
 msgid "Owners of: %s (Total: %d)"
 msgstr "Vlastníci: %s (Dohromady: %d)"
 
@@ -7254,6 +7245,9 @@ msgstr "Nebyly nalezeny žádné dílčí zdroje."
 msgid "Type: %s"
 msgstr "Typ: %s"
 
+msgid "Click to open a list of sub-resources."
+msgstr "Stiskněte pro otevření seznamu dílčích zdrojů."
+
 msgid "Search files..."
 msgstr "Hledat v souborech..."
 
@@ -7332,6 +7326,9 @@ msgid ""
 msgstr ""
 "Datum Git commitu: %s\n"
 "Kliknutím zkopírujete informace o verzi."
+
+msgid "Copied Godot editor version."
+msgstr "Verze Godot editoru byla zkopírovaná."
 
 msgid "Switch Layout"
 msgstr "Změnit rozvržení"
@@ -7544,6 +7541,9 @@ msgstr "Importér audio streamu: %s"
 
 msgid "Enable"
 msgstr "Povolit"
+
+msgid "Enables looping."
+msgstr "Povoluje opakování."
 
 msgid "Offset:"
 msgstr "Offset:"
@@ -8674,9 +8674,6 @@ msgstr "Chyba: Projekt se nevyskytuje v souborovém systému."
 
 msgid "Toggle Favorite"
 msgstr "Přepnout oblíbené"
-
-msgid "Open in file manager"
-msgstr "Otevřít ve správci souborů"
 
 msgid "Last edited timestamp"
 msgstr "Datum poslední modifikace"

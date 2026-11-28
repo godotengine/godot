@@ -159,8 +159,8 @@ namespace basisu
 		static inline void construct(T** p) { memset(p, 0, sizeof(T*)); }
 		static inline void construct(T** p, T* init) { *p = init; }
 		static inline void construct_array(T** p, size_t n) { memset(p, 0, sizeof(T*) * n); }
-		static inline void destruct(T** p) { p; }
-		static inline void destruct_array(T** p, size_t n) { p, n; }
+		static inline void destruct(T** p) { (void)p; }
+		static inline void destruct_array(T** p, size_t n) { (void)p; (void)n; }
 	};
 
 #define BASISU_DEFINE_BUILT_IN_TYPE(X) \
@@ -169,8 +169,8 @@ namespace basisu
 	static inline void construct(X* p) { memset(p, 0, sizeof(X)); } \
 	static inline void construct(X* p, const X& init) { memcpy(p, &init, sizeof(X)); } \
 	static inline void construct_array(X* p, size_t n) { memset(p, 0, sizeof(X) * n); } \
-	static inline void destruct(X* p) { p; } \
-	static inline void destruct_array(X* p, size_t n) { p, n; } };
+	static inline void destruct(X* p) { (void)p; } \
+	static inline void destruct_array(X* p, size_t n) { (void)p; (void)n; } };
 
 	BASISU_DEFINE_BUILT_IN_TYPE(bool)
 	BASISU_DEFINE_BUILT_IN_TYPE(char)

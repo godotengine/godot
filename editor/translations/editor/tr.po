@@ -143,13 +143,15 @@
 # ASERLOST <ahmetsaitgecit0404@gmail.com>, 2026.
 # shencan03 <shencan03@gmail.com>, 2026.
 # Toprak Talha Karcılar <topraktalhakarcilar7@gmail.com>, 2026.
+# "Ahmet Hakan Çelikağı (Student)" <ahmet.celikagi@users.noreply.hosted.weblate.org>, 2026.
+# t a <tnow@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-10-06 20:14+0000\n"
-"Last-Translator: Toprak Talha Karcılar <topraktalhakarcilar7@gmail.com>\n"
+"PO-Revision-Date: 2026-11-20 13:35+0000\n"
+"Last-Translator: t a <tnow@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -157,7 +159,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.10.1.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "Tamam"
@@ -926,6 +928,9 @@ msgstr "Harmanlama"
 msgid "Open"
 msgstr "Aç"
 
+msgid "Open in editor."
+msgstr "Düzenleyicide aç."
+
 msgid "Index"
 msgstr "İndeks"
 
@@ -1532,6 +1537,12 @@ msgstr "'End' durumundan geçiş yapılamıyor!"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "\"%s\" ile \"%s\" arasında geçiş zaten var!"
+
+msgid "Play/Travel to %s."
+msgstr "%s'ye Oynat/Git."
+
+msgid "Open %s in editor."
+msgstr "Düzenleyicide aç."
 
 msgid "Add Node and Transition"
 msgstr "Düğüm ve Geçiş Ekle"
@@ -2497,6 +2508,15 @@ msgstr "Varlık Ayrıntılarını Aç"
 msgid "No changelog provided for this version."
 msgstr "Bu sürüm için değişim kaydı sağlanmamış."
 
+msgid "This release is only compatible with Godot version %s and newer."
+msgstr "Bu sürüm yalnızca Godot'un %s ve daha yeni sürümleriyle uyumludur."
+
+msgid "This release is only compatible with Godot version %s and older."
+msgstr "Bu sürüm yalnızca Godot'un %s ve daha eski sürümleriyle uyumludur."
+
+msgid "Using it may result in errors and crashes."
+msgstr "Bunun kullanımı sonucunda hata veya çökme yaşanabilir."
+
 msgid "Loading..."
 msgstr "Yükleniyor..."
 
@@ -2802,6 +2822,9 @@ msgstr "Yüklemeden Önce Varlığı Ayarlayın"
 msgid "Install"
 msgstr "Kur"
 
+msgid "Dynamic"
+msgstr "Dinamik"
+
 msgid "Audio Preview Play/Pause"
 msgstr "Ses Önizlemesini Oynat/Duraklat"
 
@@ -2924,6 +2947,9 @@ msgstr "Ses Yuvasını Aç/Kapat"
 
 msgid "Layout:"
 msgstr "Yerleşim Düzeni:"
+
+msgid "Load Default Layout"
+msgstr "Varsayılanı Yerleşim Düzenini Yükle"
 
 msgid "Save As..."
 msgstr "Farklı Kaydet..."
@@ -3561,6 +3587,9 @@ msgstr "Simgeler"
 msgid "Styles"
 msgstr "Tarzlar"
 
+msgid "Sounds"
+msgstr "Sesler"
+
 msgid "This theme property may be changed or removed in future versions."
 msgstr ""
 "Bu tema özelliği, gelecek sürümlerde değiştirilebilir veya kaldırılabilir."
@@ -3647,6 +3676,12 @@ msgstr "Düzenleyici"
 msgid "Click to copy."
 msgstr "Kopyalamak için tıklayın."
 
+msgid "Important:"
+msgstr "Önemli:"
+
+msgid "Tip:"
+msgstr "Tür:"
+
 msgid "Click to open in browser."
 msgstr "Tarayıcıda açmak için tıklayın."
 
@@ -3656,9 +3691,6 @@ msgstr "Tanımlama mevcut değil."
 msgid "This annotation may be changed or removed in future versions."
 msgstr ""
 "Bu ek-tanımlayıcı, gelecek sürümlerde değiştirilebilir veya kaldırılabilir."
-
-msgid "Open in File Manager"
-msgstr "Dosya Yöneticisinde Aç"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Bu özellik yalnızca Denetleyici'de ayarlanabilir."
@@ -4049,6 +4081,12 @@ msgstr "Terminal'de Aç"
 msgid "Open Folder in Terminal"
 msgstr "Klasörü Terminal'de Aç"
 
+msgid "Download Folder as ZIP"
+msgstr "Dosyayı ZIP formatında indir"
+
+msgid "Download File"
+msgstr "Dosyayı İndir"
+
 msgid "New Folder..."
 msgstr "Yeni Klasör..."
 
@@ -4118,6 +4156,9 @@ msgstr "UID'yi Kopyala"
 msgid "Open in External Program"
 msgstr "Harici Programda Aç"
 
+msgid "Download File(s)"
+msgstr "Dosyaları İndir"
+
 msgid "Red"
 msgstr "Kırmızı"
 
@@ -4162,6 +4203,9 @@ msgstr "Dizinler"
 
 msgid "Files"
 msgstr "Dosyalar"
+
+msgid "Thumbnail Size"
+msgstr "Küçük Resim Boyutu"
 
 msgid "Display Mode"
 msgstr "Görüntüleme Modu"
@@ -4377,6 +4421,9 @@ msgstr ""
 "İçe aktarma ayarlarını uyumlandırmak için, dosyasistemi'nde veya "
 "denetleyici'de bir kaynak dosyası seçin."
 
+msgid "Resource \"%s\" was made unique."
+msgstr "Kaynak \"%s\" benzersiz yapıldı."
+
 msgid "This object has no resources to duplicate."
 msgstr "Bu nesnede kopyalanacak hiçbir kaynak yok."
 
@@ -4391,6 +4438,9 @@ msgstr "(Geçerli Olan)"
 
 msgid "Go to previous edited object in history."
 msgstr "Geçmiş listesinde bir önceki düzenlenmiş nesneye git."
+
+msgid "Right-click to show history of edited objects."
+msgstr "Düzenlenmiş nesnelerin tarihini göstermek için sağ tıklayın."
 
 msgid "Expand Non-Default"
 msgstr "Varsayılan Olmayan'ı Genişlet"
@@ -4431,8 +4481,20 @@ msgstr "Şu anda düzenlenen kaynağı kaydet."
 msgid "Extra resource options."
 msgstr "Kaynak ek seçenekleri."
 
+msgid "New Resource"
+msgstr "Yeni Kaynak"
+
 msgid "Create a new resource in memory and edit it."
 msgstr "Bellekte yeni bir kaynak oluştur ve onu düzenle."
+
+msgid "Load Resource..."
+msgstr "Kaynak Yükle..."
+
+msgid "Load a resource from disk and edit it."
+msgstr "Var olan bir kaynağı diskten yükle ve düzenle."
+
+msgid "Save Resource"
+msgstr "Kaynağı Kaydet"
 
 msgid "Save Resource As..."
 msgstr "Kaynağı Farklı Kaydet..."
@@ -4458,6 +4520,11 @@ msgstr "Nesne özelliklerini yönet."
 msgid "Information"
 msgstr "Bilgi"
 
+msgid ""
+"The following resources will be duplicated and embedded within this resource/"
+"object:"
+msgstr "Aşağıdaki kaynaklar çoğaltılıp bu kaynağa/nesneye gömülecek:"
+
 msgid "No parent to instantiate a child at."
 msgstr "Bir alt-öge örneği eklenecek herhangi bir üst-öge yok."
 
@@ -4477,8 +4544,14 @@ msgstr ""
 "'%s' sahnesi örneklenemiyor, çünkü geçerli sahne, kendi düğümlerinden birinin "
 "içinde bulunuyor."
 
+msgid "Instantiate Scenes"
+msgstr "Sahneleri Örnekle"
+
 msgid "Error loading audio stream from %s"
 msgstr "%s'den ses akışı yüklenirken hata oluştu"
+
+msgid "Create AudioStreamPlayers"
+msgstr "AudioStreamPlayer 'ler Oluştur"
 
 msgid "Replace with Branch Scene"
 msgstr "Dal Sahnesi ile Değiştir"
@@ -4575,21 +4648,6 @@ msgstr ""
 "Bu dalı kendisine ait sahneye kaydetmek için, orijinal sahneyi açın, bu dalı "
 "bulup sağ tıklayın, ve \"Dalı Sahne olarak Kaydet\"i seçin."
 
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"\"Düzenlenebilir Alt-Öge\" seçeneğini kapatmak bu alt sahnenin torun "
-"düğümlerinin tüm özelliklerinin varsayılana dönmesine neden olur."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"\"Yer Tutucu Olarak Yükle\" seçeneğini etkinleştirilmek, \"Düzenlenebilir Alt-"
-"düğüm\" seçeneğini etkisiz hale getirir ve düğümün tüm özelliklerini "
-"varsayılanlara geri döndürür."
-
 msgid "Make Local"
 msgstr "Yerel Yap"
 
@@ -4658,6 +4716,9 @@ msgstr "Düğüm(ler)i Kes"
 
 msgid "Remove Node(s)"
 msgstr "Düğüm(ler)i Kaldır"
+
+msgid "Create Node(s)"
+msgstr "Düğüm(ler) Oluştur"
 
 msgid "Change type of node(s)"
 msgstr "Düğüm(ler)in türünü değiştir"
@@ -4976,6 +5037,18 @@ msgstr "Düzenleyici İletileri"
 
 msgid "Toggle visibility of editor messages."
 msgstr "Düzenleyicinin mesajlarının görünürlüğünü değiştir."
+
+msgid "The Android build template is already installed."
+msgstr "Android yapı şablonu zaten kurulu."
+
+msgid ""
+"Remove the \"%s\" directory manually, or enable automatic deletion in the "
+"Editor Settings (Export > Android > Build > Automatically Delete Build "
+"Directory) before attempting this operation again."
+msgstr ""
+"Bu işlemi tekrar denemeden önce ya \"%s\" dosyasını manuel sil ya da otomatik "
+"silmeyi Editör Ayarlarından aktive et (Dışa Aktar > Android > Yapı > Yapı "
+"Dosyasını Otomatik Sil)."
 
 msgid ""
 "This will set up your project for gradle Android builds by installing the "
@@ -5680,6 +5753,30 @@ msgstr "Dikkat-dağıtmayan kipe aç/kapa."
 msgid "Copy Text"
 msgstr "Metni Kopyala"
 
+msgid ""
+"Clear all caches for the current project, including the cache for imported "
+"assets, exported assets, shaders, UIDs, scripts, and scene groups. New caches "
+"will be built upon restarting or exporting the project.\n"
+"\n"
+"Note that clearing the cache is almost always a workaround for a bug. If you "
+"can consistently reproduce the invalid cache or unexpected behavior that is "
+"solved by clearing the cache, please report this bug (\"Help > Report a "
+"Bug\") with reproduction steps."
+msgstr ""
+"İçe aktarılan varlıklar, dışa aktarılan varlıklar, gölgelendiriciler, "
+"UID’ler, komut dosyaları ve sahne gruplarının önbellekleri dahil olmak üzere, "
+"mevcut projenin tüm önbelleklerini temizleyin. Proje yeniden başlatıldığında "
+"veya dışa aktarıldığında yeni önbellekler oluşturulacaktır.\n"
+"\n"
+"Önbelleği temizlemenin neredeyse her zaman bir hata için geçici bir çözüm "
+"olduğunu unutmayın. Önbelleği temizleyerek çözülen geçersiz önbellek veya "
+"beklenmedik davranışı tutarlı bir şekilde yeniden oluşturabiliyorsanız, "
+"lütfen bu hatayı (“Yardım > Hata Bildir”) yeniden oluşturma adımlarıyla "
+"birlikte bildirin."
+
+msgid "Clear & Restart"
+msgstr "Sil ve Yeniden Başlat"
+
 msgid "Command Palette"
 msgstr "Komut Listesi"
 
@@ -5763,6 +5860,12 @@ msgstr "Motor Derleme Yapılandırması Düzenleyici..."
 
 msgid "Upgrade Project Files..."
 msgstr "Proje Dosyalarını Yükselt..."
+
+msgid "Clear Project Cache..."
+msgstr "Proje önbelleğini temizle..."
+
+msgid "Download Project"
+msgstr "Projeyi İndir"
 
 msgid "Reload Current Project"
 msgstr "Bu Projeyi Tekrar Yükle"
@@ -5925,11 +6028,53 @@ msgstr "Proje Ayarlarını Aç"
 msgid "Warning!"
 msgstr "Uyarı!"
 
+msgid "Enable online mode for Android SDK setup?"
+msgstr "Android SDK kurulumu için çevrimiçi modu aktive et?"
+
+msgid "Setup Android SDK?"
+msgstr "Android SDK'yı Kur?"
+
+msgid "Enable online mode for Java SDK setup?"
+msgstr "Jave SDK kurulumu için çevrimiçi modu aktive et?"
+
+msgid "Setup Java SDK?"
+msgstr "Java SDK'yı Kur?"
+
+msgid "Downloading Android SDK..."
+msgstr "Android SDK İndiriliyor..."
+
+msgid "Downloading Java SDK..."
+msgstr "Java SDK İndiriliyor..."
+
+msgid "Installing Android SDK..."
+msgstr "Android SDK Kuruluyor..."
+
+msgid "Installing Java SDK..."
+msgstr "Java SDK kuruluyor..."
+
+msgid "Installation of Android SDK packages failed. Check output for the error."
+msgstr ""
+"Android SDK paketlerinin indirilmesi başarısız oldu. Hata için çıktıyı "
+"kontrol et."
+
 msgid "Invalid Java SDK path in Editor Settings."
 msgstr "Düzenleyici Ayarları'nda geçersiz Java SDK yolu."
 
+msgid "Invalid Java SDK setup."
+msgstr "Java SDK kurulumu geçersiz."
+
+msgid ""
+"Unable to find 'java' command using the Java SDK path. Please check the Java "
+"SDK directory specified in Editor Settings."
+msgstr ""
+"Java SDK yolunu kullanarak 'java' komutu bulunamadı. Lütfen Düzenleyici "
+"Ayarları'nda belirtilen Java SDK dizinini kontrol edin."
+
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr "Düzenleyici Ayarları'nda geçersiz Android SDK yolu."
+
+msgid "Android SDK Manager"
+msgstr "Android SDK Yöneticisi"
 
 msgid "Can't get filesystem access."
 msgstr "Dosya sistemi erişimi alınamıyor."
@@ -6229,6 +6374,17 @@ msgstr "Simgeleri Dışa Aktar"
 msgid "Could not open a directory at path \"%s\"."
 msgstr "\"%s\" yolundaki bir dizin açılamadı."
 
+msgid ""
+"ETC2/ASTC texture compression is required for %s export. In the Project "
+"Settings, search for 'ETC2' in the search field, or enable 'Advanced "
+"Settings', and go to Rendering > Textures > VRAM Compression to enable "
+"'Import ETC2 ASTC'."
+msgstr ""
+"ETC2/ASTC doku sıkıştırması, %s dışa aktarımı için zorunlu. Proje Ayarlarında "
+"'ETC2' yi arayın ya da 'Gelişmiş Ayarlar' ı aktive edip Görüntüleme > Dokular "
+"> VRAM Sıkıştırması yoluna gidin ve ardından 'ETC2 ASTC'yi İçe Aktar' ayarını "
+"aktive edin."
+
 msgid "Select device from the list"
 msgstr "Listeden aygıt seç"
 
@@ -6265,6 +6421,9 @@ msgid ""
 msgstr ""
 "Projeyi dışa aktarmak için bir doku biçimi seçilmelidir. Lütfen en az bir "
 "doku biçimi seçin."
+
+msgid "Failed to copy file \"%s\"."
+msgstr "Dosyayı kopyalama başarısız oldu \"%s\"."
 
 msgid "Prepare Template"
 msgstr "Şablon Hazırla"
@@ -6426,6 +6585,9 @@ msgstr "Gradle derlemekeri için Android APK şablonu ve kaynağı."
 msgid "Build for Apple's iOS."
 msgstr "Apple’ın iOS platformu için derleyin."
 
+msgid "Build for Apple's visionOS."
+msgstr "Apple’ın visionOS platformu için derleyin."
+
 msgid "ICU Data"
 msgstr "ICU Verileri"
 
@@ -6521,6 +6683,9 @@ msgstr ""
 "İndirme başarısız oldu.\n"
 "Reason: %s."
 
+msgid "Deleting Android Build Directory"
+msgstr "Android Derleme Kaynakları Siliniyor"
+
 msgid "Uncompressing Android Build Sources"
 msgstr "Android Derleme Kaynakları Çıkartılıyor"
 
@@ -6575,6 +6740,9 @@ msgstr "Ayna kaynağa bağlanılamadı"
 msgid "No response from the mirror"
 msgstr "Ayna kaynaktan yanıt alınamadı"
 
+msgid "Request timed out"
+msgstr "İstek başarısız, zaman aşımı"
+
 msgid "Request failed"
 msgstr "İstek başarısız"
 
@@ -6595,6 +6763,15 @@ msgstr "Geçersiz şablon arşivi başlığı."
 
 msgid "Requested template not found in the archive."
 msgstr "Talep edilen şablon arşivde bulunamadı."
+
+msgid "%s. Download failed after %d retries."
+msgstr "%s. İndirme %d denemeden sonra başarısız oldu."
+
+msgid "Failed to open downloaded template fragment."
+msgstr "İndirilmiş şablon parçasını açmak başarısız oldu."
+
+msgid "Failed to read downloaded template fragment."
+msgstr "İndirilmiş şablon parçasını okumak başarısız oldu."
 
 msgid "Archive fragment too small. Loaded: %d, required: %d."
 msgstr "Arşiv kısmı çok küçük. Yüklenen: %d, gereken: %d."
@@ -6664,6 +6841,12 @@ msgstr ""
 "Bütün hazır ayarlar, \"Hepsini Dışa Aktar\" işlemi için, bir dışa aktarım "
 "yoluna sahip olmalıdır."
 
+msgid "Setup Java SDK"
+msgstr "Java SDK'yı Kur"
+
+msgid "Setup Android SDK"
+msgstr "Android SDK'yı Kur"
+
 msgid "Advanced settings are always shown when searching."
 msgstr "Gelişmiş ayarlar, arama sırasında her zaman gösterilir."
 
@@ -6723,6 +6906,9 @@ msgstr "Dışa Aktarım Yolu"
 
 msgid "Options"
 msgstr "Seçenekler"
+
+msgid "Filter Options"
+msgstr "Seçenekleri Filtrele"
 
 msgid "Resources"
 msgstr "Kaynaklar"
@@ -8844,9 +9030,6 @@ msgstr "Hata: Proje, dosya sisteminde mevcut değil."
 
 msgid "Toggle Favorite"
 msgstr "Sık Kullanılanları Aç/Kapat"
-
-msgid "Open in file manager"
-msgstr "Dosya yöneticisinde aç"
 
 msgid "Last edited timestamp"
 msgstr "Son düzenlenen zaman damgası"

@@ -1179,6 +1179,12 @@ msgstr "Schovat posuvník"
 msgid "Editing Integer"
 msgstr "Upravování celého čísla"
 
+msgid "Font Size"
+msgstr "Velikost fontu"
+
+msgid "Focus"
+msgstr "Zaměření"
+
 msgid "Zoom"
 msgstr "Přiblížení"
 
@@ -2907,9 +2913,6 @@ msgstr "Uložit před spuštěním"
 
 msgid "Output"
 msgstr "Výstup"
-
-msgid "Font Size"
-msgstr "Velikost fontu"
 
 msgid "Always Clear Output on Play"
 msgstr "Vždy promazat výstup při spuštění"
@@ -6825,6 +6828,57 @@ msgstr "Odsazení"
 msgid "Auto Brace Completion"
 msgstr "Automatické doplňování závorek"
 
+msgid "Code Folding Color"
+msgstr "Barva složení kódu"
+
+msgid "Folded Code Region Color"
+msgstr "Barva složené oblasti kódu"
+
+msgid "Completion Color BG"
+msgstr "Barva pozadí doplnění"
+
+msgid "Breakpoint Color"
+msgstr "Barva breakpointů"
+
+msgid "Bookmark Color"
+msgstr "Barva záložek"
+
+msgid "Executing Line Color"
+msgstr "Barva prováděného řádku"
+
+msgid "Line Number Color"
+msgstr "Barva čísel řádků"
+
+msgid "Completion Max Width"
+msgstr "Maximální šířka doplnění"
+
+msgid "Completion Lines"
+msgstr "Řádky doplnění"
+
+msgid "Completion Scroll Width"
+msgstr "Šířka posuvníku doplnění"
+
+msgid "Completion Scroll Color"
+msgstr "Barva posuvníku doplnění"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Barva posuvníku doplnění při najetí myší"
+
+msgid "Completion Background Color"
+msgstr "Barva pozadí doplňování"
+
+msgid "Completion Selected Color"
+msgstr "Barva zvoleného doplnění"
+
+msgid "Completion Existing Color"
+msgstr "Barva existujícího doplnění"
+
+msgid "Line Length Guideline Color"
+msgstr "Barva vodítek délky řádku"
+
+msgid "Brace Mismatch Color"
+msgstr "Barva neshody závorek"
+
 msgid "Edit Alpha"
 msgstr "Upravit průhlednost (alpha)"
 
@@ -6857,6 +6911,12 @@ msgstr "Hex viditelný"
 
 msgid "Presets Visible"
 msgstr "Profily viditelné"
+
+msgid "Screen Picker"
+msgstr "Výběr obrazovky"
+
+msgid "Add Preset"
+msgstr "Přidat profil"
 
 msgid "Theme Overrides"
 msgstr "Přepisy motivu"
@@ -6911,9 +6971,6 @@ msgstr "Nápověda"
 
 msgid "Auto Translate Mode"
 msgstr "Režim automatického překladu"
-
-msgid "Focus"
-msgstr "Zaměření"
 
 msgid "Neighbor Left"
 msgstr "Levý soused"
@@ -6977,6 +7034,18 @@ msgstr "Použít nativní dialog"
 
 msgid "Options"
 msgstr "Možnosti"
+
+msgid "Reload"
+msgstr "Znovu načíst"
+
+msgid "Toggle Hidden"
+msgstr "Přepnout skryté"
+
+msgid "Toggle Filename Filter"
+msgstr "Přepnout filtr názvů souborů"
+
+msgid "File"
+msgstr "Soubor"
 
 msgid "Show Grid"
 msgstr "Zobrazit mřížku"
@@ -7053,6 +7122,9 @@ msgstr "Pevná šířka sloupce"
 msgid "Icon Mode"
 msgstr "Režim ikony"
 
+msgid "Cursor"
+msgstr "Kurzor"
+
 msgid "Label Settings"
 msgstr "Nastavení popisku"
 
@@ -7088,6 +7160,24 @@ msgstr "Pokračovat v upravování při potvrzení textu"
 
 msgid "Deselect on Focus Loss Enabled"
 msgstr "Povolit zrušení výběru při ztrátě zaměření"
+
+msgid "Caret Width"
+msgstr "Šířka kurzoru"
+
+msgid "Caret Color"
+msgstr "Barva kurzoru"
+
+msgid "Selection Color"
+msgstr "Barva výběru"
+
+msgid "Clear"
+msgstr "Promazat"
+
+msgid "Underline Spacing"
+msgstr "Mezera podtržení"
+
+msgid "Submenu"
+msgstr "Podmenu"
 
 msgid "Min Value"
 msgstr "Minimální hodnota"
@@ -7143,6 +7233,12 @@ msgstr "Oříznout záložky"
 msgid "Deselect Enabled"
 msgstr "Povolit zrušení výběru"
 
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "Menu"
+msgstr "Nabídka"
+
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Prázdný výběr do schránky povolen"
 
@@ -7154,6 +7250,21 @@ msgstr "Zvýrazňovač syntaxe"
 
 msgid "Spaces"
 msgstr "Mezery"
+
+msgid "Search Result Color"
+msgstr "Barva výsledků hledání"
+
+msgid "Search Result Border Color"
+msgstr "Barva ohraničení výsledků hledání"
+
+msgid "Caret Background Color"
+msgstr "Barva pozadí kurzoru"
+
+msgid "Current Line Color"
+msgstr "Barva aktuálního řádku"
+
+msgid "Word Highlighted Color"
+msgstr "Barva zvýrazněného slova"
 
 msgid "Fill Degrees"
 msgstr "Vyplňte stupně"
@@ -7253,9 +7364,6 @@ msgstr "Výchozí prostředí"
 
 msgid "Enable Object Picking"
 msgstr "Povolit vybírání objektů"
-
-msgid "Menu"
-msgstr "Nabídka"
 
 msgid "Wait Time"
 msgstr "Čas čekání"
@@ -7469,114 +7577,6 @@ msgstr "Barva funkcí"
 
 msgid "Member Variable Color"
 msgstr "Barva proměnných členů"
-
-msgid "File"
-msgstr "Soubor"
-
-msgid "Underline Spacing"
-msgstr "Mezera podtržení"
-
-msgid "Caret Color"
-msgstr "Barva kurzoru"
-
-msgid "Selection Color"
-msgstr "Barva výběru"
-
-msgid "Caret Width"
-msgstr "Šířka kurzoru"
-
-msgid "Clear"
-msgstr "Promazat"
-
-msgid "Current Line Color"
-msgstr "Barva aktuálního řádku"
-
-msgid "Caret Background Color"
-msgstr "Barva pozadí kurzoru"
-
-msgid "Word Highlighted Color"
-msgstr "Barva zvýrazněného slova"
-
-msgid "Search Result Color"
-msgstr "Barva výsledků hledání"
-
-msgid "Search Result Border Color"
-msgstr "Barva ohraničení výsledků hledání"
-
-msgid "Completion Color BG"
-msgstr "Barva pozadí doplnění"
-
-msgid "Completion Background Color"
-msgstr "Barva pozadí doplňování"
-
-msgid "Completion Selected Color"
-msgstr "Barva zvoleného doplnění"
-
-msgid "Completion Existing Color"
-msgstr "Barva existujícího doplnění"
-
-msgid "Completion Scroll Color"
-msgstr "Barva posuvníku doplnění"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Barva posuvníku doplnění při najetí myší"
-
-msgid "Bookmark Color"
-msgstr "Barva záložek"
-
-msgid "Breakpoint Color"
-msgstr "Barva breakpointů"
-
-msgid "Executing Line Color"
-msgstr "Barva prováděného řádku"
-
-msgid "Code Folding Color"
-msgstr "Barva složení kódu"
-
-msgid "Folded Code Region Color"
-msgstr "Barva složené oblasti kódu"
-
-msgid "Brace Mismatch Color"
-msgstr "Barva neshody závorek"
-
-msgid "Line Number Color"
-msgstr "Barva čísel řádků"
-
-msgid "Line Length Guideline Color"
-msgstr "Barva vodítek délky řádku"
-
-msgid "Completion Lines"
-msgstr "Řádky doplnění"
-
-msgid "Completion Max Width"
-msgstr "Maximální šířka doplnění"
-
-msgid "Completion Scroll Width"
-msgstr "Šířka posuvníku doplnění"
-
-msgid "Close"
-msgstr "Zavřít"
-
-msgid "Reload"
-msgstr "Znovu načíst"
-
-msgid "Toggle Hidden"
-msgstr "Přepnout skryté"
-
-msgid "Toggle Filename Filter"
-msgstr "Přepnout filtr názvů souborů"
-
-msgid "Submenu"
-msgstr "Podmenu"
-
-msgid "Cursor"
-msgstr "Kurzor"
-
-msgid "Screen Picker"
-msgstr "Výběr obrazovky"
-
-msgid "Add Preset"
-msgstr "Přidat profil"
 
 msgid "Enable Input"
 msgstr "Povolit vstup"
