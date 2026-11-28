@@ -39,6 +39,7 @@
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 #include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
@@ -69,6 +70,7 @@ void CollisionShape2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->canvas_item_set_ignore_canvas_owner_group_mode(get_canvas_item(), true);
 			if (collision_object) {
 				_update_in_shape_owner();
 			}

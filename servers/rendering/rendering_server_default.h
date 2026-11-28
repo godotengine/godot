@@ -1078,6 +1078,7 @@ public:
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, RSE::CanvasGroupMode, float, bool, float, bool)
+	FUNC2(canvas_item_set_ignore_canvas_owner_group_mode, RID, bool)
 
 	FUNC1(canvas_item_set_debug_redraw, bool)
 	FUNC0RC(bool, canvas_item_get_debug_redraw)

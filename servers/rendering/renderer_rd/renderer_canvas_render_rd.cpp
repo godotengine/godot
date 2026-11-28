@@ -759,6 +759,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	to_render_target.render_target = p_to_render_target;
 	to_render_target.use_linear_colors = use_linear_colors;
 
+	Item *canvas_group_ignoring_items[MAX_RENDER_ITEMS];
+	int canvas_group_ignored_item_count;
+
 	while (ci) {
 		if (ci->copy_back_buffer && canvas_group_owner == nullptr) {
 			backbuffer_copy = true;
@@ -839,6 +842,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			ci->canvas_group_owner = nullptr; //must be cleared
 		}
 
+		if (canvas_group_owner != nullptr && ci->ignore_canvas_owner_group_mode) {
+			canvas_group_ignoring_items[canvas_group_ignored_item_count++] = ci;
+		}
+
 		if (canvas_group_owner == nullptr && ci->canvas_group != nullptr && ci->canvas_group->mode != RSE::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
 			skip_item = true;
 		}
@@ -862,6 +869,14 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 			// Tell the renderer to paint this as a canvas group
 			ci->use_canvas_group = true;
+
+			//draw ignored items outside of the group as well
+			for (int i = 0; i < canvas_group_ignored_item_count; i++) {
+				items[item_count++] = canvas_group_ignoring_items[i];
+			}
+			canvas_group_ignored_item_count = 0;
+			_render_batch_items(to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+			item_count = 0;
 		} else {
 			ci->use_canvas_group = false;
 		}

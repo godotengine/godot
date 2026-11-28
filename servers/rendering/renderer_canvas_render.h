@@ -363,6 +363,7 @@ public:
 		Item *material_owner = nullptr;
 		Item *canvas_group_owner = nullptr;
 		ViewportRender *vp_render = nullptr;
+		bool ignore_canvas_owner_group_mode;
 		bool distance_field;
 		bool light_masked;
 		bool repeat_source;
