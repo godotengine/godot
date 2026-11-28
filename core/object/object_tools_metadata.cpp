@@ -37,7 +37,7 @@
 HashMap<StringName, ObjectToolsMetadata::StaticArgOptionGetter> ObjectToolsMetadata::static_arg_options_getters;
 
 void ObjectToolsMetadata::get_argument_options_getters(const StringName &p_class, List<ObjectToolsMetadata::StaticArgOptionGetter> *r_arg_option_getters) {
-	const GDType* gdtype = ClassDB::get_gdtype(p_class);
+	const GDType *gdtype = ClassDB::get_gdtype(p_class);
 	ObjectToolsMetadata::StaticArgOptionGetter *arg_option_getter_ptr = nullptr;
 	if (!gdtype) {
 		return;

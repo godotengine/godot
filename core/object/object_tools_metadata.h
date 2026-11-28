@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <functional>
-#include "core/templates/vector.h"
-#include "core/string/string_name.h"
 #include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+
+#include <functional>
 
 #ifdef TOOLS_ENABLED
 

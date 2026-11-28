@@ -3187,8 +3187,7 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					Vector<String> options;
 					List<ObjectToolsMetadata::StaticArgOptionGetter> arg_option_getters;
 					ObjectToolsMetadata::get_argument_options_getters(class_name, &arg_option_getters);
-					for (ObjectToolsMetadata::StaticArgOptionGetter arg_option_getter : arg_option_getters)
-					{
+					for (ObjectToolsMetadata::StaticArgOptionGetter arg_option_getter : arg_option_getters) {
 						options.append_array(arg_option_getter(obj, method, p_argidx));
 					}
 					if (!options.is_empty()) {
