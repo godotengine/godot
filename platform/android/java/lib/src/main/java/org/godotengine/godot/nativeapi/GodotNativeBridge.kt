@@ -199,13 +199,13 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun getAccentColor(): Int {
 		val value = TypedValue()
-		godot.context.theme.resolveAttribute(android.R.attr.colorAccent, value, true)
+		getActivity()?.theme?.resolveAttribute(android.R.attr.colorAccent, value, true)
 		return value.data
 	}
 
 	private fun getBaseColor(): Int {
 		val value = TypedValue()
-		godot.context.theme.resolveAttribute(android.R.attr.colorBackground, value, true)
+		getActivity()?.theme?.resolveAttribute(android.R.attr.colorBackground, value, true)
 		return value.data
 	}
 
