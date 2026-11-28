@@ -5748,14 +5748,36 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	// Check if we are setting a built-in resource from another scene.
 	Resource *res = Object::cast_to<Resource>(new_value.get_validated_object());
 	if (res && res->is_built_in()) {
-		String src_scene = res->get_path().get_slice("::", 0);
+		String src_domain = res->get_path().get_slice("::", 0);
 		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-		String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
-		if (src_scene != current_scene_path) {
+		String owner_path;
+		bool should_duplicate = false;
+		if (Node *edited_node = Object::cast_to<Node>(get_edited_object())) {
+			if (edited_node->is_part_of_edited_scene()) {
+				owner_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+			} else {
+				do {
+					owner_path = edited_node->get_scene_file_path();
+					edited_node = edited_node->get_owner();
+				} while (owner_path.is_empty() && edited_node != nullptr);
+			}
+			should_duplicate = owner_path != src_domain;
+		} else {
+			Ref<Resource> edited_res = Object::cast_to<Resource>(get_edited_object());
+			if (edited_res.is_valid()) {
+				owner_path = edited_res->get_path().get_slice("::", 0);
+				should_duplicate = owner_path != src_domain;
+			} else {
+				// Shouldn't happen, RefCounted and raw Object cannot be edited in inspector.
+				should_duplicate = true;
+			}
+		}
+
+		if (should_duplicate) {
 			Resource *revert_res = Object::cast_to<Resource>(EditorPropertyRevert::get_property_revert_value(object, p_name, nullptr).get_validated_object());
 			if (res != revert_res) { // Only duplicate the resource if the new value is different from the default.
 				Ref<Resource> duplicated_res = res->duplicate();
-				EditorNode::setup_built_in_resource(duplicated_res, current_scene_path);
+				EditorNode::setup_built_in_resource(duplicated_res, owner_path);
 				new_value = duplicated_res;
 			}
 		}
