@@ -39,6 +39,7 @@
 #include "editor/gdscript_docgen.h"
 #include "editor/gdscript_editor_language.h"
 #include "editor/script_templates/templates.gen.h"
+#include "editor/script/editor_language_metadata.h"
 #endif
 
 #include "core/config/engine.h"
@@ -3179,18 +3180,24 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				if (ClassDB::get_method_info(class_name, method, &info)) {
 					method_args = info.arguments.size();
+					Object *obj = nullptr;
 					if (base.get_type() == Variant::OBJECT) {
-						Object *obj = base.operator Object *();
-						if (obj) {
-							List<String> options;
-							obj->get_argument_options(method, p_argidx, &options);
-							const GDScriptParser::Node *existing_node = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;
-							const Variant::Type expected_type = info.arguments.size() > p_argidx ? info.arguments[p_argidx].type : Variant::NIL;
-							for (String &opt : options) {
-								if (opt.is_quoted()) {
-									EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_node, opt.unquote(), expected_type);
-									r_result.insert(option.display, option);
-								}
+						obj = base.operator Object *();
+					}
+					Vector<String> options;
+					List<EditorLanguageMetadata::StaticArgOptionGetter> arg_option_getters;
+					EditorLanguageMetadata::get_argument_options_getters(class_name, &arg_option_getters);
+					for (EditorLanguageMetadata::StaticArgOptionGetter arg_option_getter : arg_option_getters)
+					{
+						options.append_array(arg_option_getter(obj, method, p_argidx));
+					}
+					if (!options.is_empty()) {
+						const GDScriptParser::Node *existing_node = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;
+						const Variant::Type expected_type = info.arguments.size() > p_argidx ? info.arguments[p_argidx].type : Variant::NIL;
+						for (String &opt : options) {
+							if (opt.is_quoted()) {
+								EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_node, opt.unquote(), expected_type);
+								r_result.insert(option.display, option);
 							}
 						}
 					}
