@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_language_metadata.cpp                                          */
+/*  object_tools_metadata.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,22 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_language_metadata.h"
+#pragma once
 
-#include "core/object/class_db.h"
+#include <functional>
+#include "core/templates/vector.h"
+#include "core/string/string_name.h"
+#include "core/object/object.h"
 
-HashMap<StringName, EditorLanguageMetadata::StaticArgOptionGetter> EditorLanguageMetadata::static_arg_options_getters;
+#ifdef TOOLS_ENABLED
 
-void EditorLanguageMetadata::get_argument_options_getters(const StringName &p_class, List<EditorLanguageMetadata::StaticArgOptionGetter> *r_arg_option_getters) {
-	const GDType* gdtype = ClassDB::get_gdtype(p_class);
-	EditorLanguageMetadata::StaticArgOptionGetter *arg_option_getter_ptr = nullptr;
-	if (!gdtype) {
-		return;
+class ObjectToolsMetadata {
+public:
+	// Contains static methods registered by each class to provide argument options for auto completion
+	using StaticArgOptionGetter = std::function<Vector<String>(const Object * /*p_instance*/, const StringName & /*p_function*/, int /*p_idx*/)>;
+
+	static void register_argument_options_getters(const StringName &p_class, const ObjectToolsMetadata::StaticArgOptionGetter &p_arg_option_getter) {
+		static_arg_options_getters.insert(p_class, p_arg_option_getter);
 	}
-	const StringName class_name = gdtype->get_name();
-	arg_option_getter_ptr = EditorLanguageMetadata::static_arg_options_getters.getptr(class_name);
-	if (arg_option_getter_ptr) {
-		r_arg_option_getters->push_back(*arg_option_getter_ptr);
-	}
-	get_argument_options_getters(ClassDB::get_parent_class(class_name), r_arg_option_getters);
-}
+	// return static argument options getters for the class and its parent classes
+	static void get_argument_options_getters(const StringName &p_class, List<ObjectToolsMetadata::StaticArgOptionGetter> *r_arg_option_getters);
+
+private:
+	static HashMap<StringName, ObjectToolsMetadata::StaticArgOptionGetter> static_arg_options_getters;
+};
+
+#endif // TOOLS_ENABLED

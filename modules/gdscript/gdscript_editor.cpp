@@ -39,7 +39,6 @@
 #include "editor/gdscript_docgen.h"
 #include "editor/gdscript_editor_language.h"
 #include "editor/script_templates/templates.gen.h"
-#include "editor/script/editor_language_metadata.h"
 #endif
 
 #include "core/config/engine.h"
@@ -52,6 +51,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
+#include "core/object/object_tools_metadata.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -3185,9 +3185,9 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						obj = base.operator Object *();
 					}
 					Vector<String> options;
-					List<EditorLanguageMetadata::StaticArgOptionGetter> arg_option_getters;
-					EditorLanguageMetadata::get_argument_options_getters(class_name, &arg_option_getters);
-					for (EditorLanguageMetadata::StaticArgOptionGetter arg_option_getter : arg_option_getters)
+					List<ObjectToolsMetadata::StaticArgOptionGetter> arg_option_getters;
+					ObjectToolsMetadata::get_argument_options_getters(class_name, &arg_option_getters);
+					for (ObjectToolsMetadata::StaticArgOptionGetter arg_option_getter : arg_option_getters)
 					{
 						options.append_array(arg_option_getter(obj, method, p_argidx));
 					}
