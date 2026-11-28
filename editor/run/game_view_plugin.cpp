@@ -85,6 +85,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
 	settings["editor_scale"] = EDSCALE;
 	if (!is_native) {
+		settings["interface/touchscreen/scale_gizmo_handles"] = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 		settings["accent_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
 		settings["axis_x_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_x_color"), EditorStringName(Editor));
 		settings["axis_y_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_y_color"), EditorStringName(Editor));

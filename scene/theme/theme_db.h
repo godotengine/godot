@@ -180,6 +180,11 @@ public:
 	void get_class_list(HashSet<StringName> &r_list) const;
 	void get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited = false, Theme::DataType p_filter_type = Theme::DATA_TYPE_MAX);
 
+#ifdef TOOLS_ENABLED
+	// Debug icons re-scaling.
+	void regenerate_debug_icons(float p_scale);
+#endif
+
 	// Memory management, reference, and initialization.
 
 	static ThemeDB *get_singleton();

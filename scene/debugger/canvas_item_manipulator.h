@@ -141,6 +141,7 @@ private:
 
 	real_t grab_distance = 1;
 	real_t scale = 1;
+	real_t handle_scale = 1;
 	real_t zoom = 1;
 	Point2 view_offset;
 	Viewport *viewport = nullptr;
@@ -296,6 +297,7 @@ public:
 	void set_snap_scale_enabled(bool p_enabled) { snap_scale = p_enabled; }
 	void set_snap_scale_step(const real_t p_step) { snap_scale_step = p_step; }
 
+	void set_handle_scale(const real_t p_scale) { handle_scale = p_scale; }
 	void set_show_transformation_gizmos(bool p_enabled) { show_transformation_gizmos = p_enabled; }
 	void set_show_guides(bool p_show) { show_guides = p_show; }
 	void set_show_rulers(bool p_show) { show_rulers = p_show; }
@@ -332,6 +334,7 @@ public:
 	Point2 get_dragged_guide_position() const { return dragged_guide_pos; }
 	int get_dragged_guide_index() const { return dragged_guide_index; }
 
+	real_t get_handle_scale() { return handle_scale; }
 	bool is_showing_transformation_gizmos() { return show_transformation_gizmos; }
 	bool is_showing_guides() { return show_guides; }
 	bool is_showing_rulers() { return show_rulers; }
