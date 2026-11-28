@@ -3024,6 +3024,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		undo_redo->add_undo_method(scene_tree, "update_tree");
 		undo_redo->add_undo_reference(edited_scene);
 	} else {
+		selection.sort_custom<Node::Comparator>();
 		// Delete nodes.
 		for (Node *n : selection) {
 			if (!n->is_inside_tree() || !n->get_parent()) {
@@ -3052,7 +3053,6 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		}
 
 		if (delete_tracks_checkbox->is_pressed() || p_cut) {
-			selection.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
 			HashMap<Node *, NodePath> path_renames;
 
 			// Delete from animations.
