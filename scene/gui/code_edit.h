@@ -461,6 +461,9 @@ public:
 	void set_line_folding_enabled(bool p_enabled);
 	bool is_line_folding_enabled() const;
 
+	bool is_line_code_export_start(int p_line) const;
+	bool is_export_foldable(int p_line, int line_count) const;
+
 	bool can_fold_line(int p_line) const;
 
 	void fold_line(int p_line);
